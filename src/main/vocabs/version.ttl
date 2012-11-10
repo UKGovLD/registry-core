@@ -1,0 +1,55 @@
+# (c) Epimorphics Ltd, 2012
+
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix time: <http://www.w3.org/2006/time#> .
+
+@prefix version:  <http://purl.org/linked-data/version#> .
+
+<http://purl.org/linked-data/version>  a owl:Ontology;
+    rdfs:label "Versioning ontology"@en;
+    rdfs:comment "Trivial ontology to support versioning"@en;
+    dct:contributor [foaf:name "Brian McBride"] ;
+    dct:contributor <http://www.amberdown.net/rdf/foaf.rdf#der> ;
+    dct:created "2012-10-10"^^xsd:date;
+    owl:versionInfo "0.1";
+    .
+
+<http://www.amberdown.net/rdf/foaf.rdf#der> a foaf:Person;
+    foaf:name "Dave Reynolds" .
+
+version:Version a owl:Class ;
+  rdfs:comment "A version of a versioned thing."@en ;
+  rdfs:label "Version"@en ;
+  rdfs:subClassOf owl:Thing ;
+  rdfs:subClassOf [ owl:minCardinality 0; owl:onProperty dct:isReplacedBy; ] ;
+  rdfs:subClassOf [ owl:cardinality    1; owl:onProperty dct:isVersionOf; ] ;
+  rdfs:subClassOf [ owl:minCardinality 0; owl:onProperty dct:replaces; ] ;
+  rdfs:subClassOf [ owl:cardinality    1; owl:onProperty owl:versionInfo; ] ;
+  .
+
+version:VersionedThing a owl:Class ;
+  rdfs:comment "The class of things that can have multiple versions."@en ;
+  rdfs:label "versioned thing"@en ;
+  rdfs:subClassOf owl:Thing ;
+  rdfs:subClassOf [ owl:minCardinality 0; owl:onProperty dct:hasVersion; ] ;
+.
+
+version:currentVersion a owl:ObjectProperty;
+  rdfs:comment "currentVersion relates an enduring resource to its current version"@en ;
+  rdfs:domain version:VersionedThing ;
+  rdfs:label "current version"@en ;
+  rdfs:range version:Version ;
+.
+
+version:interval a owl:ObjectProperty
+  rdfs:label "interval"@en ;
+  rdfs:comment "interval relates a thing version to an interval during which the version was valid."@en ;
+  rdfs:domain version:Version ;
+  rdfs:range time:Interval ;
+.

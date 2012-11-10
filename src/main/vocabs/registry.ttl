@@ -7,10 +7,11 @@
 @prefix dct:  <http://purl.org/dc/terms/> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix version:  <http://purl.org/linked-data/version#> .
 
-@prefix reg:  <http://purl.org/linked-data/registery#> .
+@prefix reg:  <http://purl.org/linked-data/registry#> .
 
-<http://purl.org/linked-data/registery>  a owl:Ontology;
+<http://purl.org/linked-data/registry>  a owl:Ontology;
     rdfs:label "Registry ontology"@en;
     rdfs:comment "Core ontology for linked data registry services"@en;
     dct:contributor <http://www.amberdown.net/rdf/foaf.rdf#der> ;
@@ -23,10 +24,21 @@
 
 # -- Base register machinery ------------------------------------------------------
 
-reg:Register    a owl:Class;
+reg:Register    a owl:Class, version:VersionedThing;
     rdfs:label "Register"@en;
     rdfs:comment "Represents a collection of registered items, together with some associated governance regime"@en;
+    rdfs:subClassOf [owl:onProperty rdfs:label;       owl:minCardinality 1];
+    rdfs:subClassOf [owl:onProperty dct:description;  owl:minCardinality 1];
     .
+
+reg:operatingLanguage    a owl:ObjectProperty;
+    rdfs:label "operating language"@en;
+    rdfs:comment "Indicates a language supported by the register and the items within it. A register can support an arbitrary number of languages. The language should be indicated by resource within a well-maintained URI set such as the Library of Congress language URIs e.g. http://id.loc.gov/vocabulary/iso639-1/en"@en;
+    rdfs:domain reg:Register;
+    rdfs:range  rdfs:Resource;
+    .
+
+# @@
 
 reg:registerEntry    a owl:ObjectProperty;
     rdfs:label "register entry"@en;
