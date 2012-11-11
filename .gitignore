@@ -1,8 +1,9 @@
-target
-.classpath
-.settings
-.project
 *~
-generated
+.#*
+/target
+/.classpath
+/.settings
+/.project
+/generated
 /runtime
 /modal.log
