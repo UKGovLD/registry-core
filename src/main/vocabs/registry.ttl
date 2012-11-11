@@ -254,6 +254,15 @@ reg:representationOf a owl:ObjectProperty;
     rdfs:domain reg:RegisterItem;
     .
 
+# -- Validation ------------------------------------------------------
+
+reg:validationQuery a owl:DatatypePropery;
+    rdfs:label "validation query"@en;
+    rdfs:comment "The source of a SPARQL ASK query which can be used to validate a proposed entry in this register"@en;
+    rdfs:domain reg:Register;
+    rdfs:range  xsd:string;
+    .
+
 # -- Views ------------------------------------------------------
 
 reg:hasView    a owl:ObjectProperty;
