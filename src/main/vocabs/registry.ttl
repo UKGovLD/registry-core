@@ -9,6 +9,9 @@
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix version:  <http://purl.org/linked-data/version#> .
 @prefix ldp:  <http://www.w3.org/ns/ldp#> .
+@prefix ssd:  <http://www.w3.org/ns/sparql-service-description#> .
+@prefix vs:   <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+
 @prefix reg:  <http://purl.org/linked-data/registry#> .
 
 <http://purl.org/linked-data/registry>  a owl:Ontology;
@@ -16,7 +19,7 @@
     rdfs:comment "Core ontology for linked data registry services. Based on ISO19135 but heavily modified to suit Linked Data representations and applications."@en;
     dct:contributor <http://www.amberdown.net/rdf/foaf.rdf#der> ;
     dct:created "2012-10-10"^^xsd:date;
-    owl:versionInfo "0.1";
+    owl:versionInfo "0.2";
     .
 
 <http://www.amberdown.net/rdf/foaf.rdf#der> a foaf:Person;
@@ -29,11 +32,12 @@ reg:Register    a owl:Class, version:VersionedThing, ldp:Container;
     rdfs:comment "Represents a collection of registered items, together with some associated governance regime. If one or more licenses is stated then each license applies to all the entries in the register. "@en;
     rdfs:subClassOf [owl:onProperty rdfs:label;       owl:minCardinality 1];
     rdfs:subClassOf [owl:onProperty dct:description;  owl:minCardinality 1];
-    rdfs:subClassOf [owl:onProperty reg:owner;        owl:minCardinality 0];       
-    rdfs:subClassOf [owl:onProperty reg:operatingLanguage;  owl:minCardinality 0]; 
-    rdfs:subClassOf [owl:onProperty reg:manager;      owl:minCardinality 0];
-    rdfs:subClassOf [owl:onProperty reg:itemClass;    owl:minCardinality 0];
+    rdfs:subClassOf [owl:onProperty reg:owner;        owl:cardinality    1];       
+    rdfs:subClassOf [owl:onProperty reg:manager;      owl:cardinality    1];
     rdfs:subClassOf [owl:onProperty dct:license;      owl:minCardinality 0];
+    rdfs:subClassOf [owl:onProperty reg:containedItemClass; owl:minCardinality 0];
+    rdfs:subClassOf [owl:onProperty reg:operatingLanguage;  owl:minCardinality 0]; 
+    rdfs:subClassOf [owl:onProperty reg:dateOfLastChange;   owl:cardinality    1];
     .
 
 #@@ Put in note that skos:prefLabel is a rdfs:label and still meets the requirement
@@ -45,9 +49,16 @@ reg:operatingLanguage    a owl:ObjectProperty;
     rdfs:range  rdfs:Resource;
     .
 
+reg:dateOfLastChange    a owl:DatatypeProperty;
+    rdfs:label "date of last change"@en;
+    rdfs:comment "The time of the most recent change of status of an item within the register (includes addition of new items). This property may be computed on demand rather than stored since it is intrinsically non-monotonic"@en;
+    rdfs:domain reg:Register;
+    rdfs:range  xsd:datetime;
+    .
+
 reg:owner a owl:ObjectProperty;
     rdfs:label "owner"@en;
-    rdfs:comment "The owner of the register, may be a person (foaf:Person) or an organization (org:Organization)"@en;
+    rdfs:comment "The owner of the register, may be a person (foaf:Person) or an organization (org:Organization). The owner has final authority over the contents of the regster."@en;
     rdfs:subPropertyOf dct:publisher;
     rdfs:domain reg:Register;
     rdfs:range foaf:Agent;
@@ -55,25 +66,24 @@ reg:owner a owl:ObjectProperty;
     
 reg:manager a owl:ObjectProperty;
     rdfs:label "manager"@en;
-    rdfs:comment "The manager of the register, may be a person (foaf:Person) or an organization (org:Organization)"@en;
+    rdfs:comment "The manager of the register, may be a person (foaf:Person) or an organization (org:Organization). Operates the register on behalf of the owner, makes day to day decisions on acceptance of entries based on agreed principles but it may be possible to appeal to the owner to override a decision by the manager."@en;
     rdfs:domain reg:Register;
     rdfs:range foaf:Agent;
     .
     
-reg:itemClass a owl:ObjectProperty;
-    rdfs:label "item class"@en;
-    rdfs:comment "A class of items that can occur in this register"@en;
+reg:containedItemClass a owl:ObjectProperty;
+    rdfs:label "contained item class"@en;
+    rdfs:comment "A class of entities that can occur in this register"@en;
     rdfs:domain reg:Register;
     rdfs:range  owl:Class;
     .
 
-reg:parent a owl:ObjectProperty;
-    rdfs:label "parent"@en;
-    rdfs:comment "@@For registers which are themselves registered in some parent register this indicates the parent register directly."@en;
+reg:subregister a owl:ObjectProperty;
+    rdfs:label "subregister"@en;
+    rdfs:comment "Indicates a register that is itself an entry in this principle register."@en;
     rdfs:domain reg:Register;
     rdfs:range  reg:Register;
     .
-# TODO stricly this is redundant and so violates our DRY principle, but is convenient
 
 # -- RegisterItems ------------------------------------------------------
 
@@ -87,17 +97,20 @@ reg:RegisterItem    a owl:Class, version:VersionedThing;
     rdfs:subClassOf [owl:onProperty reg:status;        owl:minCardinality 1];
     rdfs:subClassOf [owl:onProperty reg:definition;    owl:cardinality    1];
     rdfs:subClassOf [owl:onProperty reg:category;      owl:minCardinality 0];
-    rdfs:subClassOf [owl:onProperty reg:itemType;      owl:minCardinality 1];
+    rdfs:subClassOf [owl:onProperty reg:itemClass;     owl:minCardinality 1];
     rdfs:subClassOf [owl:onProperty reg:notation;      owl:maxCardinality 1];
-    rdfs:subClassOf [owl:onProperty reg:alias;         owl:minCardinality 0];
     rdfs:subClassOf [owl:onProperty dct:license;       owl:minCardinality 0];
+    rdfs:subClassOf [owl:onProperty reg:predecessor;   owl:minCardinality 0];
+    rdfs:subClassOf [owl:onProperty reg:alias;         owl:minCardinality 0];
+    rdfs:subClassOf [owl:onProperty reg:representationOf;  owl:minCardinality 0];
+    rdfs:subClassOf [owl:onProperty reg:hasView;        owl:minCardinality 0];
 
-    version:rigidProperty reg:register, reg:notation, reg:itemType;
+    version:rigidProperty reg:register, reg:notation, reg:itemClass, reg:predecessor;
   .
 
 reg:definition a owl:ObjectProperty;
     rdfs:label "definition"@en;
-    rdfs:comment "The item which has been registered."@en;
+    rdfs:comment "The entity which has been registered."@en;
     rdfs:domain  reg:RegisterItem;
     rdfs:range   reg:EntityReference;
   .
@@ -111,9 +124,9 @@ reg:register a owl:ObjectProperty;
     rdfs:range   reg:Register;
   .
 
-reg:successor a owl:ObjectProperty;
-    rdfs:label "successor"@en;
-    rdfs:comment "An item which has replaced this one within the register."@en;
+reg:predecessor a owl:ObjectProperty;
+    rdfs:label "predecessor"@en;
+    rdfs:comment "An item which has been replaced this one within the register. Should be asserted between hub resources (VersionedThing)."@en;
     rdfs:domain  reg:RegisterItem;
     rdfs:range   reg:RegisterItem;
   .
@@ -132,9 +145,9 @@ reg:notation    a owl:DatatypeProperty;
     rdfs:range  xsd:string;
     .
 
-reg:itemType    a owl:ObjectProperty;
-    rdfs:label "item type"@en;
-    rdfs:comment "The rdf:type of the item that this record is about."@en;
+reg:itemClass    a owl:ObjectProperty;
+    rdfs:label "item class"@en;
+    rdfs:comment "The type of the entity that this record is about. Note that it may be possible to register a non-RDF resource in which case this property provides a way to state the intended class of the entity even though no direct RDF assertion of type is available."@en;
     rdfs:domain reg:ItemRecord;
     rdfs:range  rdfs:Class;
     .
@@ -204,7 +217,9 @@ reg:statusDeprecated a skos:Concept, reg:Status;
 
 reg:EntityReference a owl:Class;
     rdfs:label "Entity Reference"@en;
-    rdfs:comment "A reference to some internal or external Linked Data resource. The reg:reference gives the URI of the resource being referenced. If a reg:sourceGraph value is present then it is the URI for a named graph within the Registry containing the properties of the referenced entity. If there is no reg:graph then the entity is being managed directly by the registry and its properties are within the default graph of the Registry."@en
+    rdfs:comment "A reference to some internal or external Linked Data resource. The reg:reference gives the URI of the resource being referenced. If a reg:sourceGraph value is present then it is the URI for a named graph within the Registry containing the properties of the referenced entity. If there is no reg:graph then the entity is being managed directly by the registry and its properties are within the default graph of the Registry."@en;
+    rdfs:subClassOf [owl:onProperty reg:entity;        owl:cardinality 1];
+    rdfs:subClassOf [owl:onProperty reg:sourceGraph;   owl:maxCardinality 1];
     .
 
 reg:entity a owl:ObjectProperty;
@@ -218,7 +233,7 @@ reg:sourceGraph a owl:ObjectProperty;
     rdfs:label "source graph"@en;
     rdfs:comment "A resource represented an RDF graph (within the Registry's SPARQL dataset) containing the properties of the reference entity. If not present then assume default graph."@en;
     rdfs:domain reg:EntityReference;
-    rdfs:range  rdfs:Resource;		# TODO fiex
+    rdfs:range  ssd:Graph;
     .
 
 # -- TODO ------------------------------------------------------
@@ -230,15 +245,17 @@ reg:sourceGraph a owl:ObjectProperty;
 # -- Alias management ------------------------------------------------------
 
 reg:alias    a owl:ObjectProperty;
+    vs:term_status "experimental";
     rdfs:label "alias"@en;
-    rdfs:comment "An alternative URI for the item, the alias resource is regarded by this register as owl:sameAs the item resource"@en;
+    rdfs:comment "An alternative URI for the entity, the alias resource is regarded by this register as owl:sameAs the definition entity"@en;
     rdfs:domain reg:RegisterItem;
     rdfs:range  reg:EntityReference;
     .
 
 reg:representationOf a owl:ObjectProperty;
+    vs:term_status "experimental";
     rdfs:label "representation of"@en;
-    rdfs:comment "A resource, typically a real-world object, which the registered item is a representation for."@en;
+    rdfs:comment "A resource, typically a real-world object, which the registered entity is a representation for."@en;
     rdfs:domain reg:RegisterItem;
     .
 
@@ -254,13 +271,15 @@ reg:validationQuery a owl:DatatypePropery;
 # -- Views ------------------------------------------------------
 
 reg:hasView    a owl:ObjectProperty;
+    vs:term_status "experimental";
     rdfs:label "has view"@en;
-    rdfs:comment "Indicates a specification for a view available for the item described by this record. If the item is itself a delegated register then the view provides a pattern for accessing all items within the delegated register."@en;
+    rdfs:comment "Indicates a specification for a view available for the entity described by this record. If the entity is itself a delegated register then the view provides a pattern for accessing all items within the delegated register. Particularly applicable to cases where the entity is not a RDF resource but where some service (such as a Web Feature Service) can provide a view of the entity."@en;
     rdfs:domain reg:RegisterItem;
     rdfs:range  reg:View;
     .
 
 reg:delegationView    a owl:ObjectProperty;
+    vs:term_status "experimental";
     rdfs:label "delegation view"@en;
     rdfs:comment "Default view for delegated resources, URL rewrite used A view used to redirect requests for delegated resources."@en;
     rdfs:domain reg:RegisterItem;
@@ -269,6 +288,7 @@ reg:delegationView    a owl:ObjectProperty;
     .
 
 reg:View    a owl:Class;
+    vs:term_status "experimental";
     rdfs:label "View"@en;
     rdfs:comment "Specifies a view available for a registered item"@en;
     rdfs:subClassOf [owl:onProperty rdfs:label;       owl:minCardinality 0];  # used to name the view
@@ -279,6 +299,7 @@ reg:View    a owl:Class;
     .
 
 reg:urlMatch   a owl:DatatypeProperty;
+    vs:term_status "experimental";
     rdfs:label "url match"@en;
     rdfs:comment "A regex which is matched against the incoming request as part of a view forwarding"@en;
     rdfs:domain reg:View;
@@ -286,6 +307,7 @@ reg:urlMatch   a owl:DatatypeProperty;
     .
 
 reg:urlRewrite   a owl:DatatypeProperty;
+    vs:term_status "experimental";
     rdfs:label "url rewrite"@en;
     rdfs:comment "A template generating the rewritten URL to forward to, can include $N back references to match groups"@en;
     rdfs:domain reg:View;
@@ -295,6 +317,7 @@ reg:urlRewrite   a owl:DatatypeProperty;
 # TODO consider adding reg:matchCond to do mod_rewrite style checking of headers and binding of %N rewrite references
 
 reg:urlProxy   a owl:DatatypeProperty;
+    vs:term_status "experimental";
     rdfs:label "url proxy"@en;
     rdfs:comment "Flag which sets whether the rewritten URL should be proxied or redirected (302)"@en;
     rdfs:domain reg:View;
