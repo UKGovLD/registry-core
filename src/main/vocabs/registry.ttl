@@ -26,16 +26,17 @@
 
 reg:Register    a owl:Class, version:VersionedThing, ldp:Container;
     rdfs:label "Register"@en;
-    rdfs:comment "Represents a collection of registered items, together with some associated governance regime. If a license is provided then it applies to all entries in the register. "@en;
+    rdfs:comment "Represents a collection of registered items, together with some associated governance regime. If one or more licenses is stated then each license applies to all the entries in the register. "@en;
     rdfs:subClassOf [owl:onProperty rdfs:label;       owl:minCardinality 1];
     rdfs:subClassOf [owl:onProperty dct:description;  owl:minCardinality 1];
-    rdfs:subClassOf [owl:onProperty reg:owner;        owl:minCardinality 0];        # At risk
-    rdfs:subClassOf [owl:onProperty reg:operatingLanguage;  owl:minCardinality 0];  # At risk
-    rdfs:subClassOf [owl:onProperty dct:publisher;    owl:minCardinality 0];
+    rdfs:subClassOf [owl:onProperty reg:owner;        owl:minCardinality 0];       
+    rdfs:subClassOf [owl:onProperty reg:operatingLanguage;  owl:minCardinality 0]; 
     rdfs:subClassOf [owl:onProperty reg:manager;      owl:minCardinality 0];
     rdfs:subClassOf [owl:onProperty reg:itemClass;    owl:minCardinality 0];
     rdfs:subClassOf [owl:onProperty dct:license;      owl:minCardinality 0];
     .
+
+#@@ Put in note that skos:prefLabel is a rdfs:label and still meets the requirement
 
 reg:operatingLanguage    a owl:ObjectProperty;
     rdfs:label "operating language"@en;
@@ -43,19 +44,14 @@ reg:operatingLanguage    a owl:ObjectProperty;
     rdfs:domain reg:Register;
     rdfs:range  rdfs:Resource;
     .
-# TODO  In ISO 19135 this is needed because strings lack language tagging.
-#       In linked data all literals can be language tagged anyway so the definition of operatingLanguage 
-#       from 19135 does not apply.
-#       In this draft I've retained the property but described it differently. Could simply remove.
 
 reg:owner a owl:ObjectProperty;
     rdfs:label "owner"@en;
     rdfs:comment "The owner of the register, may be a person (foaf:Person) or an organization (org:Organization)"@en;
+    rdfs:subPropertyOf dct:publisher;
     rdfs:domain reg:Register;
     rdfs:range foaf:Agent;
     .
-# TODO: this is provided to match ISO 19135 but dct:publisher would seem like a more useful concept.
-#       Currently allowing both but would prefer to delete this
     
 reg:manager a owl:ObjectProperty;
     rdfs:label "manager"@en;
@@ -73,7 +69,7 @@ reg:itemClass a owl:ObjectProperty;
 
 reg:parent a owl:ObjectProperty;
     rdfs:label "parent"@en;
-    rdfs:comment "For registers which are themselves registered in some parent register this indicates the parent register directly."@en;
+    rdfs:comment "@@For registers which are themselves registered in some parent register this indicates the parent register directly."@en;
     rdfs:domain reg:Register;
     rdfs:range  reg:Register;
     .
@@ -87,13 +83,14 @@ reg:RegisterItem    a owl:Class, version:VersionedThing;
     rdfs:subClassOf [owl:onProperty rdfs:label;        owl:minCardinality 1];
     rdfs:subClassOf [owl:onProperty dct:description;   owl:minCardinality 0];
     rdfs:subClassOf [owl:onProperty dct:dateSubmitted; owl:cardinality    1];
-    rdfs:subClassOf [owl:onProperty dct:dateAccepted;  owl:minCardinality 0];
+    rdfs:subClassOf [owl:onProperty dct:dateAccepted;  owl:maxCardinality 1];
     rdfs:subClassOf [owl:onProperty reg:status;        owl:minCardinality 1];
     rdfs:subClassOf [owl:onProperty reg:definition;    owl:cardinality    1];
     rdfs:subClassOf [owl:onProperty reg:category;      owl:minCardinality 0];
-    rdfs:subClassOf [owl:onProperty reg:itemType;      owl:cardinality    1];
-    rdfs:subClassOf [owl:onProperty reg:notation;      owl:minCardinality 0];
+    rdfs:subClassOf [owl:onProperty reg:itemType;      owl:minCardinality 1];
+    rdfs:subClassOf [owl:onProperty reg:notation;      owl:maxCardinality 1];
     rdfs:subClassOf [owl:onProperty reg:alias;         owl:minCardinality 0];
+    rdfs:subClassOf [owl:onProperty dct:license;       owl:minCardinality 0];
 
     version:rigidProperty reg:register, reg:notation, reg:itemType;
   .
@@ -123,14 +120,14 @@ reg:successor a owl:ObjectProperty;
 
 reg:category a owl:ObjectProperty;
     rdfs:label "category"@en;
-    rdfs:comment "Optional classification for a registered item within one or more SKOS classification schemes."@en;
+    rdfs:comment "Optional classification for a registered item within one or more SKOS classification schemes to support navigation and discovery. Orthogonal to the structure provided by the register hierarchy which is about governance."@en;
     rdfs:domain  reg:RegisterItem;
     rdfs:range   skos:Concept;
   .
 
 reg:notation    a owl:DatatypeProperty;
     rdfs:label "notation"@en;
-    rdfs:comment "A short text string which can be used to denote the item. Should be unique within the register. If available should be used as the path segment, relative to the parent register, for the RegisterItem and for the item itself (if managed). Restricted to be a syntactically legal URI segment (i.e. *pchar)."@en;
+    rdfs:comment "A short text string which can be used to denote the register item. Must be unique within the register. If available it should be used as the path segment, relative to the parent register, for the RegisterItem (and for the item itself, if managed). Restricted to be a syntactically legal URI segment (i.e. *pchar)."@en;
     rdfs:domain reg:ItemRecord;
     rdfs:range  xsd:string;
     .
@@ -207,30 +204,21 @@ reg:statusDeprecated a skos:Concept, reg:Status;
 
 reg:EntityReference a owl:Class;
     rdfs:label "Entity Reference"@en;
-    rdfs:comment "A reference to some internal or external Linked Data resource. The reg:reference gives the URI of the resource being referenced. If a reg:graph value is present then it is the URI for a named graph within the Registry containing the properties of the referenced entity. If there is no reg:graph then the entity is being managed directly by the registry and its properties are within the default graph of the Registry."@en
+    rdfs:comment "A reference to some internal or external Linked Data resource. The reg:reference gives the URI of the resource being referenced. If a reg:sourceGraph value is present then it is the URI for a named graph within the Registry containing the properties of the referenced entity. If there is no reg:graph then the entity is being managed directly by the registry and its properties are within the default graph of the Registry."@en
     .
 
-# TODO - could there be external entities so stable that we don't take a local graph copy but just point to an external URI?
-#        If so that could be either left implicit or we could provide an explicit value for the default graph
-
-
-reg:reference a owl:ObjectProperty;
-    rdfs:label "reference"@en;
+reg:entity a owl:ObjectProperty;
+    rdfs:label "entity"@en;
     rdfs:comment "The RDF resource identified by an entity reference"@en;
     rdfs:domain reg:EntityReference;
     rdfs:range  rdfs:Resource;
     .
 
-reg:graph a owl:ObjectProperty;
-    rdfs:label "graph"@en;
-    rdfs:comment "A resource represented an RDF graph (within the Registry's SPARQL dataset) containin gthe properties of the reference entity."@en;
+reg:sourceGraph a owl:ObjectProperty;
+    rdfs:label "source graph"@en;
+    rdfs:comment "A resource represented an RDF graph (within the Registry's SPARQL dataset) containing the properties of the reference entity. If not present then assume default graph."@en;
     rdfs:domain reg:EntityReference;
-    rdfs:range  rdfs:Resource;
-    .
-
-reg:DefaultGraph a rdfs:Resource;
-    rdfs:label "default graph"@en;
-    rdfs:comment "A marker used to indicate the default graph in the Registery's SPARQL dataset"@en;
+    rdfs:range  rdfs:Resource;		# TODO fiex
     .
 
 # -- TODO ------------------------------------------------------
