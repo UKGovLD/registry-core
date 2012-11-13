@@ -5,6 +5,7 @@
 @prefix owl:  <http://www.w3.org/2002/07/owl#> .
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
 @prefix dct:  <http://purl.org/dc/terms/> .
+@prefix dc:   <http://purl.org/dc/elements/1.1/> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix version:  <http://purl.org/linked-data/version#> .
@@ -17,13 +18,13 @@
 <http://purl.org/linked-data/registry>  a owl:Ontology;
     rdfs:label "Registry ontology"@en;
     rdfs:comment "Core ontology for linked data registry services. Based on ISO19135 but heavily modified to suit Linked Data representations and applications."@en;
-    dct:contributor <http://www.amberdown.net/rdf/foaf.rdf#der> ;
-    dct:created "2012-10-10"^^xsd:date;
+    dc:creator  "Dave Reynolds";     # As a string to enable documentation tool to work
+    dc:date     "2012-11-11"^^xsd:date;
     owl:versionInfo "0.2";
+    # For documentation tools
+    dc:description"Core ontology for linked data registry services. Based on ISO19135 but heavily modified to suit Linked Data representations and applications."@en;
+    dc:description <https://github.com/der/ukl-registry-poc/wiki/images/registry-diagram.png> ;
     .
-
-<http://www.amberdown.net/rdf/foaf.rdf#der> a foaf:Person;
-    foaf:name "Dave Reynolds" .
 
 # -- Registers ------------------------------------------------------
 
@@ -37,6 +38,7 @@ reg:Register    a owl:Class, version:VersionedThing, ldp:Container;
     rdfs:subClassOf [owl:onProperty dct:license;      owl:minCardinality 0];
     rdfs:subClassOf [owl:onProperty reg:containedItemClass; owl:minCardinality 0];
     rdfs:subClassOf [owl:onProperty reg:operatingLanguage;  owl:minCardinality 0]; 
+    rdfs:subClassOf [owl:onProperty reg:validationQuery;    owl:minCardinality 0]; 
     rdfs:subClassOf [owl:onProperty reg:dateOfLastChange;   owl:cardinality    1];
     .
 
