@@ -38,6 +38,7 @@ reg:Register    a owl:Class, version:VersionedThing, ldp:Container;
     rdfs:subClassOf [owl:onProperty dct:license;      owl:minCardinality 0];
     rdfs:subClassOf [owl:onProperty reg:containedItemClass; owl:minCardinality 0];
     rdfs:subClassOf [owl:onProperty reg:operatingLanguage;  owl:minCardinality 0]; 
+    rdfs:subClassOf [owl:onProperty reg:governancePolicy;   owl:minCardinality 0]; 
     rdfs:subClassOf [owl:onProperty reg:validationQuery;    owl:minCardinality 0]; 
     rdfs:subClassOf [owl:onProperty reg:dateOfLastChange;   owl:cardinality    1];
     .
@@ -87,6 +88,13 @@ reg:subregister a owl:ObjectProperty;
     rdfs:range  reg:Register;
     .
 
+reg:governancePolicy a owl:ObjectProperty;
+    rdfs:label "governance policy"@en;
+    rdfs:comment "A resource, such as a web accessible-document, which describes the governance policy applicable to this register."@en;
+    rdfs:domain reg:Register;
+    rdfs:range  rdfs:Resource;
+    .
+
 # -- RegisterItems ------------------------------------------------------
 
 reg:RegisterItem    a owl:Class, version:VersionedThing;
@@ -98,6 +106,7 @@ reg:RegisterItem    a owl:Class, version:VersionedThing;
     rdfs:subClassOf [owl:onProperty dct:dateAccepted;  owl:maxCardinality 1];
     rdfs:subClassOf [owl:onProperty reg:status;        owl:minCardinality 1];
     rdfs:subClassOf [owl:onProperty reg:definition;    owl:cardinality    1];
+    rdfs:subClassOf [owl:onProperty reg:submitter;     owl:cardinality    1];
     rdfs:subClassOf [owl:onProperty reg:category;      owl:minCardinality 0];
     rdfs:subClassOf [owl:onProperty reg:itemClass;     owl:minCardinality 1];
     rdfs:subClassOf [owl:onProperty reg:notation;      owl:maxCardinality 1];
@@ -152,6 +161,14 @@ reg:itemClass    a owl:ObjectProperty;
     rdfs:comment "The type of the entity that this record is about. Note that it may be possible to register a non-RDF resource in which case this property provides a way to state the intended class of the entity even though no direct RDF assertion of type is available."@en;
     rdfs:domain reg:ItemRecord;
     rdfs:range  rdfs:Class;
+    .
+
+reg:submitter a owl:ObjectProperty;
+    rdfs:label "submitter"@en;
+    rdfs:comment "The person or organization who originally submitted this register entry. Subsequent chages to the entry may have been made by other agents."@en;
+    rdfs:subPropertyOf dct:publisher;
+    rdfs:domain reg:RegisterItem;
+    rdfs:range foaf:Agent;
     .
 
 # -- Status ------------------------------------------------------
@@ -219,7 +236,7 @@ reg:statusDeprecated a skos:Concept, reg:Status;
 
 reg:EntityReference a owl:Class;
     rdfs:label "Entity Reference"@en;
-    rdfs:comment "A reference to some internal or external Linked Data resource. The reg:reference gives the URI of the resource being referenced. If a reg:sourceGraph value is present then it is the URI for a named graph within the Registry containing the properties of the referenced entity. If there is no reg:graph then the entity is being managed directly by the registry and its properties are within the default graph of the Registry."@en;
+    rdfs:comment "A reference to some internal or external Linked Data resource. The reg:reference gives the URI of the resource being referenced. If a reg:sourceGraph value is present then it is the URI for a named graph within the Registry containing the properties of the referenced entity."@en;
     rdfs:subClassOf [owl:onProperty reg:entity;        owl:cardinality 1];
     rdfs:subClassOf [owl:onProperty reg:sourceGraph;   owl:maxCardinality 1];
     .
