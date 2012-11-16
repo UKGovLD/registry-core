@@ -233,9 +233,10 @@ reg:statusDeprecated a skos:Concept, reg:Status;
 
 reg:EntityReference a owl:Class;
     rdfs:label "Entity Reference"@en;
-    rdfs:comment "A reference to some internal or external Linked Data resource. The reg:reference gives the URI of the resource being referenced. If a reg:sourceGraph value is present then it is the URI for a named graph within the Registry containing the properties of the referenced entity."@en;
+    rdfs:comment "A reference to some internal or external Linked Data resource. The reg:reference gives the URI of the resource being referenced. If a reg:sourceGraph value is present then it is the URI for a named graph within the Registry containing the properties of the referenced entity. If reg:entityVersion is present it gives URI for the particular version:Version of the entity being referenced. Normally only one of reg:sourceGraph and reg:entityVersion is needed since versioned entities are normally stored in the default graph."@en;
     rdfs:subClassOf [owl:onProperty reg:entity;        owl:cardinality 1];
     rdfs:subClassOf [owl:onProperty reg:sourceGraph;   owl:maxCardinality 1];
+    rdfs:subClassOf [owl:onProperty reg:entityVersion; owl:maxCardinality 1];
     .
 
 reg:entity a owl:ObjectProperty;
@@ -247,9 +248,16 @@ reg:entity a owl:ObjectProperty;
 
 reg:sourceGraph a owl:ObjectProperty;
     rdfs:label "source graph"@en;
-    rdfs:comment "A resource represented an RDF graph (within the Registry's SPARQL dataset) containing the properties of the reference entity. If not present then assume default graph."@en;
+    rdfs:comment "A resource representing an RDF graph (within the Registry's SPARQL dataset) containing the properties of the reference entity. If not present then assume default graph."@en;
     rdfs:domain reg:EntityReference;
     rdfs:range  ssd:Graph;
+    .
+
+reg:entityVersion a owl:ObjectProperty;
+    rdfs:label "entity version"@en;
+    rdfs:comment "Indicates the particular version:Version of the entity being referenced."@en;
+    rdfs:domain reg:EntityReference;
+    rdfs:range  rdfs:Resource;
     .
 
 # -- TODO ------------------------------------------------------
