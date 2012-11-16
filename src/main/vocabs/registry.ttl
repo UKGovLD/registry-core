@@ -12,7 +12,7 @@
 @prefix ldp:  <http://www.w3.org/ns/ldp#> .
 @prefix ssd:  <http://www.w3.org/ns/sparql-service-description#> .
 @prefix vs:   <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
-
+@prefix void: <http://rdfs.org/ns/void#> .
 @prefix reg:  <http://purl.org/linked-data/registry#> .
 
 <http://purl.org/linked-data/registry>  a owl:Ontology;
@@ -28,7 +28,7 @@
 
 # -- Registers ------------------------------------------------------
 
-reg:Register    a owl:Class, version:VersionedThing, ldp:Container;
+reg:Register    a owl:Class, version:VersionedThing, ldp:Container, void:Dataset;
     rdfs:label "Register"@en;
     rdfs:comment "Represents a collection of registered items, together with some associated governance regime. If one or more licenses is stated then each license applies to all the entries in the register. "@en;
     rdfs:subClassOf [owl:onProperty rdfs:label;       owl:minCardinality 1];
@@ -40,7 +40,11 @@ reg:Register    a owl:Class, version:VersionedThing, ldp:Container;
     rdfs:subClassOf [owl:onProperty reg:operatingLanguage;  owl:minCardinality 0]; 
     rdfs:subClassOf [owl:onProperty reg:governancePolicy;   owl:minCardinality 0]; 
     rdfs:subClassOf [owl:onProperty reg:validationQuery;    owl:minCardinality 0]; 
-    rdfs:subClassOf [owl:onProperty reg:dateOfLastChange;   owl:cardinality    1];
+    rdfs:subClassOf [owl:onProperty dct:modified;           owl:cardinality    1];
+    rdfs:subClassOf [owl:onProperty void:openSearchDescription; owl:minCardinality 0];
+    rdfs:subClassOf [owl:onProperty void:uriLookupEndpoint; owl:minCardinality 0];
+    rdfs:subClassOf [owl:onProperty void:uriSpace; 	    owl:maxCardinality 1];
+    rdfs:subClassOf [owl:onProperty void:exampleResource;   owl:minCardinality 0];
     .
 
 #@@ Put in note that skos:prefLabel is a rdfs:label and still meets the requirement
@@ -50,13 +54,6 @@ reg:operatingLanguage    a owl:ObjectProperty;
     rdfs:comment "Indicates a language supported by the register and the items within it. The language should be indicated by a resource within a well-maintained URI set such as the Library of Congress language URIs e.g. http://id.loc.gov/vocabulary/iso639-1/en"@en;
     rdfs:domain reg:Register;
     rdfs:range  rdfs:Resource;
-    .
-
-reg:dateOfLastChange    a owl:DatatypeProperty;
-    rdfs:label "date of last change"@en;
-    rdfs:comment "The time of the most recent change of status of an item within the register (includes addition of new items). This property may be computed on demand rather than stored since it is intrinsically non-monotonic"@en;
-    rdfs:domain reg:Register;
-    rdfs:range  xsd:datetime;
     .
 
 reg:owner a owl:ObjectProperty;
