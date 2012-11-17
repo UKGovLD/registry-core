@@ -188,10 +188,29 @@ reg:StatusScheme a skos:ConceptScheme;
     rdfs:comment "Concept scheme containing registry status codes"@en;
     .
 
+reg:statusHidden a skos:Concept, reg:Status;
+    skos:prefLabel "hidden"@en;
+    rdfs:comment "An entry that should not be visible in the default register listing"@en;
+    skos:topConceptOf reg:StatusScheme;
+    .
+
 reg:statusProposed a skos:Concept, reg:Status;
     skos:prefLabel "proposed"@en;
-    skos:altlabel "not valid"@en;
     rdfs:comment "A proposed entry, may not be ready for use."@en;
+    skos:inScheme reg:StatusScheme;
+    skos:broader  reg:statusHidden;
+    .
+
+reg:statusNotValid a skos:Concept, reg:Status;
+    skos:prefLabel "not valid"@en;
+    rdfs:comment "An entry whose initial registration was so flawed that it has been removed instead of retired."@en;
+    skos:inScheme reg:StatusScheme;
+    skos:broader  reg:statusHidden;
+    .
+
+eg:statusVisible a skos:Concept, reg:Status;
+    skos:prefLabel "visible"@en;
+    rdfs:comment "An entry that is visible in the default register listing"@en;
     skos:topConceptOf reg:StatusScheme;
     .
 
@@ -199,35 +218,41 @@ reg:statusValid a skos:Concept, reg:Status;
     skos:prefLabel "valid"@en;
     skos:altlabel "accepted"@en;
     rdfs:comment "An entry that has been accepted into the register and is deemed fit for use."@en;
-    skos:topConceptOf reg:StatusScheme;
+    skos:inScheme reg:StatusScheme;
+    skos:broader  reg:statusVisible;
     .
 
 reg:statusExperimental a skos:Concept, reg:Status;
     skos:prefLabel "experimental"@en;
     skos:altlabel "provisional"@en;
-    rdfs:comment "An entry that has been accepted into the register temporarily and may be subject to change or withdrawal. An experimental entry may or may not be also marked valid."@en;
-    skos:topConceptOf reg:StatusScheme;
+    rdfs:comment "An entry that has been accepted into the register temporarily and may be subject to change or withdrawal."@en;
+    skos:inScheme reg:StatusScheme;
+    skos:broader  reg:statusValid;
+    .
+
+reg:statusDeprecated a skos:Concept, reg:Status;
+    skos:prefLabel "deprecated"@en;
+    rdfs:comment "An entry that has been retired or replaced and is no longer to be used."@en;
+    skos:inScheme reg:StatusScheme;
+    skos:broader  reg:statusVisible;
     .
 
 reg:statusSuperseded a skos:Concept, reg:Status;
     skos:prefLabel "superseded"@en;
     skos:altlabel "replaced"@en;
-    rdfs:comment "An entry that has been replaced by a new alternative which should be used instead. A superseded entry will also be marked deprecated."@en;
-    skos:topConceptOf reg:StatusScheme;
+    rdfs:comment "An entry that has been replaced by a new alternative which should be used instead."@en;
+    skos:inScheme reg:StatusScheme;
+    skos:broader  reg:statusDeprecated;
     .
 
 reg:statusRetired a skos:Concept, reg:Status;
     skos:prefLabel "retired"@en;
     skos:altlabel "withdrawn"@en;
-    rdfs:comment "An entry that has been withdrawn from use. A retired entry will also be marked deprecated."@en;
-    skos:topConceptOf reg:StatusScheme;
+    rdfs:comment "An entry that has been withdrawn from use."@en;
+    skos:inScheme reg:StatusScheme;
+    skos:broader  reg:statusDeprecated;
     .
 
-reg:statusDeprecated a skos:Concept, reg:Status;
-    skos:prefLabel "deprecated"@en;
-    rdfs:comment "An entry that has be retired or replaced and is no longer to be used."@en;
-    skos:topConceptOf reg:StatusScheme;
-    .
 
 # -- EntityReference ------------------------------------------------------
 
