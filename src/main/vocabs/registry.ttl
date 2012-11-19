@@ -13,6 +13,8 @@
 @prefix ssd:  <http://www.w3.org/ns/sparql-service-description#> .
 @prefix vs:   <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
 @prefix void: <http://rdfs.org/ns/void#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+
 @prefix reg:  <http://purl.org/linked-data/registry#> .
 
 <http://purl.org/linked-data/registry>  a owl:Ontology;
@@ -46,8 +48,6 @@ reg:Register    a owl:Class, version:VersionedThing, ldp:Container, void:Dataset
     rdfs:subClassOf [owl:onProperty void:uriSpace; 	    owl:maxCardinality 1];
     rdfs:subClassOf [owl:onProperty void:exampleResource;   owl:minCardinality 0];
     .
-
-#@@ Put in note that skos:prefLabel is a rdfs:label and still meets the requirement
 
 reg:operatingLanguage    a owl:ObjectProperty;
     rdfs:label "operating language"@en;
@@ -96,7 +96,7 @@ reg:governancePolicy a owl:ObjectProperty;
 
 reg:RegisterItem    a owl:Class, version:VersionedThing;
     rdfs:label "RegisterItem"@en;
-    rdfs:comment "A metadata record for an entry in a register."@en;
+    rdfs:comment "A metadata record for an entry in a register. Note that cardinality constraints can be met by sub-properties, for example an item with a skos:prefLabel implies an rdfs:label and so meets the cardinality constraint on rdfs:label."@en;
     rdfs:subClassOf [owl:onProperty rdfs:label;        owl:minCardinality 1];
     rdfs:subClassOf [owl:onProperty dct:description;   owl:minCardinality 0];
     rdfs:subClassOf [owl:onProperty dct:dateSubmitted; owl:cardinality    1];
@@ -208,7 +208,7 @@ reg:statusNotValid a skos:Concept, reg:Status;
     skos:broader  reg:statusHidden;
     .
 
-eg:statusVisible a skos:Concept, reg:Status;
+reg:statusVisible a skos:Concept, reg:Status;
     skos:prefLabel "visible"@en;
     rdfs:comment "An entry that is visible in the default register listing"@en;
     skos:topConceptOf reg:StatusScheme;
@@ -285,11 +285,71 @@ reg:entityVersion a owl:ObjectProperty;
     rdfs:range  rdfs:Resource;
     .
 
-# -- TODO ------------------------------------------------------
 
-# Support for delegated registers
+# -- Validation ------------------------------------------------------
 
-# Below here is experimental, based on earlier Epimorphics explorations
+reg:validationQuery a owl:ObjectPropery;
+    rdfs:label "validation query"@en;
+    rdfs:comment "A SPARQL ASK query which can be used to validate a proposed entry in this register"@en;
+    rdfs:domain reg:Register;
+    rdfs:range  reg:SPARQLAskQuery;
+    .
+
+reg:SPARQLQuery a owl:Class;
+    rdfs:label "SPARQL query"@en;
+    rdfs:comment "Represents a SPARQL query as a reusable resource."@en;
+    rdfs:subClassOf [owl:onProperty reg:query; owl:cardinality 1];
+    .
+
+reg:SPARQLAskQuery a owl:Class;
+    rdfs:label "SPARQL ASK query"@en;
+    rdfs:comment "Represents a SPARQL ASK query as might be used for validation."@en;
+    rdfs:subClassof reg:SPARQLQuery;
+    .
+
+reg:SPARQLSelectQuery a owl:Class;
+    rdfs:label "SPARQL SELECT query"@en;
+    rdfs:comment "Represents a SPARQL SELECT query."@en;
+    rdfs:subClassof reg:SPARQLQuery;
+    .
+
+reg:SPARQLConstructQuery a owl:Class;
+    rdfs:label "SPARQL CONSTRUCT query"@en;
+    rdfs:comment "Represents a SPARQL CONSTRUCT query."@en;
+    rdfs:subClassof reg:SPARQLQuery;
+    .
+
+reg:query a owl:DatatypePropery;
+    rdfs:label "query"@en;
+    rdfs:comment "The source of a SPARQL query"@en;
+    rdfs:range  xsd:string;
+    .
+
+# -- Tagging support ------------------------------------------------------
+
+reg:release a owl:ObjectPropery;
+    rdfs:label "release"@en;
+    rdfs:comment "A tagged snapshot of a register"@en;
+    rdfs:domain reg:Register;
+    rdfs:range  prov:Collection;
+    .
+
+reg:tag a owl:DatatypeProperty;
+    rdfs:label "tag"@en;
+    rdfs:comment "The tag used to label a collection which snapshots the state of a register"@en;
+    rdfs:domain prov:Collection;
+    rdfs:range xsd:string;
+    .
+
+# -- Extending LDP for inverse membership ----------------------------------
+
+reg:inverseMembershipPredicate a owl:ObjectProperty;
+    rdfs:label "inverse membership predicate"@en;
+    rdfs:comment "Indicates a property which links a member of a collection back to the collection itself, this is the reverse direction to the normal ldp:membershipPredicate"@en;
+    rdfs:domain ldp:Container;
+    rdfs:range  rdf:Property;
+    .
+
 
 # -- Alias management ------------------------------------------------------
 
@@ -308,14 +368,75 @@ reg:representationOf a owl:ObjectProperty;
     rdfs:domain reg:RegisterItem;
     .
 
-# -- Validation ------------------------------------------------------
+# -- Delegation ------------------------------------------------------
 
-reg:validationQuery a owl:DatatypePropery;
-    rdfs:label "validation query"@en;
-    rdfs:comment "The source of a SPARQL ASK query which can be used to validate a proposed entry in this register"@en;
-    rdfs:domain reg:Register;
-    rdfs:range  xsd:string;
+reg:Delegated a owl:Class;
+    rdfs:label "Delegated"@en;
+    rdfs:comment "A register item which represents some form of delegation"@en;
+    rdfs:subClassOf reg:RegisterItem;
+    rdfs:subClassOf [owl:onProperty reg:delegationTarget;     owl:cardinality    1];
     .
+ 
+reg:delegationTarget a owl:ObjectProperty;
+    rdfs:label "delegation target"@en;
+    rdfs:comment "A resource to which the delegated register delegates, may be a register in another registry service, a SPARQL endpoint or some other web resource"@en;
+    rdfs:domain reg:Delegated;
+    rdfs:range  rdfs:Resource;
+    .
+
+reg:NamespaceForward a owl:Class;
+    rdfs:label "Namespace Forward"@en;
+    rdfs:comment "A register item which simply forwards all requests to the delegation target."@en;
+    rdfs:subClassOf reg:Delegated;
+    rdfs:subClassOf [owl:onProperty reg:forwardingCode;     owl:maxCardinality    1];
+    .
+
+reg:forwardingCode a owl:DatatypeProperty;
+    rdfs:label "forwarding code"@en;
+    rdfs:comment "The HTTP status code to return the requester in order to forward the request."@en;
+    rdfs:domain reg:NamespaceForward;
+    rdfs:range xsd:int;
+    .
+
+reg:FederatedRegister a owl:Class;
+    rdfs:label "Federated Register"@en;
+    rdfs:comment "A register item which forwards all requests to a remote register. Queries which traverse the register hierarchy such as entity search will also be forwarded"@en;
+    rdfs:subClassOf reg:Delegated;
+    .
+
+reg:DelegatedRegister a owl:Class;
+    rdfs:label "Delegated Register"@en;
+    rdfs:comment "A register whose member contents are determined through delegation to a SPARQL endpoint"@en;
+    rdfs:subClassOf reg:Delegated, reg:Register;
+    rdfs:subClassOf [owl:onProperty reg:enumerationSubject;     owl:maxCardinality    1];
+    rdfs:subClassOf [owl:onProperty reg:enumerationPredicate;     owl:maxCardinality    1];
+    rdfs:subClassOf [owl:onProperty reg:enumerationObject;     owl:maxCardinality    1];
+    .
+
+reg:enumerationSubject a owl:ObjectProperty;
+    rdfs:label "enumeration subject"@en;
+    rdfs:comment "Specifies the subject part of a triple pattern used to enumerate the members of a delegated register"@en;
+    rdfs:domain reg:DelegatedRegister;
+    rdfs:range  rdfs:Resource;
+    .
+
+reg:enumerationPredicate a owl:ObjectProperty;
+    rdfs:label "enumeration predicate"@en;
+    rdfs:comment "Specifies the predicate part of a triple pattern used to enumerate the members of a delegated register"@en;
+    rdfs:domain reg:DelegatedRegister;
+    rdfs:range  rdfs:Resource;
+    .
+
+reg:enumerationObject a owl:ObjectProperty;
+    rdfs:label "enumeration object"@en;
+    rdfs:comment "Specifies the object part of a triple pattern used to enumerate the members of a delegated register"@en;
+    rdfs:domain reg:DelegatedRegister;
+    rdfs:range  rdfs:Resource;
+    .
+
+# ---------------------------------------------------------------------
+# Below here is experimental, based on earlier Epimorphics explorations
+# ---------------------------------------------------------------------
 
 # -- Views ------------------------------------------------------
 
