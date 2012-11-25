@@ -42,7 +42,7 @@ reg:Register    a owl:Class, version:VersionedThing, ldp:Container, void:Dataset
     rdfs:subClassOf [owl:onProperty reg:operatingLanguage;  owl:minCardinality 0]; 
     rdfs:subClassOf [owl:onProperty reg:governancePolicy;   owl:minCardinality 0]; 
     rdfs:subClassOf [owl:onProperty reg:validationQuery;    owl:minCardinality 0]; 
-    rdfs:subClassOf [owl:onProperty dct:modified;           owl:cardinality    1];
+    rdfs:subClassOf [owl:onProperty dct:modified;           owl:maxCardinality 1];
     rdfs:subClassOf [owl:onProperty void:openSearchDescription; owl:minCardinality 0];
     rdfs:subClassOf [owl:onProperty void:uriLookupEndpoint; owl:minCardinality 0];
     rdfs:subClassOf [owl:onProperty void:uriSpace; 	    owl:maxCardinality 1];
@@ -111,7 +111,8 @@ reg:RegisterItem    a owl:Class, version:VersionedThing;
     rdfs:subClassOf [owl:onProperty reg:predecessor;   owl:minCardinality 0];
     rdfs:subClassOf [owl:onProperty reg:alias;         owl:minCardinality 0];
     rdfs:subClassOf [owl:onProperty reg:representationOf;  owl:minCardinality 0];
-    rdfs:subClassOf [owl:onProperty reg:hasView;        owl:minCardinality 0];
+    rdfs:subClassOf [owl:onProperty reg:hasView;       owl:minCardinality 0];
+    rdfs:subClassOf [owl:onProperty dct:modified;      owl:maxCardinality 1];
 
     version:rigidProperty reg:register, reg:notation, reg:itemClass, reg:predecessor, reg:submitter;
   .
