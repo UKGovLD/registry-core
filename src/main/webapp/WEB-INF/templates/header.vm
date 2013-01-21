@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>#if($pageTitle) $pageTitle #else UKL Registry #end</title>
+    <link type="text/css" rel="stylesheet" href="${root}/css/bootstrap.css" />
+
+  </head>
+  <body>
+  <div class="container">

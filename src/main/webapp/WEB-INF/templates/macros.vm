@@ -1,0 +1,52 @@
+## Global macros
+
+## Display a property value in the RDF browser
+#macro(resentry $v)
+  #if($v.isList())
+    <ul>
+      #foreach($e in $v.asList())
+        <li>#resentry($e)</li>
+      #end
+    </ul>
+  #elseif($v.isAnon())
+    #restable($v)
+  #else
+      #if($v.isResource())
+        <a href="${root}/resource?uri=$lib.pathEncode($v.getURI())">$v.name</a>
+      #else
+        $lib.escapeHtml($v.lexicalForm, 400)
+      #end
+  #end
+#end
+
+## Display a set of property/value paris in the RDF browser
+#macro(restable $res)
+  <table class="table table-bordered table-striped">
+    <thead><tr><th>Property</th><th>Value</th></tr></thead>
+    <tbody>
+      #foreach($pv in $res.listProperties())
+        <tr>
+          <td> <a href="${root}/resource?uri=$lib.pathEncode($pv.getProp().uRI)">$pv.getProp().name</a> </td>
+          <td>
+            #foreach($v in $pv.getValues())
+              #if($v.isList())
+                <ul>
+                  #foreach($e in $v.asList())
+                    <li>#resentry($e)</li>
+                  #end
+                </ul>
+              #elseif($v.isAnon())
+                #restable($v)
+              #else
+                #resentry($v)
+              #end
+            #end
+            <br />
+          </td>
+        </tr>
+      #end
+    </tbody>
+  </table>
+
+#end
+

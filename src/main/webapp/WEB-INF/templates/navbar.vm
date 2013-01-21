@@ -1,0 +1,22 @@
+
+  <div class="navbar">
+    <div class="navbar-inner">
+      <div class="container">
+        <div class="row">
+
+         <div class="span1">
+           <a href="${root}/index.html" class="btn btn-inverse"><i class="icon-home icon-white"></i></a>
+         </div>
+
+         <div class="span8">
+           <form action="text-search" method="get" class="navbar-search">
+             <input type="search" class="search-query" placeholder="Search" #if($query)value="$query"#end name="query"/>
+             <i class="icon-search"></i>
+             <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;" />
+           </form>
+         </div>
+
+        </div>
+      </div>
+    </div>
+  </div>

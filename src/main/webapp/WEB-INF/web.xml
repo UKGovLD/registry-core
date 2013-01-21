@@ -1,0 +1,77 @@
+<!DOCTYPE web-app PUBLIC
+ "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+ "http://java.sun.com/dtd/web-app_2_3.dtd" >
+
+<web-app>
+  <display-name>UKL Registry POC</display-name>
+
+  <context-param>
+    <param-name>config.store</param-name>
+    <param-value>com.epimorphics.server.stores.TDBStore,
+    location=/var/local/registry/store,
+    union=true,
+    ep=service,
+    indexer=index,
+    log=/var/local/registry/logstore</param-value>
+  </context-param>
+
+  <context-param>
+    <param-name>config.index</param-name>
+    <param-value>com.epimorphics.server.indexers.LuceneIndex, location=/var/local/registry/index, config=${webapp}/WEB-INF/index-config.ttl</param-value>
+  </context-param>
+
+  <context-param>
+    <param-name>config.velocity</param-name>
+    <param-value>com.epimorphics.server.templates.VelocityRender, templates=${webapp}/WEB-INF/templates, root=/ui</param-value>
+  </context-param>
+
+  <context-param>
+    <param-name>config.configuration</param-name>
+    <param-value>com.epimorphics.uklregistry.core.Configuration, baseURI=http://location.data.gov.uk</param-value>
+  </context-param>
+
+<!--
+  <filter>
+    <filter-name>Jersey Web Application</filter-name>
+    <filter-class>com.sun.jersey.spi.container.servlet.ServletContainer</filter-class>
+    <init-param>
+      <param-name>com.sun.jersey.config.property.packages</param-name>
+      <param-value>com.epimorphics.uklregistry.webapi</param-value>
+    </init-param>
+    <init-param>
+      <param-name>com.sun.jersey.config.feature.FilterForwardOn404</param-name>
+      <param-value>true</param-value>
+    </init-param>
+  </filter>
+
+  <filter-mapping>
+    <filter-name>Jersey Web Application</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+ -->
+
+  <listener>
+    <listener-class>com.epimorphics.server.core.ServiceConfig</listener-class>
+  </listener>
+
+    <servlet>
+        <servlet-name>sparql</servlet-name>
+        <servlet-class>org.apache.jena.fuseki.servlets.SPARQL_QueryDataset</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>sparql</servlet-name>
+        <url-pattern>/service/query</url-pattern>
+    </servlet-mapping>
+
+<!--
+    <servlet-mapping>
+        <servlet-name>default</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+ -->
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+    </welcome-file-list>
+
+</web-app>

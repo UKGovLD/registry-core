@@ -1,0 +1,44 @@
+#set($pageTitle="Browse resource: $uri")
+#parse("header.vm")
+#parse("navbar.vm")
+
+#set($res=$model.getNode($uri))
+
+<h2>Resource: $res.name  #if($res.getPropertyValue("rdf:type")) ($res.getPropertyValue("rdf:type").name.trim())#end</h2>
+<p><strong>Resource:</strong> $uri</p>
+
+<div class="row">
+ <div class="offset2 span10">
+
+ #restable($res)
+ </div>
+</div>
+
+<h2>This resource is:</h2>
+<div class="row">
+ <div class="offset2 span10">
+
+  <table class="table table-bordered table-striped">
+##    <thead><tr><th>Resource</th><th>Property</th><th>Value</th></tr></thead>
+    <tbody>
+      #foreach($pv in $res.listInLinks())
+        #if($pv.getProp().uRI != "http://www.w3.org/1999/02/22-rdf-syntax-ns#first")
+        <tr>
+          <td> <a href="resource?uri=$lib.pathEncode($pv.getProp().uRI)">$pv.getProp().name</a> </td>
+          <td>of</td>
+          <td>
+            #foreach($v in $pv.getValues())
+                #resentry($v)
+            #end
+            <br />
+          </td>
+        </tr>
+        #end
+      #end
+    </tbody>
+  </table>
+
+ </div>
+</div>
+
+#include("footer.vm")

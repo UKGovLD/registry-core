@@ -1,0 +1,11 @@
+    <hr id="footer-line" />
+    <div class="row footer">
+     <div class="pull-right">Copyright &copy; 2013 Epimorphics Ltd</div>
+    </div>
+   </div> <!-- End of container -->
+
+   <script type="text/javascript" src="${root}/js/jquery-1.8.3.min.js"></script>
+   <script type="text/javascript" src="${root}/js/bootstrap.min.js"></script>
+
+  </body>
+</html>

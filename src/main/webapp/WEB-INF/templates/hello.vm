@@ -1,0 +1,9 @@
+#set($pageTitle="Hello")
+#parse("header.vm")
+#parse("navbar.vm")
+
+<div class="hero-unit">
+  <h1>UKL Registry</h1>
+ </div>
+
+#include("footer.vm")
