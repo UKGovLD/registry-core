@@ -11,6 +11,8 @@ package com.epimorphics.uklregistry.core;
 
 import java.util.Map;
 
+import com.hp.hpl.jena.rdf.model.Model;
+
 /**
  * Wraps up a registry request as a command object to modularize
  * processing such as authorization and audit trails.
@@ -19,26 +21,61 @@ import java.util.Map;
  */
 public class Command {
 
-    enum Operation {
-        read_register,
-        create_register,
-        update_register_metadata,
-        delete_register,
-        read_entity,
-        register_entity,
-        register_batch,
-        update_entity,
-        update_item_metadata,
-        change_status,
-        delete_entity,
-        validate
-    };
-
+    public enum Operation { Read, Register, Delete, Update, Validate };
+    public enum TargetType { REGISTER, ITEM, ENTITY, STATUS };
+    
     Operation operation;
-    String register;        // relative to assumed base
-    String item;            // relative to register
-    String entity;
-    Map<String, String[]> parameters;  // Query parameters
+    TargetType targetType;
+    String target;   
 
-    // TODO - constructor and accessors
+    Map<String, String[]> parameters;  
+    Model payload;
+    
+    /**
+     * Constructor
+     * @param operation   operation request, as determined by HTTP verb
+     * @param targetType  type of thing to act on, may be amended or set later after more analysis
+     * @param target      the URI to which the operation was targeted, omits the assumed base URI
+     * @param parameters  the query parameters 
+     */
+    public Command(Operation operation, TargetType targetType, String target,  Map<String, String[]> parameters) {
+        this.operation = operation;
+        this.targetType = targetType;
+        this.target = target;
+        this.parameters = parameters;
+    }
+
+    public TargetType getTargetType() {
+        return targetType;
+    }
+
+    public void setTargetType(TargetType targetType) {
+        this.targetType = targetType;
+    }
+
+    public Model getPayload() {
+        return payload;
+    }
+
+    public void setPayload(Model payload) {
+        this.payload = payload;
+    }
+
+    public Operation getOperation() {
+        return operation;
+    }
+
+    public String getTarget() {
+        return target;
+    }
+
+    public Map<String, String[]> getParameters() {
+        return parameters;
+    }
+    
+    @Override
+    public String toString() {
+        return String.format("Command: %s on %s (%s)", operation, target, targetType);
+    }
+
 }

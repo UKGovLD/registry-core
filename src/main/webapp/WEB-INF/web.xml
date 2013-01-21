@@ -49,6 +49,16 @@
     <url-pattern>/*</url-pattern>
   </filter-mapping>
  -->
+ 
+  <filter>
+    <filter-name>RequestProcessor</filter-name>
+    <filter-class>com.epimorphics.uklregistry.webapi.RequestProcessor</filter-class>
+  </filter>
+
+  <filter-mapping>
+    <filter-name>RequestProcessor</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
 
   <listener>
     <listener-class>com.epimorphics.server.core.ServiceConfig</listener-class>
