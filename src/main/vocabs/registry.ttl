@@ -42,7 +42,7 @@ reg:Register    a owl:Class, version:VersionedThing, ldp:Container, void:Dataset
     rdfs:subClassOf [owl:onProperty reg:operatingLanguage;  owl:minCardinality 0]; 
     rdfs:subClassOf [owl:onProperty reg:governancePolicy;   owl:minCardinality 0]; 
     rdfs:subClassOf [owl:onProperty reg:validationQuery;    owl:minCardinality 0]; 
-    rdfs:subClassOf [owl:onProperty dct:modified;           owl:cardinality    1];
+    rdfs:subClassOf [owl:onProperty dct:modified;           owl:maxCardinality 1];
     rdfs:subClassOf [owl:onProperty void:openSearchDescription; owl:minCardinality 0];
     rdfs:subClassOf [owl:onProperty void:uriLookupEndpoint; owl:minCardinality 0];
     rdfs:subClassOf [owl:onProperty void:uriSpace; 	    owl:maxCardinality 1];
@@ -111,7 +111,8 @@ reg:RegisterItem    a owl:Class, version:VersionedThing;
     rdfs:subClassOf [owl:onProperty reg:predecessor;   owl:minCardinality 0];
     rdfs:subClassOf [owl:onProperty reg:alias;         owl:minCardinality 0];
     rdfs:subClassOf [owl:onProperty reg:representationOf;  owl:minCardinality 0];
-    rdfs:subClassOf [owl:onProperty reg:hasView;        owl:minCardinality 0];
+    rdfs:subClassOf [owl:onProperty reg:hasView;       owl:minCardinality 0];
+    rdfs:subClassOf [owl:onProperty dct:modified;      owl:maxCardinality 1];
 
     version:rigidProperty reg:register, reg:notation, reg:itemClass, reg:predecessor, reg:submitter;
   .
@@ -188,38 +189,37 @@ reg:StatusScheme a skos:ConceptScheme;
     rdfs:comment "Concept scheme containing registry status codes"@en;
     .
 
-reg:statusHidden a skos:Concept, reg:Status;
-    skos:prefLabel "hidden"@en;
-    rdfs:comment "An entry that should not be visible in the default register listing"@en;
+reg:statusNotAccepted a skos:Concept, reg:Status;
+    skos:prefLabel "notAccepted"@en;
+    rdfs:comment "An entry that should not be visible in the default register listing. Corresponds to ISO 19135:2005 'notValid'"@en;
     skos:topConceptOf reg:StatusScheme;
     .
 
-reg:statusProposed a skos:Concept, reg:Status;
-    skos:prefLabel "proposed"@en;
-    rdfs:comment "A proposed entry, may not be ready for use."@en;
+reg:statusSubmitted a skos:Concept, reg:Status;
+    skos:prefLabel "submitted"@en;
+    rdfs:comment "A proposed entry which is not yet approved for use for use. Corresponds to ISO 19135:(redraft) 'submitted'"@en;
     skos:inScheme reg:StatusScheme;
-    skos:broader  reg:statusHidden;
+    skos:broader  reg:statusNotAccepted;
     .
 
-reg:statusNotValid a skos:Concept, reg:Status;
-    skos:prefLabel "not valid"@en;
-    rdfs:comment "An entry whose initial registration was so flawed that it has been removed instead of retired."@en;
+reg:statusInvalid a skos:Concept, reg:Status;
+    skos:prefLabel "invalid"@en;
+    rdfs:comment "An entry which has been invalidated due to serious flaws, distinct from retrirement. Corresponds to ISO 19135(redraft) 'invalid'"@en;
     skos:inScheme reg:StatusScheme;
-    skos:broader  reg:statusHidden;
+    skos:broader  reg:statusNotAccepted;
     .
 
-reg:statusVisible a skos:Concept, reg:Status;
-    skos:prefLabel "visible"@en;
-    rdfs:comment "An entry that is visible in the default register listing"@en;
+reg:statusAccepted a skos:Concept, reg:Status;
+    skos:prefLabel "accepted"@en;
+    rdfs:comment "An entry that has been accepted for use and is visible in the default register listing. Includes entries that have seen been retired or superseded."@en;
     skos:topConceptOf reg:StatusScheme;
     .
 
 reg:statusValid a skos:Concept, reg:Status;
     skos:prefLabel "valid"@en;
-    skos:altlabel "accepted"@en;
-    rdfs:comment "An entry that has been accepted into the register and is deemed fit for use."@en;
+    rdfs:comment "An entry that has been accepted into the register and is deemed fit for use. Corresponds to ISO 19135:2005 'valid'."@en;
     skos:inScheme reg:StatusScheme;
-    skos:broader  reg:statusVisible;
+    skos:broader  reg:statusAccepted;
     .
 
 reg:statusExperimental a skos:Concept, reg:Status;
@@ -230,17 +230,24 @@ reg:statusExperimental a skos:Concept, reg:Status;
     skos:broader  reg:statusValid;
     .
 
+reg:statusStable a skos:Concept, reg:Status;
+    skos:prefLabel "stable"@en;
+    rdfs:comment "An entry that is seen as having a reasonable measure of stability, may be used to mark the full adoption of a previously 'experimental' entry."@en;
+    skos:inScheme reg:StatusScheme;
+    skos:broader  reg:statusValid;
+    .
+
 reg:statusDeprecated a skos:Concept, reg:Status;
     skos:prefLabel "deprecated"@en;
     rdfs:comment "An entry that has been retired or replaced and is no longer to be used."@en;
     skos:inScheme reg:StatusScheme;
-    skos:broader  reg:statusVisible;
+    skos:broader  reg:statusAccepted;
     .
 
 reg:statusSuperseded a skos:Concept, reg:Status;
     skos:prefLabel "superseded"@en;
     skos:altlabel "replaced"@en;
-    rdfs:comment "An entry that has been replaced by a new alternative which should be used instead."@en;
+    rdfs:comment "An entry that has been replaced by a new alternative which should be used instead.  Corresponds to ISO 19135:2005 'superseded'."@en;
     skos:inScheme reg:StatusScheme;
     skos:broader  reg:statusDeprecated;
     .
@@ -248,7 +255,7 @@ reg:statusSuperseded a skos:Concept, reg:Status;
 reg:statusRetired a skos:Concept, reg:Status;
     skos:prefLabel "retired"@en;
     skos:altlabel "withdrawn"@en;
-    rdfs:comment "An entry that has been withdrawn from use."@en;
+    rdfs:comment "An entry that has been withdrawn from use.  Corresponds to ISO 19135:2005 'retired'"@en;
     skos:inScheme reg:StatusScheme;
     skos:broader  reg:statusDeprecated;
     .
