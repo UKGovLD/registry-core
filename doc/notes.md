@@ -8,6 +8,10 @@
    1. minimal dispatch
    1. partitioning into distributable, replicable subsystems
 
+## Issues
+
+   * Schemagen plugin runs on the "translate" maven lifecycle. Eclipse m2e can't cope with that the so the vocab sources aren't automatically built within Eclipse. Current workaround is a manual copy to of the target/generated-sources output to the checked-in build path
+
 ## Things to bear in mind
 
    * facade for Register and RegisterItem to hide the update logic
