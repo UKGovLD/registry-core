@@ -11,19 +11,17 @@ package com.epimorphics.uklregistry.webapi;
 
 import static com.epimorphics.webapi.marshalling.RDFXMLMarshaller.MIME_RDFXML;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.io.InputStream;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
@@ -53,15 +51,17 @@ public class RequestProcessor extends BaseEndpoint {
 
     @POST
     @Consumes({MIME_TURTLE, MIME_RDFXML})
-    public Response register() {
+    public Response register(@Context HttpHeaders hh, InputStream body) {
         MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
         Command command = null;
         if ( parameters.get(Parameters.VALIDATE) != null ) {
             command = makeCommand(Operation.Validate);
+            command.setPayload( getBodyModel(hh, body) );
         } else if ( parameters.get(Parameters.STATUS_UPDATE) != null ) {
             command = makeCommand(Operation.StatusUpdate);
         } else {
             command = makeCommand(Operation.Register);
+            command.setPayload( getBodyModel(hh, body) );
         }
         // TODO authorize
         return command.execute();
@@ -89,31 +89,5 @@ public class RequestProcessor extends BaseEndpoint {
         // TODO authorize
         return command.execute();
     }
-
-/*
-    public static Command determineCommand(HttpServletRequest request) {
-        String target = request.getRequestURI();
-        String method = request.getMethod();
-        Map<String, String[]> parameters = request.getParameterMap();
-        CommandFactoryI cf = CommandFactory.get();
-
-        if (method.equalsIgnoreCase("GET")) {
-            return cf.make(Operation.Read, target, parameters);
-        } else if (method.equalsIgnoreCase("PUT") || (method.equalsIgnoreCase("PATCH"))) {
-            return cf.make(Operation.Update, target, parameters);
-        } else if (method.equalsIgnoreCase("DELETE")) {
-            return cf.make(Operation.Delete, target, parameters);
-        } else if (method.equalsIgnoreCase("POST")) {
-            if (request.getParameter(Parameters.VALIDATE) != null) {
-                return cf.make(Operation.Validate, target, parameters);
-            } else if (request.getParameter(Parameters.STATUS_UPDATE) != null) {
-                return cf.make(Operation.StatusUpdate, target, parameters);
-            } else {
-                return cf.make(Operation.Register, target, parameters);
-            }
-        }
-        throw new NotFoundException();      // Leave body blank so Jersey filter can forward on down chain
-    }
-*/
 
 }

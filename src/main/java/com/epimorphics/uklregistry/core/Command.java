@@ -24,10 +24,10 @@ public abstract class Command {
 
     public enum Operation { Read, Register, Delete, Update, StatusUpdate, Validate };
 
-    Operation operation;
-    String target;
-    MultivaluedMap<String, String> parameters;
-    Model payload;
+    protected Operation operation;
+    protected String target;
+    protected MultivaluedMap<String, String> parameters;
+    protected Model payload;
 
     /**
      * Constructor
