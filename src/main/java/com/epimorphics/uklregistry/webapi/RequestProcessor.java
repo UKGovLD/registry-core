@@ -11,12 +11,21 @@ package com.epimorphics.uklregistry.webapi;
 
 import static com.epimorphics.webapi.marshalling.RDFXMLMarshaller.MIME_RDFXML;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 
 import com.epimorphics.server.webapi.BaseEndpoint;
 import com.epimorphics.uklregistry.core.Command;
@@ -32,27 +41,51 @@ public class RequestProcessor extends BaseEndpoint {
 
     @GET
     @Produces({MIME_TURTLE, MIME_RDFXML})
-    public Object read() {
-        String target = uriInfo.getPath();
-        MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
-        Command command = CommandFactory.get().make(Operation.Read, target, parameters);
+    public Response read() {
+        Command command = makeCommand( Operation.Read );
         // TODO authorize
         return command.execute();
     }
 
+    private Command makeCommand(Operation op) {
+        return CommandFactory.get().make(op, uriInfo.getPath(), uriInfo.getQueryParameters());
+    }
+
     @POST
     @Consumes({MIME_TURTLE, MIME_RDFXML})
-    public Object register() {
-        String target = uriInfo.getPath();
+    public Response register() {
         MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
         Command command = null;
         if ( parameters.get(Parameters.VALIDATE) != null ) {
-            command = CommandFactory.get().make(Operation.Validate, target, parameters);
+            command = makeCommand(Operation.Validate);
         } else if ( parameters.get(Parameters.STATUS_UPDATE) != null ) {
-            command = CommandFactory.get().make(Operation.StatusUpdate, target, parameters);
+            command = makeCommand(Operation.StatusUpdate);
         } else {
-            command = CommandFactory.get().make(Operation.Register, target, parameters);
+            command = makeCommand(Operation.Register);
         }
+        // TODO authorize
+        return command.execute();
+    }
+
+    @PUT
+    @Consumes({MIME_TURTLE, MIME_RDFXML})
+    public Response update() {
+        Command command = makeCommand( Operation.Update );
+        // TODO authorize
+        return command.execute();
+    }
+
+    @DELETE
+    public Object delete() {
+        Command command = makeCommand( Operation.Delete );
+        // TODO authorize
+        return command.execute();
+    }
+
+    @PATCH
+    @Consumes({MIME_TURTLE, MIME_RDFXML})
+    public Response updatePatch() {
+        Command command = makeCommand( Operation.Update );  // Different op for patching?
         // TODO authorize
         return command.execute();
     }
