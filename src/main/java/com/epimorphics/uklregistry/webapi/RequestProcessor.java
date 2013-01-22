@@ -2,83 +2,85 @@
  * File:        RequestProcessor.java
  * Created by:  Dave Reynolds
  * Created on:  21 Jan 2013
- * 
+ *
  * (c) Copyright 2013, Epimorphics Limited
  *
  *****************************************************************/
 
 package com.epimorphics.uklregistry.webapi;
 
-import java.io.IOException;
+import static com.epimorphics.webapi.marshalling.RDFXMLMarshaller.MIME_RDFXML;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MultivaluedMap;
 
+import com.epimorphics.server.webapi.BaseEndpoint;
 import com.epimorphics.uklregistry.core.Command;
 import com.epimorphics.uklregistry.core.Command.Operation;
-import com.epimorphics.uklregistry.core.Command.TargetType;
+import com.epimorphics.uklregistry.core.CommandFactory;
 
 /**
  * Filter all requests as possible register API requests.
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
-public class RequestProcessor implements Filter {
+@Path("{path: .*}")
+public class RequestProcessor extends BaseEndpoint {
 
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
+    @GET
+    @Produces({MIME_TURTLE, MIME_RDFXML})
+    public Object read() {
+        String target = uriInfo.getPath();
+        MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
+        Command command = CommandFactory.get().make(Operation.Read, target, parameters);
+        // TODO authorize
+        return command.execute();
     }
 
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response,
-            FilterChain chain) throws IOException, ServletException {
-        
-        if (request instanceof HttpServletRequest && response instanceof HttpServletResponse) {
-            HttpServletRequest hrequest = (HttpServletRequest) request;
-            HttpServletResponse hresponse = (HttpServletResponse) response;
-        
-            Command command = determineCommand(hrequest);
-
-            // TODO authenticate command
-            
-            // TODO process command,  if successful then done otherwise chain
-            System.out.println("Command is: " + command);
-
+    @POST
+    @Consumes({MIME_TURTLE, MIME_RDFXML})
+    public Object register() {
+        String target = uriInfo.getPath();
+        MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
+        Command command = null;
+        if ( parameters.get(Parameters.VALIDATE) != null ) {
+            command = CommandFactory.get().make(Operation.Validate, target, parameters);
+        } else if ( parameters.get(Parameters.STATUS_UPDATE) != null ) {
+            command = CommandFactory.get().make(Operation.StatusUpdate, target, parameters);
+        } else {
+            command = CommandFactory.get().make(Operation.Register, target, parameters);
         }
-        chain.doFilter(request, response);
+        // TODO authorize
+        return command.execute();
     }
 
-    @Override
-    public void destroy() {
-    }
-    
+/*
     public static Command determineCommand(HttpServletRequest request) {
         String target = request.getRequestURI();
         String method = request.getMethod();
-        Command.Operation operation = null;
-        Command.TargetType targetType = TargetType.REGISTER;
+        Map<String, String[]> parameters = request.getParameterMap();
+        CommandFactoryI cf = CommandFactory.get();
+
         if (method.equalsIgnoreCase("GET")) {
-            operation = Operation.Read;
+            return cf.make(Operation.Read, target, parameters);
         } else if (method.equalsIgnoreCase("PUT") || (method.equalsIgnoreCase("PATCH"))) {
-            operation = Operation.Update;
+            return cf.make(Operation.Update, target, parameters);
         } else if (method.equalsIgnoreCase("DELETE")) {
-            operation = Operation.Delete;
+            return cf.make(Operation.Delete, target, parameters);
         } else if (method.equalsIgnoreCase("POST")) {
             if (request.getParameter(Parameters.VALIDATE) != null) {
-                operation = Operation.Validate;
+                return cf.make(Operation.Validate, target, parameters);
             } else if (request.getParameter(Parameters.STATUS_UPDATE) != null) {
-                operation = Operation.Update;
-                targetType = TargetType.STATUS;
+                return cf.make(Operation.StatusUpdate, target, parameters);
             } else {
-                operation = Operation.Register;
+                return cf.make(Operation.Register, target, parameters);
             }
         }
-        return new Command(operation, targetType, target, request.getParameterMap());
+        throw new NotFoundException();      // Leave body blank so Jersey filter can forward on down chain
     }
+*/
 
 }

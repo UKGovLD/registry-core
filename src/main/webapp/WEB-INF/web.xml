@@ -30,7 +30,6 @@
     <param-value>com.epimorphics.uklregistry.core.Configuration, baseURI=http://location.data.gov.uk</param-value>
   </context-param>
 
-<!--
   <filter>
     <filter-name>Jersey Web Application</filter-name>
     <filter-class>com.sun.jersey.spi.container.servlet.ServletContainer</filter-class>
@@ -48,17 +47,7 @@
     <filter-name>Jersey Web Application</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
- -->
- 
-  <filter>
-    <filter-name>RequestProcessor</filter-name>
-    <filter-class>com.epimorphics.uklregistry.webapi.RequestProcessor</filter-class>
-  </filter>
 
-  <filter-mapping>
-    <filter-name>RequestProcessor</filter-name>
-    <url-pattern>/*</url-pattern>
-  </filter-mapping>
 
   <listener>
     <listener-class>com.epimorphics.server.core.ServiceConfig</listener-class>

@@ -9,7 +9,8 @@
 
 package com.epimorphics.uklregistry.core;
 
-import java.util.Map;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 
 import com.hp.hpl.jena.rdf.model.Model;
 
@@ -19,38 +20,26 @@ import com.hp.hpl.jena.rdf.model.Model;
  *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
-public class Command {
+public abstract class Command {
 
-    public enum Operation { Read, Register, Delete, Update, Validate };
-    public enum TargetType { REGISTER, ITEM, ENTITY, STATUS };
-    
+    public enum Operation { Read, Register, Delete, Update, StatusUpdate, Validate };
+
     Operation operation;
-    TargetType targetType;
-    String target;   
-
-    Map<String, String[]> parameters;  
+    String target;
+    MultivaluedMap<String, String> parameters;
     Model payload;
-    
+
     /**
      * Constructor
      * @param operation   operation request, as determined by HTTP verb
      * @param targetType  type of thing to act on, may be amended or set later after more analysis
      * @param target      the URI to which the operation was targeted, omits the assumed base URI
-     * @param parameters  the query parameters 
+     * @param parameters  the query parameters
      */
-    public Command(Operation operation, TargetType targetType, String target,  Map<String, String[]> parameters) {
+    public Command(Operation operation, String target,  MultivaluedMap<String, String> parameters) {
         this.operation = operation;
-        this.targetType = targetType;
         this.target = target;
         this.parameters = parameters;
-    }
-
-    public TargetType getTargetType() {
-        return targetType;
-    }
-
-    public void setTargetType(TargetType targetType) {
-        this.targetType = targetType;
     }
 
     public Model getPayload() {
@@ -69,13 +58,14 @@ public class Command {
         return target;
     }
 
-    public Map<String, String[]> getParameters() {
+    public MultivaluedMap<String, String> getParameters() {
         return parameters;
     }
-    
+
     @Override
     public String toString() {
-        return String.format("Command: %s on %s (%s)", operation, target, targetType);
+        return String.format("Command: %s on %s", operation, target);
     }
 
+    public abstract Response execute() ;
 }
