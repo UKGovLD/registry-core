@@ -10,26 +10,12 @@
 
 ## Things to bear in mind
 
-   * facade for Register and RegisterItem to high the update logic
+   * facade for Register and RegisterItem to hide the update logic
    * facade for VersionedThing to enable different versioning implementations (implementation based on latest + journal of old versions, as well as the official one)
    * facade for store update that would allow a key/value or doc store to be used ???
    * keep the state combination logic factored out separately, that might need to be tweaked in the light of experience
    * command pattern for operations as basis for auth, logging etc
 
-## Commands
-
-   * read register
-   * create register
-   * update register metadata
-   * delete register
-   * read entity
-   * register entity
-   * register batch
-   * update entity
-   * update item metadata
-   * change status
-   * delete entity
-   * validate
 
 ## Future redesign for scale
 
