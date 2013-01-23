@@ -13,9 +13,21 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.epimorphics.server.core.Service;
 import com.epimorphics.server.core.ServiceBase;
 import com.epimorphics.server.core.ServiceConfig;
+import com.epimorphics.uklregistry.store.Description;
+import com.epimorphics.uklregistry.store.Register;
+import com.epimorphics.uklregistry.store.StoreAPI;
+import com.epimorphics.uklregistry.vocab.Registry;
+import com.epimorphics.util.EpiException;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ResIterator;
+import com.hp.hpl.jena.util.FileManager;
+import com.hp.hpl.jena.vocabulary.RDF;
 
 /**
  * Encapsulates configuration information for the registry such as base URI.
@@ -24,13 +36,36 @@ import com.epimorphics.server.core.ServiceConfig;
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public class Configuration extends ServiceBase implements Service {
+    static final Logger log = LoggerFactory.getLogger( Configuration.class );
 
     public static final String BASE_URI_PARAM = "baseURI";
     public static final String SERVICE_NAME = "configuration";
+    public static final String ROOT_REGISTER_FILE_PARAM = "rootRegisterSpec";
 
     @Override
     public void init(Map<String, String> config, ServletContext context) {
         this.config = config;
+    }
+
+    @Override
+    public void postInit() {
+        StoreAPI store = CommandFactory.get().getStore();
+
+        Register root = store.getRegister(getBaseURI() + "/");
+        if (root == null) {
+            // Blank store, need to install a root register
+            String rootRegisterSrc = getRequiredFileParam(ROOT_REGISTER_FILE_PARAM);
+            Model model = FileManager.get().loadModel(rootRegisterSrc);
+            ResIterator ri = model.listSubjectsWithProperty(RDF.type, Registry.Register);
+            if (!ri.hasNext()) {
+                throw new EpiException("Could not find register resource in the configured default root register");
+            }
+            Description rootRegister = new Description();
+            rootRegister.setRoot( ri.next() );
+            store.storeDescription(rootRegister);
+            log.info("Installed bootstrap root register");
+        }
+
     }
 
     static String baseURI;     // Cache since we look this up a *lot*

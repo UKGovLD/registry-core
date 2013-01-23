@@ -28,3 +28,12 @@
    * plugin architecture for validators, use ServiceLoader machinery for that?
    * front-end dispatcher depends on Chris experiments but it nginx then simple "sig -HUP" can be used to trigger a config reload
 
+## Stack
+
+   * creating of void:example from early registrations
+   * test cases for location allocation (null, relative, bnode, skos:notation, absolute, non-local)
+   * validation of completeness of a Register spec
+   * completion of void description
+   * auth hooks
+   * logging of command request
+

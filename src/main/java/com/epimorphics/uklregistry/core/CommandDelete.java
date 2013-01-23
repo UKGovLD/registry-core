@@ -12,12 +12,14 @@ package com.epimorphics.uklregistry.core;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
+import com.epimorphics.uklregistry.store.StoreAPI;
+
 
 public class CommandDelete extends Command {
 
     public CommandDelete(Operation operation, String target,
-            MultivaluedMap<String, String> parameters) {
-        super(operation, target, parameters);
+            MultivaluedMap<String, String> parameters, StoreAPI store) {
+        super(operation, target, parameters, store);
     }
 
     @Override

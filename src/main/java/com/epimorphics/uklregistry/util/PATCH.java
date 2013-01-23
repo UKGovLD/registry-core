@@ -7,7 +7,7 @@
  *
  *****************************************************************/
 
-package com.epimorphics.uklregistry.webapi;
+package com.epimorphics.uklregistry.util;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

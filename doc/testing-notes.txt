@@ -1,1 +1,3 @@
 curl -X POST http://localhost:8080/reg/subreg/item
+
+curl -i -H "Content-Type: text/turtle" -X POST --data "@test/reg1.ttl" http://localhost:8080/

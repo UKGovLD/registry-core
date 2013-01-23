@@ -19,25 +19,26 @@ public class CommandFactory {
 
     public static interface CommandFactoryI {
         public Command make(Operation operation, String target,  MultivaluedMap<String, String> parameters);
-        
+
         public StoreAPI getStore();
     }
 
     public static class DefaultImplementation implements CommandFactoryI {
         StoreAPI store;
-        
+
         public Command make(Operation operation, String target,  MultivaluedMap<String, String> parameters) {
+            StoreAPI s = getStore();
             switch (operation) {
-            case Read:         return new CommandRead(operation, target, parameters);
-            case Delete:       return new CommandDelete(operation, target, parameters);
-            case Register:     return new CommandRegister(operation, target, parameters);
-            case Update:       return new CommandUpdate(operation, target, parameters);
-            case StatusUpdate: return new CommandStatusUpdate(operation, target, parameters);
-            case Validate:     return new CommandValidate(operation, target, parameters);
+            case Read:         return new CommandRead(operation, target, parameters, s);
+            case Delete:       return new CommandDelete(operation, target, parameters, s);
+            case Register:     return new CommandRegister(operation, target, parameters, s);
+            case Update:       return new CommandUpdate(operation, target, parameters, s);
+            case StatusUpdate: return new CommandStatusUpdate(operation, target, parameters, s);
+            case Validate:     return new CommandValidate(operation, target, parameters, s);
             }
             return null;    // Should never get here but the compiler doesn't seem to know that
         }
-        
+
         public StoreAPI getStore() {
             if (store == null) {
                 store = new StoreImpl();
@@ -51,7 +52,7 @@ public class CommandFactory {
     public static CommandFactoryI get() {
         return theFactory;
     }
-    
+
     public static void set(CommandFactoryI implementation) {
         theFactory = implementation;
     }

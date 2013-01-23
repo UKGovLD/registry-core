@@ -29,6 +29,7 @@ import com.epimorphics.server.webapi.BaseEndpoint;
 import com.epimorphics.uklregistry.core.Command;
 import com.epimorphics.uklregistry.core.Command.Operation;
 import com.epimorphics.uklregistry.core.CommandFactory;
+import com.epimorphics.uklregistry.util.PATCH;
 
 /**
  * Filter all requests as possible register API requests.
@@ -46,6 +47,9 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     private Command makeCommand(Operation op) {
+//        System.out.println("Absolute path " + uriInfo.getAbsolutePath());
+//        System.out.println("Path path " + uriInfo.getPath());
+//        System.out.println("Request uri " + uriInfo.getRequestUri());
         return CommandFactory.get().make(op, uriInfo.getPath(), uriInfo.getQueryParameters());
     }
 
