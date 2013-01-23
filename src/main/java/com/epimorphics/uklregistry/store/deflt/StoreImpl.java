@@ -1,0 +1,48 @@
+/******************************************************************
+ * File:        StoreImpl.java
+ * Created by:  Dave Reynolds
+ * Created on:  22 Jan 2013
+ * 
+ * (c) Copyright 2013, Epimorphics Limited
+ *
+ *****************************************************************/
+
+package com.epimorphics.uklregistry.store.deflt;
+
+import com.epimorphics.server.core.ServiceConfig;
+import com.epimorphics.server.core.Store;
+import com.epimorphics.uklregistry.store.Register;
+import com.epimorphics.uklregistry.store.StoreAPI;
+import com.epimorphics.uklregistry.vocab.Registry;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.sparql.util.Closure;
+import com.hp.hpl.jena.vocabulary.RDF;
+
+/**
+ * Default store interface for POC which uses direct access to a local TDB.
+ * 
+ * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
+ */
+public class StoreImpl implements StoreAPI {
+
+    Store store = ServiceConfig.get().getDefaultStore();
+    
+    @Override
+    public Register getRegister(String uri) {
+        store.lock();
+        Model src = store.asDataset().getDefaultModel();
+        try {
+            Resource root = src.getResource(uri);
+            Model description = Closure.closure(root, false);
+            if (description.contains(root, RDF.type, Registry.Register)) {
+                return new RegisterImpl(uri, description, this);
+            } else {
+                return null;
+            }
+        } finally {
+            store.unlock();
+        }
+    }
+
+}

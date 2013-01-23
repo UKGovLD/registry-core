@@ -15,7 +15,7 @@ import javax.ws.rs.Path;
 import com.epimorphics.server.webapi.BaseEndpoint;
 
 
-@Path("/")
+@Path("/system")
 public class TestTop extends BaseEndpoint {
 
     @GET
