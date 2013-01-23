@@ -13,6 +13,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import com.epimorphics.uklregistry.store.Description;
+import com.epimorphics.uklregistry.store.Register;
 import com.epimorphics.uklregistry.store.StoreAPI;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.sun.jersey.api.NotFoundException;
@@ -31,7 +32,11 @@ public class CommandRead extends Command {
         if (description == null) {
             throw new NotFoundException();
         }
-        return Response.ok().entity((Model)description.getRoot().getModel()).build();
+        if (description instanceof Register) {
+            Register register = (Register)description;
+            register.fetchMembers(store);
+        }
+        return Response.ok().entity(description.getRoot().getModel()).build();
     }
 
 }

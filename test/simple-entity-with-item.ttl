@@ -1,0 +1,43 @@
+@prefix interval:  <http://reference.data.gov.uk/def/intervals/> .
+@prefix stats:   <http://statistics.data.gov.uk/def/administrative-geography/> .
+@prefix dgu:     <http://reference.data.gov.uk/def/reference/> .
+@prefix spatialrelations:  <http://data.ordnancesurvey.co.uk/ontology/spatialrelations/> .
+@prefix def-zoi:  <http://location.data.gov.uk/def/ef/ZoneOfInfluence/> .
+@prefix bw:      <http://environment.data.gov.uk/id/bathing-water/> .
+@prefix def-feature:  <http://location.data.gov.uk/def/ef/BathingWaterProfileFeature/> .
+@prefix def-som:  <http://environment.data.gov.uk/def/bwq-som/> .
+@prefix def-ef:  <http://location.data.gov.uk/def/ef/SamplingPoint/> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix bwq-iss:  <http://environment.data.gov.uk/data/bathing-water-quality/in-season/slice/> .
+@prefix onsadmingeo:  <http://statistics.data.gov.uk/def/administrative-geography/> .
+@prefix bwsp:    <http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/> .
+@prefix os:      <http://a9.com/-/spec/opensearch/1.1/> .
+@prefix geo:     <http://www.w3.org/2003/01/geo/wgs84_pos#> .
+@prefix def-bw:  <http://environment.data.gov.uk/def/bathing-water/> .
+@prefix foaf:    <http://xmlns.com/foaf/0.1/> .
+@prefix void:    <http://rdfs.org/ns/void#> .
+@prefix qb:      <http://purl.org/linked-data/cube#> .
+@prefix geometry:  <http://data.ordnancesurvey.co.uk/ontology/geometry/> .
+@prefix def-bwp:  <http://environment.data.gov.uk/def/bathing-water-profile/> .
+@prefix dct:     <http://purl.org/dc/terms/> .
+@prefix def-bwq:  <http://environment.data.gov.uk/def/bathing-water-quality/> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix def-geom:  <http://location.data.gov.uk/def/common/Geometry/> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+
+@prefix reg:  <http://purl.org/linked-data/registry#> .
+
+<sandy-bay> a reg:RegisterItem
+    dct:description "An EA reference URI for Sandy Bay Bathing Water"@en;
+    reg:definition [
+       reg:entity bw:ukk4301-22200;
+    ].
+    
+bw:ukk4301-22200
+      a       def-bw:CoastalBathingWater , def-bw:BathingWater ;
+      def-bw:eubwidNotation
+              "ukk4301-22200"^^def-bw:eubwid ;
+      skos:prefLabel "Sandy Bay"@en ;
+    .

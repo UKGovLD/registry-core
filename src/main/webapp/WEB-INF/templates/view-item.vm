@@ -1,0 +1,27 @@
+#set($entity = $res.connectedNodes("reg:definition/reg:entity").get(0))
+
+#macro(metadata $name $prop)
+  #if($res.getPropertyValue($prop))
+    <div class="row">
+        <div class="span2"><strong>${name}:</strong></div>
+        <div class="span4">#render($res.getPropertyValue($prop))</div>
+    </div>
+  #end
+#end
+
+<h2>Item: $res.name</h2>
+
+<div class="row">
+  <div class="span4">
+    <p>$res.getPropertyValue("dct:description").lexicalForm</p>
+    <p> <strong>URI:</strong> <a href="${root}/ui/view?uri=$lib.pathEncode($entity.uRI)">$entity.uRI</a></p>
+    <p> <strong>In register:</strong>#foreach($r in $res.listPropertyValues("reg:register")) #linkfor($r) #end</p>
+  </div>
+  <div class="span6 offset1 box">
+    #metadata("Item class", "reg:itemClass")
+    #metadata("Status", "reg:status")
+    #metadata("Notation", "reg:notation")
+    #metadata("Submitted", "dct:dateSubmitted")
+  </div>
+</div>
+

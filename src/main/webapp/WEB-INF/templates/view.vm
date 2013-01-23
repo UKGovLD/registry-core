@@ -1,11 +1,16 @@
-#set($pageTitle="Browse resource: $uri")
+#set($pageTitle="View $uri")
 #parse("header.vm")
 #parse("navbar.vm")
 
 #set($res=$model.getNode($uri))
 
-<h2>Resource: $res.name  #if($res.getPropertyValue("rdf:type")) ($res.getPropertyValue("rdf:type").name.trim())#end</h2>
-<p><strong>Resource:</strong> $uri</p>
+#if($res.hasResourceValue("rdf:type", "reg:Register"))
+   #parse("view-register.vm")
+#elseif($res.hasResourceValue("rdf:type", "reg:RegisterItem"))
+   #parse("view-item.vm")
+#else
+  <h2>Resource: $res.name  #if($res.getPropertyValue("rdf:type")) ($res.getPropertyValue("rdf:type").name.trim())#end</h2>
+  <p><strong>Resource:</strong> $uri</p>
 
 <div class="row">
  <div class="offset2 span10">
@@ -24,7 +29,7 @@
       #foreach($pv in $res.listInLinks())
         #if($pv.getProp().uRI != "http://www.w3.org/1999/02/22-rdf-syntax-ns#first")
         <tr>
-          <td> <a href="/ui/resource?uri=$lib.pathEncode($pv.getProp().uRI)">$pv.getProp().name</a> </td>
+          <td> <a href="/ui/view?uri=$lib.pathEncode($pv.getProp().uRI)">$pv.getProp().name</a> </td>
           <td>of</td>
           <td>
             #foreach($v in $pv.getValues())
@@ -40,5 +45,8 @@
 
  </div>
 </div>
+
+#end
+
 
 #include("footer.vm")

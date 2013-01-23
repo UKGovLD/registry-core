@@ -5,10 +5,13 @@
         <div class="row">
 
          <div class="span1">
-           <a href="${root}/index.html" class="btn btn-inverse"><i class="icon-home icon-white"></i></a>
+           <a href="${root}/ui/view?uri=http://location.data.gov.uk" class="btn btn-inverse"><i class="icon-home icon-white"></i></a>
          </div>
 
-         <div class="span8">
+         <div class="span4 offset1">
+             <h4>Registry proof-of-concept</h4>
+         </div>
+         <div class="offset1 span4">
            <form action="text-search" method="get" class="navbar-search">
              <input type="search" class="search-query" placeholder="Search" #if($query)value="$query"#end name="query"/>
              <i class="icon-search"></i>

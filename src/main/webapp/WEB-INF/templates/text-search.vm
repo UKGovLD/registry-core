@@ -12,7 +12,6 @@
     <tr>
       <th>Name</th>
       <th>URI</th>
-      <th>Type(s)</th>
     </tr>
   </thead>
   <tbody>
@@ -20,11 +19,12 @@
 #foreach($result in $index.search($query, 0, 50))
   #set($r = $model.getNode($result.uRI))
 
+  #if($r.hasResourceValue("rdf:type", "reg:RegisterItem"))
     <tr>
       <td>$r.name</td>
-      <td><a href="${root}/resource?uri=$result.uRI">$result.uRI</a></td>
-      <td>#foreach($type in $r.listPropertyValues("rdf:type")) $type#if( $foreach.hasNext ),#end #end</td>
+      <td><a href="${root}/ui/view?uri=$result.uRI">$result.uRI</a></td>
     </tr>
+  #end
 #end
   </tbody>
 </table>

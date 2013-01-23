@@ -9,6 +9,11 @@
 
 package com.epimorphics.uklregistry.store;
 
+import java.util.List;
+
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Resource;
+
 
 /**
  * Abstract interface onto the underlying versioned RDF storage and
@@ -30,17 +35,20 @@ public interface StoreAPI {
      */
     public Description getDescription(String uri);
 
-    // TODO fetch item/entity
-
-    // TODO List register entities
+    /**
+     * Find all "?item" bindings for the given select query and fetch descriptions
+     * of those to target model. The query will be prefix-expanded using a standard
+     * set of prefixes including reg:.
+     * @return a list of resources whose descriptions were fetched.
+     */
+    public  List<Resource> fetchDescriptionsOf(String selectQuery, Model target);
 
     // TODO general search support
-
-    // TODO decide whether to provide a batched set of updates or update on the fly
 
     /**
      * Save a description to the default graph
      */
     public void storeDescription(Description d);
+    // TODO decide whether to provide a batched set of updates or update on the fly
 
 }

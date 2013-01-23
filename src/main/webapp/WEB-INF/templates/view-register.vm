@@ -1,0 +1,64 @@
+#macro(metadata $name $prop)
+  #if($res.getPropertyValue($prop))
+    <div class="row">
+        <div class="span2"><strong>${name}:</strong></div>
+        <div class="span4">#render($res.getPropertyValue($prop))</div>
+    </div>
+  #end
+#end
+
+<h2>Register: $res.name</h2>
+
+<div class="row">
+  <div class="span4">
+    <p>$res.getPropertyValue("dct:description").lexicalForm</p>
+    <p> <strong>URI:</strong> $res.uRI </p>
+    #set($parents = $res.listInLinks("reg:subregister"))
+    #if(!$parents.isEmpty())
+    <p> <strong>Parent register:</strong> #linkfor($parents.get(0))</p>
+    #end
+  </div>
+  <div class="span6 offset1 box">
+    #metadata("Manager", "reg:manager")
+    #metadata("Owner", "reg:owner")
+    #metadata("Item class", "reg:containedItemClass")
+    #metadata("Membership predicate", "ldp:membershipPredicate")
+  </div>
+</div>
+
+
+#if($res.getPropertyValue("reg:subregister"))
+<div class="row">
+  <div class="span11">
+    <h3>Subregisters</h3>
+    <table class="table table-bordered table-striped">
+      #foreach($sr in $res.listPropertyValues("reg:subregister"))
+        <tr>
+          <td>$sr.name</td><td><a href="${root}/ui/view?uri=$lib.pathEncode($sr.uRI)">$sr.uRI</a></td>
+        </tr>
+      #end
+    </table>
+  </div>
+</div>
+#end
+
+#set($members=$model.querySelectW("SELECT ?ri ?entity WHERE {?ri reg:register <$res.uRI>; reg:definition [reg:entity ?entity]. FILTER NOT EXISTS {?entity rdf:type reg:Register} }"))
+#if(!$members.isEmpty())
+<div class="row">
+  <div class="span11">
+    <h3>Members</h3>
+    <table class="table table-bordered table-striped">
+      #foreach($m in $members)
+        <tr>
+          <td>
+            <div>
+              <h4>$m.ri.name (<a href="${root}/ui/view?uri=$lib.pathEncode($m.ri.uRI)">$m.entity.uRI</a>)</h4>
+              #if($m.ri.getPropertyValue("dct:description"))<p>$m.ri.getPropertyValue("dct:description").lexicalForm</p>#end
+            </div>
+          </td>
+        </tr>
+      #end
+    </table>
+  </div>
+</div>
+#end

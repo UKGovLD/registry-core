@@ -146,6 +146,10 @@ public class RegisterItem extends Description {
         for (StmtIterator si = entity.listProperties(RDF.type); si.hasNext();) {
             root.addProperty(Registry.itemClass, si.next().getObject());
         }
+        Resource entityref = root.getModel().createResource( root.getURI() + "#entityref" )
+                .addProperty(Registry.entity, entity);
+        root.addProperty(Registry.definition, entityref);
+        
         // TODO the reg:submitter may be set automatically to an identifier for the user making the submission
     }
 

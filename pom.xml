@@ -257,6 +257,7 @@
           <includes>
             <include>src/main/vocabs/*.ttl</include>
             <include>src/main/vocabs/*.owl</include>
+            <include>src/main/vocabs/*.rdf</include>
           </includes>
           <fileOptions>
             <source>

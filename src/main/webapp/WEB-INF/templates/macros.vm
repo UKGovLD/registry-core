@@ -1,5 +1,17 @@
 ## Global macros
 
+#macro(linkfor $res)
+   <a href="${root}/ui/view?uri=$lib.pathEncode($res.getURI())">$res.name</a>
+#end
+
+#macro(render $v)
+      #if($v.isResource())
+        #linkfor($v)
+      #else
+        $lib.escapeHtml($v.lexicalForm, 1000)
+      #end
+#end
+
 ## Display a property value in the RDF browser
 #macro(resentry $v)
   #if($v.isList())
@@ -11,22 +23,18 @@
   #elseif($v.isAnon())
     #restable($v)
   #else
-      #if($v.isResource())
-        <a href="${root}/resource?uri=$lib.pathEncode($v.getURI())">$v.name</a>
-      #else
-        $lib.escapeHtml($v.lexicalForm, 400)
-      #end
+    #render($v)
   #end
 #end
 
-## Display a set of property/value paris in the RDF browser
+## Display a set of property/value pairs in the RDF browser
 #macro(restable $res)
   <table class="table table-bordered table-striped">
     <thead><tr><th>Property</th><th>Value</th></tr></thead>
     <tbody>
       #foreach($pv in $res.listProperties())
         <tr>
-          <td> <a href="${root}/resource?uri=$lib.pathEncode($pv.getProp().uRI)">$pv.getProp().name</a> </td>
+          <td> $pv.getProp().name </td>
           <td>
             #foreach($v in $pv.getValues())
               #if($v.isList())
