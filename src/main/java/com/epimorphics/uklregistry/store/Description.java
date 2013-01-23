@@ -12,18 +12,18 @@ package com.epimorphics.uklregistry.store;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.sparql.util.Closure;
 
 /**
  * Provides core machinery for accessing descriptions of an RDF resource.
- * This encapsulate a model plus a root resource plus a
- * set of updates to that model.
+ * Allows the original version of a description to be kept in parallel
+ * so that diffs can be calculated for some types of store update.
  *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public class Description {
 
-    protected Model baseModel;
-    protected Model updatedModel;
+    protected Model originalModel;
     protected Resource root;
 
     /**
@@ -32,11 +32,8 @@ public class Description {
      * This constructor should be used when the description has been retrieved
      * from the main store.
      */
-    protected Description(Resource root) {
-        baseModel = root.getModel();
-        updatedModel = ModelFactory.createDefaultModel();  // TODO make this lazy?
-        updatedModel.add( baseModel );
-        this.root = root.inModel(updatedModel);
+    public Description(Resource root) {
+        this.root = root;
     }
 
     /**
@@ -53,10 +50,39 @@ public class Description {
      */
     public void setRoot(Resource root) {
         this.root = root;
-        this.updatedModel = root.getModel();
     }
 
+    /**
+     * Stash a copy of the original model, before any modification
+     */
+    public void keepCopy() {
+        originalModel = ModelFactory.createDefaultModel();
+        originalModel.add( root.getModel() );
+    }
+
+    /**
+     * Return the root resource in a local model which can be modified.
+     */
     public Resource getRoot() {
         return root;
     }
+
+    /**
+     * Return the original unmodified model for use in diff calculations.
+     * May be null if the copy wasn't retained.
+     */
+    public Model getOriginalModel() {
+        return originalModel;
+    }
+
+    /**
+     * Construct a description as a fresh bNode closure starting
+     * from the given root.
+     */
+    public static Description descriptionOf(Resource root) {
+        Model d = Closure.closure(root, false);
+        root = root.inModel(d);
+        return new Description(root);
+    }
+
 }

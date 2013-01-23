@@ -17,7 +17,6 @@ import com.epimorphics.uklregistry.store.StoreAPI;
 import com.epimorphics.uklregistry.vocab.Registry;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.sparql.util.Closure;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 /**
@@ -50,10 +49,9 @@ public class StoreImpl implements StoreAPI {
         store.lock();
         Model src = store.getUnionModel();
         try {
-            Resource root = src.getResource(uri);
-            Model description = Closure.closure(root, false);
-            if (description.contains(root, RDF.type, Registry.Register)) {
-                return new Register(uri, description, this);
+            Description d = Description.descriptionOf( src.getResource(uri) );
+            if (d.getRoot().hasProperty( RDF.type, Registry.Register)) {
+                return new Register(d);
             } else {
                 // TODO entity and item cases
                 return null;

@@ -36,4 +36,7 @@
    * completion of void description
    * auth hooks
    * logging of command request
+   * find a way to pass explanation back in 403 and other error returns
+   * If RI includes status value then need to authorize status update as well
+   * return from registration should include a location header
 

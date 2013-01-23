@@ -9,23 +9,19 @@
 
 package com.epimorphics.uklregistry.store;
 
-import com.epimorphics.uklregistry.store.Register;
-import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
-/*
- * Abstraction for access to a Register. The intention is that
- * implementations typically retreive a complete description from
- * the underlying store. Changes are made to a local in-memory model and
- * then updates are flushed out.
+/**
+ * Abstraction for access to a Register.
  */
 public class Register extends Description {
 
-    protected StoreAPI store;
+    public Register(Resource root) {
+        super( root );
+    }
 
-    public Register(String uri, Model model, StoreAPI store) {
-        super( model.createResource(uri) );
-        this.store = store;
+    public Register(Description d) {
+        super( d.root );
     }
 
     public Resource getRegister() {
