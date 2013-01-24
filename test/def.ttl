@@ -4,11 +4,15 @@
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
 @prefix dct:  <http://purl.org/dc/terms/> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix ldp:  <http://www.w3.org/ns/ldp#> .
 
 @prefix reg:  <http://purl.org/linked-data/registry#> .
 
-<blue> a skos:Concept;
-    rdfs:label "blue";
-    dct:description "A concept for the colour blue";
-    .
+<def> a reg:Register ;
+    rdfs:label "def"@en;
+    dct:description "Register to hold definitions such as ontologies and code lists"@en;
+    reg:owner      <http://example.com/department> ;
+    reg:manager   <http://example.com/registryManagementLtd> ;
+    reg:containedItemClass reg:Register;
+.
 

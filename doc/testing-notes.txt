@@ -7,3 +7,13 @@ curl http://localhost:8080/reg1/_blue
 curl http://localhost:8080/reg1/blue
 
 
+curl -i -H "Content-Type: text/turtle" -X POST --data "@test/def.ttl" http://localhost:8080/
+curl -i -H "Content-Type: text/turtle" -X POST --data "@test/colours.ttl" http://localhost:8080/def
+curl -i -H "Content-Type: text/turtle" -X POST --data "@test/blue.ttl" http://localhost:8080/def/colours
+curl -i -H "Content-Type: text/turtle" -X POST --data "@test/red.ttl" http://localhost:8080/def/colours
+curl -i -H "Content-Type: text/turtle" -X POST --data "@test/green.ttl" http://localhost:8080/def/colours
+
+curl http://localhost:8080/def/colours/blue
+curl http://localhost:8080/def/colours
+
+

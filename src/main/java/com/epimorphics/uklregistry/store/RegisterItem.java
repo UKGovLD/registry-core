@@ -110,6 +110,34 @@ public class RegisterItem extends Description {
         return item;
     }
 
+    /**
+     * Set the status of the item
+     */
+    public Resource setStatus(String status) {
+        // TODO replace with read from ontology
+        if (status.equalsIgnoreCase("experimental")) {
+            return setStatus(Registry.statusExperimental);
+        } else if (status.equalsIgnoreCase("stable")) {
+            return setStatus(Registry.statusStable);
+        } else if (status.equalsIgnoreCase("superseded")) {
+            return setStatus(Registry.statusSuperseded);
+        } else if (status.equalsIgnoreCase("retired")) {
+            return setStatus(Registry.statusRetired);
+        } else if (status.equalsIgnoreCase("invalid")) {
+            return setStatus(Registry.statusInvalid);
+        } else {
+            return null;
+        }
+    }
+
+    public Resource setStatus(Resource status) {
+        root.removeAll(Registry.status);
+        root.addProperty(Registry.status, status);
+        return status;
+    }
+
+    // -----------  internal helpers for sorting out the different notation cases ---------------------------
+
     private void relocate() {
         String uri = parentURI + "/_" + getNotation();
         if ( ! uri.equals(root.getURI()) ) {
@@ -149,7 +177,7 @@ public class RegisterItem extends Description {
         Resource entityref = root.getModel().createResource( root.getURI() + "#entityref" )
                 .addProperty(Registry.entity, entity);
         root.addProperty(Registry.definition, entityref);
-        
+
         // TODO the reg:submitter may be set automatically to an identifier for the user making the submission
     }
 

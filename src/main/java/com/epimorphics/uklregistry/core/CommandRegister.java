@@ -9,6 +9,8 @@
 
 package com.epimorphics.uklregistry.core;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.ws.rs.WebApplicationException;
@@ -22,6 +24,7 @@ import com.epimorphics.uklregistry.store.Register;
 import com.epimorphics.uklregistry.store.RegisterItem;
 import com.epimorphics.uklregistry.store.StoreAPI;
 import com.epimorphics.uklregistry.vocab.Registry;
+import com.epimorphics.util.EpiException;
 import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDF;
@@ -44,22 +47,27 @@ public class CommandRegister extends Command {
             throw new NotFoundException();
         }
 
+        Resource location = null;
         if (payload.contains(null, RDF.type, Registry.RegisterItem)) {
             for (ResIterator ri = payload.listSubjectsWithProperty(RDF.type, Registry.RegisterItem); ri.hasNext();) {
                 Resource itemSpec = ri.next();
-                register(parent, itemSpec);
+                location = register(parent, itemSpec);
             }
         } else {
             List<Resource> roots = payload.listSubjectsWithProperty(RDF.type).toList();
             if (roots.size() != 1) {
                 throw new WebApplicationException(Response.Status.BAD_REQUEST);
             }
-            register(parent, roots.get(0));
+            location = register(parent, roots.get(0));
         }
-        return Response.noContent().build();
+        try {
+            return Response.noContent().location(new URI(location.getURI())).build();
+        } catch (URISyntaxException e) {
+            throw new EpiException(e);
+        }
     }
 
-    private void register(Register parent, Resource itemSpec) {
+    private Resource register(Register parent, Resource itemSpec) {
         String parentURI = parent.getRoot().getURI();
         RegisterItem ri = null;
         if ( itemSpec.hasProperty(RDF.type, Registry.RegisterItem) ) {
@@ -81,6 +89,7 @@ public class CommandRegister extends Command {
         }
         ri.getRoot().addProperty(Registry.register, parent.getRoot());
         store.storeDescription(ri);
+        return ri.getRoot();
     }
 
 }

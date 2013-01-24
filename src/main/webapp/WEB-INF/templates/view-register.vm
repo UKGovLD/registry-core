@@ -52,7 +52,7 @@
         <tr>
           <td>
             <div>
-              <h4>$m.ri.name (<a href="${root}/ui/view?uri=$lib.pathEncode($m.ri.uRI)">$m.entity.uRI</a>)</h4>
+              <h4>$m.ri.name (<a href="${root}/ui/view?uri=$lib.pathEncode($m.ri.uRI)">$m.entity.uRI</a>) - $m.ri.getPropertyValue("reg:status").name</h4>
               #if($m.ri.getPropertyValue("dct:description"))<p>$m.ri.getPropertyValue("dct:description").lexicalForm</p>#end
             </div>
           </td>

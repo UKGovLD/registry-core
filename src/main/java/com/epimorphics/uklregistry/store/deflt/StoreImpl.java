@@ -36,7 +36,7 @@ import com.hp.hpl.jena.vocabulary.RDF;
  */
 public class StoreImpl implements StoreAPI {
     public static final String PREFIXES_FILE = "prefixes.ttl";
-    
+
     Store store = ServiceConfig.get().getDefaultStore();
     Model prefixes = FileManager.get().loadModel(PREFIXES_FILE);
 
@@ -78,7 +78,30 @@ public class StoreImpl implements StoreAPI {
             store.unlock();
         }
     }
-    
+
+//    @Override
+//    public Description getDescription(String uri) {
+//        Model model = ModelFactory.createDefaultModel();
+//        store.lock();
+//        try {
+//            model.add( store.asDataset().getNamedModel(uri) );
+//            Resource root = model.getResource(uri);
+//            if (root.hasProperty(RDF.type)) {
+//                if (root.hasProperty( RDF.type, Registry.Register)) {
+//                    return new Register(root);
+//                } else if (root.hasProperty( RDF.type, Registry.RegisterItem)) {
+//                    return new RegisterItem(root);
+//                } else {
+//                    return new Description(root);
+//                }
+//            } else {
+//                return null;
+//            }
+//        } finally {
+//            store.unlock();
+//        }
+//    }
+
     public List<Resource> fetchDescriptionsOf(String selectQuery, Model model) {
         String expandedQuery = PrefixUtils.expandQuery(selectQuery, prefixes);
         List<Resource> results = new ArrayList<Resource>();

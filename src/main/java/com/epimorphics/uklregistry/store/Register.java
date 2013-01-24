@@ -24,6 +24,9 @@ import com.hp.hpl.jena.vocabulary.RDFS;
  */
 public class Register extends Description {
 
+//    static final String fetchQuery = "SELECT ?item WHERE { ?ri reg:register <%s>; reg:status ?status; reg:definition [reg:entity ?item] . FILTER (?status != reg:statusSubmitted && ?status != reg:statusInvalid)}";
+    static final String fetchQuery = "SELECT ?item WHERE { ?ri reg:register <%s>; reg:status ?status; reg:definition [reg:entity ?item] . }";
+
     public Register(Resource root) {
         super( root );
     }
@@ -54,7 +57,7 @@ public class Register extends Description {
             }
         }
         Property predicate = ResourceFactory.createProperty( predicateR.getURI() );
-        List<Resource> entities = store.fetchDescriptionsOf(String.format("SELECT ?item WHERE { ?ri reg:register <%s>; reg:definition [reg:entity ?item] . }", root.getURI()), m);
+        List<Resource> entities = store.fetchDescriptionsOf(String.format(fetchQuery, root.getURI()), m);
         for (Resource entity : entities) {
             if (isInverse) {
                 entity.addProperty(predicate, root);
