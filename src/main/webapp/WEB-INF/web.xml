@@ -29,7 +29,7 @@
     <param-name>config.configuration</param-name>
     <param-value>com.epimorphics.uklregistry.core.Configuration,
     baseURI=http://location.data.gov.uk,
-    rootRegisterSpec=${webapp}/WEB-INF/root-register.ttl</param-value>
+    rootRegisterSpec=${webapp}/WEB-INF/root-register.ttl|${webapp}/WEB-INF/registry.ttl</param-value>
   </context-param>
 
 
