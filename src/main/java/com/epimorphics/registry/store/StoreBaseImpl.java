@@ -41,6 +41,7 @@ import com.epimorphics.util.EpiException;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
@@ -397,8 +398,8 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         }
     }
 
-    protected Resource doUpdate(Resource root, Calendar cal) {
-        Resource newVersion = VersionUtil.nextVersion(root, cal);
+    protected Resource doUpdate(Resource root, Calendar cal, Property... rigids) {
+        Resource newVersion = VersionUtil.nextVersion(root, cal, rigids);
         Model st = getDefaultModel();
         root.inModel(st).removeAll(OWL.versionInfo);
         st.add( newVersion.getModel() );
@@ -410,7 +411,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         store.lockWrite();
         try {
             Calendar now = Calendar.getInstance();
-            Resource newVersion = doUpdate(item.getRoot(), now);
+            Resource newVersion = doUpdate(item.getRoot(), now, RegistryVocab.register, RegistryVocab.notation, RegistryVocab.itemClass, RegistryVocab.predecessor, RegistryVocab.submitter);
             if (withEntity) {
                 Resource entity = item.getEntity();
                 if (entity.hasProperty(RDF.type, RegistryVocab.Register)) {
