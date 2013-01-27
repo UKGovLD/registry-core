@@ -12,7 +12,6 @@ package com.epimorphics.uklregistry.core;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-import com.epimorphics.uklregistry.store.StoreAPI;
 import com.hp.hpl.jena.rdf.model.Model;
 
 /**
@@ -29,7 +28,7 @@ public abstract class Command {
     protected String target;
     protected MultivaluedMap<String, String> parameters;
     protected Model payload;
-    protected StoreAPI store;
+    protected Registry registry;
 
     /**
      * Constructor
@@ -38,11 +37,11 @@ public abstract class Command {
      * @param target      the URI to which the operation was targeted, omits the assumed base URI
      * @param parameters  the query parameters
      */
-    public Command(Operation operation, String target,  MultivaluedMap<String, String> parameters, StoreAPI store) {
+    public Command(Operation operation, String target,  MultivaluedMap<String, String> parameters, Registry registry) {
         this.operation = operation;
-        this.target = Configuration.getBaseURI() + (target.isEmpty() ? "" : "/" + target);
+        this.target = registry.getBaseURI() + (target.isEmpty() ? "" : "/" + target);
         this.parameters = parameters;
-        this.store = store;
+        this.registry = registry;
     }
 
     public Model getPayload() {

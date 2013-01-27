@@ -2,24 +2,15 @@
 
 ## Possible iteration sequencing
 
-   1. minimal register create, item register, browse, no versioning
-   1. text index and minimal UI
-   1. versioning model and fuller API
+   1. minimal register create, item register, browse, no versioning - done
+   1. text index and minimal UI - done
+   1. versioning model and fuller API <---
    1. minimal dispatch
    1. partitioning into distributable, replicable subsystems
 
 ## Issues
 
    * Schemagen plugin runs on the "translate" maven lifecycle. Eclipse m2e can't cope with that the so the vocab sources aren't automatically built within Eclipse. Current workaround is a manual copy to of the target/generated-sources output to the checked-in build path
-
-## Things to bear in mind
-
-   * facade for Register and RegisterItem to hide the update logic
-   * facade for VersionedThing to enable different versioning implementations (implementation based on latest + journal of old versions, as well as the official one)
-   * facade for store update that would allow a key/value or doc store to be used ???
-   * keep the state combination logic factored out separately, that might need to be tweaked in the light of experience
-   * command pattern for operations as basis for auth, logging etc
-
 
 ## Future redesign for scale
 
@@ -40,3 +31,5 @@
    * If RI includes status value then need to authorize status update as well
    * return from registration should include a location header
 
+   * e-tag support
+   

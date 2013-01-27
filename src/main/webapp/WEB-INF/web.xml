@@ -6,7 +6,7 @@
   <display-name>UKL Registry POC</display-name>
 
   <context-param>
-    <param-name>config.store</param-name>
+    <param-name>config.mainstore</param-name>
     <param-value>com.epimorphics.server.stores.TDBStore,
     location=/var/local/registry/store,
     union=true,
@@ -26,9 +26,10 @@
   </context-param>
 
   <context-param>
-    <param-name>config.configuration</param-name>
-    <param-value>com.epimorphics.uklregistry.core.Configuration,
+    <param-name>config.registry</param-name>
+    <param-value>com.epimorphics.uklregistry.core.Registry,
     baseURI=http://location.data.gov.uk,
+    store=mainstore,
     rootRegisterSpec=${webapp}/WEB-INF/root-register.ttl|${webapp}/WEB-INF/registry.ttl</param-value>
   </context-param>
 

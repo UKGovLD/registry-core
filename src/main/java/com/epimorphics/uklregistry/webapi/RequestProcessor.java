@@ -28,7 +28,7 @@ import javax.ws.rs.core.Response;
 import com.epimorphics.server.webapi.BaseEndpoint;
 import com.epimorphics.uklregistry.core.Command;
 import com.epimorphics.uklregistry.core.Command.Operation;
-import com.epimorphics.uklregistry.core.CommandFactory;
+import com.epimorphics.uklregistry.core.Registry;
 import com.epimorphics.uklregistry.util.PATCH;
 
 /**
@@ -50,7 +50,7 @@ public class RequestProcessor extends BaseEndpoint {
 //        System.out.println("Absolute path " + uriInfo.getAbsolutePath());
 //        System.out.println("Path path " + uriInfo.getPath());
 //        System.out.println("Request uri " + uriInfo.getRequestUri());
-        return CommandFactory.get().make(op, uriInfo.getPath(), uriInfo.getQueryParameters());
+        return Registry.get().make(op, uriInfo.getPath(), uriInfo.getQueryParameters());
     }
 
     @POST

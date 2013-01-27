@@ -7,19 +7,20 @@
  *
  *****************************************************************/
 
-package com.epimorphics.uklregistry.core;
+package com.epimorphics.uklregistry.commands;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-import com.epimorphics.uklregistry.store.StoreAPI;
+import com.epimorphics.uklregistry.core.Command;
+import com.epimorphics.uklregistry.core.Registry;
 
 
-public class CommandDelete extends Command {
+public class CommandValidate extends Command {
 
-    public CommandDelete(Operation operation, String target,
-            MultivaluedMap<String, String> parameters, StoreAPI store) {
-        super(operation, target, parameters, store);
+    public CommandValidate(Operation operation, String target,
+            MultivaluedMap<String, String> parameters, Registry registry) {
+        super(operation, target, parameters, registry);
     }
 
     @Override
@@ -27,7 +28,6 @@ public class CommandDelete extends Command {
         // TODO implement
         System.out.println("Execute on " + this);
         return Response.ok().build();
-
     }
 
 }

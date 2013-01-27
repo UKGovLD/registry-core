@@ -7,7 +7,7 @@
  *
  *****************************************************************/
 
-package com.epimorphics.uklregistry.store;
+package com.epimorphics.uklregistry.core;
 
 import java.util.UUID;
 
@@ -16,7 +16,7 @@ import javax.ws.rs.core.Response;
 
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.server.webapi.BaseEndpoint;
-import com.epimorphics.uklregistry.vocab.Registry;
+import com.epimorphics.uklregistry.vocab.RegistryVocab;
 import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -66,6 +66,14 @@ public class RegisterItem extends Description {
         this.parentURI = parentURI;
         this.notation = notation;
     }
+    
+    /**
+     * Record the address of an associated entity.
+     * Should be in a separate model to allowed to be saved on its own.
+     */
+    public void setEntity(Resource entity) {
+        this.entity = entity;
+    }
 
     public String getNotation() {
         if (notation == null) {
@@ -102,8 +110,8 @@ public class RegisterItem extends Description {
         String notation = riNotationFromEntity(e, parentURI);
         String riURI = parentURI + "/_" + notation;
         Resource ri = d.createResource(riURI)
-                .addProperty(RDF.type, Registry.RegisterItem)
-                .addProperty(Registry.notation, notation);
+                .addProperty(RDF.type, RegistryVocab.RegisterItem)
+                .addProperty(RegistryVocab.notation, notation);
         RegisterItem item = new RegisterItem( ri, parentURI, notation );
         Resource entity = e.inModel(d);
         item.relocateEntity(entity);
@@ -114,25 +122,17 @@ public class RegisterItem extends Description {
      * Set the status of the item
      */
     public Resource setStatus(String status) {
-        // TODO replace with read from ontology
-        if (status.equalsIgnoreCase("experimental")) {
-            return setStatus(Registry.statusExperimental);
-        } else if (status.equalsIgnoreCase("stable")) {
-            return setStatus(Registry.statusStable);
-        } else if (status.equalsIgnoreCase("superseded")) {
-            return setStatus(Registry.statusSuperseded);
-        } else if (status.equalsIgnoreCase("retired")) {
-            return setStatus(Registry.statusRetired);
-        } else if (status.equalsIgnoreCase("invalid")) {
-            return setStatus(Registry.statusInvalid);
-        } else {
-            return null;
+        for (Status s : Status.values()) {
+            if (s.name().equalsIgnoreCase(status)) {
+                return s.getResource();
+            }
         }
+        return null;
     }
 
     public Resource setStatus(Resource status) {
-        root.removeAll(Registry.status);
-        root.addProperty(Registry.status, status);
+        root.removeAll(RegistryVocab.status);
+        root.addProperty(RegistryVocab.status, status);
         return status;
     }
 
@@ -161,22 +161,22 @@ public class RegisterItem extends Description {
      */
     private void updateFor(Resource entity) {
         RDFUtil.timestamp(root, DCTerms.dateSubmitted);
-        if ( !root.hasProperty(Registry.status)) {
-            root.addProperty(Registry.status, Registry.statusSubmitted);
+        if ( !root.hasProperty(RegistryVocab.status)) {
+            root.addProperty(RegistryVocab.status, RegistryVocab.statusSubmitted);
         }
-        if (!root.hasProperty(Registry.notation)) {
-            root.addProperty(Registry.notation, notation);
+        if (!root.hasProperty(RegistryVocab.notation)) {
+            root.addProperty(RegistryVocab.notation, notation);
         }
         RDFUtil.copyProperty(entity, root, RDFS.label);
         RDFUtil.copyProperty(entity, root, SKOS.prefLabel);
         RDFUtil.copyProperty(entity, root, SKOS.altLabel);
         RDFUtil.copyProperty(entity, root, DCTerms.description);
         for (StmtIterator si = entity.listProperties(RDF.type); si.hasNext();) {
-            root.addProperty(Registry.itemClass, si.next().getObject());
+            root.addProperty(RegistryVocab.itemClass, si.next().getObject());
         }
         Resource entityref = root.getModel().createResource( root.getURI() + "#entityref" )
-                .addProperty(Registry.entity, entity);
-        root.addProperty(Registry.definition, entityref);
+                .addProperty(RegistryVocab.entity, entity);
+        root.addProperty(RegistryVocab.definition, entityref);
 
         // TODO the reg:submitter may be set automatically to an identifier for the user making the submission
     }
@@ -209,8 +209,8 @@ public class RegisterItem extends Description {
     }
 
     private static String getExplicitNotation(Resource root) {
-        if (root.hasProperty(Registry.notation)) {
-            String location = RDFUtil.getStringValue(root, Registry.notation);
+        if (root.hasProperty(RegistryVocab.notation)) {
+            String location = RDFUtil.getStringValue(root, RegistryVocab.notation);
             if (location.startsWith("_")) {
                 throw new WebApplicationException(Response.Status.BAD_REQUEST);
             }
@@ -270,9 +270,9 @@ public class RegisterItem extends Description {
     }
 
     private static Resource findRequiredEntity(Resource ri) {
-        Resource definition = ri.getPropertyResourceValue(Registry.definition);
+        Resource definition = ri.getPropertyResourceValue(RegistryVocab.definition);
         if (definition != null) {
-            Resource entity = definition.getPropertyResourceValue(Registry.entity);
+            Resource entity = definition.getPropertyResourceValue(RegistryVocab.entity);
             if (entity != null){
                 return entity;
             }

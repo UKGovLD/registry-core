@@ -7,13 +7,16 @@
  *
  *****************************************************************/
 
-package com.epimorphics.uklregistry.core;
+package com.epimorphics.uklregistry.commands;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-import com.epimorphics.uklregistry.store.Description;
-import com.epimorphics.uklregistry.store.Register;
+import com.epimorphics.uklregistry.core.Command;
+import com.epimorphics.uklregistry.core.Description;
+import com.epimorphics.uklregistry.core.Register;
+import com.epimorphics.uklregistry.core.Command.Operation;
+import com.epimorphics.uklregistry.core.Registry;
 import com.epimorphics.uklregistry.store.StoreAPI;
 import com.sun.jersey.api.NotFoundException;
 
@@ -21,8 +24,8 @@ import com.sun.jersey.api.NotFoundException;
 public class CommandRead extends Command {
 
     public CommandRead(Operation operation, String target,
-            MultivaluedMap<String, String> parameters, StoreAPI store) {
-        super(operation, target, parameters, store);
+            MultivaluedMap<String, String> parameters, Registry registry) {
+        super(operation, target, parameters, registry);
     }
 
     @Override
