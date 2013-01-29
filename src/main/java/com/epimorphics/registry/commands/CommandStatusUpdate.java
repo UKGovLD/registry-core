@@ -36,28 +36,29 @@ public class CommandStatusUpdate extends Command {
 
     @Override
     public Response execute() {
-        Description description = store.getDescription(target);
-        if (description instanceof RegisterItem) {
-            // TODO auth
-            // TODO lifecyle checks
-            // TODO handle verification for accepted
-            // TODO handle deletion for Invalid
-            RegisterItem ri = (RegisterItem) description;
-            String requestedStatus = parameters.getFirst(STATUS_PARAM);
-            Resource status = ri.setStatus(requestedStatus);
-            if (status == null) {
-                throw new WebApplicationException(Response.Status.FORBIDDEN);
-            }
-            if (status.equals(RegistryVocab.statusExperimental) || status.equals(RegistryVocab.statusStable)) {
-                RDFUtil.timestamp(ri.getRoot(), DCTerms.dateAccepted);
-            }
-            store.storeDescription(ri);
-            return Response.noContent().build();
-        } else if (description == null) {
-            throw new NotFoundException();
-        } else {
-            throw new WebApplicationException(Response.Status.BAD_REQUEST);
-        }
+//        Description description = store.getDescription(target);
+//        if (description instanceof RegisterItem) {
+//            // TODO auth
+//            // TODO lifecyle checks
+//            // TODO handle verification for accepted
+//            // TODO handle deletion for Invalid
+//            RegisterItem ri = (RegisterItem) description;
+//            String requestedStatus = parameters.getFirst(STATUS_PARAM);
+//            Resource status = ri.setStatus(requestedStatus);
+//            if (status == null) {
+//                throw new WebApplicationException(Response.Status.FORBIDDEN);
+//            }
+//            if (status.equals(RegistryVocab.statusExperimental) || status.equals(RegistryVocab.statusStable)) {
+//                RDFUtil.timestamp(ri.getRoot(), DCTerms.dateAccepted);
+//            }
+//            store.storeDescription(ri);
+//            return Response.noContent().build();
+//        } else if (description == null) {
+//            throw new NotFoundException();
+//        } else {
+//            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+//        }
+        return null;
     }
 
 }

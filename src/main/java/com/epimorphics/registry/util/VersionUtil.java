@@ -2,7 +2,7 @@
  * File:        VersionUtil.java
  * Created by:  Dave Reynolds
  * Created on:  27 Jan 2013
- * 
+ *
  * (c) Copyright 2013, Epimorphics Limited
  *
  *****************************************************************/
@@ -30,14 +30,18 @@ import com.hp.hpl.jena.vocabulary.OWL;
 
 /**
  * Support for managing the (surprisingly complex) resource versioning model.
- * 
+ *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public class VersionUtil {
 
+    /**
+     * Merges the version information onto a root VersionedThing.
+     */
     public static void flatten(Resource root, Resource version) {
         ResourceUtils.renameResource(version, root.getURI());
         root.removeAll(Version.currentVersion);
+        root.removeAll(Version.interval);
         root.removeAll(DCTerms.isVersionOf);
         root.removeAll(DCTerms.replaces);
     }
@@ -46,19 +50,30 @@ public class VersionUtil {
         return r.getURI() + ":" + version;
     }
 
+    /**
+     * Creates a new version of a given root resource, splitting the resource properties according to whether they are rigid or not.
+     * If the resource already has an owl:versionInfo marker then the next version number in sequence will be used.
+     *
+     * @param root     the resource to be versioned, should be in flattened form
+     * @param timemark the timestamp to use for the new version, if the root resource was previously verisoned then an
+     *                 interval close assertion for the previous version will also be generated
+     * @param rigidProps an optional list of properties that should be stored on the VersionedThing rather than the Version resource
+     * @return the created version resource in a new Model containing the copied and separated property/values
+     */
     public static Resource nextVersion(Resource root, Calendar timemark, Property... rigidProps) {
-        Resource currentVersion = null; 
+        Resource currentVersion = null;
         Model vModel = ModelFactory.createDefaultModel();
         int vNum = RDFUtil.getIntValue(root, OWL.versionInfo, 0);
         if (vNum != 0) {
             currentVersion = vModel.createResource( versionedURI(root, vNum) );
         }
-        Resource ver = vModel.createResource( versionedURI(root, vNum+1) );
+        vNum++;
+        Resource ver = vModel.createResource( versionedURI(root, vNum) );
         Resource newRoot = vModel.createResource( root.getURI() );
-        
+
         Set<Property> rigids = new HashSet<Property>();
         for (Property p : rigidProps) rigids.add(p);
-        
+
         for (StmtIterator si = root.listProperties(); si.hasNext();) {
             Statement s = si.next();
             Property p = s.getPredicate();
@@ -79,18 +94,33 @@ public class VersionUtil {
                 ver.addProperty(p, value);
             }
         }
-        
+
         ver.addLiteral(OWL.versionInfo, vNum)
-           .addProperty(DCTerms.isVersionOf, ver);
+           .addProperty(DCTerms.isVersionOf, root);
         newRoot.addProperty(Version.currentVersion, ver);
-        Literal timemarkL = vModel.createTypedLiteral(timemark);
-        Resource tpoint = vModel.createResource().addProperty(Time.inXSDDateTime, timemarkL);
-        ver.addProperty(Version.interval, vModel.createResource().addProperty(Time.hasBeginning, tpoint));
+        makeInterval(ver, timemark, null);
         if (currentVersion != null) {
             ver.addProperty(DCTerms.replaces, currentVersion);
-            root.getPropertyResourceValue(Version.interval).addProperty(Time.hasEnd, tpoint);
+            makeInterval(currentVersion, null, timemark);
         }
         return ver;
     }
 
+    private static Resource makeTimePoint(Model vModel, Calendar timemark) {
+        Literal timemarkL = vModel.createTypedLiteral(timemark);
+        return vModel.createResource().addProperty(Time.inXSDDateTime, timemarkL);
+    }
+
+    private static Resource makeInterval(Resource version, Calendar start, Calendar end) {
+        Model m = version.getModel();
+        Resource interval = m.createResource( version.getURI() + "#interval" );
+        if (start != null) {
+            interval.addProperty(Time.hasBeginning, makeTimePoint(m, start));
+        }
+        if (end != null) {
+            interval.addProperty(Time.hasEnd, makeTimePoint(m, end));
+        }
+        version.addProperty(Version.interval, interval);
+        return interval;
+    }
 }

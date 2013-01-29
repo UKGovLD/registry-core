@@ -13,7 +13,7 @@ import java.io.File;
 
 import org.apache.catalina.startup.Tomcat;
 
-public class UKLReg {
+public class RegRun {
     public static final String HELP = "--help";
 
     public static final String USAGE = "java -jar bench [webapp-root]";

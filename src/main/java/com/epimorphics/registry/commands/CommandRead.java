@@ -30,15 +30,16 @@ public class CommandRead extends Command {
 
     @Override
     public Response execute() {
-        Description description = store.getDescription(target);
-        if (description == null) {
-            throw new NotFoundException();
-        }
-        if (description instanceof Register) {
-            Register register = (Register)description;
-            register.fetchMembers(store);
-        }
-        return Response.ok().entity(description.getRoot().getModel()).build();
+//        Description description = store.getDescription(target);
+//        if (description == null) {
+//            throw new NotFoundException();
+//        }
+//        if (description instanceof Register) {
+//            Register register = (Register)description;
+//            register.fetchMembers(store);
+//        }
+//        return Response.ok().entity(description.getRoot().getModel()).build();
+        return null;
     }
 
 }
