@@ -2,7 +2,7 @@
  * File:        StoreBaseImpl.java
  * Created by:  Dave Reynolds
  * Created on:  27 Jan 2013
- * 
+ *
  * (c) Copyright 2013, Epimorphics Limited
  *
  *****************************************************************/
@@ -65,14 +65,14 @@ import com.hp.hpl.jena.vocabulary.RDF;
  */
 public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     static final Logger log = LoggerFactory.getLogger( StoreBaseImpl.class );
-    
+
     public static final String STORE_PARAMETER = "store";
     public static final String INDEXER_PARAMETER = "indexer";
 
     protected Store store;
     protected Indexer indexer;
     protected Map<String, Lock> locks = new WeakHashMap<String, Lock>();
-    
+
     @Override
     public void postInit() {
         store = getNamedService( getRequiredParam(STORE_PARAMETER), Store.class);
@@ -81,7 +81,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             indexer = getNamedService(indexerName, Indexer.class);
         }
     }
-    
+
     @Override
     public Description getDescription(String uri, boolean forupdate) {
         if (forupdate) lock(uri);
@@ -92,7 +92,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             store.unlock();
         }
     }
-    
+
     // Assumes store is locked
     protected Resource describe(String uri) {
         Resource r = getDefaultModel().createResource(uri);
@@ -103,7 +103,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     protected Model getDefaultModel() {
         return store.asDataset().getDefaultModel();
     }
-    
+
     protected Description asDescription(Resource root) {
         if (root.hasProperty(RDF.type)) {
             if (root.hasProperty( RDF.type, RegistryVocab.Register)) {
@@ -116,9 +116,9 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         } else {
             return null;
         }
-        
+
     }
-    
+
     protected synchronized void lock(String uri) {
         Lock lock = locks.get(uri);
         if (lock == null) {
@@ -127,8 +127,12 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         }
         lock.lock();
     }
-    
-    protected synchronized void unlock(String uri) {
+
+    /**
+     * Release the "forupdate" lock on the given URI (should be a Register or RegisterItem).
+     * Throws an error if there is no such lock.
+     */
+    public synchronized void unlock(String uri) {
         Lock lock = locks.get(uri);
         if (lock == null) {
             throw new EpiException("Internal error: tried to unlock a resource which was not locked for update");
@@ -156,7 +160,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         }
         return root;
     }
-    
+
     @Override
     public Description getVersion(String uri) {
         store.lock();
@@ -183,10 +187,10 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     public Description getVersionAt(String uri, long time) {
         store.lock();
         try {
-            RDFNode version = selectFirstVar("version", getDefaultModel(), VERSION_AT_QUERY, Prefixes.get(), 
+            RDFNode version = selectFirstVar("version", getDefaultModel(), VERSION_AT_QUERY, Prefixes.get(),
                     createBindings("root", ResourceFactory.createResource(uri), "time", RDFUtil.fromDateTime(time)) );
             if (version != null && version.isURIResource()) {
-                return doGetVersion( version.asResource().getURI() );                
+                return doGetVersion( version.asResource().getURI() );
             } else {
                 return null;
             }
@@ -194,7 +198,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             store.unlock();
         }
     }
-    static String VERSION_AT_QUERY = 
+    static String VERSION_AT_QUERY =
                     "SELECT ?version WHERE \n" +
                     "{  \n" +
                     "    ?version dct:isVersionOf ?root; \n" +
@@ -206,7 +210,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
                     "    } \n" +
                     "} \n";
 
-            
+
     @Override
     public List<VersionInfo> listVersions(String uri) {
         store.lock();
@@ -216,11 +220,11 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             List<VersionInfo> results = new ArrayList<VersionInfo>();
             while (rs.hasNext()) {
                 QuerySolution soln = rs.next();
-                results.add( 
+                results.add(
                         new VersionInfo(
-                                soln.getResource("version"), 
-                                soln.getLiteral("info"), 
-                                soln.getLiteral("from"), 
+                                soln.getResource("version"),
+                                soln.getLiteral("info"),
+                                soln.getLiteral("from"),
                                 soln.getLiteral("to")      ));
             }
             return results;
@@ -228,16 +232,14 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             store.unlock();
         }
     }
-    static String VERSION_LIST_QUERY = 
+    static String VERSION_LIST_QUERY =
             "SELECT ?version ?info ?from ?to WHERE \n" +
             "{  \n" +
             "    ?version dct:isVersionOf ?root; \n" +
-            "             owl:versionInfo ?info; \n" +
-            "             version:interval [ \n" +
-            "                 time:hasBeginning [time:inXSDDateTime ?from]; \n" +
-            "                 time:hasEnd       [time:inXSDDateTime ?to] \n" +
-            "             ]. \n" +
-            "} \n";
+            "             owl:versionInfo ?info . \n" +
+            "   OPTIONAL {?version version:interval [time:hasBeginning [time:inXSDDateTime ?from]].} \n" +
+            "   OPTIONAL {?version version:interval [time:hasEnd [time:inXSDDateTime ?to]].} \n" +
+            "} ORDER BY ?info \n";
 
     @Override
     public RegisterItem getItem(String uri, boolean withEntity, boolean forupdate) {
@@ -255,7 +257,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         }
     }
 
-    protected void doGetEntity(RegisterItem item) {
+    protected Resource doGetEntity(RegisterItem item) {
         Resource root = item.getRoot();
         Model m = root.getModel();
         Resource entityRef = root.getPropertyResourceValue(RegistryVocab.definition);
@@ -268,16 +270,18 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
                 m.add( doGetCurrentVersion( entity.getURI() ).getModel() );
             }
             item.setEntity(entity);
+            return entity;
         } else {
             log.warn("Item requested had no entity reference: " + root);
+            return null;
         }
     }
 
     @Override
-    public void getEntity(RegisterItem item) {
+    public Resource getEntity(RegisterItem item) {
         store.lock();
         try {
-            doGetEntity(item);
+            return doGetEntity(item);
         } finally {
             store.unlock();
         }
@@ -287,8 +291,8 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     public  List<RegisterItem>  fetchMembers(Register register, boolean withEntity) {
         store.lock();
         try {
-            List<RDFNode> items = selectAllVar("ri", getDefaultModel(), REGISTER_ENUM_QUERY, Prefixes.get(), 
-                    createBindings("register", register.getRoot()) );
+            List<RDFNode> items = selectAllVar("ri", getDefaultModel(), REGISTER_ENUM_QUERY, Prefixes.get(),
+                    "register", register.getRoot() );
             List<RegisterItem> results = new ArrayList<RegisterItem>(items.size());
             for ( RDFNode itemR : items) {
                 if (itemR.isURIResource()) {
@@ -305,7 +309,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             store.unlock();
         }
     }
-    static String REGISTER_ENUM_QUERY = 
+    static String REGISTER_ENUM_QUERY =
             "SELECT ?ri WHERE { ?ri reg:register ?register. }";
 
     @Override
@@ -325,12 +329,13 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
                     prior.addType( soln.getResource("type") );
                 } else {
                     prior = new RegisterEntryInfo(
-                            soln.getResource("status"), 
+                            soln.getResource("status"),
                             item,
-                            soln.getResource("entity"), 
-                            soln.getLiteral("label"), 
-                            soln.getResource("type"), 
-                            soln.getLiteral("notation") ); 
+                            soln.getResource("entity"),
+                            soln.getLiteral("label"),
+                            soln.getResource("type"),
+                            soln.getLiteral("notation") );
+                    priorItem = item;
                     results.add( prior );
                 }
             }
@@ -339,15 +344,16 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             store.unlock();
         }
     }
-    static String REGISTER_LIST_QUERY = 
+    static String REGISTER_LIST_QUERY =
             "SELECT * WHERE { " +
-                    "?item reg:register ?register; version:currentVersion ?itemVer ." +
+                    "?item reg:register ?register; " +
+                    "      version:currentVersion ?itemVer; " +
+                    "      reg:notation ?notation; " +
+                    "      reg:itemClass ?type ." +
                     "?itemVer reg:status ?status; " +
                     "         reg:definition [reg:entity ?entity]; " +
-                    "         rdfs:label ?label; " +
-                    "         reg:itemClass ?type . " +
-                    "OPTIONAL {?itemVer reg:notation ?notation . } GROUP BY ?item" +
-            "}";
+                    "         rdfs:label ?label . " +
+            "} ORDER BY ?item";
 
 
     @Override
@@ -378,11 +384,11 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         store.lockWrite();
         try {
             Calendar now = Calendar.getInstance();
+            doUpdateItem(item, true, now);
             doUpdate(register.getRoot(), now);
-            doUpdate(item.getRoot(), now);
             item.getRoot().inModel(getDefaultModel()).addProperty(RegistryVocab.register, register.getRoot());
         } finally {
-            unlock(register.getRoot().getURI());
+//            unlock(register.getRoot().getURI());
             store.unlock();
         }
     }
@@ -401,33 +407,45 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     protected Resource doUpdate(Resource root, Calendar cal, Property... rigids) {
         Resource newVersion = VersionUtil.nextVersion(root, cal, rigids);
         Model st = getDefaultModel();
-        root.inModel(st).removeAll(OWL.versionInfo);
+        root.inModel(st).removeAll(OWL.versionInfo).removeAll(Version.currentVersion);
         st.add( newVersion.getModel() );
         return newVersion.inModel(st);
     }
-    
+
     @Override
     public void update(RegisterItem item, boolean withEntity) {
         store.lockWrite();
         try {
             Calendar now = Calendar.getInstance();
-            Resource newVersion = doUpdate(item.getRoot(), now, RegistryVocab.register, RegistryVocab.notation, RegistryVocab.itemClass, RegistryVocab.predecessor, RegistryVocab.submitter);
-            if (withEntity) {
-                Resource entity = item.getEntity();
-                if (entity.hasProperty(RDF.type, RegistryVocab.Register)) {
-                    doUpdate( entity, now );
-                } else {
-                    String graphURI = newVersion.getURI() + "#graph";
-                    store.addGraph(graphURI, entity.getModel());
-                    Resource graph = ResourceFactory.createResource( graphURI );
-                    newVersion.getPropertyResourceValue(RegistryVocab.definition).addProperty(RegistryVocab.sourceGraph, graph);
-                }
-            }
+            doUpdateItem(item, withEntity, now);
         } finally {
             unlock(item.getRoot().getURI());
             store.unlock();
         }
     }
 
+    private void doUpdateItem(RegisterItem item, boolean withEntity, Calendar now) {
+        Resource newVersion = doUpdate(item.getRoot(), now, RegistryVocab.register, RegistryVocab.notation, RegistryVocab.itemClass, RegistryVocab.predecessor, RegistryVocab.submitter);
+        if (withEntity) {
+            Model storeModel = getDefaultModel();
+            Resource entity = item.getEntity();
+            Resource entityRef = newVersion.getPropertyResourceValue(RegistryVocab.definition);
+            if (entityRef == null) {
+                entityRef = storeModel.createResource();
+                entityRef.addProperty(RegistryVocab.entity, entity);
+                newVersion.addProperty(RegistryVocab.definition, entityRef);
+            }
+            if (entity.hasProperty(RDF.type, RegistryVocab.Register)) {
+                doUpdate( entity, now );
+            } else {
+                String graphURI = newVersion.getURI() + "#graph";
+
+                store.addGraph(graphURI, Closure.closure(entity, false));
+                Resource graph = ResourceFactory.createResource( graphURI );
+                entityRef.removeAll(RegistryVocab.sourceGraph);
+                entityRef.addProperty(RegistryVocab.sourceGraph, graph);
+            }
+        }
+    }
 
 }

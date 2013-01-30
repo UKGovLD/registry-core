@@ -79,9 +79,23 @@ public class Description {
     public Resource getRoot() {
         return root;
     }
-    
+
+    /**
+     * Return the description as a Register
+     */
+    public Register asRegister() {
+        return (Register)this;
+    }
+
+    /**
+     * Return the description as a RegisterItem
+     */
+    public RegisterItem asRegisterItem() {
+        return (RegisterItem)this;
+    }
+
     // TODO add hook for validation of changes before they occur?
-    
+
     /**
      * Replace the current value(s), if any, of the given property by the supplied value
      */
@@ -101,7 +115,7 @@ public class Description {
         }
         return this;
     }
-    
+
     /**
      * Add a new value of the given property
      */
@@ -112,35 +126,35 @@ public class Description {
         additions.add(s);
         return this;
     }
-    
+
     /**
      * Add a new value of the given property
      */
     public Description addProperty(Property p, String value) {
         return addProperty(p, ResourceFactory.createPlainLiteral(value));
     }
-    
+
     /**
      * Add a new value of the given property
      */
     public Description addProperty(Property p, int i) {
         return addProperty(p, ResourceFactory.createTypedLiteral(i));
     }
-    
+
     /**
      * Add a new value of the given property
      */
     public Description addProperty(Property p, String lex, RDFDatatype dt) {
         return addProperty(p, ResourceFactory.createTypedLiteral(lex, dt));
     }
-    
+
     /**
      * Set the given property to be a stampstamp representing the time of the call
      */
     public Description timestamp(Property p) {
         return setProperty(p, root.getModel().createTypedLiteral(Calendar.getInstance()));
     }
-    
+
     /**
      * Return the set of statements that have been added to this description since it was created.
      * For use by StoreAPI implementation.
@@ -148,7 +162,7 @@ public class Description {
     public List<Statement> getAdditions() {
         return additions;
     }
-    
+
     /**
      * Return the set of statements that have been removed from this description since it was created.
      * For use by StoreAPI implementation.

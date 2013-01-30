@@ -12,6 +12,8 @@
 
    * Schemagen plugin runs on the "translate" maven lifecycle. Eclipse m2e can't cope with that the so the vocab sources aren't automatically built within Eclipse. Current workaround is a manual copy to of the target/generated-sources output to the checked-in build path
 
+   * The root register must end in "/" to avoid the version info being treated as part of the dns name.
+
 ## Future redesign for scale
 
    * Separate out the UI as per the conceptual architecture
@@ -32,4 +34,4 @@
    * return from registration should include a location header
 
    * e-tag support
-   
+

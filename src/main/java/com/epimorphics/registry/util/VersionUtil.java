@@ -27,6 +27,7 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.util.ResourceUtils;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.OWL;
+import com.hp.hpl.jena.vocabulary.RDF;
 
 /**
  * Support for managing the (surprisingly complex) resource versioning model.
@@ -73,6 +74,7 @@ public class VersionUtil {
 
         Set<Property> rigids = new HashSet<Property>();
         for (Property p : rigidProps) rigids.add(p);
+        rigids.add(RDF.type);
 
         for (StmtIterator si = root.listProperties(); si.hasNext();) {
             Statement s = si.next();

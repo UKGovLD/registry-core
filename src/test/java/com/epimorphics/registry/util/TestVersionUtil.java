@@ -49,7 +49,7 @@ public class TestVersionUtil {
 
         // Flatten and check
         VersionUtil.flatten(newitem, veritem);
-        assertTrue(TestUtil.resourcesMatch(item, newitem, OWL.versionInfo));
+        TestUtil.testResourcesMatch(item, newitem, OWL.versionInfo);
 
         // Update flattened version and reversion, check increments number
         newitem.removeAll(RDFS.label);
@@ -66,12 +66,12 @@ public class TestVersionUtil {
     private Resource checkItem(Resource veritem, Resource item, long vnum, String label) {
         assertTrue(veritem.hasLiteral(OWL.versionInfo, vnum));
         assertTrue(veritem.hasLiteral(RDFS.label, label));
-        assertTrue(veritem.hasProperty(RDF.type, RegistryVocab.RegisterItem));
         assertTrue(veritem.hasProperty(DCTerms.isVersionOf, item));
 
         Resource newitem = veritem.getPropertyResourceValue(DCTerms.isVersionOf);
         assertTrue(newitem.hasLiteral(RegistryVocab.notation, "item"));
         assertTrue(newitem.hasProperty(Version.currentVersion, veritem));
+        assertTrue(newitem.hasProperty(RDF.type, RegistryVocab.RegisterItem));
         return newitem;
     }
 

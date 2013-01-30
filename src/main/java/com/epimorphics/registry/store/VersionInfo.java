@@ -2,7 +2,7 @@
  * File:        VersionInfo.java
  * Created by:  Dave Reynolds
  * Created on:  26 Jan 2013
- * 
+ *
  * (c) Copyright 2013, Epimorphics Limited
  *
  *****************************************************************/
@@ -15,21 +15,25 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
  * Struct used for reporting the available versions of a resource.
- * 
+ *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public class VersionInfo {
 
     protected String uri;
     protected String version;
-    protected long fromTime;
-    protected long toTime;
-    
+    protected long fromTime = -1;
+    protected long toTime = -1;
+
     public VersionInfo(Resource resource, Literal version, Literal from, Literal to) {
         this.uri = resource.getURI();
         this.version = version.getLexicalForm();
-        this.fromTime = RDFUtil.asTimestamp(from);
-        this.toTime = RDFUtil.asTimestamp(to);
+        if (from != null) {
+            this.fromTime = RDFUtil.asTimestamp(from);
+        }
+        if (to != null) {
+            this.toTime = RDFUtil.asTimestamp(to);
+        }
     }
 
     public String getUri() {
@@ -47,6 +51,6 @@ public class VersionInfo {
     public long getToTime() {
         return toTime;
     }
-    
-    
+
+
 }

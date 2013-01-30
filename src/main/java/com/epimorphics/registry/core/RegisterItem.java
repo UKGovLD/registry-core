@@ -9,6 +9,7 @@
 
 package com.epimorphics.registry.core;
 
+import java.util.Calendar;
 import java.util.UUID;
 
 import javax.ws.rs.WebApplicationException;
@@ -20,7 +21,7 @@ import com.epimorphics.server.webapi.BaseEndpoint;
 import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
+import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.sparql.util.Closure;
 import com.hp.hpl.jena.util.ResourceUtils;
 import com.hp.hpl.jena.vocabulary.DCTerms;
@@ -28,7 +29,10 @@ import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
 
 /**
- * Abstraction for creation and access to the details of a register item.
+ * Abstraction for creation and access to the details of a register item plus its entity.
+ *
+ * The entity, if present, should be kept in a separate graph so that it can be stored
+ * independently of the item without making any assumptions like CBD.
  *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
@@ -66,10 +70,11 @@ public class RegisterItem extends Description {
         this.parentURI = parentURI;
         this.notation = notation;
     }
-    
+
     /**
      * Record the address of an associated entity.
      * Should be in a separate model to allowed to be saved on its own.
+     * Does NOT create reg:definition/reg:entity links.
      */
     public void setEntity(Resource entity) {
         this.entity = entity;
@@ -91,13 +96,14 @@ public class RegisterItem extends Description {
      * the intended URI for both it and the entity, fills in blanks on the register item,
      * returns the constructed item representation.
      */
-    public static RegisterItem fromRIRequest(Resource ri, String parentURI) {
+    public static RegisterItem fromRIRequest(Resource ri, String parentURI, boolean isNewSubmission) {
         Model d = Closure.closure(ri, false);
         Resource entity = findRequiredEntity(ri);
         Closure.closure(entity, false, d);
         RegisterItem item = new RegisterItem( ri.inModel(d), parentURI );
         item.relocate();
         item.relocateEntity(entity);
+        item.updateForEntity(isNewSubmission, Calendar.getInstance());
         return item;
     }
 
@@ -105,16 +111,17 @@ public class RegisterItem extends Description {
      * Constructs a RegisterIem for an entity in a request payload that doesn't have
      * any explict RegisterItem specification.
      */
-    public static RegisterItem fromEntityRequest(Resource e, String parentURI) {
+    public static RegisterItem fromEntityRequest(Resource e, String parentURI, boolean isNewSubmission) {
         Model d = Closure.closure(e, false);
         String notation = riNotationFromEntity(e, parentURI);
-        String riURI = parentURI + "/_" + notation;
+        String riURI = makeItemURI(parentURI, notation);
         Resource ri = d.createResource(riURI)
                 .addProperty(RDF.type, RegistryVocab.RegisterItem)
                 .addProperty(RegistryVocab.notation, notation);
         RegisterItem item = new RegisterItem( ri, parentURI, notation );
         Resource entity = e.inModel(d);
         item.relocateEntity(entity);
+        item.updateForEntity(isNewSubmission, Calendar.getInstance());
         return item;
     }
 
@@ -139,7 +146,7 @@ public class RegisterItem extends Description {
     // -----------  internal helpers for sorting out the different notation cases ---------------------------
 
     private void relocate() {
-        String uri = parentURI + "/_" + getNotation();
+        String uri = makeItemURI(parentURI, notation);
         if ( ! uri.equals(root.getURI()) ) {
             ResourceUtils.renameResource(root, uri);
         }
@@ -147,40 +154,53 @@ public class RegisterItem extends Description {
     }
 
     private void relocateEntity(Resource srcEntity) {
-        Model m = root.getModel();
         String uri = entityURI(srcEntity);
         if ( ! uri.equals(srcEntity.getURI()) ) {
-            ResourceUtils.renameResource(srcEntity.inModel( m ), uri);
+            ResourceUtils.renameResource(srcEntity, uri);
+            entity = srcEntity.getModel().createResource(uri);
+        } else {
+            entity = srcEntity;
         }
-        entity = m.createResource(uri);
-        updateFor(entity);
     }
 
     /**
-     * Update a register item to reflect the given entity being registered.
+     * Update a register item to reflect the current state of the entity
      */
-    private void updateFor(Resource entity) {
-        RDFUtil.timestamp(root, DCTerms.dateSubmitted);
-        if ( !root.hasProperty(RegistryVocab.status)) {
+    public void updateForEntity(boolean isNewSubmission, Calendar time) {
+        if (isNewSubmission) {
+            root.addProperty(DCTerms.dateSubmitted, root.getModel().createTypedLiteral(time));
+        } else {
+            root.addProperty(DCTerms.modified, root.getModel().createTypedLiteral(time));
+        }
+        if ( !root.hasProperty(RegistryVocab.status) && isNewSubmission) {
             root.addProperty(RegistryVocab.status, RegistryVocab.statusSubmitted);
         }
         if (!root.hasProperty(RegistryVocab.notation)) {
             root.addProperty(RegistryVocab.notation, notation);
         }
-        RDFUtil.copyProperty(entity, root, RDFS.label);
-        RDFUtil.copyProperty(entity, root, SKOS.prefLabel);
-        RDFUtil.copyProperty(entity, root, SKOS.altLabel);
-        RDFUtil.copyProperty(entity, root, DCTerms.description);
-        for (StmtIterator si = entity.listProperties(RDF.type); si.hasNext();) {
-            root.addProperty(RegistryVocab.itemClass, si.next().getObject());
+
+        root.removeAll(RDFS.label)
+            .removeAll(DCTerms.description)
+            .removeAll(RegistryVocab.itemClass);
+        if (entity.hasProperty(SKOS.prefLabel)) {
+            RDFUtil.copyProperty(entity, root, SKOS.prefLabel, RDFS.label);
+        } else if (entity.hasProperty(SKOS.altLabel)) {
+            RDFUtil.copyProperty(entity, root, SKOS.altLabel, RDFS.label);
+        } else {
+            RDFUtil.copyProperty(entity, root, RDFS.label);
         }
-        Resource entityref = root.getModel().createResource( root.getURI() + "#entityref" )
-                .addProperty(RegistryVocab.entity, entity);
-        root.addProperty(RegistryVocab.definition, entityref);
+        RDFUtil.copyProperty(entity, root, DCTerms.description);
+        for (Statement s : entity.listProperties(RDF.type).toList()) {
+            root.addProperty(RegistryVocab.itemClass, s.getObject());
+        }
+        // Omit entity reference link itself, this will be created per-version when added to store
 
         // TODO the reg:submitter may be set automatically to an identifier for the user making the submission
     }
 
+    public String getEntityRefURI() {
+        return root.getURI() + "#entityref";
+    }
 
     private void determineLocation() {
         if (root.isURIResource()) {
@@ -266,7 +286,23 @@ public class RegisterItem extends Description {
     }
 
     private String makeEntityURI() {
-        return parentURI + "/" + notation;
+        return makeEntityURI(parentURI, notation);
+    }
+
+    private static String makeEntityURI(String parentURI, String notation) {
+        return baseParentURI(parentURI) + "/" + notation;
+    }
+
+    private static String makeItemURI(String parentURI, String notation) {
+        return baseParentURI(parentURI) + "/_" + notation;
+    }
+
+    private static String baseParentURI(String parentURI){
+        if (parentURI.endsWith("/")) {
+            return parentURI.substring(0, parentURI.length() - 1);
+        } else {
+            return parentURI;
+        }
     }
 
     private static Resource findRequiredEntity(Resource ri) {
