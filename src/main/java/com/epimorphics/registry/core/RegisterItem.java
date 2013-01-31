@@ -11,6 +11,7 @@ package com.epimorphics.registry.core;
 
 import java.util.Calendar;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
@@ -18,6 +19,7 @@ import javax.ws.rs.core.Response;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.server.webapi.BaseEndpoint;
+import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -143,6 +145,17 @@ public class RegisterItem extends Description {
         return status;
     }
 
+    /**
+     * Flatten versioning information for the register item and, if present, the entity
+     */
+    public RegisterItem flatten() {
+        doFlatten(root);
+        if (entity != null) {
+            doFlatten(entity);
+        }
+        return this;
+    }
+
     // -----------  internal helpers for sorting out the different notation cases ---------------------------
 
     private void relocate() {
@@ -204,10 +217,9 @@ public class RegisterItem extends Description {
 
     private void determineLocation() {
         notation = getExplicitNotation(root);
-        if (notation != null) return;
 
         // Presumably a item under construction from a web request
-        if (root.isURIResource()) {
+        if (notation == null && root.isURIResource()) {
             String uri = root.getURI();
             if (uri.equals(BaseEndpoint.DUMMY_BASE_URI)) {
                 // Empty relative URI specified
@@ -224,11 +236,12 @@ public class RegisterItem extends Description {
         }
         if (notation == null) {
             notation = UUID.randomUUID().toString();
-        } else if (notation.contains("/")) {
-            // TODO check pchar* syntax more fully
-            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        } else if ( ! LEGAL_NOTATION.matcher(notation).matches() ) {
+            throw new WebApiException(Response.Status.BAD_REQUEST, "Proposed notation for item is not a legal pchar or starts with '_'");
         }
     }
+
+    static final Pattern LEGAL_NOTATION = Pattern.compile("^[a-zA-Z0-9][\\w\\.\\-~%@=!&'()*+,;=]*$");
 
     private static String getExplicitNotation(Resource root) {
         if (root.hasProperty(RegistryVocab.notation)) {

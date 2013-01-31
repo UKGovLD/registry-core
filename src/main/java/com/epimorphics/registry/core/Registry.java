@@ -2,7 +2,7 @@
  * File:        Registry.java
  * Created by:  Dave Reynolds
  * Created on:  26 Jan 2013
- * 
+ *
  * (c) Copyright 2013, Epimorphics Limited
  *
  *****************************************************************/
@@ -49,11 +49,14 @@ public class Registry extends ServiceBase implements Service {
 
     protected StoreAPI store;
     protected String baseURI;
-    
+
     @Override
     public void init(Map<String, String> config, ServletContext context) {
         this.config = config;
-        baseURI = getRequiredFileParam(BASE_URI_PARAM);
+        baseURI = getRequiredParam(BASE_URI_PARAM);
+        if (baseURI.endsWith("/")) {
+            baseURI = baseURI.substring(0, baseURI.length() -1 );
+        }
     }
 
     @Override
@@ -63,7 +66,7 @@ public class Registry extends ServiceBase implements Service {
         } catch (Exception e) {
             log.error("Misconfigured StoreAPI implementation");
         }
-        
+
 
         Description root = store.getDescription(getBaseURI() + "/", false);
         if (root == null) {
@@ -73,12 +76,16 @@ public class Registry extends ServiceBase implements Service {
             }
             log.info("Installed bootstrap root register");
         }
-        
+
         registry = this;   // Assumes singleton registry
     }
-    
+
     public String getBaseURI() {
         return baseURI;
+    }
+
+    public StoreAPI getStore() {
+        return store;
     }
 
     public Command make(Operation operation, String target,  MultivaluedMap<String, String> parameters) {

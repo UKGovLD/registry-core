@@ -88,7 +88,11 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         if (forupdate) lock(uri);
         store.lock();
         try {
-            return asDescription( describe(uri) );
+            Description d = asDescription( describe(uri) );
+            if (d == null && forupdate) {
+                unlock(uri);
+            }
+            return d;
         } finally {
             store.unlock();
         }
@@ -146,18 +150,23 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         if (forupdate) lock(uri);
         store.lock();
         try {
-            return asDescription( doGetCurrentVersion(uri) );
+            Description d = asDescription( doGetCurrentVersion(uri, true) );
+            if (d == null && forupdate) {
+                unlock(uri);
+            }
+            return d;
+
         } finally {
             store.unlock();
         }
     }
 
-    protected Resource doGetCurrentVersion(String uri) {
+    protected Resource doGetCurrentVersion(String uri, boolean flatten) {
         Resource root = describe(uri);
         Resource version = root.getPropertyResourceValue(Version.currentVersion);
         if (version != null) {
-            Closure.closure(version.inModel( getDefaultModel() ), false, root.getModel());
-            VersionUtil.flatten(root, version);
+            Closure.closure(mod(version), false, root.getModel());
+            if (flatten) VersionUtil.flatten(root, version);
         }
         return root;
     }
@@ -166,18 +175,18 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     public Description getVersion(String uri) {
         store.lock();
         try {
-            return doGetVersion(uri);
+            return doGetVersion(uri, true);
         } finally {
             store.unlock();
         }
     }
 
-    protected Description doGetVersion(String uri) {
+    protected Description doGetVersion(String uri, boolean flatten) {
         Resource version = describe(uri);
         Resource root = version.getPropertyResourceValue(DCTerms.isVersionOf);
         if (root != null) {
-            Closure.closure(root.inModel( getDefaultModel() ), false, version.getModel());
-            VersionUtil.flatten(root, version);
+            Closure.closure(mod(root), false, version.getModel());
+            if (flatten) VersionUtil.flatten(root, version);
         } else {
             throw new EpiException("Version requested on resource with no isVersionOf root");
         }
@@ -191,7 +200,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             RDFNode version = selectFirstVar("version", getDefaultModel(), VERSION_AT_QUERY, Prefixes.get(),
                     "root", ResourceFactory.createResource(uri), "time", RDFUtil.fromDateTime(time) );
             if (version != null && version.isURIResource()) {
-                return doGetVersion( version.asResource().getURI() );
+                return doGetVersion( version.asResource().getURI(), true );
             } else {
                 return null;
             }
@@ -244,21 +253,28 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     @Override
     public RegisterItem getItem(String uri, boolean withEntity, boolean forupdate) {
+        return doGetItem(uri, withEntity, forupdate, true);
+    }
+
+    public RegisterItem getItemWithVersion(String uri, boolean withEntity, boolean forupdate) {
+        return doGetItem(uri, withEntity, forupdate, false);
+    }
+
+    private RegisterItem doGetItem(String uri, boolean withEntity, boolean forupdate, boolean flatten) {
         if (forupdate) lock(uri);
         store.lock();
         try {
-            Resource root = doGetCurrentVersion(uri);
+            Resource root = doGetCurrentVersion(uri, flatten);
             RegisterItem item = new RegisterItem(root);
             if (withEntity) {
-                doGetEntity(item);
+                doGetEntity(item, flatten);
             }
             return item;
         } finally {
             store.unlock();
         }
     }
-
-    protected Resource doGetEntity(RegisterItem item) {
+    protected Resource doGetEntity(RegisterItem item, boolean flatten) {
         Resource root = item.getRoot();
         Model m = null;
         Resource entityRef = root.getPropertyResourceValue(RegistryVocab.definition);
@@ -270,7 +286,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
                 m.add( store.asDataset().getNamedModel(srcGraph.getURI()) );
                 entity = entity.inModel(m);
             } else {
-                entity = doGetCurrentVersion( entity.getURI() );
+                entity = doGetCurrentVersion( entity.getURI(), flatten );
             }
             item.setEntity(entity);
             return entity;
@@ -284,7 +300,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     public Resource getEntity(RegisterItem item) {
         store.lock();
         try {
-            return doGetEntity(item);
+            return doGetEntity(item, true);
         } finally {
             store.unlock();
         }
@@ -292,6 +308,15 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     @Override
     public  List<RegisterItem>  fetchMembers(Register register, boolean withEntity) {
+        return doFetchMembers(register, withEntity, true);
+    }
+
+    @Override
+    public  List<RegisterItem>  fetchMembersWithVersion(Register register, boolean withEntity) {
+        return doFetchMembers(register, withEntity, false);
+    }
+
+    public  List<RegisterItem>  doFetchMembers(Register register, boolean withEntity, boolean flatten) {
         store.lock();
         try {
             List<RDFNode> items = selectAllVar("ri", getDefaultModel(), REGISTER_ENUM_QUERY, Prefixes.get(),
@@ -299,9 +324,9 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             List<RegisterItem> results = new ArrayList<RegisterItem>(items.size());
             for ( RDFNode itemR : items) {
                 if (itemR.isURIResource()) {
-                    Resource itemRoot = doGetCurrentVersion(itemR.asResource().getURI());
+                    Resource itemRoot = doGetCurrentVersion(itemR.asResource().getURI(), flatten);
                     RegisterItem item = new RegisterItem(itemRoot);
-                    doGetEntity(item);
+                    doGetEntity(item, flatten);
                     results.add(item);
                 } else {
                     throw new EpiException("Found item which isn't a resource");
@@ -393,11 +418,23 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         try {
             doUpdateItem(item, true, now);
             doUpdate(register.getRoot(), now);
-            item.getRoot().inModel(getDefaultModel()).addProperty(RegistryVocab.register, register.getRoot());
+            mod(item).addProperty(RegistryVocab.register, register.getRoot());
+            Resource entity = item.getEntity();
+            if (entity.getPropertyResourceValue(RDF.type).equals(RegistryVocab.Register)) {
+                mod(register).addProperty(RegistryVocab.subregister, entity);
+            }
         } finally {
 //            unlock(register.getRoot().getURI());
             store.unlock();
         }
+    }
+
+    private Resource mod(Description d) {
+        return mod(d.getRoot());
+    }
+
+    private Resource mod(Resource r) {
+        return r.inModel(getDefaultModel());
     }
 
     @Override
@@ -442,7 +479,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     private void doUpdateItem(RegisterItem item, boolean withEntity, Calendar now) {
         Model storeModel = getDefaultModel();
-        Resource oldVersion = item.getRoot().inModel(storeModel).getPropertyResourceValue(Version.currentVersion);
+        Resource oldVersion = mod(item).getPropertyResourceValue(Version.currentVersion);
 
         Resource newVersion = doUpdate(item.getRoot(), now, RegistryVocab.register, RegistryVocab.notation, RegistryVocab.itemClass, RegistryVocab.predecessor, RegistryVocab.submitter);
         if (withEntity) {
@@ -470,7 +507,8 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
                 } else {
                     entityModel = entity.getModel();
                 }
-                store.addGraph(graphURI, entityModel);
+//                store.addGraph(graphURI, entityModel);
+                store.updateGraph(graphURI, entityModel);
                 getDefaultModel().add( entityModel );
                 Resource graph = ResourceFactory.createResource( graphURI );
                 entityRef.removeAll(RegistryVocab.sourceGraph);
@@ -481,7 +519,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     private boolean removeGraphFor(Resource oldVersion) {
         Model st = getDefaultModel();
-        Resource definition = oldVersion.inModel(st).getPropertyResourceValue(RegistryVocab.definition);
+        Resource definition = mod(oldVersion).getPropertyResourceValue(RegistryVocab.definition);
         if (definition != null) {
             Resource graph = definition.getPropertyResourceValue(RegistryVocab.sourceGraph);
             if (graph != null) {

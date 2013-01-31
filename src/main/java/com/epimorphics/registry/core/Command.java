@@ -9,9 +9,13 @@
 
 package com.epimorphics.registry.core;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
+import com.epimorphics.registry.store.StoreAPI;
 import com.hp.hpl.jena.rdf.model.Model;
 
 /**
@@ -26,9 +30,12 @@ public abstract class Command {
 
     protected Operation operation;
     protected String target;
+    protected String parent;
+    protected String lastSegment;
     protected MultivaluedMap<String, String> parameters;
     protected Model payload;
     protected Registry registry;
+    protected StoreAPI store;
 
     /**
      * Constructor
@@ -42,7 +49,14 @@ public abstract class Command {
         this.target = registry.getBaseURI() + (target.isEmpty() ? "" : "/" + target);
         this.parameters = parameters;
         this.registry = registry;
+        this.store = registry.getStore();
+        Matcher segmatch = LAST_SEGMENT.matcher(target);
+        if (segmatch.matches()) {
+            this.lastSegment = segmatch.group(2);
+            this.parent = segmatch.group(1);
+        }
     }
+    static final Pattern LAST_SEGMENT = Pattern.compile("^.*/([^/]+)$");
 
     public Model getPayload() {
         return payload;
@@ -70,4 +84,8 @@ public abstract class Command {
     }
 
     public abstract Response execute() ;
+
+    protected boolean hasParamValue(String param, String value) {
+        return parameters.get(param).contains(value);
+    }
 }

@@ -85,6 +85,17 @@ public interface StoreAPI {
     public RegisterItem getItem(String uri, boolean withEntity, boolean forupdate);
 
     /**
+     * Return a RegisterItem, optionally along with the associated entity definition.
+     * No version flattening will be done.
+     * <p>AT RISK: not sure we really want to expose the versioning model this way</p>
+     * @param uri uri of the base (VersionedThing) RegisterItem to be fetched
+     * @param withEntity if true then the entity defined
+     * @param forupdate if true then the operation will check if the resource is locked if so will block until the lock is released, then a new lock will be taken
+     */
+
+    public RegisterItem getItemWithVersion(String uri, boolean withEntity, boolean forupdate);
+
+    /**
      * Fetch the entity specified by the Register item and add it to the item's data structure.
      */
     public Resource getEntity(RegisterItem item);
@@ -96,6 +107,16 @@ public interface StoreAPI {
      * @param withEntity if true then for each member fetched, the associated entity will also be fetched
      */
     public List<RegisterItem> fetchMembers(Register register, boolean withEntity);
+
+
+    /**
+     * Fetch all RegisterItems. Fetches all items, including NotAccepted items.
+     * No version flattening will be done
+     * <p>AT RISK: not sure we really want to expose the versioning model this way</p>
+     * @param register the register to be updated with a list of its members
+     * @param withEntity if true then for each member fetched, the associated entity will also be fetched
+     */
+    public List<RegisterItem> fetchMembersWithVersion(Register register, boolean withEntity);
 
     /**
      * List all members of a register. This gives a low cost way to enumerate the core information

@@ -13,15 +13,18 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import com.epimorphics.registry.util.VersionUtil;
 import com.hp.hpl.jena.datatypes.RDFDatatype;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.sparql.util.Closure;
+import com.hp.hpl.jena.vocabulary.DCTerms;
 
 /**
  * Provides core machinery for accessing descriptions of an RDF resource.
@@ -94,6 +97,20 @@ public class Description {
      */
     public RegisterItem asRegisterItem() {
         return (RegisterItem)this;
+    }
+    /**
+     * Flatten versioning information
+     */
+    public Description flatten() {
+        doFlatten(root);
+        return this;
+    }
+
+    protected void doFlatten(Resource r) {
+        ResIterator it = r.getModel().listSubjectsWithProperty(DCTerms.isVersionOf, r);
+        while (it.hasNext()) {
+            VersionUtil.flatten(r, it.next());
+        }
     }
 
     // TODO add hook for validation of changes before they occur?
