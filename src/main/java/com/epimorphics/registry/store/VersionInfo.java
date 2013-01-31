@@ -52,5 +52,9 @@ public class VersionInfo {
         return toTime;
     }
 
+    @Override
+    public String toString() {
+        return String.format("%s (version: %s) [%d,", uri, version, fromTime) + (toTime == -1 ? " ...)" : (" " + toTime + "]"));
+    }
 
 }

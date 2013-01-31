@@ -9,6 +9,7 @@
 
 package com.epimorphics.registry.store;
 
+import java.util.Calendar;
 import java.util.List;
 
 import com.epimorphics.registry.core.Description;
@@ -106,7 +107,6 @@ public interface StoreAPI {
 
     // --- Methods for updating information in the store ---
 
-
     /**
      * Add a new registered item to a parent register.
      * Initializes the versioning of the new RegisterItem.
@@ -129,6 +129,29 @@ public interface StoreAPI {
      * Releases the "forupdate" lock on item.
      */
     public void update(RegisterItem item, boolean withEntity);
+
+    /**
+     * Add a new registered item to a parent register.
+     * Initializes the versioning of the new RegisterItem.
+     * If the entity of the item is a Register then the versioning of the new sub-register will be initialized.
+     * Otherwise a new entity graph will be created for the entity.
+     * Does NOT release the "forupdate" lock on the register to allow multiple entries to be added.
+     */
+    public void addToRegister(Register register, RegisterItem item, Calendar timestamp);
+
+    /**
+     * Update the metadata for a register, managing the versioning information.
+     * Releases the "forupdate" lock on register.
+     */
+    public void update(Register register, Calendar timestamp);
+
+    /**
+     * Update a Register item
+     * @param withEntity if true then a new version of the entity will be saved, if false then
+     * just the item metadata will be udpated.
+     * Releases the "forupdate" lock on item.
+     */
+    public void update(RegisterItem item, boolean withEntity, Calendar timestamp);
 
 
     // --- misc operations ---

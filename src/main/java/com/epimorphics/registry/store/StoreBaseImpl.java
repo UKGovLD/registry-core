@@ -384,9 +384,13 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     @Override
     public void addToRegister(Register register, RegisterItem item) {
+        addToRegister(register, item, Calendar.getInstance());
+    }
+
+    @Override
+    public void addToRegister(Register register, RegisterItem item, Calendar now) {
         store.lockWrite();
         try {
-            Calendar now = Calendar.getInstance();
             doUpdateItem(item, true, now);
             doUpdate(register.getRoot(), now);
             item.getRoot().inModel(getDefaultModel()).addProperty(RegistryVocab.register, register.getRoot());
@@ -397,14 +401,19 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     }
 
     @Override
-    public void update(Register register) {
+    public void update(Register register, Calendar timestamp) {
         store.lockWrite();
         try {
-            doUpdate(register.getRoot(), Calendar.getInstance());
+            doUpdate(register.getRoot(), timestamp);
         } finally {
             unlock(register.getRoot().getURI());
             store.unlock();
         }
+    }
+
+    @Override
+    public void update(Register register) {
+        update(register, Calendar.getInstance());
     }
 
     protected Resource doUpdate(Resource root, Calendar cal, Property... rigids) {
@@ -416,15 +425,19 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     }
 
     @Override
-    public void update(RegisterItem item, boolean withEntity) {
+    public void update(RegisterItem item, boolean withEntity, Calendar timestamp) {
         store.lockWrite();
         try {
-            Calendar now = Calendar.getInstance();
-            doUpdateItem(item, withEntity, now);
+            doUpdateItem(item, withEntity, timestamp);
         } finally {
             unlock(item.getRoot().getURI());
             store.unlock();
         }
+    }
+
+    @Override
+    public void update(RegisterItem item, boolean withEntity) {
+        update(item, withEntity, Calendar.getInstance());
     }
 
     private void doUpdateItem(RegisterItem item, boolean withEntity, Calendar now) {

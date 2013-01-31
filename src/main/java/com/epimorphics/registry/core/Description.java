@@ -33,6 +33,8 @@ import com.hp.hpl.jena.sparql.util.Closure;
 public class Description {
 
     protected Resource root;
+
+    // TODO the recording of changes is currently not used either remove or extend to entities so it can be used uniformly
     protected List<Statement> removals = new ArrayList<Statement>();
     protected List<Statement> additions = new ArrayList<Statement>();
 

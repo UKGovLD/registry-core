@@ -133,16 +133,18 @@ public class TestStoreImpl {
         assertFalse( store.contains(rootreg, "reg2") );
     }
 
-    private void addEntry(String defFile, String parentURI) {
+    private long addEntry(String defFile, String parentURI) {
         Register parent = store.getCurrentVersion(parentURI, true).asRegister();
         Model subregM = ModelFactory.createDefaultModel();
         subregM.read(defFile, BaseEndpoint.DUMMY_BASE_URI, FileUtils.langTurtle);
         Resource subregR = RDFUtil.findRoot( subregM );
 
+        Calendar now = Calendar.getInstance();
         RegisterItem subregItem = RegisterItem.fromEntityRequest(subregR, parentURI, true);
 
-        store.addToRegister(parent, subregItem);
+        store.addToRegister(parent, subregItem, now);
         store.unlock(parentURI);
+        return now.getTimeInMillis();
     }
 
     @Test
@@ -271,6 +273,41 @@ public class TestStoreImpl {
 
         assertEquals("http://example.com/colours/black", item.getEntity().getURI());
         assertEquals("black", RDFUtil.getStringValue(item.getEntity(), RDFS.label));
+    }
+
+    @Test
+    public void testRegisterReconstruction() {
+        addEntry("file:test/reg1.ttl", ROOT_REGISTER);
+        Register reg1 = store.getCurrentVersion(REG1, false).asRegister();
+
+        long ts0 = addEntry("file:test/red.ttl", REG1);
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException e) { }
+        long ts1 = addEntry("file:test/blue.ttl", REG1);
+        String itemURI = ROOT_REGISTER + "reg1/_red";
+        long ts2 = doUpdate(itemURI, "red1");
+        long ts3 = doUpdate(itemURI, "red2");
+
+        checkRegisterList(reg1, ts0+1, "red");
+        checkRegisterList(reg1, ts1+1, "red", "blue");
+        checkRegisterList(reg1, ts2+1, "red1", "blue");
+        checkRegisterList(reg1, ts3+1, "red2", "blue");
+        checkRegisterList(reg1, ts0-1);
+    }
+
+    private void checkRegisterList(Register register, long ts, String...labels) {
+        List<RegisterItem> members = StoreUtil.fetchMembersAt(store, register, ts, false);
+        assertEquals(labels.length, members.size());
+        for (String label : labels) {
+            boolean found = false;
+            for (RegisterItem item : members) {
+                if (RDFUtil.getStringValue(item.getRoot(), RDFS.label).equals(label)) {
+                    found = true; break;
+                }
+            }
+            assertTrue(found);
+        }
     }
 
     @SuppressWarnings("unused")
