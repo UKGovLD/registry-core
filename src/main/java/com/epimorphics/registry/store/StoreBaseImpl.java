@@ -428,9 +428,11 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     }
 
     private void doUpdateItem(RegisterItem item, boolean withEntity, Calendar now) {
+        Model storeModel = getDefaultModel();
+        Resource oldVersion = item.getRoot().inModel(storeModel).getPropertyResourceValue(Version.currentVersion);
+
         Resource newVersion = doUpdate(item.getRoot(), now, RegistryVocab.register, RegistryVocab.notation, RegistryVocab.itemClass, RegistryVocab.predecessor, RegistryVocab.submitter);
         if (withEntity) {
-            Model storeModel = getDefaultModel();
             Resource entity = item.getEntity();
             Resource entityRef = newVersion.getPropertyResourceValue(RegistryVocab.definition);
             if (entityRef == null) {
@@ -441,19 +443,40 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             if (entity.hasProperty(RDF.type, RegistryVocab.Register)) {
                 doUpdate( entity, now );
             } else {
+                if (oldVersion != null) {
+                    if (!removeGraphFor(oldVersion)) {
+                        log.error("Could not find graph for old version of an updated entity");
+                    }
+                }
                 String graphURI = newVersion.getURI() + "#graph";
+                Model entityModel = null;
                 if (entity.getModel().contains(null, RDF.type, RegistryVocab.RegisterItem)) {
                     // register item mixed in with entity graph, separate out for storage
-                    System.out.println("Mixed entity and item");
-                    store.addGraph(graphURI, Closure.closure(entity, false));
+                    log.debug("Mixed entity and item");
+                    entityModel = Closure.closure(entity, false);
                 } else {
-                    store.addGraph(graphURI, entity.getModel());
+                    entityModel = entity.getModel();
                 }
+                store.addGraph(graphURI, entityModel);
+                getDefaultModel().add( entityModel );
                 Resource graph = ResourceFactory.createResource( graphURI );
                 entityRef.removeAll(RegistryVocab.sourceGraph);
                 entityRef.addProperty(RegistryVocab.sourceGraph, graph);
             }
         }
+    }
+
+    private boolean removeGraphFor(Resource oldVersion) {
+        Model st = getDefaultModel();
+        Resource definition = oldVersion.inModel(st).getPropertyResourceValue(RegistryVocab.definition);
+        if (definition != null) {
+            Resource graph = definition.getPropertyResourceValue(RegistryVocab.sourceGraph);
+            if (graph != null) {
+                st.remove( store.asDataset().getNamedModel(graph.getURI()));
+                return true;
+            }
+        }
+        return false;
     }
 
 }

@@ -190,6 +190,7 @@ public class TestStoreImpl {
 
         assertEquals(3, RDFUtil.getIntValue(ri.getRoot(), OWL.versionInfo, -1));
 
+        assertNotNull( store.getDescription(ROOT_REGISTER + "reg1/red", false) );
     }
 
     @Test
@@ -206,7 +207,7 @@ public class TestStoreImpl {
         checkVersionAt(itemURI, ts3-1, "red2");
         checkVersionAt(itemURI, ts3+1, "red3");
         checkVersionAt(itemURI, ts0, null);
-        
+
         RegisterItem ri = store.getVersion(ROOT_REGISTER + "reg1/_red:3").asRegisterItem();
         assertEquals("red2", RDFUtil.getStringValue(ri.getRoot(), RDFS.label));
     }
@@ -250,7 +251,27 @@ public class TestStoreImpl {
         assertTrue(entity.hasProperty(RDF.type, SKOS.Concept));
     }
 
-    // TODO test getVersionAt
+    @Test
+    public void testExternalEntity() {
+        addEntry("file:test/reg1.ttl", ROOT_REGISTER);
+
+        Register parent = store.getCurrentVersion(REG1, true).asRegister();
+        Model m = ModelFactory.createDefaultModel();
+        m.read("file:test/absolute-black.ttl", BaseEndpoint.DUMMY_BASE_URI, FileUtils.langTurtle);
+        Resource ri = m.listSubjectsWithProperty(RDF.type, RegistryVocab.RegisterItem).next();
+
+        RegisterItem item = RegisterItem.fromRIRequest(ri, REG1, true);
+        store.addToRegister(parent, item);
+        store.unlock(REG1);
+
+        item = store.getItem(ROOT_REGISTER + "reg1/_black", true, false);
+        assertEquals(ROOT_REGISTER + "reg1/_black", item.getRoot().getURI());
+        assertEquals("black", item.getNotation());
+        assertEquals("black", RDFUtil.getStringValue(item.getRoot(), RDFS.label));
+
+        assertEquals("http://example.com/colours/black", item.getEntity().getURI());
+        assertEquals("black", RDFUtil.getStringValue(item.getEntity(), RDFS.label));
+    }
 
     @SuppressWarnings("unused")
     private void dumpAll() {

@@ -146,7 +146,7 @@ public class RegisterItem extends Description {
     // -----------  internal helpers for sorting out the different notation cases ---------------------------
 
     private void relocate() {
-        String uri = makeItemURI(parentURI, notation);
+        String uri = makeItemURI(parentURI, getNotation());
         if ( ! uri.equals(root.getURI()) ) {
             ResourceUtils.renameResource(root, uri);
         }
@@ -203,6 +203,10 @@ public class RegisterItem extends Description {
     }
 
     private void determineLocation() {
+        notation = getExplicitNotation(root);
+        if (notation != null) return;
+
+        // Presumably a item under construction from a web request
         if (root.isURIResource()) {
             String uri = root.getURI();
             if (uri.equals(BaseEndpoint.DUMMY_BASE_URI)) {
@@ -211,14 +215,12 @@ public class RegisterItem extends Description {
             } else if (uri.startsWith(BaseEndpoint.DUMMY_BASE_URI)) {
                 // relative URI
                 notation = validateNotation( uri.substring(BaseEndpoint.DUMMY_BASE_URI.length() + 1));
-            } else if (uri.startsWith(parentURI)) {
+            } else if (parentURI != null && uri.startsWith(parentURI)) {
                 notation = validateNotation( uri.substring(parentURI.length() + 1) );
             } else {
                 // Register Item has explicit URI which is not relative to the target parent register
                 throw new WebApplicationException(Response.Status.FORBIDDEN);
             }
-        } else {
-            notation = getExplicitNotation(root);
         }
         if (notation == null) {
             notation = UUID.randomUUID().toString();
