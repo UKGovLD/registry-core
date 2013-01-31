@@ -2,7 +2,7 @@
 #parse("header.vm")
 #parse("navbar.vm")
 
-#set($res=$model.getNode($uri))
+#set($res=$lib.reg.getResource($uri))
 
 #if($res.hasResourceValue("rdf:type", "reg:Register"))
    #parse("view-register.vm")

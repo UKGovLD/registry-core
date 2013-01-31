@@ -6,7 +6,7 @@
   <display-name>UKL Registry POC</display-name>
 
   <context-param>
-    <param-name>config.mainstore</param-name>
+    <param-name>config.basestore</param-name>
     <param-value>com.epimorphics.server.stores.TDBStore,
     location=/var/local/registry/store,
     union=true,
@@ -16,21 +16,33 @@
   </context-param>
 
   <context-param>
+    <param-name>config.storeapi</param-name>
+    <param-value>com.epimorphics.registry.store.StoreBaseImpl,store=basestore
+    </param-value>
+  </context-param>
+
+  <context-param>
     <param-name>config.index</param-name>
     <param-value>com.epimorphics.server.indexers.LuceneIndex, location=/var/local/registry/index, config=${webapp}/WEB-INF/index-config.ttl</param-value>
   </context-param>
 
   <context-param>
     <param-name>config.velocity</param-name>
-    <param-value>com.epimorphics.server.templates.VelocityRender, templates=${webapp}/WEB-INF/templates, root=/ui</param-value>
+    <param-value>com.epimorphics.server.templates.VelocityRender, templates=${webapp}/WEB-INF/templates, root=/ui,
+    plugins=reg</param-value>
+  </context-param>
+
+  <context-param>
+    <param-name>config.reg</param-name>
+    <param-value>com.epimorphics.registry.webapi.LibReg</param-value>
   </context-param>
 
   <context-param>
     <param-name>config.registry</param-name>
-    <param-value>com.epimorphics.uklregistry.core.Registry,
+    <param-value>com.epimorphics.registry.core.Registry,
     baseURI=http://location.data.gov.uk,
-    store=mainstore,
-    rootRegisterSpec=${webapp}/WEB-INF/root-register.ttl|${webapp}/WEB-INF/registry.ttl</param-value>
+    store=storeapi,
+    bootSpec=${webapp}/WEB-INF/root-register.ttl|${webapp}/WEB-INF/registry.ttl</param-value>
   </context-param>
 
 
@@ -39,7 +51,7 @@
     <filter-class>com.sun.jersey.spi.container.servlet.ServletContainer</filter-class>
     <init-param>
       <param-name>com.sun.jersey.config.property.packages</param-name>
-      <param-value>com.epimorphics.uklregistry.webapi, com.epimorphics.webapi</param-value>
+      <param-value>com.epimorphics.registry.webapi, com.epimorphics.webapi</param-value>
     </init-param>
     <init-param>
       <param-name>com.sun.jersey.config.feature.FilterForwardOn404</param-name>

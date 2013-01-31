@@ -4,7 +4,9 @@
 
    1. minimal register create, item register, browse, no versioning - done
    1. text index and minimal UI - done
-   1. versioning model and fuller API <---
+   1. versioning model
+   1. fuller API and test suite <---
+   1. base UI
    1. minimal dispatch
    1. partitioning into distributable, replicable subsystems
 
@@ -19,19 +21,21 @@
    * Separate out the UI as per the conceptual architecture
    * Switch to a message-oriented design for connecting the registry core logic to the store, indexers and other possible data consumers - but what message structure BSON encoding?
    * plugin architecture for validators, use ServiceLoader machinery for that?
-   * front-end dispatcher depends on Chris experiments but it nginx then simple "sig -HUP" can be used to trigger a config reload
 
+   * shake down StoreAPI - fetch register entities only should be an option
+
+   * internal caching for read (zap on update)
+   
 ## Stack
 
+   * create void description for registers
    * creating of void:example from early registrations
    * test cases for location allocation (null, relative, bnode, skos:notation, absolute, non-local)
    * validation of completeness of a Register spec
    * completion of void description
    * auth hooks
    * logging of command request
-   * find a way to pass explanation back in 403 and other error returns
    * If RI includes status value then need to authorize status update as well
-   * return from registration should include a location header
-
+   * caching control headers
    * e-tag support
 

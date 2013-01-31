@@ -64,7 +64,7 @@ public class Registry extends ServiceBase implements Service {
         try {
             store = (StoreAPI) ServiceConfig.get().getService( getRequiredParam(STORE_PARAM) );
         } catch (Exception e) {
-            log.error("Misconfigured StoreAPI implementation");
+            log.error("Misconfigured StoreAPI implementation", e);
         }
 
 

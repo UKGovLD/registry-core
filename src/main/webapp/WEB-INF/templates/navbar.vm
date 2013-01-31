@@ -5,7 +5,7 @@
         <div class="row">
 
          <div class="span1">
-           <a href="${root}/ui/view?uri=http://location.data.gov.uk" class="btn btn-inverse"><i class="icon-home icon-white"></i></a>
+           <a href="${root}/ui/view?uri=http://location.data.gov.uk/" class="btn btn-inverse"><i class="icon-home icon-white"></i></a>
          </div>
 
          <div class="span4 offset1">

@@ -507,14 +507,27 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
                 } else {
                     entityModel = entity.getModel();
                 }
-//                store.addGraph(graphURI, entityModel);
-                store.updateGraph(graphURI, entityModel);
+                storeGraph(graphURI, entityModel);
+
                 getDefaultModel().add( entityModel );
                 Resource graph = ResourceFactory.createResource( graphURI );
                 entityRef.removeAll(RegistryVocab.sourceGraph);
                 entityRef.addProperty(RegistryVocab.sourceGraph, graph);
             }
         }
+    }
+
+    private void storeGraph(String graphURI, Model entityModel) {
+        // Avoids Store.updateGraph because we are already in a transaction
+        Model graphModel = store.asDataset().getNamedModel(graphURI);
+        if (graphModel == null) {
+            // Probably an in-memory test store
+            graphModel = ModelFactory.createDefaultModel();
+            store.asDataset().addNamedModel(graphURI, graphModel);
+        } else {
+            graphModel.removeAll();
+        }
+        graphModel.add( entityModel );
     }
 
     private boolean removeGraphFor(Resource oldVersion) {

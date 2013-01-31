@@ -22,6 +22,7 @@ import javax.ws.rs.core.Response;
 
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Description;
+import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -37,6 +38,9 @@ public class CommandRead extends Command {
 
     @Override
     public Response execute() {
+        boolean withVersion = hasParamValue(VIEW, WITH_VERSION);
+        boolean withMetadata = hasParamValue(VIEW, WITH_METADATA);
+
         Description d = null;
 
         if (lastSegment.startsWith("_")) {
@@ -49,7 +53,7 @@ public class CommandRead extends Command {
                 }
             } else {
                 //  plain item
-                if (hasParamValue(VIEW, WITH_VERSION)) {
+                if (withVersion) {
                     d = store.getItemWithVersion(target, true, false);
                 } else {
                     d = store.getItem(target, true, false) ;
@@ -57,12 +61,12 @@ public class CommandRead extends Command {
             }
         } else {
             // An entity
-            if ( hasParamValue(VIEW, WITH_METADATA) ) {
+            if ( withMetadata ) {
                 // Entity with metadata
                 d = store.getItem(parent +"/_" + lastSegment, true, false);
             } else {
                 // plain entity
-                d = store.getDescription(target, false);
+                d = store.getCurrentVersion(target, false);
             }
         }
 
@@ -72,13 +76,15 @@ public class CommandRead extends Command {
             throw new NotFoundException();
         }
 
+        Model m = d.getRoot().getModel();
         // Include any entity in the response
         if (d instanceof RegisterItem) {
             RegisterItem ri = d.asRegisterItem();
-            Model m = ri.getRoot().getModel();
             if (ri.getEntity() != null) {
                 m.add( ri.getEntity().getModel() );
             }
+        } else if (d instanceof Register) {
+            m = d.asRegister().constructView(store, withVersion, withMetadata);
         }
 
         URI uri;
@@ -87,7 +93,7 @@ public class CommandRead extends Command {
         } catch (URISyntaxException e) {
             throw new WebApplicationException(e);
         }
-        return Response.ok().location(uri).entity( d.getRoot().getModel() ).build();
+        return Response.ok().location(uri).entity( m ).build();
     }
 
 }

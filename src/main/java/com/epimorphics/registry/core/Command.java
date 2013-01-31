@@ -9,6 +9,7 @@
 
 package com.epimorphics.registry.core;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,7 +47,7 @@ public abstract class Command {
      */
     public Command(Operation operation, String target,  MultivaluedMap<String, String> parameters, Registry registry) {
         this.operation = operation;
-        this.target = registry.getBaseURI() + (target.isEmpty() ? "" : "/" + target);
+        this.target = registry.getBaseURI() + (target.isEmpty() ? "/" : "/" + target);
         this.parameters = parameters;
         this.registry = registry;
         this.store = registry.getStore();
@@ -54,9 +55,13 @@ public abstract class Command {
         if (segmatch.matches()) {
             this.lastSegment = segmatch.group(2);
             this.parent = segmatch.group(1);
+        } else {
+            // Root register
+            this.lastSegment = "";
+            this.parent = target;
         }
     }
-    static final Pattern LAST_SEGMENT = Pattern.compile("^.*/([^/]+)$");
+    static final Pattern LAST_SEGMENT = Pattern.compile("(^.*)/([^/]+)$");
 
     public Model getPayload() {
         return payload;
@@ -86,6 +91,10 @@ public abstract class Command {
     public abstract Response execute() ;
 
     protected boolean hasParamValue(String param, String value) {
-        return parameters.get(param).contains(value);
+        List<String> values = parameters.get(param);
+        if (values != null) {
+            return values.contains(value);
+        }
+        return false;
     }
 }
