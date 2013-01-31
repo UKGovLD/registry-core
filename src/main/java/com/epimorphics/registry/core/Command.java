@@ -51,7 +51,7 @@ public abstract class Command {
         this.parameters = parameters;
         this.registry = registry;
         this.store = registry.getStore();
-        Matcher segmatch = LAST_SEGMENT.matcher(target);
+        Matcher segmatch = LAST_SEGMENT.matcher(this.target);
         if (segmatch.matches()) {
             this.lastSegment = segmatch.group(2);
             this.parent = segmatch.group(1);
