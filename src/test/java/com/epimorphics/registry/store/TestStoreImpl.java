@@ -9,11 +9,7 @@
 
 package com.epimorphics.registry.store;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -184,22 +180,63 @@ public class TestStoreImpl {
         assertEquals(2, RDFUtil.getIntValue(ri.getRoot(), OWL.versionInfo, -1));
 
         // Update item content
-        ri = store.getItem(ROOT_REGISTER + "reg1/_red", true, true);
-        Resource e = ri.getEntity();
-        e.removeAll(RDFS.label);
-        e.addProperty(RDFS.label, "reddish");
-        Calendar now = Calendar.getInstance();
-        ri.updateForEntity(false, now);
-        store.update(ri, true);
+        long ts = doUpdate(ROOT_REGISTER + "reg1/_red", "reddish");
 
         ri = store.getItem(ROOT_REGISTER + "reg1/_red", true, false);
         assertTrue(ri.getRoot().hasProperty(RegistryVocab.status, RegistryVocab.statusAccepted));
         assertEquals("reddish", RDFUtil.getStringValue(ri.getRoot(), RDFS.label));
         assertEquals("reddish", RDFUtil.getStringValue(ri.getEntity(), RDFS.label));
-        assertEquals(now.getTimeInMillis(), RDFUtil.asTimestamp( ri.getRoot().getProperty(DCTerms.modified).getObject() ) );
+        assertEquals(ts, RDFUtil.asTimestamp( ri.getRoot().getProperty(DCTerms.modified).getObject() ) );
 
         assertEquals(3, RDFUtil.getIntValue(ri.getRoot(), OWL.versionInfo, -1));
 
+    }
+
+    @Test
+    public void testVersionRetrieval() {
+        addEntry("file:test/reg1.ttl", ROOT_REGISTER);
+        long ts0 = Calendar.getInstance().getTimeInMillis();
+        addEntry("file:test/red.ttl", REG1);
+        String itemURI = ROOT_REGISTER + "reg1/_red";
+        long ts1 = doUpdate(itemURI, "red1");
+        long ts2 = doUpdate(itemURI, "red2");
+        long ts3 = doUpdate(itemURI, "red3");
+        checkVersionAt(itemURI, ts1-1, "red");
+        checkVersionAt(itemURI, ts2-1, "red1");
+        checkVersionAt(itemURI, ts3-1, "red2");
+        checkVersionAt(itemURI, ts3+1, "red3");
+        checkVersionAt(itemURI, ts0, null);
+        
+        RegisterItem ri = store.getVersion(ROOT_REGISTER + "reg1/_red:3").asRegisterItem();
+        assertEquals("red2", RDFUtil.getStringValue(ri.getRoot(), RDFS.label));
+    }
+
+    private long doUpdate(String item, String label) {
+        try {
+            Thread.sleep(10, 0);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        RegisterItem ri = store.getItem(item, true, true);
+        Resource e = ri.getEntity();
+        e.removeAll(RDFS.label).addProperty(RDFS.label, label);
+        Calendar now = Calendar.getInstance();
+        ri.updateForEntity(false, now);
+        store.update(ri, true);
+        return now.getTimeInMillis();
+    }
+
+    private void checkVersionAt(String uri, long ts, String label) {
+        Description d = store.getVersionAt(uri, ts);
+        if (label == null) {
+            assertNull(d);
+        } else {
+            assertNotNull(d);
+            RegisterItem item = d.asRegisterItem();
+            assertEquals(label, RDFUtil.getStringValue(item.getRoot(), RDFS.label));
+            Resource entity = store.getEntity(item);
+            assertEquals(label, RDFUtil.getStringValue(entity, RDFS.label));
+        }
     }
 
     private void checkItemWithEntity(RegisterItem ri, String colour) {
@@ -220,7 +257,6 @@ public class TestStoreImpl {
         dumpAll( basestore.asDataset().getDefaultModel() );
     }
 
-    @SuppressWarnings("unused")
     private void dumpAll(Model m) {
         m.setNsPrefixes( Prefixes.get() );
         m.write(System.out, FileUtils.langTurtle);

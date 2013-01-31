@@ -20,6 +20,7 @@ import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.server.webapi.BaseEndpoint;
 import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.sparql.util.Closure;
@@ -99,7 +100,7 @@ public class RegisterItem extends Description {
     public static RegisterItem fromRIRequest(Resource ri, String parentURI, boolean isNewSubmission) {
         Model d = Closure.closure(ri, false);
         Resource entity = findRequiredEntity(ri);
-        Closure.closure(entity, false, d);
+        entity = entity.inModel( Closure.closure(entity, false) );
         RegisterItem item = new RegisterItem( ri.inModel(d), parentURI );
         item.relocate();
         item.relocateEntity(entity);
@@ -112,14 +113,13 @@ public class RegisterItem extends Description {
      * any explict RegisterItem specification.
      */
     public static RegisterItem fromEntityRequest(Resource e, String parentURI, boolean isNewSubmission) {
-        Model d = Closure.closure(e, false);
         String notation = riNotationFromEntity(e, parentURI);
         String riURI = makeItemURI(parentURI, notation);
-        Resource ri = d.createResource(riURI)
+        Resource ri = ModelFactory.createDefaultModel().createResource(riURI)
                 .addProperty(RDF.type, RegistryVocab.RegisterItem)
                 .addProperty(RegistryVocab.notation, notation);
         RegisterItem item = new RegisterItem( ri, parentURI, notation );
-        Resource entity = e.inModel(d);
+        Resource entity = e;
         item.relocateEntity(entity);
         item.updateForEntity(isNewSubmission, Calendar.getInstance());
         return item;

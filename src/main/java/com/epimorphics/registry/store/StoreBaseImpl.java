@@ -41,6 +41,7 @@ import com.epimorphics.util.EpiException;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -188,7 +189,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         store.lock();
         try {
             RDFNode version = selectFirstVar("version", getDefaultModel(), VERSION_AT_QUERY, Prefixes.get(),
-                    createBindings("root", ResourceFactory.createResource(uri), "time", RDFUtil.fromDateTime(time)) );
+                    "root", ResourceFactory.createResource(uri), "time", RDFUtil.fromDateTime(time) );
             if (version != null && version.isURIResource()) {
                 return doGetVersion( version.asResource().getURI() );
             } else {
@@ -259,15 +260,17 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     protected Resource doGetEntity(RegisterItem item) {
         Resource root = item.getRoot();
-        Model m = root.getModel();
+        Model m = null;
         Resource entityRef = root.getPropertyResourceValue(RegistryVocab.definition);
         if (entityRef != null) {
             Resource entity = entityRef.getPropertyResourceValue(RegistryVocab.entity);
             Resource srcGraph = entityRef.getPropertyResourceValue(RegistryVocab.sourceGraph);
             if (srcGraph != null) {
+                m  = ModelFactory.createDefaultModel();
                 m.add( store.asDataset().getNamedModel(srcGraph.getURI()) );
+                entity = entity.inModel(m);
             } else {
-                m.add( doGetCurrentVersion( entity.getURI() ).getModel() );
+                entity = doGetCurrentVersion( entity.getURI() );
             }
             item.setEntity(entity);
             return entity;
@@ -439,8 +442,13 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
                 doUpdate( entity, now );
             } else {
                 String graphURI = newVersion.getURI() + "#graph";
-
-                store.addGraph(graphURI, Closure.closure(entity, false));
+                if (entity.getModel().contains(null, RDF.type, RegistryVocab.RegisterItem)) {
+                    // register item mixed in with entity graph, separate out for storage
+                    System.out.println("Mixed entity and item");
+                    store.addGraph(graphURI, Closure.closure(entity, false));
+                } else {
+                    store.addGraph(graphURI, entity.getModel());
+                }
                 Resource graph = ResourceFactory.createResource( graphURI );
                 entityRef.removeAll(RegistryVocab.sourceGraph);
                 entityRef.addProperty(RegistryVocab.sourceGraph, graph);
