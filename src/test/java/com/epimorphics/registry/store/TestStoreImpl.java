@@ -217,6 +217,13 @@ public class TestStoreImpl {
         checkVersionAt(itemURI, ts3-1, "red2");
         checkVersionAt(itemURI, ts3+1, "red3");
         checkVersionAt(itemURI, ts0, null);
+
+        RegisterItem item = store.getItemWithVersion(itemURI, true);
+        assertNotNull(item);
+        assertNotNull(item.getRoot());
+//        item.getRoot().getModel().write(System.out, "Turtle");
+        assertNotNull(item.getEntity());
+        assertEquals("red3", RDFUtil.getStringValue(item.getEntity(), RDFS.label));
     }
 
     private void checkLiveVersion(String label, String uri) {

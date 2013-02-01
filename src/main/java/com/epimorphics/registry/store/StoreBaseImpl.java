@@ -44,6 +44,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.sparql.util.Closure;
@@ -273,6 +274,13 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     }
     protected Resource doGetEntity(RegisterItem item, boolean flatten, Model dest) {
         Resource root = item.getRoot();
+        if (!flatten) {
+            root = RDFUtil.getSubject(root.getModel(), DCTerms.isVersionOf, root);
+            if (root == null) {
+                log.error("Internal error finding non-flattened version of " + item.getRoot());
+                return null;
+            }
+        }
         if (dest == null) {
             dest = ModelFactory.createDefaultModel();
         }
