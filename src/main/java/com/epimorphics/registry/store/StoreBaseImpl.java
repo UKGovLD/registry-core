@@ -88,7 +88,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         if (forupdate) lock(uri);
         store.lock();
         try {
-            Description d = asDescription( describe(uri) );
+            Description d = asDescription( describe(uri, null) );
             if (d == null && forupdate) {
                 unlock(uri);
             }
@@ -99,10 +99,14 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     }
 
     // Assumes store is locked
-    protected Resource describe(String uri) {
+    private Resource describe(String uri, Model dest) {
         Resource r = getDefaultModel().createResource(uri);
-        Model d = Closure.closure(r, false);
-        return r.inModel(d);
+        if (dest == null) {
+            dest = Closure.closure(r, false);
+        } else {
+            Closure.closure(r, false, dest);
+        }
+        return r.inModel(dest);
     }
 
     protected Model getDefaultModel() {
@@ -150,7 +154,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         if (forupdate) lock(uri);
         store.lock();
         try {
-            Description d = asDescription( doGetCurrentVersion(uri, true) );
+            Description d = asDescription( doGetCurrentVersion(uri, true, null) );
             if (d == null && forupdate) {
                 unlock(uri);
             }
@@ -161,8 +165,8 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         }
     }
 
-    protected Resource doGetCurrentVersion(String uri, boolean flatten) {
-        Resource root = describe(uri);
+    protected Resource doGetCurrentVersion(String uri, boolean flatten, Model dest) {
+        Resource root = describe(uri, dest);
         Resource version = root.getPropertyResourceValue(Version.currentVersion);
         if (version != null) {
             Closure.closure(mod(version), false, root.getModel());
@@ -182,7 +186,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     }
 
     protected Description doGetVersion(String uri, boolean flatten) {
-        Resource version = describe(uri);
+        Resource version = describe(uri, null);
         Resource root = version.getPropertyResourceValue(DCTerms.isVersionOf);
         if (root != null) {
             Closure.closure(mod(root), false, version.getModel());
@@ -264,29 +268,30 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         if (forupdate) lock(uri);
         store.lock();
         try {
-            Resource root = doGetCurrentVersion(uri, flatten);
+            Resource root = doGetCurrentVersion(uri, flatten, null);
             RegisterItem item = new RegisterItem(root);
             if (withEntity) {
-                doGetEntity(item, flatten);
+                doGetEntity(item, flatten, null);
             }
             return item;
         } finally {
             store.unlock();
         }
     }
-    protected Resource doGetEntity(RegisterItem item, boolean flatten) {
+    protected Resource doGetEntity(RegisterItem item, boolean flatten, Model dest) {
         Resource root = item.getRoot();
-        Model m = null;
+        if (dest == null) {
+            dest = ModelFactory.createDefaultModel();
+        }
         Resource entityRef = root.getPropertyResourceValue(RegistryVocab.definition);
         if (entityRef != null) {
             Resource entity = entityRef.getPropertyResourceValue(RegistryVocab.entity);
             Resource srcGraph = entityRef.getPropertyResourceValue(RegistryVocab.sourceGraph);
             if (srcGraph != null) {
-                m  = ModelFactory.createDefaultModel();
-                m.add( store.asDataset().getNamedModel(srcGraph.getURI()) );
-                entity = entity.inModel(m);
+                dest.add( store.asDataset().getNamedModel(srcGraph.getURI()) );
+                entity = entity.inModel(dest);
             } else {
-                entity = doGetCurrentVersion( entity.getURI(), flatten );
+                entity = doGetCurrentVersion( entity.getURI(), flatten, dest );
             }
             item.setEntity(entity);
             return entity;
@@ -300,7 +305,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     public Resource getEntity(RegisterItem item) {
         store.lock();
         try {
-            return doGetEntity(item, true);
+            return doGetEntity(item, true, null);
         } finally {
             store.unlock();
         }
@@ -319,14 +324,15 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     public  List<RegisterItem>  doFetchMembers(Register register, boolean withEntity, boolean flatten) {
         store.lock();
         try {
+            Model shared = ModelFactory.createDefaultModel();
             List<RDFNode> items = selectAllVar("ri", getDefaultModel(), REGISTER_ENUM_QUERY, Prefixes.get(),
                     "register", register.getRoot() );
             List<RegisterItem> results = new ArrayList<RegisterItem>(items.size());
             for ( RDFNode itemR : items) {
                 if (itemR.isURIResource()) {
-                    Resource itemRoot = doGetCurrentVersion(itemR.asResource().getURI(), flatten);
+                    Resource itemRoot = doGetCurrentVersion(itemR.asResource().getURI(), flatten, shared);
                     RegisterItem item = new RegisterItem(itemRoot);
-                    doGetEntity(item, flatten);
+                    doGetEntity(item, flatten, shared);
                     results.add(item);
                 } else {
                     throw new EpiException("Found item which isn't a resource");

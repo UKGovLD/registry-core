@@ -22,10 +22,10 @@
    * Switch to a message-oriented design for connecting the registry core logic to the store, indexers and other possible data consumers - but what message structure BSON encoding?
    * plugin architecture for validators, use ServiceLoader machinery for that?
 
-   * shake down StoreAPI - fetch register entities only should be an option
+   * shake down StoreAPI
 
    * internal caching for read (zap on update)
-   
+
 ## Stack
 
    * create void description for registers
