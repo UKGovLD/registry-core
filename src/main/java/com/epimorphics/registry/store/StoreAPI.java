@@ -32,17 +32,20 @@ public interface StoreAPI {
     /**
      * Return the register/item/entity at the given address or null if there is none such.
      * No version processing.
-     * @param forupdate if true then the operation will check if the resource is locked if so will block until the lock is released, then a new lock will be taken
      */
-    public Description getDescription(String uri, boolean forupdate);
+    public Description getDescription(String uri);
 
     /**
      * Return the current version of the resource.
      * @param uri the uri of the base VersionedThing
-     * @param forupdate if true then the operation will check if the resource is locked if so will block until the lock is released, then a new lock will be taken
      * @return Description containing a merge of the selected Version and the root VersionedThing
      */
-    public Description getCurrentVersion(String uri, boolean forupdate);
+    public Description getCurrentVersion(String uri);
+
+    /**
+     * Lock a specific resource for updating. Will block until any existing lock is lifted.
+     */
+    public void lock(String uri);
 
     /**
      * Release the "forupdate" lock on the given URI (should be a Register or RegisterItem).
@@ -80,9 +83,9 @@ public interface StoreAPI {
      * will also be fetched and merged.
      * @param uri uri of the base (VersionedThing) RegisterItem to be fetched
      * @param withEntity if true then the entity defined
-     * @param forupdate if true then the operation will check if the resource is locked if so will block until the lock is released, then a new lock will be taken
+     * @return the item or null if the item is not a RegisterItem
      */
-    public RegisterItem getItem(String uri, boolean withEntity, boolean forupdate);
+    public RegisterItem getItem(String uri, boolean withEntity);
 
     /**
      * Return a RegisterItem, optionally along with the associated entity definition.
@@ -90,10 +93,9 @@ public interface StoreAPI {
      * <p>AT RISK: not sure we really want to expose the versioning model this way</p>
      * @param uri uri of the base (VersionedThing) RegisterItem to be fetched
      * @param withEntity if true then the entity defined
-     * @param forupdate if true then the operation will check if the resource is locked if so will block until the lock is released, then a new lock will be taken
      */
 
-    public RegisterItem getItemWithVersion(String uri, boolean withEntity, boolean forupdate);
+    public RegisterItem getItemWithVersion(String uri, boolean withEntity);
 
     /**
      * Fetch the entity specified by the Register item and add it to the item's data structure.
@@ -133,13 +135,11 @@ public interface StoreAPI {
      * Initializes the versioning of the new RegisterItem.
      * If the entity of the item is a Register then the versioning of the new sub-register will be initialized.
      * Otherwise a new entity graph will be created for the entity.
-     * Does NOT release the "forupdate" lock on the register to allow multiple entries to be added.
      */
     public void addToRegister(Register register, RegisterItem item);
 
     /**
      * Update the metadata for a register, managing the versioning information.
-     * Releases the "forupdate" lock on register.
      */
     public void update(Register register);
 
@@ -147,7 +147,6 @@ public interface StoreAPI {
      * Update a Register item
      * @param withEntity if true then a new version of the entity will be saved, if false then
      * just the item metadata will be udpated.
-     * Releases the "forupdate" lock on item.
      */
     public void update(RegisterItem item, boolean withEntity);
 
@@ -156,13 +155,11 @@ public interface StoreAPI {
      * Initializes the versioning of the new RegisterItem.
      * If the entity of the item is a Register then the versioning of the new sub-register will be initialized.
      * Otherwise a new entity graph will be created for the entity.
-     * Does NOT release the "forupdate" lock on the register to allow multiple entries to be added.
      */
     public void addToRegister(Register register, RegisterItem item, Calendar timestamp);
 
     /**
      * Update the metadata for a register, managing the versioning information.
-     * Releases the "forupdate" lock on register.
      */
     public void update(Register register, Calendar timestamp);
 
@@ -170,7 +167,6 @@ public interface StoreAPI {
      * Update a Register item
      * @param withEntity if true then a new version of the entity will be saved, if false then
      * just the item metadata will be udpated.
-     * Releases the "forupdate" lock on item.
      */
     public void update(RegisterItem item, boolean withEntity, Calendar timestamp);
 

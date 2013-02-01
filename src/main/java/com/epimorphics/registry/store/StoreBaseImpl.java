@@ -84,14 +84,10 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     }
 
     @Override
-    public Description getDescription(String uri, boolean forupdate) {
-        if (forupdate) lock(uri);
+    public Description getDescription(String uri) {
         store.lock();
         try {
             Description d = asDescription( describe(uri, null) );
-            if (d == null && forupdate) {
-                unlock(uri);
-            }
             return d;
         } finally {
             store.unlock();
@@ -128,7 +124,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     }
 
-    protected synchronized void lock(String uri) {
+    public synchronized void lock(String uri) {
         Lock lock = locks.get(uri);
         if (lock == null) {
             lock = new ReentrantLock();
@@ -150,16 +146,11 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     }
 
     @Override
-    public Description getCurrentVersion(String uri, boolean forupdate) {
-        if (forupdate) lock(uri);
+    public Description getCurrentVersion(String uri) {
         store.lock();
         try {
             Description d = asDescription( doGetCurrentVersion(uri, true, null) );
-            if (d == null && forupdate) {
-                unlock(uri);
-            }
             return d;
-
         } finally {
             store.unlock();
         }
@@ -256,19 +247,21 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             "} ORDER BY ?info \n";
 
     @Override
-    public RegisterItem getItem(String uri, boolean withEntity, boolean forupdate) {
-        return doGetItem(uri, withEntity, forupdate, true);
+    public RegisterItem getItem(String uri, boolean withEntity) {
+        return doGetItem(uri, withEntity, true);
     }
 
-    public RegisterItem getItemWithVersion(String uri, boolean withEntity, boolean forupdate) {
-        return doGetItem(uri, withEntity, forupdate, false);
+    public RegisterItem getItemWithVersion(String uri, boolean withEntity) {
+        return doGetItem(uri, withEntity, false);
     }
 
-    private RegisterItem doGetItem(String uri, boolean withEntity, boolean forupdate, boolean flatten) {
-        if (forupdate) lock(uri);
+    private RegisterItem doGetItem(String uri, boolean withEntity, boolean flatten) {
         store.lock();
         try {
             Resource root = doGetCurrentVersion(uri, flatten, null);
+            if (! root.hasProperty(RDF.type, RegistryVocab.RegisterItem)) {
+                return null;
+            }
             RegisterItem item = new RegisterItem(root);
             if (withEntity) {
                 doGetEntity(item, flatten, null);
@@ -449,7 +442,6 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         try {
             doUpdate(register.getRoot(), timestamp);
         } finally {
-            unlock(register.getRoot().getURI());
             store.unlock();
         }
     }
@@ -473,7 +465,6 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         try {
             doUpdateItem(item, withEntity, timestamp);
         } finally {
-            unlock(item.getRoot().getURI());
             store.unlock();
         }
     }

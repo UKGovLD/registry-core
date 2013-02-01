@@ -24,7 +24,7 @@ import com.hp.hpl.jena.vocabulary.RDFS;
  * Abstraction for access to a Register.
  */
 public class Register extends Description {
-    
+
     public Register(Resource root) {
         super( root );
     }
@@ -41,17 +41,18 @@ public class Register extends Description {
      * Fetch all the members of the register and construct an RDF view
      * according the given flags. The constructed view side is stored
      * in the description model and thus side-effects future accesses.
-     * 
+     *
      * @param withVersion  if true then versioning information is included, if false the Version/VersionedThing pairs are merged
      * @param withMetadata if true then both RegisterItems and the entities are included, if false then just entities are shown
+     * @param anyStatus if true then all entries will be retured regardless of status, if false then only Accepted will be returned
      * @return
      */
-    public Model constructView(StoreAPI store, boolean withVersion, boolean withMetadata) {
-        
+    public Model constructView(StoreAPI store, boolean withVersion, boolean withMetadata, boolean anyStatus) {
+
         // TODO optimize the common case of false/false with a StoreAPI extension that puts everying in one model
-        
+
         List<RegisterItem> members = withVersion ? store.fetchMembersWithVersion(this, true) : store.fetchMembers(this, true);
-        
+
         Resource predicateR = null;
         boolean isInverse = false;
         predicateR = root.getPropertyResourceValue(Ldbp.membershipPredicate);
@@ -67,17 +68,19 @@ public class Register extends Description {
 
         Model m = root.getModel();
         for (RegisterItem item : members) {
-            m.add( item.getEntity().getModel() );
-            if (withMetadata) {
-                m.add( item.getRoot().getModel() );
-            }
-            if (isInverse) {
-                item.getEntity().addProperty(predicate, root);
-            } else {
-                root.addProperty(predicate, item.getEntity());
+            if (item.getStatus().isAccepted()) {
+                m.add( item.getEntity().getModel() );
+                if (withMetadata) {
+                    m.add( item.getRoot().getModel() );
+                }
+                if (isInverse) {
+                    item.getEntity().addProperty(predicate, root);
+                } else {
+                    root.addProperty(predicate, item.getEntity());
+                }
             }
         }
-        
+
         return m;
     }
 

@@ -2,7 +2,7 @@
  * File:        LibReg.java
  * Created by:  Dave Reynolds
  * Created on:  31 Jan 2013
- * 
+ *
  * (c) Copyright 2013, Epimorphics Limited
  *
  *****************************************************************/
@@ -26,7 +26,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
  * Some supporting methods to help Velocity UI access the registry store.
- * 
+ *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public class LibReg extends ServiceBase implements LibPlugin, Service {
@@ -34,24 +34,24 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
     public StoreAPI getStore() {
         return Registry.get().getStore();
     }
-    
+
     public RDFNodeWrapper getResource(String uri) {
-        return wrapNode( getStore().getCurrentVersion(uri, false).getRoot() );
+        return wrapNode( getStore().getCurrentVersion(uri).getRoot() );
     }
-    
+
     private ModelWrapper wrapModel(Model m) {
         m.setNsPrefixes( Prefixes.get() );
         return new ModelWrapper( m );
     }
-    
+
     private RDFNodeWrapper wrapNode(Resource root) {
         return wrapModel( root.getModel() ).getNode(root);
     }
-    
+
     public List<RegisterEntryInfo> listMembers(Object arg) {
         Register reg = null;;
         if (arg instanceof String) {
-            reg = getStore().getCurrentVersion((String)arg, false).asRegister();
+            reg = getStore().getCurrentVersion((String)arg).asRegister();
         } else if (arg instanceof RDFNodeWrapper) {
             reg = new Register( ((RDFNodeWrapper)arg).asResource() );
         } else if (arg instanceof Register) {

@@ -68,7 +68,7 @@ public class Registry extends ServiceBase implements Service {
         }
 
 
-        Description root = store.getDescription(getBaseURI() + "/", false);
+        Description root = store.getDescription(getBaseURI() + "/");
         if (root == null) {
             // Blank store, need to install a bootstrap root registers
             for(String bootSrc : getRequiredFileParam(BOOT_FILE_PARAM).split("\\|")) {

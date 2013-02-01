@@ -54,23 +54,21 @@ public class CommandRead extends Command {
             } else {
                 //  plain item
                 if (withVersion) {
-                    d = store.getItemWithVersion(target, true, false);
+                    d = store.getItemWithVersion(target, true);
                 } else {
-                    d = store.getItem(target, true, false) ;
+                    d = store.getItem(target, true) ;
                 }
             }
         } else {
             // An entity
             if ( withMetadata ) {
                 // Entity with metadata
-                d = store.getItem(parent +"/_" + lastSegment, true, false);
+                d = store.getItem(parent +"/_" + lastSegment, true);
             } else {
                 // plain entity
-                d = store.getCurrentVersion(target, false);
+                d = store.getCurrentVersion(target);
             }
         }
-
-        // TODO Handle case of it being a register and getting members
 
         if (d == null) {
             throw new NotFoundException();
@@ -84,7 +82,7 @@ public class CommandRead extends Command {
                 m.add( ri.getEntity().getModel() );
             }
         } else if (d instanceof Register) {
-            m = d.asRegister().constructView(store, withVersion, withMetadata);
+            m = d.asRegister().constructView(store, withVersion, withMetadata, false);
         }
 
         URI uri;

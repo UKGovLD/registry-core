@@ -94,6 +94,10 @@ public class RegisterItem extends Description {
         return entity;
     }
 
+    public Status getStatus() {
+        return Status.forResource( root.getPropertyResourceValue(RegistryVocab.status) );
+    }
+
     /**
      * Takes a register item resource from a request payload, determines and checks
      * the intended URI for both it and the entity, fills in blanks on the register item,

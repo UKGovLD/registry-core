@@ -67,7 +67,7 @@ public class TestStoreImpl {
 
     @Test
     public void testBaseLoad() {
-        Description rootreg = store.getCurrentVersion(ROOT_REGISTER, false);
+        Description rootreg = store.getCurrentVersion(ROOT_REGISTER);
         assertTrue(rootreg instanceof Register);
         Resource r = rootreg.getRoot();
         assertTrue(r.hasProperty(RDF.type, RegistryVocab.Register));
@@ -77,14 +77,14 @@ public class TestStoreImpl {
 
     @Test
     public void testMetadataUpdate() {
-        Register rootreg = (Register)store.getCurrentVersion(ROOT_REGISTER, true);
+        Register rootreg = (Register)store.getCurrentVersion(ROOT_REGISTER);
         rootreg.setProperty(RDFS.label, ResourceFactory.createPlainLiteral("new root"));
         store.update(rootreg);
 
-        Resource updatedroot = store.getDescription(ROOT_REGISTER, false).getRoot();
+        Resource updatedroot = store.getDescription(ROOT_REGISTER).getRoot();
         assertTrue( TestUtil.isOnlyValue(updatedroot, Version.currentVersion, null) );
 
-        Register updatedreg = store.getCurrentVersion(ROOT_REGISTER, false).asRegister();
+        Register updatedreg = store.getCurrentVersion(ROOT_REGISTER).asRegister();
         assertEquals("new root", RDFUtil.getStringValue(updatedreg.getRoot(), RDFS.label));
 
         List<VersionInfo> versions = store.listVersions(ROOT_REGISTER);
@@ -103,12 +103,12 @@ public class TestStoreImpl {
 
     @Test
     public void testRegisterCreate() {
-        Register rootreg = store.getCurrentVersion(ROOT_REGISTER, true).asRegister();
+        Register rootreg = store.getCurrentVersion(ROOT_REGISTER).asRegister();
         addEntry("file:test/reg1.ttl", ROOT_REGISTER);
 
         // Check the item pointing to the new subregister
         String expectedItemURI = ROOT_REGISTER + "_reg1";
-        RegisterItem ri = store.getCurrentVersion(expectedItemURI, false).asRegisterItem();
+        RegisterItem ri = store.getCurrentVersion(expectedItemURI).asRegisterItem();
         assertEquals("register 1", RDFUtil.getStringValue(ri.getRoot(), RDFS.label));
         assertEquals("Example register 1", RDFUtil.getStringValue(ri.getRoot(), DCTerms.description));
         assertTrue(TestUtil.isOnlyValue(ri.getRoot(), DCTerms.dateSubmitted, null));
@@ -134,7 +134,7 @@ public class TestStoreImpl {
     }
 
     private long addEntry(String defFile, String parentURI) {
-        Register parent = store.getCurrentVersion(parentURI, true).asRegister();
+        Register parent = store.getCurrentVersion(parentURI).asRegister();
         Model subregM = ModelFactory.createDefaultModel();
         subregM.read(defFile, BaseEndpoint.DUMMY_BASE_URI, FileUtils.langTurtle);
         Resource subregR = RDFUtil.findRoot( subregM );
@@ -143,7 +143,6 @@ public class TestStoreImpl {
         RegisterItem subregItem = RegisterItem.fromEntityRequest(subregR, parentURI, true);
 
         store.addToRegister(parent, subregItem, now);
-        store.unlock(parentURI);
         return now.getTimeInMillis();
     }
 
@@ -153,13 +152,13 @@ public class TestStoreImpl {
         addEntry("file:test/blue.ttl", REG1);
         addEntry("file:test/red.ttl", REG1);
 
-        Register reg1 = store.getCurrentVersion(REG1, false).asRegister();
+        Register reg1 = store.getCurrentVersion(REG1).asRegister();
         assertEquals(2, store.listMembers(reg1).size());
 
-        RegisterItem ri = store.getItem(ROOT_REGISTER + "reg1/_red", true, false);
+        RegisterItem ri = store.getItem(ROOT_REGISTER + "reg1/_red", true);
         checkItemWithEntity(ri, "red");
 
-        assertNull(store.getItem(ROOT_REGISTER + "reg1/_red", false, false).getEntity());
+        assertNull(store.getItem(ROOT_REGISTER + "reg1/_red", false).getEntity());
 
         List<RegisterItem> members = store.fetchMembers(reg1, true);
         assertEquals(2, members.size());
@@ -172,11 +171,11 @@ public class TestStoreImpl {
         }
 
         // Update item metadata
-        ri = store.getItem(ROOT_REGISTER + "reg1/_red", false, true);
+        ri = store.getItem(ROOT_REGISTER + "reg1/_red", false);
         ri.setProperty(RegistryVocab.status, RegistryVocab.statusAccepted);
         store.update(ri, false);
 
-        ri = store.getItem(ROOT_REGISTER + "reg1/_red", true, false);
+        ri = store.getItem(ROOT_REGISTER + "reg1/_red", true);
         assertTrue(ri.getRoot().hasProperty(RegistryVocab.status, RegistryVocab.statusAccepted));
         assertEquals("red", RDFUtil.getStringValue(ri.getRoot(), RDFS.label));
         assertEquals(2, RDFUtil.getIntValue(ri.getRoot(), OWL.versionInfo, -1));
@@ -184,7 +183,7 @@ public class TestStoreImpl {
         // Update item content
         long ts = doUpdate(ROOT_REGISTER + "reg1/_red", "reddish");
 
-        ri = store.getItem(ROOT_REGISTER + "reg1/_red", true, false);
+        ri = store.getItem(ROOT_REGISTER + "reg1/_red", true);
         assertTrue(ri.getRoot().hasProperty(RegistryVocab.status, RegistryVocab.statusAccepted));
         assertEquals("reddish", RDFUtil.getStringValue(ri.getRoot(), RDFS.label));
         assertEquals("reddish", RDFUtil.getStringValue(ri.getEntity(), RDFS.label));
@@ -192,7 +191,7 @@ public class TestStoreImpl {
 
         assertEquals(3, RDFUtil.getIntValue(ri.getRoot(), OWL.versionInfo, -1));
 
-        assertNotNull( store.getDescription(ROOT_REGISTER + "reg1/red", false) );
+        assertNotNull( store.getDescription(ROOT_REGISTER + "reg1/red") );
     }
 
     @Test
@@ -220,7 +219,7 @@ public class TestStoreImpl {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        RegisterItem ri = store.getItem(item, true, true);
+        RegisterItem ri = store.getItem(item, true);
         Resource e = ri.getEntity();
         e.removeAll(RDFS.label).addProperty(RDFS.label, label);
         Calendar now = Calendar.getInstance();
@@ -257,16 +256,15 @@ public class TestStoreImpl {
     public void testExternalEntity() {
         addEntry("file:test/reg1.ttl", ROOT_REGISTER);
 
-        Register parent = store.getCurrentVersion(REG1, true).asRegister();
+        Register parent = store.getCurrentVersion(REG1).asRegister();
         Model m = ModelFactory.createDefaultModel();
         m.read("file:test/absolute-black.ttl", BaseEndpoint.DUMMY_BASE_URI, FileUtils.langTurtle);
         Resource ri = m.listSubjectsWithProperty(RDF.type, RegistryVocab.RegisterItem).next();
 
         RegisterItem item = RegisterItem.fromRIRequest(ri, REG1, true);
         store.addToRegister(parent, item);
-        store.unlock(REG1);
 
-        item = store.getItem(ROOT_REGISTER + "reg1/_black", true, false);
+        item = store.getItem(ROOT_REGISTER + "reg1/_black", true);
         assertEquals(ROOT_REGISTER + "reg1/_black", item.getRoot().getURI());
         assertEquals("black", item.getNotation());
         assertEquals("black", RDFUtil.getStringValue(item.getRoot(), RDFS.label));
@@ -278,7 +276,7 @@ public class TestStoreImpl {
     @Test
     public void testRegisterReconstruction() {
         addEntry("file:test/reg1.ttl", ROOT_REGISTER);
-        Register reg1 = store.getCurrentVersion(REG1, false).asRegister();
+        Register reg1 = store.getCurrentVersion(REG1).asRegister();
 
         long ts0 = addEntry("file:test/red.ttl", REG1);
         try {

@@ -48,29 +48,34 @@ public class CommandRegister extends Command {
     @Override
     public Response execute() {
 
-        Description d = store.getCurrentVersion(target, true);
-        if (d == null) {
-            throw new NotFoundException();
-        }
-        Register parent = d.asRegister();
-
-        Resource location = null;
-        if (payload.contains(null, RDF.type, RegistryVocab.RegisterItem)) {
-            for (ResIterator ri = payload.listSubjectsWithProperty(RDF.type, RegistryVocab.RegisterItem); ri.hasNext();) {
-                Resource itemSpec = ri.next();
-                location = register(parent, itemSpec, true);
-            }
-        } else {
-            List<Resource> roots = payload.listSubjectsWithProperty(RDF.type).toList();
-            if (roots.size() != 1) {
-                throw new WebApiException(Response.Status.BAD_REQUEST, "Could not find unique entity root to register");
-            }
-            location = register(parent, roots.get(0), false);
-        }
+        store.lock(target);
         try {
-            return Response.noContent().location(new URI(location.getURI())).build();
-        } catch (URISyntaxException e) {
-            throw new EpiException(e);
+            Description d = store.getCurrentVersion(target);
+            if (d == null) {
+                throw new NotFoundException();
+            }
+            Register parent = d.asRegister();
+
+            Resource location = null;
+            if (payload.contains(null, RDF.type, RegistryVocab.RegisterItem)) {
+                for (ResIterator ri = payload.listSubjectsWithProperty(RDF.type, RegistryVocab.RegisterItem); ri.hasNext();) {
+                    Resource itemSpec = ri.next();
+                    location = register(parent, itemSpec, true);
+                }
+            } else {
+                List<Resource> roots = payload.listSubjectsWithProperty(RDF.type).toList();
+                if (roots.size() != 1) {
+                    throw new WebApiException(Response.Status.BAD_REQUEST, "Could not find unique entity root to register");
+                }
+                location = register(parent, roots.get(0), false);
+            }
+            try {
+                return Response.noContent().location(new URI(location.getURI())).build();
+            } catch (URISyntaxException e) {
+                throw new EpiException(e);
+            }
+        } finally {
+            store.unlock(target);
         }
     }
 
@@ -83,7 +88,7 @@ public class CommandRegister extends Command {
             ri = RegisterItem.fromEntityRequest(itemSpec, parentURI, true);
         }
 
-        if (store.getDescription(ri.getRoot().getURI(), false) != null) {
+        if (store.getDescription(ri.getRoot().getURI()) != null) {
             // Item already exists
             throw new WebApiException(Response.Status.FORBIDDEN, "Item already registered at request location: " + ri.getRoot());
         }
