@@ -200,17 +200,28 @@ public class TestStoreImpl {
         long ts0 = Calendar.getInstance().getTimeInMillis();
         addEntry("file:test/red.ttl", REG1);
         String itemURI = ROOT_REGISTER + "reg1/_red";
+        String entity = ROOT_REGISTER + "reg1/red";
+        checkLiveVersion("red", entity);
+
         long ts1 = doUpdate(itemURI, "red1");
+        checkLiveVersion("red1", entity);
+
         long ts2 = doUpdate(itemURI, "red2");
+        checkLiveVersion("red2", entity);
+
         long ts3 = doUpdate(itemURI, "red3");
+        checkLiveVersion("red3", entity);
+
         checkVersionAt(itemURI, ts1-1, "red");
         checkVersionAt(itemURI, ts2-1, "red1");
         checkVersionAt(itemURI, ts3-1, "red2");
         checkVersionAt(itemURI, ts3+1, "red3");
         checkVersionAt(itemURI, ts0, null);
+    }
 
-        RegisterItem ri = store.getVersion(ROOT_REGISTER + "reg1/_red:3").asRegisterItem();
-        assertEquals("red2", RDFUtil.getStringValue(ri.getRoot(), RDFS.label));
+    private void checkLiveVersion(String label, String uri) {
+        Resource current = basestore.asDataset().getDefaultModel().getResource(uri);
+        assertEquals(label, RDFUtil.getStringValue(current, RDFS.label));
     }
 
     private long doUpdate(String item, String label) {

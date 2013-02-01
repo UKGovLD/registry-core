@@ -25,6 +25,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
+import com.epimorphics.registry.commands.CommandUpdate;
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Command.Operation;
@@ -73,8 +74,9 @@ public class RequestProcessor extends BaseEndpoint {
 
     @PUT
     @Consumes({MIME_TURTLE, MIME_RDFXML})
-    public Response update() {
+    public Response update(@Context HttpHeaders hh, InputStream body) {
         Command command = makeCommand( Operation.Update );
+        command.setPayload( getBodyModel(hh, body) );
         // TODO authorize
         return command.execute();
     }
@@ -88,8 +90,11 @@ public class RequestProcessor extends BaseEndpoint {
 
     @PATCH
     @Consumes({MIME_TURTLE, MIME_RDFXML})
-    public Response updatePatch() {
-        Command command = makeCommand( Operation.Update );  // Different op for patching?
+    public Response updatePatch(@Context HttpHeaders hh, InputStream body) {
+        Command command = makeCommand( Operation.Update );
+        ((CommandUpdate)command).setToPatch();
+        command.setPayload( getBodyModel(hh, body) );
+
         // TODO authorize
         return command.execute();
     }

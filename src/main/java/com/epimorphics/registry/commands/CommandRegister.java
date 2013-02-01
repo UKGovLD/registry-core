@@ -67,7 +67,7 @@ public class CommandRegister extends Command {
                 if (roots.size() != 1) {
                     throw new WebApiException(Response.Status.BAD_REQUEST, "Could not find unique entity root to register");
                 }
-                location = register(parent, roots.get(0), false);
+                location = register(parent, findSingletonRoot(), false);
             }
             try {
                 return Response.noContent().location(new URI(location.getURI())).build();
@@ -102,7 +102,6 @@ public class CommandRegister extends Command {
             log.info("Created new sub-register: " + ri.getNotation());
         }
         store.addToRegister(parent, ri);
-        store.unlock(parentURI);
         return ri.getRoot();
     }
 

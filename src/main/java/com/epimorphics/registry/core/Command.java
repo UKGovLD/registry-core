@@ -17,7 +17,10 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import com.epimorphics.registry.store.StoreAPI;
+import com.epimorphics.server.webapi.WebApiException;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.vocabulary.RDF;
 
 /**
  * Wraps up a registry request as a command object to modularize
@@ -96,5 +99,37 @@ public abstract class Command {
             return values.contains(value);
         }
         return false;
+    }
+
+    protected String notation() {
+        if (lastSegment.startsWith("_")) {
+            return lastSegment.substring(0, lastSegment.length() - 1);
+        } else {
+            return lastSegment;
+        }
+    }
+
+    protected String entityURI() {
+        if (lastSegment.startsWith("_")) {
+            return parent + "/" + notation();
+        } else {
+            return target;
+        }
+    }
+
+    protected String itemURI() {
+        if (lastSegment.startsWith("_")) {
+            return target;
+        } else {
+            return parent + "/_" + lastSegment;
+        }
+    }
+
+    protected Resource findSingletonRoot() {
+        List<Resource> roots = payload.listSubjectsWithProperty(RDF.type).toList();
+        if (roots.size() != 1) {
+            throw new WebApiException(Response.Status.BAD_REQUEST, "Could not find unique entity root to register");
+        }
+        return roots.get(0);
     }
 }

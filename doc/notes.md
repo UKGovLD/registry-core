@@ -30,7 +30,7 @@
 
    * create void description for registers
    * creating of void:example from early registrations
-   * test cases for location allocation (null, relative, bnode, skos:notation, absolute, non-local)
+   * test cases for location allocation (null, relative, bnode, skos:notation, absolute, non-local) + for update
    * validation of completeness of a Register spec
    * completion of void description
    * auth hooks
@@ -38,4 +38,9 @@
    * If RI includes status value then need to authorize status update as well
    * caching control headers
    * e-tag support
+   * Validation hooks
 
+## Extensions
+
+   * Register a non-RDF payload?  C.f. XML namespace.
+   * Open annotation graphs - for provenance, for dataset analysis?

@@ -23,6 +23,7 @@ import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.sparql.util.Closure;
@@ -44,6 +45,8 @@ public class RegisterItem extends Description {
     Resource entity;
     String notation;
     String parentURI;
+
+    public static final Property[] RIGID_PROPS = new Property[] {RegistryVocab.register, RegistryVocab.notation, RegistryVocab.itemClass, RegistryVocab.predecessor, RegistryVocab.submitter};
 
     /**
      * Construct a new register item from a loaded description
@@ -106,11 +109,13 @@ public class RegisterItem extends Description {
     public static RegisterItem fromRIRequest(Resource ri, String parentURI, boolean isNewSubmission) {
         Model d = Closure.closure(ri, false);
         Resource entity = findRequiredEntity(ri);
-        entity = entity.inModel( Closure.closure(entity, false) );
         RegisterItem item = new RegisterItem( ri.inModel(d), parentURI );
         item.relocate();
-        item.relocateEntity(entity);
-        item.updateForEntity(isNewSubmission, Calendar.getInstance());
+        if (entity != null) {
+            entity = entity.inModel( Closure.closure(entity, false) );
+            item.relocateEntity(entity);
+            item.updateForEntity(isNewSubmission, Calendar.getInstance());
+        }
         return item;
     }
 
@@ -328,10 +333,8 @@ public class RegisterItem extends Description {
         Resource definition = ri.getPropertyResourceValue(RegistryVocab.definition);
         if (definition != null) {
             Resource entity = definition.getPropertyResourceValue(RegistryVocab.entity);
-            if (entity != null){
-                return entity;
-            }
+            return entity;
         }
-        throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        return null;
     }
 }

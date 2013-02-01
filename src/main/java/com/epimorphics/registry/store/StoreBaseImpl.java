@@ -479,7 +479,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         Model storeModel = getDefaultModel();
         Resource oldVersion = mod(item).getPropertyResourceValue(Version.currentVersion);
 
-        Resource newVersion = doUpdate(item.getRoot(), now, RegistryVocab.register, RegistryVocab.notation, RegistryVocab.itemClass, RegistryVocab.predecessor, RegistryVocab.submitter);
+        Resource newVersion = doUpdate(item.getRoot(), now, RegisterItem.RIGID_PROPS);
         if (withEntity) {
             Resource entity = item.getEntity();
             Resource entityRef = newVersion.getPropertyResourceValue(RegistryVocab.definition);

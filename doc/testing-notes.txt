@@ -13,10 +13,19 @@ curl -i -H "Content-Type: text/turtle" -X POST --data "@test/blue.ttl" http://lo
 curl -i -H "Content-Type: text/turtle" -X POST --data "@test/red.ttl" http://localhost:8080/def/colours
 curl -i -H "Content-Type: text/turtle" -X POST --data "@test/green.ttl" http://localhost:8080/def/colours
 
-curl http://localhost:8080/def/colours/blue
-curl http://localhost:8080/def/colours
+curl -i http://localhost:8080/def/colours/red
+curl -i http://localhost:8080/def/colours
 
 
 curl -i -X POST "http://localhost:8080/def/colours/_blue?update&status=experimental"
 curl -i -X POST "http://localhost:8080/def/colours/_red?update&status=stable"
 
+curl -i -H "Content-Type: text/turtle" -X PUT --data "@test/reddish.ttl" http://localhost:8080/def/colours/red
+
+# Temp
+curl -i -H "Content-Type: text/turtle" -X POST --data "@test/def.ttl" http://localhost:8080/
+curl -i -H "Content-Type: text/turtle" -X POST --data "@test/colours.ttl" http://localhost:8080/def
+curl -i -H "Content-Type: text/turtle" -X POST --data "@test/blue.ttl" http://localhost:8080/def/colours
+curl -i -H "Content-Type: text/turtle" -X POST --data "@test/red.ttl" http://localhost:8080/def/colours
+curl -i -H "Content-Type: text/turtle" -X POST --data "@test/green.ttl" http://localhost:8080/def/colours
+curl -i -H "Content-Type: text/turtle" -X PUT --data "@test/reddish.ttl" http://localhost:8080/def/colours/red
