@@ -137,7 +137,7 @@ public class RegisterItem extends Description {
     public Resource setStatus(String status) {
         for (Status s : Status.values()) {
             if (s.name().equalsIgnoreCase(status)) {
-                return s.getResource();
+                return setStatus( s.getResource() );
             }
         }
         return null;

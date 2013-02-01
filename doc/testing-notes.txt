@@ -17,6 +17,6 @@ curl http://localhost:8080/def/colours/blue
 curl http://localhost:8080/def/colours
 
 
-curl -X POST http://localhost:8080/def/colours/_blue?update&status=experimental
-curl -X POST http://localhost:8080/def/colours/_red?update&status=stable
+curl -i -X POST "http://localhost:8080/def/colours/_blue?update&status=experimental"
+curl -i -X POST "http://localhost:8080/def/colours/_red?update&status=stable"
 

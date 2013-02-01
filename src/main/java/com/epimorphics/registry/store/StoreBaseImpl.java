@@ -317,15 +317,16 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     public  List<RegisterItem>  doFetchMembers(Register register, boolean withEntity, boolean flatten) {
         store.lock();
         try {
-            Model shared = ModelFactory.createDefaultModel();
+            // A shared model would save having 2N models around but makes filtering painful
+//            Model shared = ModelFactory.createDefaultModel();
             List<RDFNode> items = selectAllVar("ri", getDefaultModel(), REGISTER_ENUM_QUERY, Prefixes.get(),
                     "register", register.getRoot() );
             List<RegisterItem> results = new ArrayList<RegisterItem>(items.size());
             for ( RDFNode itemR : items) {
                 if (itemR.isURIResource()) {
-                    Resource itemRoot = doGetCurrentVersion(itemR.asResource().getURI(), flatten, shared);
+                    Resource itemRoot = doGetCurrentVersion(itemR.asResource().getURI(), flatten, null);
                     RegisterItem item = new RegisterItem(itemRoot);
-                    doGetEntity(item, flatten, shared);
+                    doGetEntity(item, flatten, null);
                     results.add(item);
                 } else {
                     throw new EpiException("Found item which isn't a resource");
