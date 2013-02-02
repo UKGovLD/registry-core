@@ -93,6 +93,17 @@ public class TomcatTestBase {
         return response;
     }
     
+    protected ClientResponse post(String uri, String...paramvals) {
+        WebResource r = c.resource(uri);
+        for (int i = 0; i < paramvals.length; ) {
+            String param = paramvals[i++];
+            String value = paramvals[i++];
+            r = r.queryParam(param, value);
+        }
+        ClientResponse response = r.post(ClientResponse.class);
+        return response;
+    }
+
     protected ClientResponse invoke(String method, String file, String uri) {
         return invoke(method, file, uri, "text/turtle");
     }

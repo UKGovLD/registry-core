@@ -430,6 +430,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             if (entity.getPropertyResourceValue(RDF.type).equals(RegistryVocab.Register)) {
                 mod(register).addProperty(RegistryVocab.subregister, entity);
             }
+            mod(register).removeAll(DCTerms.modified).addProperty(DCTerms.modified, getDefaultModel().createTypedLiteral(now));
         } finally {
 //            unlock(register.getRoot().getURI());
             store.unlock();

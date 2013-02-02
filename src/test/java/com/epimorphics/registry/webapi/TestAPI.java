@@ -13,6 +13,8 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import com.epimorphics.rdfutil.QueryUtil;
+import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.util.TestUtil;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -80,9 +82,19 @@ public class TestAPI extends TomcatTestBase {
         checkModelResponse(REG1 + "/_red" + versionSuffix, ROOT_REGISTER + "reg1/red", "test/expected/red1.ttl");
         
         // Register read
+        m = getModelResponse(REG1);
         checkModelResponse(REG1, ROOT_REGISTER + "reg1", "test/expected/reg1-empty.ttl");
-        // TODO set status to visible and list with members
+        assertEquals(204, post(REG1 + "/_red?update&status=stable").getStatus());
+        assertEquals(204, post(REG1 + "/_black?update&status=stable").getStatus());
+        checkModelResponse(REG1, ROOT_REGISTER + "reg1", "test/expected/reg1_red_black.ttl");
+
+        // Basic version view
+        m = getModelResponse(REG1 + "/_red?_view=version");
+        String uri = QueryUtil.selectFirstVar("entity", m, "SELECT ?entity WHERE { ?item version:currentVersion [ reg:definition [ reg:entity ?entity]].}", 
+                                                    Prefixes.get(), "item", ROOT_REGISTER + "reg1/_red").asResource().getURI();
+        assertEquals(ROOT_REGISTER + "reg1/red", uri);
         
+        // TODO test viewing old version with version view, currently fails, consider whether we need this
 //        m.write(System.out, "Turtle");
     }
     

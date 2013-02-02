@@ -1,3 +1,17 @@
+<http://location.data.gov.uk/reg1/red>
+      a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+      <http://www.w3.org/2000/01/rdf-schema#label>
+              "red1b" ;
+      <http://purl.org/dc/terms/description>
+              "A concept for the colour red1" .
+
+<http://example.com/colours/black>
+      a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+      <http://www.w3.org/2000/01/rdf-schema#label>
+              "black" ;
+      <http://purl.org/dc/terms/description>
+              "An external concept for the colour black" .
+
 <http://location.data.gov.uk/reg1>
       a       <http://purl.org/linked-data/registry#Register> , <http://www.w3.org/2004/02/skos/core#Collection> ;
       <http://www.w3.org/2000/01/rdf-schema#label>
@@ -10,7 +24,10 @@
               <http://example.com/registryManagementLtd> ;
       <http://purl.org/linked-data/registry#owner>
               <http://example.com/department> ;
-      <http://www.w3.org/2002/07/owl#versionInfo> [];
+      <http://www.w3.org/2002/07/owl#versionInfo>
+              "3"^^<http://www.w3.org/2001/XMLSchema#long> ;
+      <http://www.w3.org/2004/02/skos/core#member>
+              <http://location.data.gov.uk/reg1/red> , <http://example.com/colours/black> ;
       <http://www.w3.org/ns/ldp#membershipPredicate>
               <http://www.w3.org/2004/02/skos/core#member> ;
       <http://purl.org/dc/terms/modified> [] .
