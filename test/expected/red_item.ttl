@@ -1,0 +1,18 @@
+<http://location.data.gov.uk/reg1/_red>
+      a       <http://purl.org/linked-data/registry#RegisterItem> ;
+      <http://www.w3.org/2000/01/rdf-schema#label>
+              "red" ;
+      <http://purl.org/dc/terms/dateSubmitted> [] ;
+      <http://purl.org/dc/terms/description>
+              "A concept for the colour red" ;
+      <http://purl.org/linked-data/registry#definition> [];
+      <http://purl.org/linked-data/registry#itemClass>
+              <http://www.w3.org/2004/02/skos/core#Concept> ;
+      <http://purl.org/linked-data/registry#notation>
+              "red" ;
+      <http://purl.org/linked-data/registry#register>
+              <http://location.data.gov.uk/reg1> ;
+      <http://purl.org/linked-data/registry#status>
+              <http://purl.org/linked-data/registry#statusSubmitted> ;
+      <http://www.w3.org/2002/07/owl#versionInfo> [] .
+              

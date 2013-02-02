@@ -77,8 +77,8 @@ public class CommandUpdate extends Command {
                     PatchUtil.update(newitem.getRoot(), item.getRoot(), RegisterItem.RIGID_PROPS);
                 }
             }
-            store.update(item, withEntity);
-            return Response.noContent().location(new URI(itemURI)).build();
+            String versionURI = store.update(item, withEntity);
+            return Response.noContent().location(new URI(versionURI)).build();
         } catch (URISyntaxException e) {
             throw new WebApplicationException(e);
         } finally {

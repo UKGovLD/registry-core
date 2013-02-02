@@ -9,13 +9,13 @@
 
 package com.epimorphics.registry.util;
 
-import java.util.HashSet;
+import static com.epimorphics.rdfutil.RDFUtil.allPropertiesOf;
+
 import java.util.Set;
 
 import com.epimorphics.rdfutil.RDFUtil;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 /**
  * Support for merging updates into a current model.
@@ -41,14 +41,6 @@ public class PatchUtil {
         for (Property p : toCopy) {
             RDFUtil.copyProperty(src, dest, p);
         }
-    }
-
-    public static Set<Property> allPropertiesOf(Resource r) {
-        Set<Property> result = new HashSet<Property>();
-        for (StmtIterator si = r.listProperties(); si.hasNext();) {
-            result.add(si.next().getPredicate());
-        }
-        return result;
     }
 
     /**

@@ -44,7 +44,6 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.sparql.util.Closure;
@@ -446,18 +445,18 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     }
 
     @Override
-    public void update(Register register, Calendar timestamp) {
+    public String update(Register register, Calendar timestamp) {
         store.lockWrite();
         try {
-            doUpdate(register.getRoot(), timestamp);
+            return doUpdate(register.getRoot(), timestamp).getURI();
         } finally {
             store.unlock();
         }
     }
 
     @Override
-    public void update(Register register) {
-        update(register, Calendar.getInstance());
+    public String update(Register register) {
+        return update(register, Calendar.getInstance());
     }
 
     protected Resource doUpdate(Resource root, Calendar cal, Property... rigids) {
@@ -469,21 +468,21 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     }
 
     @Override
-    public void update(RegisterItem item, boolean withEntity, Calendar timestamp) {
+    public String update(RegisterItem item, boolean withEntity, Calendar timestamp) {
         store.lockWrite();
         try {
-            doUpdateItem(item, withEntity, timestamp);
+            return doUpdateItem(item, withEntity, timestamp);
         } finally {
             store.unlock();
         }
     }
 
     @Override
-    public void update(RegisterItem item, boolean withEntity) {
-        update(item, withEntity, Calendar.getInstance());
+    public String update(RegisterItem item, boolean withEntity) {
+        return update(item, withEntity, Calendar.getInstance());
     }
 
-    private void doUpdateItem(RegisterItem item, boolean withEntity, Calendar now) {
+    private String doUpdateItem(RegisterItem item, boolean withEntity, Calendar now) {
         Model storeModel = getDefaultModel();
         Resource oldVersion = mod(item).getPropertyResourceValue(Version.currentVersion);
 
@@ -521,6 +520,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
                 entityRef.addProperty(RegistryVocab.sourceGraph, graph);
             }
         }
+        return newVersion.getURI();
     }
 
     private void storeGraph(String graphURI, Model entityModel) {

@@ -1,0 +1,15 @@
+<http://location.data.gov.uk/reg1>
+      a       <http://purl.org/linked-data/registry#Register> , <http://www.w3.org/2004/02/skos/core#Collection> ;
+      <http://www.w3.org/2000/01/rdf-schema#label>
+              "register 1"@en ;
+      <http://purl.org/dc/terms/description>
+              "Example register 1"@en ;
+      <http://purl.org/linked-data/registry#containedItemClass>
+              <http://www.w3.org/2004/02/skos/core#Concept> ;
+      <http://purl.org/linked-data/registry#manager>
+              <http://example.com/registryManagementLtd> ;
+      <http://purl.org/linked-data/registry#owner>
+              <http://example.com/department> ;
+      <http://www.w3.org/2002/07/owl#versionInfo> [];
+      <http://www.w3.org/ns/ldp#membershipPredicate>
+              <http://www.w3.org/2004/02/skos/core#member> .

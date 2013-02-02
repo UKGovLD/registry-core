@@ -139,18 +139,6 @@ public interface StoreAPI {
     public void addToRegister(Register register, RegisterItem item);
 
     /**
-     * Update the metadata for a register, managing the versioning information.
-     */
-    public void update(Register register);
-
-    /**
-     * Update a Register item
-     * @param withEntity if true then a new version of the entity will be saved, if false then
-     * just the item metadata will be udpated.
-     */
-    public void update(RegisterItem item, boolean withEntity);
-
-    /**
      * Add a new registered item to a parent register.
      * Initializes the versioning of the new RegisterItem.
      * If the entity of the item is a Register then the versioning of the new sub-register will be initialized.
@@ -160,15 +148,31 @@ public interface StoreAPI {
 
     /**
      * Update the metadata for a register, managing the versioning information.
+     * @return the URI of the new version of the item
      */
-    public void update(Register register, Calendar timestamp);
+    public String update(Register register);
 
     /**
      * Update a Register item
      * @param withEntity if true then a new version of the entity will be saved, if false then
      * just the item metadata will be udpated.
+     * @return the URI of the new version of the item
      */
-    public void update(RegisterItem item, boolean withEntity, Calendar timestamp);
+    public String update(RegisterItem item, boolean withEntity);
+
+    /**
+     * Update the metadata for a register, managing the versioning information.
+     * @return the URI of the new version of the item
+     */
+    public String update(Register register, Calendar timestamp);
+
+    /**
+     * Update a Register item
+     * @param withEntity if true then a new version of the entity will be saved, if false then
+     * just the item metadata will be udpated.
+     * @return the URI of the new version of the item
+     */
+    public String update(RegisterItem item, boolean withEntity, Calendar timestamp);
 
 
     // --- misc operations ---
