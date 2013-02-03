@@ -101,6 +101,16 @@ public class RegisterItem extends Description {
         return Status.forResource( root.getPropertyResourceValue(RegistryVocab.status) );
     }
 
+    public String getRegisterURI() {
+        if (parentURI == null) {
+            Resource reg = root.getPropertyResourceValue(RegistryVocab.register);
+            if (reg != null) {
+                parentURI = reg.getURI();
+            }
+        }
+        return parentURI;
+    }
+    
     /**
      * Takes a register item resource from a request payload, determines and checks
      * the intended URI for both it and the entity, fills in blanks on the register item,
@@ -192,6 +202,7 @@ public class RegisterItem extends Description {
         if (isNewSubmission) {
             root.addProperty(DCTerms.dateSubmitted, root.getModel().createTypedLiteral(time));
         } else {
+            root.removeAll(DCTerms.modified);
             root.addProperty(DCTerms.modified, root.getModel().createTypedLiteral(time));
         }
         if ( !root.hasProperty(RegistryVocab.status) && isNewSubmission) {

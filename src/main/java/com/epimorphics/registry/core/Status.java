@@ -55,5 +55,21 @@ public enum Status {
     public boolean isDeprecated() {
         return this == Superseded || this == Retired;
     }
+    
+    public boolean isA(Status target) {
+        if (target == null || target == this) return true;
+        switch (target) {
+        case NotAccepted:
+            return this == Submitted || this == Invalid;
+        case Accepted:
+            return isA(Valid) || isA(Deprecated);
+        case Valid:
+            return this == Experimental || this == Stable;
+        case Deprecated:
+            return this == Superseded || this == Retired;
+        default:
+            return false;
+        }
+    }
 
 }

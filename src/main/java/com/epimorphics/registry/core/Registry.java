@@ -24,10 +24,10 @@ import com.epimorphics.registry.commands.CommandStatusUpdate;
 import com.epimorphics.registry.commands.CommandUpdate;
 import com.epimorphics.registry.commands.CommandValidate;
 import com.epimorphics.registry.core.Command.Operation;
+import com.epimorphics.registry.store.CachingStore;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.server.core.Service;
 import com.epimorphics.server.core.ServiceBase;
-import com.epimorphics.server.core.ServiceConfig;
 
 /**
  * This the primary configuration point for the Registry.
@@ -46,6 +46,7 @@ public class Registry extends ServiceBase implements Service {
     public static final String SERVICE_NAME = "configuration";
     public static final String BOOT_FILE_PARAM = "bootSpec";
     public static final String STORE_PARAM = "store";
+    public static final String CACHE_SIZE_PARAM = "cacheSize";
 
     protected StoreAPI store;
     protected String baseURI;
@@ -62,7 +63,12 @@ public class Registry extends ServiceBase implements Service {
     @Override
     public void postInit() {
         try {
-            store = (StoreAPI) ServiceConfig.get().getService( getRequiredParam(STORE_PARAM) );
+            store = getNamedService(getRequiredParam(STORE_PARAM), StoreAPI.class);
+            String cacheSizeStr = config.get(CACHE_SIZE_PARAM);
+            if (cacheSizeStr != null) {
+                int cacheSize = Integer.parseInt(cacheSizeStr);
+                store = new CachingStore(store, cacheSize);
+            }
         } catch (Exception e) {
             log.error("Misconfigured StoreAPI implementation", e);
         }

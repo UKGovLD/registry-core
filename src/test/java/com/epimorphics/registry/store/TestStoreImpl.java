@@ -11,6 +11,7 @@ package com.epimorphics.registry.store;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -160,7 +161,7 @@ public class TestStoreImpl {
 
         assertNull(store.getItem(ROOT_REGISTER + "reg1/_red", false).getEntity());
 
-        List<RegisterItem> members = store.fetchMembers(reg1, true);
+        List<RegisterItem> members = members(reg1, true);
         assertEquals(2, members.size());
         if (members.get(0).getRoot().getURI().endsWith("red")) {
             checkItemWithEntity(members.get(0), "red");
@@ -194,6 +195,14 @@ public class TestStoreImpl {
         assertNotNull( store.getDescription(ROOT_REGISTER + "reg1/red") );
     }
 
+    private List<RegisterItem> members(Register reg, boolean withEntity) {
+        List<String> itemURIs = new ArrayList<String>();
+        for (RegisterEntryInfo info : store.listMembers(reg)) {
+            itemURIs.add( info.getItemURI() );
+        }
+        return store.fetchAll(itemURIs, withEntity, false);
+    }
+    
     @Test
     public void testVersionRetrieval() {
         addEntry("file:test/reg1.ttl", ROOT_REGISTER);

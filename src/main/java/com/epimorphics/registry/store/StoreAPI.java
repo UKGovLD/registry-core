@@ -27,6 +27,17 @@ import com.hp.hpl.jena.rdf.model.Resource;
  */
 public interface StoreAPI {
 
+    /**
+     * Lock a specific resource for updating. Will block until any existing lock is lifted.
+     */
+    public void lock(String uri);
+
+    /**
+     * Release the "forupdate" lock on the given URI (should be a Register or RegisterItem).
+     * Throws an error if there is no such lock.
+     */
+    public void unlock(String uri);
+
     // --- Methods for access versions of resource descriptions ---
 
     /**
@@ -41,17 +52,6 @@ public interface StoreAPI {
      * @return Description containing a merge of the selected Version and the root VersionedThing
      */
     public Description getCurrentVersion(String uri);
-
-    /**
-     * Lock a specific resource for updating. Will block until any existing lock is lifted.
-     */
-    public void lock(String uri);
-
-    /**
-     * Release the "forupdate" lock on the given URI (should be a Register or RegisterItem).
-     * Throws an error if there is no such lock.
-     */
-    public void unlock(String uri);
 
     /**
      * Return a specific version of a versioned resource .
@@ -82,7 +82,7 @@ public interface StoreAPI {
      * is fetched and if the entity is itself a VersionedThing then its version information
      * will also be fetched and merged.
      * @param uri uri of the base (VersionedThing) RegisterItem to be fetched
-     * @param withEntity if true then the entity defined
+     * @param withEntity if true then the entity definition should be retrieved as well
      * @return the item or null if the item is not a RegisterItem
      */
     public RegisterItem getItem(String uri, boolean withEntity);
@@ -92,7 +92,7 @@ public interface StoreAPI {
      * No version flattening will be done.
      * <p>AT RISK: not sure we really want to expose the versioning model this way</p>
      * @param uri uri of the base (VersionedThing) RegisterItem to be fetched
-     * @param withEntity if true then the entity defined
+     * @param withEntity if true then the entity definition should be retrieved as well
      */
 
     public RegisterItem getItemWithVersion(String uri, boolean withEntity);
@@ -103,22 +103,12 @@ public interface StoreAPI {
     public Resource getEntity(RegisterItem item);
 
     /**
-     * Fetch all RegisterItems. Fetches all items, including NotAccepted items.
-     * All retrieved resources will be version-flattened if required.
-     * @param register the register to be updated with a list of its members
-     * @param withEntity if true then for each member fetched, the associated entity will also be fetched
+     * Retrieve a set of RegisterItems
+     * @param itemURIs the URIs of the items to retrieve
+     * @param withEntity if true then the entity definition should be retrieved as well
+     * @param withVersion if true then the version information should be retained instead of being flattend out.
      */
-    public List<RegisterItem> fetchMembers(Register register, boolean withEntity);
-
-
-    /**
-     * Fetch all RegisterItems. Fetches all items, including NotAccepted items.
-     * No version flattening will be done
-     * <p>AT RISK: not sure we really want to expose the versioning model this way</p>
-     * @param register the register to be updated with a list of its members
-     * @param withEntity if true then for each member fetched, the associated entity will also be fetched
-     */
-    public List<RegisterItem> fetchMembersWithVersion(Register register, boolean withEntity);
+    public List<RegisterItem> fetchAll(List<String> itemURIs, boolean withEntity, boolean withVersion);
 
     /**
      * List all members of a register. This gives a low cost way to enumerate the core information

@@ -16,9 +16,9 @@ import static com.epimorphics.rdfutil.QueryUtil.selectFirstVar;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -29,6 +29,7 @@ import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
+import com.epimorphics.registry.util.DescriptionCache;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.util.VersionUtil;
 import com.epimorphics.registry.vocab.RegistryVocab;
@@ -72,7 +73,8 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     protected Store store;
     protected Indexer indexer;
-    protected Map<String, Lock> locks = new WeakHashMap<String, Lock>();
+    protected DescriptionCache cache;
+    protected Map<String, Lock> locks = new HashMap<String, Lock>();
 
     @Override
     public void postInit() {
@@ -81,6 +83,27 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         if (indexerName != null) {
             indexer = getNamedService(indexerName, Indexer.class);
         }
+    }
+
+    public synchronized void lock(String uri) {
+        Lock lock = locks.get(uri);
+        if (lock == null) {
+            lock = new ReentrantLock();
+            locks.put(uri, lock);
+        }
+        lock.lock();
+    }
+
+    /**
+     * Release the "forupdate" lock on the given URI (should be a Register or RegisterItem).
+     * Throws an error if there is no such lock.
+     */
+    public synchronized void unlock(String uri) {
+        Lock lock = locks.remove(uri);
+        if (lock == null) {
+            throw new EpiException("Internal error: tried to unlock a resource which was not locked for update");
+        }
+        lock.unlock();
     }
 
     @Override
@@ -112,7 +135,9 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     protected Description asDescription(Resource root) {
         if (root.hasProperty(RDF.type)) {
             if (root.hasProperty( RDF.type, RegistryVocab.Register)) {
-                return new Register(root);
+                Register reg = new Register(root);
+                reg.setStore(this);
+                return reg;
             } else if (root.hasProperty( RDF.type, RegistryVocab.RegisterItem)) {
                 return new RegisterItem(root);
             } else {
@@ -122,27 +147,6 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             return null;
         }
 
-    }
-
-    public synchronized void lock(String uri) {
-        Lock lock = locks.get(uri);
-        if (lock == null) {
-            lock = new ReentrantLock();
-            locks.put(uri, lock);
-        }
-        lock.lock();
-    }
-
-    /**
-     * Release the "forupdate" lock on the given URI (should be a Register or RegisterItem).
-     * Throws an error if there is no such lock.
-     */
-    public synchronized void unlock(String uri) {
-        Lock lock = locks.get(uri);
-        if (lock == null) {
-            throw new EpiException("Internal error: tried to unlock a resource which was not locked for update");
-        }
-        lock.unlock();
     }
 
     @Override
@@ -312,14 +316,25 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     }
 
     @Override
-    public  List<RegisterItem>  fetchMembers(Register register, boolean withEntity) {
-        return doFetchMembers(register, withEntity, true);
+    public List<RegisterItem> fetchAll(List<String> itemURIs, boolean withEntity, boolean withVersion) {
+        store.lock();
+        try {
+            Model shared = ModelFactory.createDefaultModel();
+            List<RegisterItem> results = new ArrayList<RegisterItem>(itemURIs.size());
+            for ( String uri : itemURIs ) {
+                Resource itemRoot = doGetCurrentVersion(uri, !withVersion, shared);
+                RegisterItem item = new RegisterItem(itemRoot);
+                if (withEntity) {
+                    doGetEntity(item, !withVersion, shared);
+                }
+                results.add(item);
+            }
+            return results;
+        } finally {
+            store.unlock();
+        }
     }
 
-    @Override
-    public  List<RegisterItem>  fetchMembersWithVersion(Register register, boolean withEntity) {
-        return doFetchMembers(register, withEntity, false);
-    }
 
     public  List<RegisterItem>  doFetchMembers(Register register, boolean withEntity, boolean flatten) {
         store.lock();
@@ -428,13 +443,19 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             mod(item).addProperty(RegistryVocab.register, register.getRoot());
             Resource entity = item.getEntity();
             if (entity.getPropertyResourceValue(RDF.type).equals(RegistryVocab.Register)) {
-                mod(register).addProperty(RegistryVocab.subregister, entity);
+                modCurrent(register).addProperty(RegistryVocab.subregister, entity);
             }
-            mod(register).removeAll(DCTerms.modified).addProperty(DCTerms.modified, getDefaultModel().createTypedLiteral(now));
+            modCurrent(register).removeAll(DCTerms.modified).addProperty(DCTerms.modified, getDefaultModel().createTypedLiteral(now));
         } finally {
 //            unlock(register.getRoot().getURI());
             store.unlock();
         }
+    }
+
+    private Resource modCurrent(Description d) {
+        Resource r = d.getRoot().inModel(getDefaultModel());
+        Resource current = r.getPropertyResourceValue(Version.currentVersion);
+        return current == null ? r : current;
     }
 
     private Resource mod(Description d) {

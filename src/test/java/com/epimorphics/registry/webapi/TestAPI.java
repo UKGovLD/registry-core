@@ -45,7 +45,7 @@ public class TestAPI extends TomcatTestBase {
         assertEquals("Register in non-existant location", 404, postFileStatus("test/reg1.ttl", BASE_URL+"foo"));
         assertEquals("Register the same again", 403, postFileStatus("test/reg1.ttl", BASE_URL));
         assertEquals(204, postFileStatus("test/red.ttl", REG1));
-        
+
         // Entity and item access
         checkModelResponse(REG1 + "/red", ROOT_REGISTER + "reg1/red", "test/expected/red.ttl");
         Model m = getModelResponse(REG1 + "/red?_view=with_metadata");
@@ -82,7 +82,6 @@ public class TestAPI extends TomcatTestBase {
         checkModelResponse(REG1 + "/_red" + versionSuffix, ROOT_REGISTER + "reg1/red", "test/expected/red1.ttl");
         
         // Register read
-        m = getModelResponse(REG1);
         checkModelResponse(REG1, ROOT_REGISTER + "reg1", "test/expected/reg1-empty.ttl");
         assertEquals(204, post(REG1 + "/_red?update&status=stable").getStatus());
         assertEquals(204, post(REG1 + "/_black?update&status=stable").getStatus());
@@ -95,6 +94,7 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(ROOT_REGISTER + "reg1/red", uri);
         
         // TODO test viewing old version with version view, currently fails, consider whether we need this
+//        m = getModelResponse(REG1);
 //        m.write(System.out, "Turtle");
     }
     
@@ -102,7 +102,7 @@ public class TestAPI extends TomcatTestBase {
         Model m = getModelResponse(fetch);
         Resource actual = m.getResource(rooturi);
         Resource expected = FileManager.get().loadModel(file).getResource(rooturi);
-        assertTrue(actual.listProperties().hasNext());  // guard against wrong rooturi in config
+        assertTrue(expected.listProperties().hasNext());  // guard against wrong rooturi in config
         TestUtil.testResourcesMatch(expected, actual, omit);
         return m;
     }
@@ -110,7 +110,7 @@ public class TestAPI extends TomcatTestBase {
     private Model checkModelResponse(Model m, String rooturi, String file, Property...omit) {
         Resource actual = m.getResource(rooturi);
         Resource expected = FileManager.get().loadModel(file).getResource(rooturi);
-        assertTrue(actual.listProperties().hasNext());  // guard against wrong rooturi in config
+        assertTrue(expected.listProperties().hasNext());  // guard against wrong rooturi in config
         TestUtil.testResourcesMatch(expected, actual, omit);
         return m;
     }

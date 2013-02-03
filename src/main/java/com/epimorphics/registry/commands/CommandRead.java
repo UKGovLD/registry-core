@@ -25,6 +25,7 @@ import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.core.Status;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.sun.jersey.api.NotFoundException;
 
@@ -82,7 +83,7 @@ public class CommandRead extends Command {
                 m.add( ri.getEntity().getModel() );
             }
         } else if (d instanceof Register) {
-            m = d.asRegister().constructView(store, withVersion, withMetadata, false);
+            m = d.asRegister().constructView(store, withVersion, withMetadata, Status.Accepted, 0, -1);
         }
 
         URI uri;

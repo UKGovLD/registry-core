@@ -42,6 +42,7 @@
     <param-value>com.epimorphics.registry.core.Registry,
     baseURI=http://location.data.gov.uk,
     store=storeapi,
+    cacheSize=100,
     bootSpec=${webapp}/WEB-INF/root-register.ttl|${webapp}/WEB-INF/registry.ttl</param-value>
   </context-param>
 
