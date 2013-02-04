@@ -39,6 +39,18 @@ public enum Status {
     public static Status forResource(Resource r) {
         return r == null ? NotAccepted : Status.valueOf(r.getLocalName().substring(6));
     }
+    
+    public static Status forString(String param, Status deflt) {
+        if (param == null) {
+            return deflt;
+        }
+        for (Status s : Status.values()) {
+            if (s.name().equalsIgnoreCase(param)) {
+                return s;
+            }
+        }
+        return deflt;
+    }
 
     public Resource getResource() {
         return resource;

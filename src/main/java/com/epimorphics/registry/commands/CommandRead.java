@@ -26,22 +26,25 @@ import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
+import com.epimorphics.registry.webapi.Parameters;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.sun.jersey.api.NotFoundException;
 
 
 public class CommandRead extends Command {
 
+    boolean withVersion;
+    boolean withMetadata;
+
     public CommandRead(Operation operation, String target,
             MultivaluedMap<String, String> parameters, Registry registry) {
         super(operation, target, parameters, registry);
+        withVersion = hasParamValue(VIEW, WITH_VERSION);
+        withMetadata = hasParamValue(VIEW, WITH_METADATA);
     }
 
     @Override
     public Response execute() {
-        boolean withVersion = hasParamValue(VIEW, WITH_VERSION);
-        boolean withMetadata = hasParamValue(VIEW, WITH_METADATA);
-
         Description d = null;
 
         if (lastSegment.startsWith("_")) {
@@ -83,7 +86,7 @@ public class CommandRead extends Command {
                 m.add( ri.getEntity().getModel() );
             }
         } else if (d instanceof Register) {
-            m = d.asRegister().constructView(store, withVersion, withMetadata, Status.Accepted, 0, -1);
+            m = registerRead(d.asRegister());
         }
 
         URI uri;
@@ -93,6 +96,15 @@ public class CommandRead extends Command {
             throw new WebApplicationException(e);
         }
         return Response.ok().location(uri).entity( m ).build();
+    }
+    
+    Model registerRead(Register register) {
+        if (parameters.containsKey(Parameters.COLLECTION_METADATA_ONLY)) {
+            return register.getRoot().getModel();
+        } else {
+            Status status = Status.forString( parameters.getFirst(Parameters.STATUS), Status.Accepted );
+            return register.constructView(store, withVersion, withMetadata, status, 0, -1);
+        }
     }
 
 }

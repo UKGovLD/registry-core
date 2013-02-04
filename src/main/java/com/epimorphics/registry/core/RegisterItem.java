@@ -150,10 +150,9 @@ public class RegisterItem extends Description {
      * Set the status of the item
      */
     public Resource setStatus(String status) {
-        for (Status s : Status.values()) {
-            if (s.name().equalsIgnoreCase(status)) {
-                return setStatus( s.getResource() );
-            }
+        Status s = Status.forString(status, null);
+        if (s != null) {
+            return setStatus( s.getResource() );
         }
         return null;
     }

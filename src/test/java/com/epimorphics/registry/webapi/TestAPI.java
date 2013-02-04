@@ -11,16 +11,21 @@ package com.epimorphics.registry.webapi;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
 
 import com.epimorphics.rdfutil.QueryUtil;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.util.TestUtil;
+import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.util.FileManager;
+import com.hp.hpl.jena.vocabulary.RDF;
 import com.sun.jersey.api.client.ClientResponse;
 
 
@@ -84,7 +89,7 @@ public class TestAPI extends TomcatTestBase {
         // Register read
         checkModelResponse(REG1, ROOT_REGISTER + "reg1", "test/expected/reg1-empty.ttl");
         assertEquals(204, post(REG1 + "/_red?update&status=stable").getStatus());
-        assertEquals(204, post(REG1 + "/_black?update&status=stable").getStatus());
+        assertEquals(204, post(REG1 + "/_black?update&status=experimental").getStatus());
         checkModelResponse(REG1, ROOT_REGISTER + "reg1", "test/expected/reg1_red_black.ttl");
 
         // Basic version view
@@ -94,6 +99,16 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(ROOT_REGISTER + "reg1/red", uri);
         
         // TODO test viewing old version with version view, currently fails, consider whether we need this
+        
+        // Register listing 
+        assertEquals(204, postFileStatus("test/blue.ttl", REG1));
+        checkModelResponse(REG1 + "?non-member-properties", ROOT_REGISTER + "reg1", "test/expected/reg1-empty.ttl");
+        checkRegisterList( getModelResponse(REG1 + "?status=stable"), ROOT_REGISTER + "reg1", "red1b");
+        checkRegisterList( getModelResponse(REG1 + "?status=experimental"), ROOT_REGISTER + "reg1", "black");
+        checkRegisterList( getModelResponse(REG1 + "?status=valid"), ROOT_REGISTER + "reg1", "red1b", "black");
+        checkRegisterList( getModelResponse(REG1 + "?status=accepted"), ROOT_REGISTER + "reg1", "red1b", "black");
+        checkRegisterList( getModelResponse(REG1 + "?status=notaccepted"), ROOT_REGISTER + "reg1", "blue");
+        
 //        m = getModelResponse(REG1);
 //        m.write(System.out, "Turtle");
     }
@@ -118,5 +133,16 @@ public class TestAPI extends TomcatTestBase {
     private void checkEntity(Model m, String itemURI, String entityURI) {
         Resource entity = m.getResource(itemURI).getPropertyResourceValue(RegistryVocab.definition).getPropertyResourceValue(RegistryVocab.entity);
         assertEquals(entityURI, entity.getURI());
+    }
+    
+    private void checkRegisterList(Model m, String rooturi, String...colours) {
+        Resource register = m.getResource(rooturi);
+        assertTrue( register.hasProperty(RDF.type, RegistryVocab.Register));
+        List<String> actualColours = new ArrayList<String>();
+        ResultSet rs = QueryUtil.selectAll(m, "SELECT ?label WHERE {?register skos:member [rdfs:label ?label]}", Prefixes.get(), "register", rooturi);
+        while (rs.hasNext()) {
+            actualColours.add( rs.next().getLiteral("label").getLexicalForm() );
+        }
+        TestUtil.testArray(actualColours, colours);
     }
 }
