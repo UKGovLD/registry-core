@@ -63,6 +63,11 @@ public class TestAPI extends TomcatTestBase {
         checkModelResponse(m, ROOT_REGISTER + "reg1/red", "test/expected/red.ttl");
         checkEntity(m, ROOT_REGISTER + "reg1/_red",  ROOT_REGISTER + "reg1/red");
         
+        m = getModelResponse(REG1 + "/_red", "_view", "version");
+        checkModelResponse(m, ROOT_REGISTER + "reg1/red",  "test/expected/red.ttl");
+        checkModelResponse(m, ROOT_REGISTER + "reg1/_red",  "test/expected/red_item_version.ttl");
+        checkModelResponse(m, ROOT_REGISTER + "reg1/_red:1",  "test/expected/red_item_version.ttl");
+        
         // External (not managed) entities
         assertEquals(204, postFileStatus("test/absolute-black.ttl", REG1));
         m = checkModelResponse(REG1 + "/_black", EXT_BLACK, "test/expected/absolute-black.ttl");
@@ -109,7 +114,6 @@ public class TestAPI extends TomcatTestBase {
         checkRegisterList( getModelResponse(REG1 + "?status=accepted"), ROOT_REGISTER + "reg1", "red1b", "black");
         checkRegisterList( getModelResponse(REG1 + "?status=notaccepted"), ROOT_REGISTER + "reg1", "blue");
         
-//        m = getModelResponse(REG1);
 //        m.write(System.out, "Turtle");
     }
     
