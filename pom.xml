@@ -262,7 +262,7 @@
           <fileOptions>
             <source>
               <input>default</input>
-              <package-name>com.epimorphics.uklregistry.vocab</package-name>
+              <package-name>com.epimorphics.registry.vocab</package-name>
               <ontology>true</ontology>
               <noStrict>true</noStrict>
             </source>

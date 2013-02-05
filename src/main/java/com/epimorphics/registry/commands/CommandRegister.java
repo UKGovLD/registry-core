@@ -24,6 +24,7 @@ import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.util.EpiException;
@@ -98,7 +99,7 @@ public class CommandRegister extends Command {
         Resource entity = ri.getEntity();
         if( entity.hasProperty(RDF.type, RegistryVocab.Register) ) {
             // TODO fill in void description
-            // TODO fill in auto properties from parent register
+            entity.addProperty(RDF.type, Ldbp.Container);
             log.info("Created new sub-register: " + ri.getNotation());
         }
         store.addToRegister(parent, ri);

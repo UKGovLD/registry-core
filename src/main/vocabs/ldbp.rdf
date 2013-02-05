@@ -21,18 +21,20 @@
 		
 	</owl:Ontology>
 
-	<rdfs:Class rdf:about="http://www.w3.org/ns/ldp#Container">
+    <!-- hacked for schemagen friendliness -->
+    
+	<owl:Class rdf:about="http://www.w3.org/ns/ldp#Container">
 		<rdfs:isDefinedBy rdf:resource="http://www.w3.org/ns/ldp#" />
 		<rdfs:label>Container</rdfs:label>
 		<rdfs:comment>A Basic Profile Resource (BPR) that also conforms to additional patterns 
 		and conventions in this document for managing membership.</rdfs:comment>
-	</rdfs:Class>
+	</owl:Class>
 	
-	<rdfs:Class rdf:about="http://www.w3.org/ns/ldp#Page">
+	<owl:Class rdf:about="http://www.w3.org/ns/ldp#Page">
 		<rdfs:isDefinedBy rdf:resource="http://www.w3.org/ns/ldp#" />
 		<rdfs:label>Page</rdfs:label>
 		<rdfs:comment>A resource that represents a limited set of members of a Basic Profile Container.</rdfs:comment>
-	</rdfs:Class>
+	</owl:Class>
 	
 	<rdf:Property rdf:about="http://www.w3.org/ns/ldp#membershipPredicate">
 		<rdfs:isDefinedBy rdf:resource="http://www.w3.org/ns/ldp#" />

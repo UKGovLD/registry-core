@@ -1,5 +1,5 @@
 <http://location.data.gov.uk/reg1>
-      a       <http://purl.org/linked-data/registry#Register> , <http://www.w3.org/2004/02/skos/core#Collection> ;
+      a       <http://purl.org/linked-data/registry#Register> , <http://www.w3.org/2004/02/skos/core#Collection>, <http://www.w3.org/ns/ldp#Container> ;
       <http://www.w3.org/2000/01/rdf-schema#label>
               "register 1"@en ;
       <http://purl.org/dc/terms/description>
