@@ -91,7 +91,14 @@ public abstract class Command {
         return String.format("Command: %s on %s", operation, target);
     }
 
-    public abstract Response execute() ;
+    public abstract Response doExecute() ;
+    
+    public Response execute()  {
+        // TODO - authorization
+        Response response = doExecute();
+        // TODO - logging and notification
+        return response;
+    }
 
     protected boolean hasParamValue(String param, String value) {
         List<String> values = parameters.get(param);

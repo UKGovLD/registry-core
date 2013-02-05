@@ -39,7 +39,7 @@ public class CommandUpdate extends Command {
     }
 
     @Override
-    public Response execute() {
+    public Response doExecute() {
         // TODO validation
 
         if (lastSegment.startsWith("_")) {

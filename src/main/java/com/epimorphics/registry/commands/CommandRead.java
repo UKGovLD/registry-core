@@ -44,7 +44,7 @@ public class CommandRead extends Command {
     }
 
     @Override
-    public Response execute() {
+    public Response doExecute() {
         Description d = null;
 
         if (lastSegment.startsWith("_")) {

@@ -32,7 +32,7 @@ public class CommandStatusUpdate extends Command {
     }
 
     @Override
-    public Response execute() {
+    public Response doExecute() {
         store.lock(target);
         RegisterItem ri = store.getItem(target, false);
         try {

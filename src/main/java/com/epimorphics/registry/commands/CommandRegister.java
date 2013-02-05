@@ -46,7 +46,7 @@ public class CommandRegister extends Command {
     }
 
     @Override
-    public Response execute() {
+    public Response doExecute() {
 
         store.lock(target);
         try {

@@ -24,7 +24,7 @@ public class CommandValidate extends Command {
     }
 
     @Override
-    public Response execute() {
+    public Response doExecute() {
         // TODO implement
         System.out.println("Execute on " + this);
         return Response.ok().build();
