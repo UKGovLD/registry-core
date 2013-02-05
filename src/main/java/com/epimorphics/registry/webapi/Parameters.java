@@ -23,6 +23,9 @@ public class Parameters {
     public static final String WITH_VERSION = "version";
 
     public static final String COLLECTION_METADATA_ONLY = "non-member-properties";
+    public static final String FIRST_PAGE = "firstPage";
+    public static final String PAGE_NUMBER = "_page";
+    
     public static final String STATUS = "status";
 
 }

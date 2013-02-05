@@ -36,6 +36,8 @@ import com.epimorphics.server.core.ServiceBase;
  *   <li>baseURI - the effective base URI for the registry</li>
  *   <li>bootSpec - location of a bootstrap file defining the root register, and system registers</li>
  *   <li>store - named of a configuration service that provides the StoreAPI implementation in which the registry information is stored</li>
+ *   <li>cacheSize - size of register cache to use, if not set then no caching is done, typical value 100</li>
+ *   <li>pageSize - size to use for LDP pages, default 50 </li>
  * <ul>
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
@@ -47,9 +49,13 @@ public class Registry extends ServiceBase implements Service {
     public static final String BOOT_FILE_PARAM = "bootSpec";
     public static final String STORE_PARAM = "store";
     public static final String CACHE_SIZE_PARAM = "cacheSize";
+    public static final String PAGE_SIZE_PARAM = "pageSize";
 
+    public static final int DEFAULT_PAGE_SIZE = 50;
+    
     protected StoreAPI store;
     protected String baseURI;
+    protected int pageSize;
 
     @Override
     public void init(Map<String, String> config, ServletContext context) {
@@ -57,6 +63,11 @@ public class Registry extends ServiceBase implements Service {
         baseURI = getRequiredParam(BASE_URI_PARAM);
         if (baseURI.endsWith("/")) {
             baseURI = baseURI.substring(0, baseURI.length() -1 );
+        }
+        if (config.containsKey(PAGE_SIZE_PARAM)) {
+            pageSize = Integer.parseInt(config.get(PAGE_SIZE_PARAM));
+        } else {
+            pageSize = DEFAULT_PAGE_SIZE;
         }
     }
 
@@ -92,6 +103,10 @@ public class Registry extends ServiceBase implements Service {
 
     public StoreAPI getStore() {
         return store;
+    }
+    
+    public int getPageSize() {
+        return pageSize;
     }
 
     public Command make(Operation operation, String target,  MultivaluedMap<String, String> parameters) {

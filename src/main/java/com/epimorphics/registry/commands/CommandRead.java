@@ -9,9 +9,7 @@
 
 package com.epimorphics.registry.commands;
 
-import static com.epimorphics.registry.webapi.Parameters.VIEW;
-import static com.epimorphics.registry.webapi.Parameters.WITH_VERSION;
-import static com.epimorphics.registry.webapi.Parameters.WITH_METADATA;
+import static com.epimorphics.registry.webapi.Parameters.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -27,6 +25,7 @@ import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.webapi.Parameters;
+import com.epimorphics.server.webapi.WebApiException;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.sun.jersey.api.NotFoundException;
 
@@ -99,11 +98,25 @@ public class CommandRead extends Command {
     }
     
     Model registerRead(Register register) {
-        if (parameters.containsKey(Parameters.COLLECTION_METADATA_ONLY)) {
+        if (parameters.containsKey(COLLECTION_METADATA_ONLY)) {
             return register.getRoot().getModel();
         } else {
-            Status status = Status.forString( parameters.getFirst(Parameters.STATUS), Status.Accepted );
-            return register.constructView(store, withVersion, withMetadata, status, 0, -1);
+            Status status = Status.forString( parameters.getFirst(STATUS), Status.Accepted );
+            int offset = 0;
+            int length = -1;
+            if (parameters.containsKey(FIRST_PAGE)) {
+                length = registry.getPageSize();
+            } else if (parameters.containsKey(PAGE_NUMBER)) {
+                length = registry.getPageSize();
+                try {
+                    offset = length * Integer.parseInt( parameters.getFirst(PAGE_NUMBER) );
+                } catch (NumberFormatException e) {
+                    throw new WebApiException(javax.ws.rs.core.Response.Status.BAD_REQUEST, "Illegal page number");
+                }
+            }
+            Model view = register.constructView(store, withVersion, withMetadata, status, offset, length);
+            // TODO << paging information
+            return view;
         }
     }
 

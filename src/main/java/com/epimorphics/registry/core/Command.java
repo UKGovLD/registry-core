@@ -96,6 +96,7 @@ public abstract class Command {
     public Response execute()  {
         // TODO - authorization
         Response response = doExecute();
+        // TODO catch and rethrow exceptions to capture 404 and other status responses
         // TODO - logging and notification
         return response;
     }
