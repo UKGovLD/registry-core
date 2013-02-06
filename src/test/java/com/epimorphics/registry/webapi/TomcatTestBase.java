@@ -11,6 +11,7 @@ package com.epimorphics.registry.webapi;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.StringWriter;
 
 import org.apache.catalina.startup.Tomcat;
 import org.junit.After;
@@ -83,6 +84,14 @@ public class TomcatTestBase {
         WebResource r = c.resource(uri);
         File src = new File(file);
         ClientResponse response = r.type(mime).post(ClientResponse.class, src);
+        return response;
+    }
+    
+    protected ClientResponse postModel(Model m, String uri) {
+        WebResource r = c.resource(uri);
+        StringWriter sw = new StringWriter();
+        m.write(sw, "Turtle");
+        ClientResponse response = r.type("text/turtle").post(ClientResponse.class, sw.getBuffer().toString());
         return response;
     }
     

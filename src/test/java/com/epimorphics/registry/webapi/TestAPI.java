@@ -18,14 +18,20 @@ import org.junit.Test;
 
 import com.epimorphics.rdfutil.QueryUtil;
 import com.epimorphics.registry.util.Prefixes;
+import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.util.TestUtil;
+import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.util.FileManager;
 import com.hp.hpl.jena.vocabulary.RDF;
+import com.hp.hpl.jena.vocabulary.RDFS;
 import com.sun.jersey.api.client.ClientResponse;
 
 
@@ -40,6 +46,7 @@ public class TestAPI extends TomcatTestBase {
     static final String EXT_BLACK = "http://example.com/colours/black";
     static final String REG1 = BASE_URL + "reg1";
     static final String REG1_ITEM = ROOT_REGISTER + "_reg1";
+    static final String REGL_URL = BASE_URL + "regL";
     
     @Test
     public void testBasics() {
@@ -114,7 +121,49 @@ public class TestAPI extends TomcatTestBase {
         checkRegisterList( getModelResponse(REG1 + "?status=accepted"), ROOT_REGISTER + "reg1", "red1b", "black");
         checkRegisterList( getModelResponse(REG1 + "?status=notaccepted"), ROOT_REGISTER + "reg1", "blue");
         
-//        m.write(System.out, "Turtle");
+        // Register paging
+        makeRegister(60);
+        checkPageResponse(getModelResponse(REGL_URL + "?firstPage&status=notaccepted"), "1", 50);
+        checkPageResponse(getModelResponse(REGL_URL + "?_page=1&status=notaccepted"), null, 10);
+        
+//      m.write(System.out, "Turtle");
+    }
+    
+    
+    private void checkPageResponse(Model m, String nextpage, int length) {
+        ResIterator ri = m.listSubjectsWithProperty(RDF.type, Ldbp.Page);
+        assertTrue(ri.hasNext());
+        Resource page = ri.next();
+        assertFalse(ri.hasNext());
+        if (nextpage != null) {
+            Resource next = page.getPropertyResourceValue(Ldbp.nextPage);
+            assertNotNull(next);
+            assertTrue(next.getURI().contains("_page=" + nextpage));
+        } else {
+            assertFalse(page.hasProperty(Ldbp.nextPage));
+        }
+        Resource reg = page.getPropertyResourceValue(Ldbp.pageOf);
+        int count = 0;
+        for (StmtIterator si = reg.listProperties(RDFS.member); si.hasNext();) {
+            si.next();
+            count++;
+        }
+        assertEquals(length, count);
+    }
+    
+    private void makeRegister(int length) {
+        Model m = ModelFactory.createDefaultModel();
+        m.createResource("regL")
+                .addProperty(RDF.type, RegistryVocab.Register)
+                .addProperty(RDFS.label, "Long register");
+        assertEquals(204, postModel(m, BASE_URL).getStatus());
+        for (int i = 0; i < length; i++) {
+            m = ModelFactory.createDefaultModel();
+            m.createResource("regL/item" +i)
+                    .addProperty(RDFS.label, "item" + i)
+                    .addProperty(RDF.type, SKOS.Concept);
+            assertEquals(204, postModel(m, REGL_URL).getStatus());
+        }
     }
     
     private Model checkModelResponse(String fetch, String rooturi, String file, Property...omit) {

@@ -140,4 +140,39 @@ public abstract class Command {
         }
         return roots.get(0);
     }
+    
+    protected String makeParamString(MultivaluedMap<String, String> parameters, String...omit) {
+        StringBuffer params = new StringBuffer();
+        boolean startedParams = false;
+        for (String p : parameters.keySet()) {
+            boolean skip = false;
+            for (String o : omit) {
+                if (p.equals(o)) {
+                    skip = true;
+                    break;
+                }
+            }
+            if (skip) continue;
+            if (startedParams) {
+                params.append("&");
+            } else {
+                startedParams = true;
+            }
+            List<String> values = parameters.get(p);
+            params.append(p);
+            if (values == null || values.isEmpty()) continue;
+            if (values.size() == 1 && values.get(0) == null) continue;
+            params.append("=");
+            boolean started = false;
+            for (String value: values) {
+                if (started) {
+                    params.append(",");
+                } else {
+                    started = true;
+                }
+                params.append(value);
+            }
+        }
+        return params.toString();
+    }
 }

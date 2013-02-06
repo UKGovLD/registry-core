@@ -64,13 +64,17 @@ public class Register extends Description {
      * @param length then maximum number of members to return, -1 for no limit
      * @return
      */
-    public Model constructView(StoreAPI store, boolean withVersion, boolean withMetadata, Status status, int offset, int length) {
+    public Model constructView(boolean withVersion, boolean withMetadata, Status status, int offset, int length) {
+        return constructView(getMembers(), withVersion, withMetadata, status, offset, length);
+    }
+    
+    public Model constructView(List<RegisterEntryInfo> entries, boolean withVersion, boolean withMetadata, Status status, int offset, int length) {
         List<String> itemURIs = new ArrayList<String>( length == -1 ? 50 : length );
         List<String> entityURIs = new ArrayList<String>( length == -1 ? 50 : length );
         
         int count = 0;
         int limit = length == -1 ? Integer.MAX_VALUE : offset + length;
-        for (RegisterEntryInfo info : getMembers()) {
+        for (RegisterEntryInfo info : entries) {
             if (info.getStatus().isA(status)) {
                 if (count >= offset) {
                     itemURIs.add( info.getItemURI() );
@@ -119,5 +123,6 @@ public class Register extends Description {
 
         return result;
     }
+    
 
 }
