@@ -45,6 +45,7 @@ public class TestAPI extends TomcatTestBase {
 
     static final String EXT_BLACK = "http://example.com/colours/black";
     static final String REG1 = BASE_URL + "reg1";
+    static final String REG1_URI = ROOT_REGISTER + "reg1";
     static final String REG1_ITEM = ROOT_REGISTER + "_reg1";
     static final String REGL_URL = BASE_URL + "regL";
     
@@ -114,21 +115,29 @@ public class TestAPI extends TomcatTestBase {
         
         // Register listing 
         assertEquals(204, postFileStatus("test/blue.ttl", REG1));
-        checkModelResponse(REG1 + "?non-member-properties", ROOT_REGISTER + "reg1", "test/expected/reg1-empty.ttl");
-        checkRegisterList( getModelResponse(REG1 + "?status=stable"), ROOT_REGISTER + "reg1", "red1b");
-        checkRegisterList( getModelResponse(REG1 + "?status=experimental"), ROOT_REGISTER + "reg1", "black");
-        checkRegisterList( getModelResponse(REG1 + "?status=valid"), ROOT_REGISTER + "reg1", "red1b", "black");
-        checkRegisterList( getModelResponse(REG1 + "?status=accepted"), ROOT_REGISTER + "reg1", "red1b", "black");
-        checkRegisterList( getModelResponse(REG1 + "?status=notaccepted"), ROOT_REGISTER + "reg1", "blue");
+        checkModelResponse(REG1 + "?non-member-properties", REG1_URI, "test/expected/reg1-empty.ttl");
+        checkRegisterList( getModelResponse(REG1 + "?status=stable"), REG1_URI, "red1b");
+        checkRegisterList( getModelResponse(REG1 + "?status=experimental"), REG1_URI, "black");
+        checkRegisterList( getModelResponse(REG1 + "?status=valid"), REG1_URI, "red1b", "black");
+        checkRegisterList( getModelResponse(REG1 + "?status=accepted"), REG1_URI, "red1b", "black");
+        checkRegisterList( getModelResponse(REG1 + "?status=notaccepted"), REG1_URI, "blue");
+
+        // Register metadata view
+        checkModelResponse(REG1 + "?non-member-properties&_view=with_metadata", REG1_URI, "test/expected/reg1_nmp_metadata.ttl");
+        m = getModelResponse(REG1 + "?_view=with_metadata");
+        checkModelResponse(m, REG1_URI, "test/expected/reg1_red_black_metadata.ttl");
+        checkModelResponse(m, REG1_URI+"/red", "test/expected/reg1_red_black_metadata.ttl");
+        checkModelResponse(m, REG1_URI+"/_red", "test/expected/reg1_red_black_metadata.ttl");
+        checkModelResponse(m, EXT_BLACK, "test/expected/reg1_red_black_metadata.ttl");
+        checkModelResponse(m, REG1_URI+"/_black", "test/expected/reg1_red_black_metadata.ttl");
+        m.write(System.out, "Turtle");
         
         // Register paging
         makeRegister(60);
         checkPageResponse(getModelResponse(REGL_URL + "?firstPage&status=notaccepted"), "1", 50);
         checkPageResponse(getModelResponse(REGL_URL + "?_page=1&status=notaccepted"), null, 10);
         
-//      m.write(System.out, "Turtle");
     }
-    
     
     private void checkPageResponse(Model m, String nextpage, int length) {
         ResIterator ri = m.listSubjectsWithProperty(RDF.type, Ldbp.Page);

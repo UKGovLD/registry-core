@@ -70,7 +70,7 @@ public class CommandRead extends Command {
     @Override
     public Response doExecute() {
         Description d = null;
-
+        boolean entityWithMetadata = false;
         if (lastSegment.startsWith("_")) {
             // An item
             if (lastSegment.contains(":")) {
@@ -91,6 +91,7 @@ public class CommandRead extends Command {
             // An entity
             if ( withMetadata ) {
                 // Entity with metadata
+                entityWithMetadata = true;
                 d = store.getItem(parent +"/_" + lastSegment, true);
             } else {
                 // plain entity
@@ -109,7 +110,11 @@ public class CommandRead extends Command {
             if (ri.getEntity() != null) {
                 m.add( ri.getEntity().getModel() );
             }
-        } else if (d instanceof Register) {
+        }
+        if (entityWithMetadata) {
+            d = Description.descriptionFrom(d.asRegisterItem().getEntity(), store);
+        }
+        if (d instanceof Register) {
             m = registerRead(d.asRegister());
         }
 

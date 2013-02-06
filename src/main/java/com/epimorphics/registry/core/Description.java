@@ -13,7 +13,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.util.VersionUtil;
+import com.epimorphics.registry.vocab.RegistryVocab;
 import com.hp.hpl.jena.datatypes.RDFDatatype;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
@@ -25,6 +27,7 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.sparql.util.Closure;
 import com.hp.hpl.jena.vocabulary.DCTerms;
+import com.hp.hpl.jena.vocabulary.RDF;
 
 /**
  * Provides core machinery for accessing descriptions of an RDF resource.
@@ -69,6 +72,25 @@ public class Description {
         return new Description(root);
     }
 
+    /**
+     * Return a typed description wrapper round a resource retrieved from a store
+     */
+    public static Description descriptionFrom(Resource root, StoreAPI store) {
+        if (root.hasProperty(RDF.type)) {
+            if (root.hasProperty( RDF.type, RegistryVocab.Register)) {
+                Register reg = new Register(root);
+                reg.setStore(store);
+                return reg;
+            } else if (root.hasProperty( RDF.type, RegistryVocab.RegisterItem)) {
+                return new RegisterItem(root);
+            } else {
+                return new Description(root);
+            }
+        } else {
+            return null;
+        }
+    }
+    
     /**
      * Provide a new root resource and associated model to become the updated version
      * of the description.

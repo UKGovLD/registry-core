@@ -133,20 +133,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     }
 
     protected Description asDescription(Resource root) {
-        if (root.hasProperty(RDF.type)) {
-            if (root.hasProperty( RDF.type, RegistryVocab.Register)) {
-                Register reg = new Register(root);
-                reg.setStore(this);
-                return reg;
-            } else if (root.hasProperty( RDF.type, RegistryVocab.RegisterItem)) {
-                return new RegisterItem(root);
-            } else {
-                return new Description(root);
-            }
-        } else {
-            return null;
-        }
-
+        return Description.descriptionFrom(root, this);
     }
 
     @Override
