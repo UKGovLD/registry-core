@@ -303,6 +303,9 @@ public class RegisterItem extends Description {
             // Absolute URI, just use it and create anotation for the item
             notation = UUID.randomUUID().toString();
         }
+        if ( ! LEGAL_NOTATION.matcher(notation).matches() ) {
+            throw new WebApiException(Response.Status.BAD_REQUEST, "Proposed notation for item is not a legal pchar or starts with '_'");
+        }
         return notation;
     }
 

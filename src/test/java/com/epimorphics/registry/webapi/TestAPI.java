@@ -144,6 +144,9 @@ public class TestAPI extends TomcatTestBase {
         checkModelResponse(m, ROOT_REGISTER + "regL/item1", "test/expected/regL-two-entries.ttl");
 //        m.write(System.out, "Turtle");
         
+        // Checking of legal relative URIs in registration payload
+        assertEquals(400, postFileStatus("test/bad-green.ttl", REG1));
+        
     }
     
     private void checkPageResponse(Model m, String nextpage, int length) {
