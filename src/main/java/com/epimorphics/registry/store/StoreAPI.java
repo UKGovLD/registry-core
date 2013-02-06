@@ -69,6 +69,11 @@ public interface StoreAPI {
     public Description getVersionAt(String uri, long time);
 
     /**
+     * Return the effective timestamp of a versioned resource
+     */
+    public long versionStartedAt(String uri);
+    
+    /**
      * List all known verisons of a VersionedThing
      * @param uri the uri of the base VersionedThing
      */

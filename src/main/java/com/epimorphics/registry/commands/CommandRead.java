@@ -9,17 +9,21 @@
 
 package com.epimorphics.registry.commands;
 
-import static com.epimorphics.registry.webapi.Parameters.*;
+import static com.epimorphics.registry.webapi.Parameters.COLLECTION_METADATA_ONLY;
+import static com.epimorphics.registry.webapi.Parameters.FIRST_PAGE;
+import static com.epimorphics.registry.webapi.Parameters.PAGE_NUMBER;
+import static com.epimorphics.registry.webapi.Parameters.STATUS;
+import static com.epimorphics.registry.webapi.Parameters.VERSION_AT;
+import static com.epimorphics.registry.webapi.Parameters.VIEW;
+import static com.epimorphics.registry.webapi.Parameters.WITH_METADATA;
+import static com.epimorphics.registry.webapi.Parameters.WITH_VERSION;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-
-import org.apache.commons.collections.map.MultiValueMap;
 
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Description;
@@ -27,17 +31,13 @@ import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
-import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.epimorphics.registry.vocab.Ldbp;
-import com.epimorphics.registry.vocab.RegistryVocab;
-import com.epimorphics.registry.webapi.Parameters;
 import com.epimorphics.server.webapi.WebApiException;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.sun.jersey.api.NotFoundException;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
-import com.sun.jersey.core.util.StringKeyStringValueIgnoreCaseMultivaluedMap;
 
 
 public class CommandRead extends Command {
@@ -45,6 +45,8 @@ public class CommandRead extends Command {
     boolean withVersion;
     boolean withMetadata;
     boolean paged;
+    boolean versioned;
+    boolean timestamped;
     int length = -1;
     int pagenum = 0;
 
@@ -65,6 +67,8 @@ public class CommandRead extends Command {
                 throw new WebApiException(javax.ws.rs.core.Response.Status.BAD_REQUEST, "Illegal page number");
             }
         }
+        versioned = lastSegment.contains(":");
+        timestamped = parameters.containsKey(VERSION_AT);
     }
 
     @Override
@@ -73,7 +77,7 @@ public class CommandRead extends Command {
         boolean entityWithMetadata = false;
         if (lastSegment.startsWith("_")) {
             // An item
-            if (lastSegment.contains(":")) {
+            if (versioned) {
                 // An explicit item version
                 d = store.getVersion(target);
                 if (d != null) {
@@ -89,7 +93,10 @@ public class CommandRead extends Command {
             }
         } else {
             // An entity
-            if ( withMetadata ) {
+            if (versioned) {
+                // This case only arises for registers
+                d = store.getVersion(target);
+            } else  if ( withMetadata ) {
                 // Entity with metadata
                 entityWithMetadata = true;
                 d = store.getItem(parent +"/_" + lastSegment, true);
@@ -134,16 +141,22 @@ public class CommandRead extends Command {
             // Status filter option
             Status status = Status.forString( parameters.getFirst(STATUS), Status.Accepted );
             
-            // TODO select view
-            List<RegisterEntryInfo> members = register.getMembers();
-            Model view = register.constructView(members, withVersion, withMetadata, status, pagenum * length, length);
+            // Select verison of view
+            long timestamp = -1;
+            if (versioned) {
+                timestamp = store.versionStartedAt(target);
+            } else {
+//                String ts = parameters.getFirst(VERSION_AT);
+                // TODO parse timestamp argument
+            }
+            Model view = ModelFactory.createDefaultModel();
+            boolean complete = register.constructView(view, withVersion, withMetadata, status, pagenum * length, length, timestamp);
             
             // Paging parameters
             if (paged) {
-                injectPagingInformation(view, register.getRoot(), members.size() > (length * (pagenum+1)));
+                injectPagingInformation(view, register.getRoot(), !complete);
             }
             
-            // TODO << paging information
             return view;
         }
     }

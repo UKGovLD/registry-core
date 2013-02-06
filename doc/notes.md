@@ -22,8 +22,10 @@
    * Switch to a message-oriented design for connecting the registry core logic to the store, indexers and other possible data consumers - but what message structure BSON encoding?
    * plugin architecture for validators, use ServiceLoader machinery for that?
 
-   * shake down StoreAPI
-
+   * shake down StoreAPI - simplify version/flatten/item stuff - too many slightly variant methods
+     e.g. more getCurrentVersion, getVersion, getDescription to just get right one
+     possible drop fetchAll and instead support add-to-model
+     
    * internal caching for read (zap on update)
 
 ## Stack

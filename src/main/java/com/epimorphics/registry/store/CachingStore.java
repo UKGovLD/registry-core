@@ -150,4 +150,9 @@ public class CachingStore implements StoreAPI {
         return store.fetchAll(itemURIs, withEntity, withVersion);
     }
 
+    @Override
+    public long versionStartedAt(String uri) {
+        return store.versionStartedAt(uri);
+    }
+
 }

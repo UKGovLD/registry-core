@@ -130,12 +130,18 @@ public class TestAPI extends TomcatTestBase {
         checkModelResponse(m, REG1_URI+"/_red", "test/expected/reg1_red_black_metadata.ttl");
         checkModelResponse(m, EXT_BLACK, "test/expected/reg1_red_black_metadata.ttl");
         checkModelResponse(m, REG1_URI+"/_black", "test/expected/reg1_red_black_metadata.ttl");
-        m.write(System.out, "Turtle");
         
         // Register paging
         makeRegister(60);
         checkPageResponse(getModelResponse(REGL_URL + "?firstPage&status=notaccepted"), "1", 50);
         checkPageResponse(getModelResponse(REGL_URL + "?_page=1&status=notaccepted"), null, 10);
+        
+        // Register version view
+        m = getModelResponse(REGL_URL + ":3?status=notaccepted");
+        checkModelResponse(m, ROOT_REGISTER + "regL", "test/expected/regL-two-entries.ttl");
+        checkModelResponse(m, ROOT_REGISTER + "regL/item0", "test/expected/regL-two-entries.ttl");
+        checkModelResponse(m, ROOT_REGISTER + "regL/item1", "test/expected/regL-two-entries.ttl");
+//        m.write(System.out, "Turtle");
         
     }
     
@@ -168,7 +174,7 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(204, postModel(m, BASE_URL).getStatus());
         for (int i = 0; i < length; i++) {
             m = ModelFactory.createDefaultModel();
-            m.createResource("regL/item" +i)
+            m.createResource("item" +i)
                     .addProperty(RDFS.label, "item" + i)
                     .addProperty(RDF.type, SKOS.Concept);
             assertEquals(204, postModel(m, REGL_URL).getStatus());

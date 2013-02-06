@@ -117,6 +117,10 @@ public class RegisterItem extends Description {
      * returns the constructed item representation.
      */
     public static RegisterItem fromRIRequest(Resource ri, String parentURI, boolean isNewSubmission) {
+        return fromRIRequest(ri, parentURI, isNewSubmission, Calendar.getInstance());
+    }
+    
+    public static RegisterItem fromRIRequest(Resource ri, String parentURI, boolean isNewSubmission, Calendar now) {
         Model d = Closure.closure(ri, false);
         Resource entity = findRequiredEntity(ri);
         RegisterItem item = new RegisterItem( ri.inModel(d), parentURI );
@@ -124,7 +128,7 @@ public class RegisterItem extends Description {
         if (entity != null) {
             entity = entity.inModel( Closure.closure(entity, false) );
             item.relocateEntity(entity);
-            item.updateForEntity(isNewSubmission, Calendar.getInstance());
+            item.updateForEntity(isNewSubmission, now);
         }
         return item;
     }
@@ -134,6 +138,10 @@ public class RegisterItem extends Description {
      * any explict RegisterItem specification.
      */
     public static RegisterItem fromEntityRequest(Resource e, String parentURI, boolean isNewSubmission) {
+        return fromEntityRequest(e, parentURI, isNewSubmission, Calendar.getInstance());
+    }
+
+    public static RegisterItem fromEntityRequest(Resource e, String parentURI, boolean isNewSubmission, Calendar now) {
         String notation = riNotationFromEntity(e, parentURI);
         String riURI = makeItemURI(parentURI, notation);
         Resource ri = ModelFactory.createDefaultModel().createResource(riURI)
@@ -142,7 +150,7 @@ public class RegisterItem extends Description {
         RegisterItem item = new RegisterItem( ri, parentURI, notation );
         Resource entity = e;
         item.relocateEntity(entity);
-        item.updateForEntity(isNewSubmission, Calendar.getInstance());
+        item.updateForEntity(isNewSubmission, now);
         return item;
     }
 

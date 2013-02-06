@@ -141,7 +141,7 @@ public class TestStoreImpl {
         Resource subregR = RDFUtil.findRoot( subregM );
 
         Calendar now = Calendar.getInstance();
-        RegisterItem subregItem = RegisterItem.fromEntityRequest(subregR, parentURI, true);
+        RegisterItem subregItem = RegisterItem.fromEntityRequest(subregR, parentURI, true, now);
 
         store.addToRegister(parent, subregItem, now);
         return now.getTimeInMillis();
@@ -251,7 +251,7 @@ public class TestStoreImpl {
         e.removeAll(RDFS.label).addProperty(RDFS.label, label);
         Calendar now = Calendar.getInstance();
         ri.updateForEntity(false, now);
-        store.update(ri, true);
+        store.update(ri, true, now);
         return now.getTimeInMillis();
     }
 

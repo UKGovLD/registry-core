@@ -39,6 +39,7 @@ import com.epimorphics.server.core.Service;
 import com.epimorphics.server.core.ServiceBase;
 import com.epimorphics.server.core.Store;
 import com.epimorphics.util.EpiException;
+import com.epimorphics.vocabs.Time;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -237,6 +238,24 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             "   OPTIONAL {?version version:interval [time:hasEnd [time:inXSDDateTime ?to]].} \n" +
             "} ORDER BY ?info \n";
 
+    @Override
+    public long versionStartedAt(String uri) {
+        store.lock();
+        try {
+            Resource root = getDefaultModel().getResource(uri);
+            Resource interval = root.getPropertyResourceValue(Version.interval);
+            if (interval == null) return -1;
+            return RDFUtil.asTimestamp(
+                    interval
+                        .getPropertyResourceValue(Time.hasBeginning)
+                        .getProperty(Time.inXSDDateTime)
+                        .getObject() );
+        } finally {
+            store.unlock();
+        }
+        
+    }
+    
     @Override
     public RegisterItem getItem(String uri, boolean withEntity) {
         return doGetItem(uri, withEntity, true);

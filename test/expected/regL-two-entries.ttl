@@ -1,0 +1,19 @@
+<http://location.data.gov.uk/regL/item1>
+      a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+      <http://www.w3.org/2000/01/rdf-schema#label>
+              "item1" .
+
+<http://location.data.gov.uk/regL>
+      a       <http://purl.org/linked-data/registry#Register> , <http://www.w3.org/ns/ldp#Container> ;
+      <http://www.w3.org/2000/01/rdf-schema#label>
+              "Long register" ;
+      <http://www.w3.org/2000/01/rdf-schema#member>
+              <http://location.data.gov.uk/regL/item1> , <http://location.data.gov.uk/regL/item0> ;
+      <http://purl.org/dc/terms/modified> [];
+      <http://www.w3.org/2002/07/owl#versionInfo> [];
+      .
+              
+<http://location.data.gov.uk/regL/item0>
+      a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+      <http://www.w3.org/2000/01/rdf-schema#label>
+              "item0" .
