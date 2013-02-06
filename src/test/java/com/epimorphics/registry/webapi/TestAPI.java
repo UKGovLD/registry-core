@@ -121,6 +121,7 @@ public class TestAPI extends TomcatTestBase {
         checkRegisterList( getModelResponse(REG1 + "?status=valid"), REG1_URI, "red1b", "black");
         checkRegisterList( getModelResponse(REG1 + "?status=accepted"), REG1_URI, "red1b", "black");
         checkRegisterList( getModelResponse(REG1 + "?status=notaccepted"), REG1_URI, "blue");
+        checkRegisterList( getModelResponse(REG1 + "?status=any"), REG1_URI, "red1b", "black", "blue");
 
         // Register metadata view
         checkModelResponse(REG1 + "?non-member-properties&_view=with_metadata", REG1_URI, "test/expected/reg1_nmp_metadata.ttl");

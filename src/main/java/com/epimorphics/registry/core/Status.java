@@ -28,6 +28,7 @@ public enum Status {
     Deprecated(RegistryVocab.statusDeprecated),
     Superseded(RegistryVocab.statusSuperseded),
     Retired(RegistryVocab.statusRetired),
+    Any(RegistryVocab.Status)
     ;
 
     Resource resource;
@@ -79,6 +80,8 @@ public enum Status {
             return this == Experimental || this == Stable;
         case Deprecated:
             return this == Superseded || this == Retired;
+        case Any:
+            return true;
         default:
             return false;
         }
