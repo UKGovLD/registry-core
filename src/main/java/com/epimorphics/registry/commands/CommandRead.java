@@ -31,6 +31,7 @@ import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
+import com.epimorphics.registry.util.Util;
 import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.server.webapi.WebApiException;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -141,13 +142,12 @@ public class CommandRead extends Command {
             // Status filter option
             Status status = Status.forString( parameters.getFirst(STATUS), Status.Accepted );
             
-            // Select verison of view
+            // Select version of view
             long timestamp = -1;
             if (versioned) {
                 timestamp = store.versionStartedAt(target);
             } else {
-//                String ts = parameters.getFirst(VERSION_AT);
-                // TODO parse timestamp argument
+                timestamp = Util.asTimestamp( parameters.getFirst(VERSION_AT) );
             }
             Model view = ModelFactory.createDefaultModel();
             boolean complete = register.constructView(view, withVersion, withMetadata, status, pagenum * length, length, timestamp);

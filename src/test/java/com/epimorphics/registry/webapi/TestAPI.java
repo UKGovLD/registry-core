@@ -32,6 +32,7 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.util.FileManager;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
+import com.ibm.icu.util.Calendar;
 import com.sun.jersey.api.client.ClientResponse;
 
 
@@ -93,6 +94,8 @@ public class TestAPI extends TomcatTestBase {
         String versionSuffix = red1Version.substring( red1Version.length()-2 );
         checkModelResponse(REG1 + "/red", ROOT_REGISTER + "reg1/red", "test/expected/red1.ttl");
 
+        Calendar checkpoint = Calendar.getInstance();
+        
         response = invoke("PATCH", "test/red1b.ttl", REG1 + "/red");
         assertEquals(204,  response.getStatus());
         checkModelResponse(REG1 + "/red", ROOT_REGISTER + "reg1/red", "test/expected/red1b.ttl");
@@ -110,8 +113,6 @@ public class TestAPI extends TomcatTestBase {
         String uri = QueryUtil.selectFirstVar("entity", m, "SELECT ?entity WHERE { ?item version:currentVersion [ reg:definition [ reg:entity ?entity]].}", 
                                                     Prefixes.get(), "item", ROOT_REGISTER + "reg1/_red").asResource().getURI();
         assertEquals(ROOT_REGISTER + "reg1/red", uri);
-        
-        // TODO test viewing old version with version view, currently fails, consider whether we need this
         
         // Register listing 
         assertEquals(204, postFileStatus("test/blue.ttl", REG1));
@@ -143,6 +144,9 @@ public class TestAPI extends TomcatTestBase {
         checkModelResponse(m, ROOT_REGISTER + "regL/item0", "test/expected/regL-two-entries.ttl");
         checkModelResponse(m, ROOT_REGISTER + "regL/item1", "test/expected/regL-two-entries.ttl");
 //        m.write(System.out, "Turtle");
+        
+        // Register timestamp view - predaces changing red1 to red1b and adding blue
+        checkRegisterList( getModelResponse(REG1 + "?status=any&_versionAt=" + checkpoint.getTimeInMillis()), REG1_URI, "red1", "black");
         
         // Checking of legal relative URIs in registration payload
         assertEquals(400, postFileStatus("test/bad-green.ttl", REG1));

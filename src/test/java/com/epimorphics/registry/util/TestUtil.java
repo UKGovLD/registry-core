@@ -9,13 +9,23 @@
 
 package com.epimorphics.registry.util;
 
+import static org.junit.Assert.assertEquals;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.junit.Test;
-import static  org.junit.Assert.*;
 
 public class TestUtil {
 
     @Test
     public void testTimeConversion() {
         assertEquals(1234, Util.asTimestamp("1234"));
+        
+        long time = Util.asTimestamp("2013-02-06");
+        assertEquals("2013-02-06", new SimpleDateFormat("yyyy-MM-dd").format(new Date(time)));
+        
+        time = Util.asTimestamp("2013-02-06T16:10:45");
+        assertEquals("2013-02-06T16:10:45",  new SimpleDateFormat("yyy-MM-dd'T'HH:mm:ss").format(new Date(time)));
     }
 }
