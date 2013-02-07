@@ -28,6 +28,7 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.util.FileManager;
 import com.hp.hpl.jena.vocabulary.RDF;
@@ -147,7 +148,7 @@ public class TestAPI extends TomcatTestBase {
         checkModelResponse(m, ROOT_REGISTER + "regL/item0", "test/expected/regL-two-entries.ttl");
         checkModelResponse(m, ROOT_REGISTER + "regL/item1", "test/expected/regL-two-entries.ttl");
 
-        // Register timestamp view - predaces changing red1 to red1b and adding blue
+        // Register timestamp view - predates changing red1 to red1b and adding blue
         checkRegisterList( getModelResponse(REG1 + "?status=any&_versionAt=" + checkpoint.getTimeInMillis()), REG1_URI, "red1", "black");
 
         // Checking of legal relative URIs in registration payload
@@ -181,10 +182,28 @@ public class TestAPI extends TomcatTestBase {
 
         // Updating register metadata
         assertEquals(400, invoke("PATCH", "test/register-update.ttl", BASE_URL + "collection").getStatus());
-        printStatus(invoke("PATCH", "test/register-update.ttl", BASE_URL + "collection?non-member-properties"));
         assertEquals(204, invoke("PATCH", "test/register-update.ttl", BASE_URL + "collection?non-member-properties").getStatus());
         m = getModelResponse(BASE_URL + "collection?non-member-properties");
         checkModelResponse(m, ROOT_REGISTER + "collection", "test/expected/updated-collection-register.ttl");
+        
+        // Deletion
+        assertEquals(204, invoke("DELETE", null, BASE_URL + "collection/collection/item1").getStatus());
+        checkRegisterList( 
+                getModelResponse(BASE_URL + "collection/collection?status=stable"), ROOT_REGISTER + "collection/collection", "item 2", "item 3");
+        
+        assertEquals(204, invoke("DELETE", null, BASE_URL + "collection/collection/_item2").getStatus());
+        checkRegisterList( 
+                getModelResponse(BASE_URL + "collection/collection?status=stable"), ROOT_REGISTER + "collection/collection", "item 3");
+
+        
+        Resource collection = ResourceFactory.createResource("http://location.data.gov.uk/collection");
+        Resource collectionCollection = ResourceFactory.createResource("http://location.data.gov.uk/collection/collection");
+        assertTrue( getModelResponse(BASE_URL + "collection?status=stable").contains(collection, SKOS.member, collectionCollection));
+        assertEquals(204, invoke("DELETE", null, BASE_URL + "collection/collection").getStatus());
+        assertFalse( getModelResponse(BASE_URL + "collection?status=stable").contains(collection, SKOS.member, collectionCollection));
+        checkRegisterList( 
+                getModelResponse(BASE_URL + "collection/collection?status=stable"), ROOT_REGISTER + "collection/collection");
+        
 //        m.write(System.out, "Turtle");
         
     }

@@ -9,6 +9,8 @@
 
 package com.epimorphics.registry.commands;
 
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -18,6 +20,7 @@ import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.vocab.RegistryVocab;
+import com.epimorphics.server.webapi.WebApiException;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.sun.jersey.api.NotFoundException;
@@ -33,14 +36,15 @@ public class CommandStatusUpdate extends Command {
 
     @Override
     public Response doExecute() {
+        if (!lastSegment.startsWith("_")) {
+            throw new WebApiException(BAD_REQUEST, "Can update the status of a register item");
+        }
         store.lock(target);
         RegisterItem ri = store.getItem(target, false);
         try {
             if (ri != null) {
-                // TODO auth
                 // TODO lifecyle checks
                 // TODO handle verification for accepted
-                // TODO handle deletion for Invalid
                 String requestedStatus = parameters.getFirst(STATUS_PARAM);
                 Resource status = ri.setStatus(requestedStatus);
                 if (status == null) {

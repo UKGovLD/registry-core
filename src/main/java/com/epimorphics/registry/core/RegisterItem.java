@@ -17,6 +17,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import com.epimorphics.rdfutil.RDFUtil;
+import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.server.webapi.BaseEndpoint;
 import com.epimorphics.server.webapi.WebApiException;
@@ -110,6 +111,14 @@ public class RegisterItem extends Description {
         }
         return parentURI;
     }
+    
+    public boolean isRegister() {
+        return root.hasProperty(RegistryVocab.itemClass, RegistryVocab.Register);
+    }
+    
+    public Register getAsRegister(StoreAPI store) {
+        return Description.descriptionFrom( store.getEntity(this), store ).asRegister();
+    }
 
     /**
      * Takes a register item resource from a request payload, determines and checks
@@ -158,7 +167,13 @@ public class RegisterItem extends Description {
      * Set the status of the item
      */
     public Resource setStatus(String status) {
-        Status s = Status.forString(status, null);
+        return setStatus( Status.forString(status, null) );
+    }
+
+    /**
+     * Set the status of the item
+     */
+    public Resource setStatus(Status s) {
         if (s != null) {
             return setStatus( s.getResource() );
         }

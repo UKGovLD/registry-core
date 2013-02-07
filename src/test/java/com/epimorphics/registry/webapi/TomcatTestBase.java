@@ -97,8 +97,13 @@ public class TomcatTestBase {
     
     protected ClientResponse invoke(String method, String file, String uri, String mime) {
         WebResource r = c.resource(uri);
-        File src = new File(file);
-        ClientResponse response = r.type(mime).header("X-HTTP-Method-Override", method).post(ClientResponse.class, src);
+        ClientResponse response = null;
+        if (file == null) {
+            response = r.type(mime).header("X-HTTP-Method-Override", method).post(ClientResponse.class);
+        } else {
+            File src = new File(file);
+            response = r.type(mime).header("X-HTTP-Method-Override", method).post(ClientResponse.class, src);
+        }
         return response;
     }
     

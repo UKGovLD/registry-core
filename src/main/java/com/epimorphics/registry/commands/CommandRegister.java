@@ -230,6 +230,7 @@ public class CommandRegister extends Command {
         // TODO validate completeness of description
 
         if (statusOverride != null) {
+            ri.getRoot().removeAll(RegistryVocab.status);
             ri.getRoot().addProperty(RegistryVocab.status, statusOverride.getResource());
         }
 

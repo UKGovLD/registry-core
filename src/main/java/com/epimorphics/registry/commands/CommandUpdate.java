@@ -65,7 +65,7 @@ public class CommandUpdate extends Command {
                 throw new NotFoundException();
             }
 
-            boolean isRegister = item.getRoot().hasProperty(RegistryVocab.itemClass, RegistryVocab.Register);
+            boolean isRegister = item.isRegister();
             if (isRegister && entityOnly) {
                 if (!parameters.containsKey(Parameters.COLLECTION_METADATA_ONLY)) {
                     throw new WebApiException(Status.BAD_REQUEST, "Can only PUT/PATCH register metadadata, use non-member-properties to signal this");
