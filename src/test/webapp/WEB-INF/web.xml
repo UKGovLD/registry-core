@@ -16,7 +16,7 @@
     </param-value>
   </context-param>
 
-<!-- 
+<!--
   <context-param>
     <param-name>config.index</param-name>
     <param-value>com.epimorphics.server.indexers.LuceneIndex, location=/var/local/registry/index, config=${webapp}/WEB-INF/index-config.ttl</param-value>
@@ -33,14 +33,14 @@
     <param-value>com.epimorphics.registry.webapi.LibReg</param-value>
   </context-param>
  -->
- 
+
   <context-param>
     <param-name>config.registry</param-name>
     <param-value>com.epimorphics.registry.core.Registry,
     baseURI=http://location.data.gov.uk,
     store=storeapi,
-    cacheSize=100,
-    bootSpec=${webapp}/WEB-INF/root-register.ttl|${webapp}/WEB-INF/registry.ttl</param-value>
+<!--    cacheSize=100,  -->
+    bootSpec=${webapp}/WEB-INF/root-register.ttl|${webapp}/WEB-INF/registry.ttl|${webapp}/WEB-INF/system-registers.ttl</param-value>
   </context-param>
 
 

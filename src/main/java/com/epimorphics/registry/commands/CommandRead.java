@@ -136,7 +136,6 @@ public class CommandRead extends Command {
         Model result = ModelFactory.createDefaultModel();
         String uri = parameters.getFirst(ENTITY_LOOKUP);
         Status statusFilter = Status.forString(parameters.getFirst(STATUS), Status.Any);
-        System.out.println("Target is: " + target);
         for (EntityInfo entityInfo : store.listEntityOccurences(uri)) {
             if (entityInfo.getStatus().isA(statusFilter)) {
                 if (entityInfo.getRegisterURI().startsWith(target)) {

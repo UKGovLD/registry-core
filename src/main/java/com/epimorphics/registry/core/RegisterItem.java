@@ -110,7 +110,7 @@ public class RegisterItem extends Description {
         }
         return parentURI;
     }
-    
+
     /**
      * Takes a register item resource from a request payload, determines and checks
      * the intended URI for both it and the entity, fills in blanks on the register item,
@@ -119,7 +119,7 @@ public class RegisterItem extends Description {
     public static RegisterItem fromRIRequest(Resource ri, String parentURI, boolean isNewSubmission) {
         return fromRIRequest(ri, parentURI, isNewSubmission, Calendar.getInstance());
     }
-    
+
     public static RegisterItem fromRIRequest(Resource ri, String parentURI, boolean isNewSubmission, Calendar now) {
         Model d = Closure.closure(ri, false);
         Resource entity = findRequiredEntity(ri);
@@ -142,7 +142,7 @@ public class RegisterItem extends Description {
     }
 
     public static RegisterItem fromEntityRequest(Resource e, String parentURI, boolean isNewSubmission, Calendar now) {
-        String notation = riNotationFromEntity(e, parentURI);
+        String notation = notationFromEntity(e, parentURI);
         String riURI = makeItemURI(parentURI, notation);
         Resource ri = ModelFactory.createDefaultModel().createResource(riURI)
                 .addProperty(RDF.type, RegistryVocab.RegisterItem)
@@ -289,7 +289,7 @@ public class RegisterItem extends Description {
         }
     }
 
-    private static String riNotationFromEntity(Resource entity, String parentURI) {
+    public static String notationFromEntity(Resource entity, String parentURI) {
         String uri = entity.getURI();
         String notation = null;
         if (entity.isAnon() || uri.equals(BaseEndpoint.DUMMY_BASE_URI)) {

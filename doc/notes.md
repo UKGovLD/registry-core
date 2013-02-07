@@ -20,6 +20,7 @@
 
    * Separate out the UI as per the conceptual architecture
    * Switch to a message-oriented design for connecting the registry core logic to the store, indexers and other possible data consumers - but what message structure BSON encoding?
+     support pub/sub for e.g. watcher API
    * plugin architecture for validators, use ServiceLoader machinery for that?
 
    * shake down StoreAPI - simplify version/flatten/item stuff - too many slightly variant methods
@@ -28,7 +29,7 @@
      drop all versioning access
      possibly also merge plain/item fetching
 
-   * internal caching for read (zap on update)
+   * bulk registration should dodge the register versioning somehow?
 
 ## Stack
 

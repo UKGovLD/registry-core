@@ -146,7 +146,6 @@ public class TestAPI extends TomcatTestBase {
         checkModelResponse(m, ROOT_REGISTER + "regL", "test/expected/regL-two-entries.ttl");
         checkModelResponse(m, ROOT_REGISTER + "regL/item0", "test/expected/regL-two-entries.ttl");
         checkModelResponse(m, ROOT_REGISTER + "regL/item1", "test/expected/regL-two-entries.ttl");
-//        m.write(System.out, "Turtle");
 
         // Register timestamp view - predaces changing red1 to red1b and adding blue
         checkRegisterList( getModelResponse(REG1 + "?status=any&_versionAt=" + checkpoint.getTimeInMillis()), REG1_URI, "red1", "black");
@@ -154,7 +153,23 @@ public class TestAPI extends TomcatTestBase {
         // Checking of legal relative URIs in registration payload
         assertEquals(400, postFileStatus("test/bad-green.ttl", REG1));
 
+        // Bulk registration
+        assertEquals("Not a bulk type", 400, postFileStatus("test/blue.ttl", BASE_URL + "?batch-managed"));
+        assertEquals(204, postFileStatus("test/bulk-skos-collection.ttl", BASE_URL + "?batch-managed"));
+        m = getModelResponse(BASE_URL + "collection?status=any");
+        checkRegisterList( m, ROOT_REGISTER + "collection", "item 1", "item 2", "item 3");
+        assertEquals(204, postFileStatus("test/bulk-skos-scheme.ttl", BASE_URL + "?batch-managed"));
+        m = getModelResponse(BASE_URL + "scheme?status=any");
+        TestUtil.testArray(
+                m.listSubjectsWithProperty(SKOS.inScheme, m.getResource(ROOT_REGISTER + "scheme")).toList(),
+                new Resource[]{
+                    m.createResource(ROOT_REGISTER + "scheme/item1"),
+                    m.createResource(ROOT_REGISTER + "scheme/item2"),
+                    m.createResource(ROOT_REGISTER + "scheme/item3")
+                }
+                );
     }
+
 
     private void checkPageResponse(Model m, String nextpage, int length) {
         ResIterator ri = m.listSubjectsWithProperty(RDF.type, Ldbp.Page);

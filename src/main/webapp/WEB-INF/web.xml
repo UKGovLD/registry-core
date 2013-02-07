@@ -43,7 +43,7 @@
     baseURI=http://location.data.gov.uk,
     store=storeapi,
     cacheSize=100,
-    bootSpec=${webapp}/WEB-INF/root-register.ttl|${webapp}/WEB-INF/registry.ttl</param-value>
+    bootSpec=${webapp}/WEB-INF/root-register.ttl|${webapp}/WEB-INF/registry.ttl|${webapp}/WEB-INF/system-registers.ttl</param-value>
   </context-param>
 
 

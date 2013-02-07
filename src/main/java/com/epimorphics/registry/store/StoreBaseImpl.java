@@ -602,4 +602,13 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         return false;
     }
 
+    public void dump() {
+        store.lock();
+        try {
+            getDefaultModel().write(System.out, "Turtle");
+        } finally {
+            store.unlock();
+        }
+    }
+
 }

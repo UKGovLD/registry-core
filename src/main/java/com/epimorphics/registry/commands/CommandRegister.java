@@ -11,26 +11,41 @@ package com.epimorphics.registry.commands;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.epimorphics.rdfutil.QueryUtil;
+import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.store.EntityInfo;
 import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.RegistryVocab;
+import com.epimorphics.registry.webapi.Parameters;
+import com.epimorphics.server.webapi.BaseEndpoint;
 import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.util.EpiException;
+import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
+import com.hp.hpl.jena.sparql.util.Closure;
+import com.hp.hpl.jena.util.ResourceUtils;
+import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.RDF;
+import com.hp.hpl.jena.vocabulary.RDFS;
 import com.sun.jersey.api.NotFoundException;
 
 /**
@@ -40,6 +55,8 @@ import com.sun.jersey.api.NotFoundException;
  */
 public class CommandRegister extends Command {
     static final Logger log = LoggerFactory.getLogger( CommandRegister.class );
+
+    static final String BULK_TYPES_REGISTER = "/system/bulkCollectionTypes";
 
     public CommandRegister(Operation operation, String target,
             MultivaluedMap<String, String> parameters, Registry registry) {
@@ -58,17 +75,17 @@ public class CommandRegister extends Command {
             Register parent = d.asRegister();
 
             Resource location = null;
-            if (payload.contains(null, RDF.type, RegistryVocab.RegisterItem)) {
-                for (ResIterator ri = payload.listSubjectsWithProperty(RDF.type, RegistryVocab.RegisterItem); ri.hasNext();) {
-                    Resource itemSpec = ri.next();
-                    location = register(parent, itemSpec, true);
-                }
+            if (parameters.containsKey(Parameters.BATCH_MANAGED) || parameters.containsKey(Parameters.BATCH_REFERENCED)) {
+                location = batchRegister(parent);
             } else {
-                List<Resource> roots = payload.listSubjectsWithProperty(RDF.type).toList();
-                if (roots.size() != 1) {
-                    throw new WebApiException(Response.Status.BAD_REQUEST, "Could not find unique entity root to register");
+                if (payload.contains(null, RDF.type, RegistryVocab.RegisterItem)) {
+                    for (ResIterator ri = payload.listSubjectsWithProperty(RDF.type, RegistryVocab.RegisterItem); ri.hasNext();) {
+                        Resource itemSpec = ri.next();
+                        location = register(parent, itemSpec, true);
+                    }
+                } else {
+                    location = register(parent, findSingletonRoot(), false);
                 }
-                location = register(parent, findSingletonRoot(), false);
             }
             try {
                 return Response.noContent().location(new URI(location.getURI())).build();
@@ -78,6 +95,101 @@ public class CommandRegister extends Command {
         } finally {
             store.unlock(target);
         }
+    }
+
+    private Resource batchRegister(Register parent) {
+        ResultSet types = QueryUtil.selectAll(payload, "SELECT DISTINCT ?type WHERE {[] a ?type}");
+        Resource type = null;
+        RegisterItem bulkItem = null;
+        while (types.hasNext()) {
+            type = types.next().getResource("type");
+            bulkItem = getBulkType(type);
+            if (bulkItem != null) {
+                break;
+            }
+        }
+        if (bulkItem == null) {
+            throw new WebApiException(Status.BAD_REQUEST, "Could not find registered bulk type in payload");
+        }
+        List<Resource> roots = payload.listResourcesWithProperty(RDF.type, type).toList();
+        if (roots.size() != 1) {
+            throw new WebApiException(Status.BAD_REQUEST, "Multiple instances of bulk collection type");
+        }
+        Resource root = roots.get(0);
+
+        // Find membership property
+        boolean isInverse = false;
+        Property memberProp = RDFUtil.asProperty( bulkItem.getRoot().getPropertyResourceValue(Ldbp.membershipPredicate) );
+        if (memberProp == null) {
+            memberProp = RDFUtil.asProperty( bulkItem.getRoot().getPropertyResourceValue(RegistryVocab.inverseMembershipPredicate) );
+            if (memberProp == null) {
+                memberProp = RDFS.member;
+            } else {
+                isInverse = true;
+            }
+        }
+
+        // Find children
+        List<Resource> children = new ArrayList<Resource>();
+        if (isInverse) {
+            StmtIterator si = payload.listStatements(null, memberProp, root);
+            while (si.hasNext()) {
+                Statement s = si.next();
+                children.add( s.getSubject() );
+                si.remove();
+            }
+        } else {
+            StmtIterator si = root.listProperties(memberProp);
+            while (si.hasNext()) {
+                Statement s = si.next();
+                children.add( s.getObject().asResource() );
+                si.remove();
+            }
+        }
+        if (children.isEmpty()) {
+            throw new WebApiException(Status.BAD_REQUEST, "No children of bulk collection type found");
+        }
+
+        // Relocate any relative children
+        if (root.getURI().startsWith(BaseEndpoint.DUMMY_BASE_URI)) {
+            int striplen = root.getURI().length();
+            for (int i = 0; i < children.size(); i++) {
+                Resource c = children.get(i);
+                String uri = BaseEndpoint.DUMMY_BASE_URI + c.getURI().substring(striplen);
+                children.set(i, ResourceUtils.renameResource(c, uri));
+            }
+        }
+
+        // Register the collection
+        root.addProperty(RDF.type, RegistryVocab.Register);
+        if (!root.hasProperty(RegistryVocab.owner)) {
+            if (root.hasProperty(DCTerms.publisher)) {
+                root.addProperty(RegistryVocab.owner, root.getProperty(DCTerms.publisher).getObject());
+            } else {
+                // TODO make it the submitter
+            }
+        }
+        root.addProperty(isInverse ? RegistryVocab.inverseMembershipPredicate : Ldbp.membershipPredicate, memberProp);
+        Resource item = register(parent, root, false);
+        String registerURI = item.getURI().replaceAll("/_([^/]*)$", "/$1");
+        Register newReg = store.getCurrentVersion(registerURI).asRegister();
+
+        for (Resource child : children) {
+            // TODO bypass the register versioning here
+            register(newReg, child.inModel(Closure.closure(child, false)), false);
+        }
+
+        return root;
+    }
+
+    private RegisterItem getBulkType(Resource ty) {
+        String bulkRegister = registry.getBaseURI() + BULK_TYPES_REGISTER;
+        for (EntityInfo i : store.listEntityOccurences(ty.getURI())) {
+            if (i.getRegisterURI().startsWith(bulkRegister)) {
+                return store.getItem(i.getItemURI(), true);
+            }
+        }
+        return null;
     }
 
     private Resource register(Register parent, Resource itemSpec, boolean withItemSpec) {
