@@ -95,7 +95,7 @@ public abstract class Command {
     }
 
     public abstract Response doExecute() ;
-    
+
     public Response execute()  {
         // TODO - authorization
         Response response = doExecute();
@@ -138,12 +138,15 @@ public abstract class Command {
 
     protected Resource findSingletonRoot() {
         List<Resource> roots = payload.listSubjectsWithProperty(RDF.type).toList();
+        if (roots.isEmpty()) {
+            roots = payload.listSubjects().toList();
+        }
         if (roots.size() != 1) {
             throw new WebApiException(Response.Status.BAD_REQUEST, "Could not find unique entity root to register");
         }
         return roots.get(0);
     }
-    
+
     protected String makeParamString(MultivaluedMap<String, String> parameters, String...omit) {
         StringBuffer params = new StringBuffer();
         boolean startedParams = false;

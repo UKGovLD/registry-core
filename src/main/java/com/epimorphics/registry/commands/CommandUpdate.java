@@ -16,11 +16,15 @@ import java.util.Calendar;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.util.PatchUtil;
+import com.epimorphics.registry.vocab.RegistryVocab;
+import com.epimorphics.registry.webapi.Parameters;
+import com.epimorphics.server.webapi.WebApiException;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.sun.jersey.api.NotFoundException;
 
@@ -61,9 +65,19 @@ public class CommandUpdate extends Command {
                 throw new NotFoundException();
             }
 
+            boolean isRegister = item.getRoot().hasProperty(RegistryVocab.itemClass, RegistryVocab.Register);
+            if (isRegister && entityOnly) {
+                if (!parameters.containsKey(Parameters.COLLECTION_METADATA_ONLY)) {
+                    throw new WebApiException(Status.BAD_REQUEST, "Can only PUT/PATCH register metadadata, use non-member-properties to signal this");
+                }
+            }
             if (withEntity) {
                 if (isPatch){
-                    PatchUtil.patch(entity, item.getEntity());
+                    if (isRegister) {
+                        PatchUtil.patch(entity, item.getEntity(), RegistryVocab.subregister);
+                    } else {
+                        PatchUtil.patch(entity, item.getEntity());
+                    }
                 } else {
                     item.setEntity(entity);
                 }

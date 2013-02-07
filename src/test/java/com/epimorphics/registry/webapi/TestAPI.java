@@ -179,9 +179,23 @@ public class TestAPI extends TomcatTestBase {
         m = getModelResponse(BASE_URL + "scheme-collection?status=any");
         checkRegisterList( m, ROOT_REGISTER + "scheme-collection", "item 1", "item 2");
 
+        // Updating register metadata
+        assertEquals(400, invoke("PATCH", "test/register-update.ttl", BASE_URL + "collection").getStatus());
+        printStatus(invoke("PATCH", "test/register-update.ttl", BASE_URL + "collection?non-member-properties"));
+        assertEquals(204, invoke("PATCH", "test/register-update.ttl", BASE_URL + "collection?non-member-properties").getStatus());
+        m = getModelResponse(BASE_URL + "collection?non-member-properties");
+        checkModelResponse(m, ROOT_REGISTER + "collection", "test/expected/updated-collection-register.ttl");
 //        m.write(System.out, "Turtle");
+        
     }
 
+    private void printStatus(ClientResponse response) {
+        String msg = "Response: " + response.getStatus();
+        if (response.hasEntity() && response.getStatus() != 204) {
+            msg += " (" + response.getEntity(String.class) + ")";
+        }
+        System.out.println(msg);
+    }
 
     private void checkPageResponse(Model m, String nextpage, int length) {
         ResIterator ri = m.listSubjectsWithProperty(RDF.type, Ldbp.Page);

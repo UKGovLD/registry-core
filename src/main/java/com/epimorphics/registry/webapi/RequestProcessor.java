@@ -43,7 +43,6 @@ public class RequestProcessor extends BaseEndpoint {
     @Produces({MIME_TURTLE, MIME_RDFXML})
     public Response read() {
         Command command = makeCommand( Operation.Read );
-        // TODO authorize
         return command.execute();
     }
 
@@ -68,7 +67,6 @@ public class RequestProcessor extends BaseEndpoint {
             command = makeCommand(Operation.Register);
             command.setPayload( getBodyModel(hh, body) );
         }
-        // TODO authorize
         return command.execute();
     }
 
@@ -77,14 +75,12 @@ public class RequestProcessor extends BaseEndpoint {
     public Response update(@Context HttpHeaders hh, InputStream body) {
         Command command = makeCommand( Operation.Update );
         command.setPayload( getBodyModel(hh, body) );
-        // TODO authorize
         return command.execute();
     }
 
     @DELETE
     public Object delete() {
         Command command = makeCommand( Operation.Delete );
-        // TODO authorize
         return command.execute();
     }
 
@@ -94,8 +90,6 @@ public class RequestProcessor extends BaseEndpoint {
         Command command = makeCommand( Operation.Update );
         ((CommandUpdate)command).setToPatch();
         command.setPayload( getBodyModel(hh, body) );
-
-        // TODO authorize
         return command.execute();
     }
 

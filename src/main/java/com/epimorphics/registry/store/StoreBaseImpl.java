@@ -473,7 +473,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             doUpdate(register.getRoot(), now);
             mod(item).addProperty(RegistryVocab.register, register.getRoot());
             Resource entity = item.getEntity();
-            if (entity.getPropertyResourceValue(RDF.type).equals(RegistryVocab.Register)) {
+            if (entity.hasProperty(RDF.type, RegistryVocab.Register)) {
                 modCurrent(register).addProperty(RegistryVocab.subregister, entity);
             }
             modCurrent(register).removeAll(DCTerms.modified).addProperty(DCTerms.modified, getDefaultModel().createTypedLiteral(now));
@@ -501,7 +501,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     public String update(Register register, Calendar timestamp) {
         store.lockWrite();
         try {
-            return doUpdate(register.getRoot(), timestamp).getURI();
+            return doUpdateRegister(register.getRoot(), timestamp).getURI();
         } finally {
             store.unlock();
         }
@@ -511,6 +511,18 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     public String update(Register register) {
         return update(register, Calendar.getInstance());
     }
+
+    protected Resource doUpdateRegister(Resource root, Calendar cal, Property... rigids) {
+        root.removeAll(RegistryVocab.subregister);
+        Resource current = getDefaultModel().getResource(root.getURI());
+        Resource temp= current.getPropertyResourceValue(Version.currentVersion);
+        if (temp != null) {
+            current = temp;
+        }
+        RDFUtil.copyProperty( current, root, RegistryVocab.subregister );
+        return doUpdate(root, cal, rigids);
+    }
+
 
     protected Resource doUpdate(Resource root, Calendar cal, Property... rigids) {
         Resource newVersion = VersionUtil.nextVersion(root, cal, rigids);
@@ -549,7 +561,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
                 newVersion.addProperty(RegistryVocab.definition, entityRef);
             }
             if (entity.hasProperty(RDF.type, RegistryVocab.Register)) {
-                doUpdate( entity, now );
+                doUpdateRegister( entity, now );
             } else {
                 if (oldVersion != null) {
                     if (!removeGraphFor(oldVersion)) {

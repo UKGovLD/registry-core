@@ -1,0 +1,12 @@
+<http://location.data.gov.uk/collection>
+      a       <http://purl.org/linked-data/registry#Register> , <http://www.w3.org/ns/ldp#Container> , <http://www.w3.org/2004/02/skos/core#Collection> ;
+      <http://www.w3.org/2000/01/rdf-schema#label>
+              "A nice test collection" ;
+      <http://purl.org/dc/terms/modified> [];
+      <http://purl.org/linked-data/registry#governancePolicy>
+              <http://example.com/tbd> ;
+      <http://purl.org/linked-data/registry#subregister>
+              <http://location.data.gov.uk/collection/collection> ;
+      <http://www.w3.org/2002/07/owl#versionInfo> [] ;
+      <http://www.w3.org/ns/ldp#membershipPredicate>
+              <http://www.w3.org/2004/02/skos/core#member> .
