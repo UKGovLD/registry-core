@@ -28,6 +28,7 @@
      possible drop fetchAll and instead support add-to-model
      drop all versioning access
      possibly also merge plain/item fetching
+   * As part of API shake down, scrap the incremental-delta machinery on Description
 
    * bulk registration should dodge the register versioning somehow?
 

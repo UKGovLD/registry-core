@@ -155,9 +155,11 @@ public class TestAPI extends TomcatTestBase {
 
         // Bulk registration
         assertEquals("Not a bulk type", 400, postFileStatus("test/blue.ttl", BASE_URL + "?batch-managed"));
+
         assertEquals(204, postFileStatus("test/bulk-skos-collection.ttl", BASE_URL + "?batch-managed"));
         m = getModelResponse(BASE_URL + "collection?status=any");
         checkRegisterList( m, ROOT_REGISTER + "collection", "item 1", "item 2", "item 3");
+
         assertEquals(204, postFileStatus("test/bulk-skos-scheme.ttl", BASE_URL + "?batch-managed"));
         m = getModelResponse(BASE_URL + "scheme?status=any");
         TestUtil.testArray(
@@ -168,6 +170,16 @@ public class TestAPI extends TomcatTestBase {
                     m.createResource(ROOT_REGISTER + "scheme/item3")
                 }
                 );
+
+        assertEquals(204, postFileStatus("test/bulk-skos-collection.ttl", BASE_URL + "collection?batch-managed&status=stable"));
+        m = getModelResponse(BASE_URL + "collection/collection?status=stable");
+        checkRegisterList( m, ROOT_REGISTER + "collection/collection", "item 1", "item 2", "item 3");
+
+        assertEquals(204, postFileStatus("test/bulk-skos-collection-of-scheme.ttl", BASE_URL + "?batch-referenced"));
+        m = getModelResponse(BASE_URL + "scheme-collection?status=any");
+        checkRegisterList( m, ROOT_REGISTER + "scheme-collection", "item 1", "item 2");
+
+//        m.write(System.out, "Turtle");
     }
 
 

@@ -16,7 +16,7 @@ import java.util.List;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import static javax.ws.rs.core.Response.Status.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +28,7 @@ import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.store.EntityInfo;
 import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.RegistryVocab;
@@ -36,6 +37,7 @@ import com.epimorphics.server.webapi.BaseEndpoint;
 import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.util.EpiException;
 import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -58,6 +60,8 @@ public class CommandRegister extends Command {
 
     static final String BULK_TYPES_REGISTER = "/system/bulkCollectionTypes";
 
+    Status statusOverride = null;
+
     public CommandRegister(Operation operation, String target,
             MultivaluedMap<String, String> parameters, Registry registry) {
         super(operation, target, parameters, registry);
@@ -65,6 +69,8 @@ public class CommandRegister extends Command {
 
     @Override
     public Response doExecute() {
+
+        statusOverride = Status.forString(parameters.getFirst(Parameters.STATUS), null);
 
         store.lock(target);
         try {
@@ -109,11 +115,11 @@ public class CommandRegister extends Command {
             }
         }
         if (bulkItem == null) {
-            throw new WebApiException(Status.BAD_REQUEST, "Could not find registered bulk type in payload");
+            throw new WebApiException(BAD_REQUEST, "Could not find registered bulk type in payload");
         }
         List<Resource> roots = payload.listResourcesWithProperty(RDF.type, type).toList();
         if (roots.size() != 1) {
-            throw new WebApiException(Status.BAD_REQUEST, "Multiple instances of bulk collection type");
+            throw new WebApiException(BAD_REQUEST, "Multiple instances of bulk collection type");
         }
         Resource root = roots.get(0);
 
@@ -147,7 +153,7 @@ public class CommandRegister extends Command {
             }
         }
         if (children.isEmpty()) {
-            throw new WebApiException(Status.BAD_REQUEST, "No children of bulk collection type found");
+            throw new WebApiException(BAD_REQUEST, "No children of bulk collection type found");
         }
 
         // Relocate any relative children
@@ -155,8 +161,10 @@ public class CommandRegister extends Command {
             int striplen = root.getURI().length();
             for (int i = 0; i < children.size(); i++) {
                 Resource c = children.get(i);
-                String uri = BaseEndpoint.DUMMY_BASE_URI + c.getURI().substring(striplen);
-                children.set(i, ResourceUtils.renameResource(c, uri));
+                if (c.getURI().startsWith(BaseEndpoint.DUMMY_BASE_URI)) {
+                    String uri = BaseEndpoint.DUMMY_BASE_URI + c.getURI().substring(striplen);
+                    children.set(i, ResourceUtils.renameResource(c, uri));
+                }
             }
         }
 
@@ -174,9 +182,22 @@ public class CommandRegister extends Command {
         String registerURI = item.getURI().replaceAll("/_([^/]*)$", "/$1");
         Register newReg = store.getCurrentVersion(registerURI).asRegister();
 
+        boolean isReference = parameters.containsKey(Parameters.BATCH_REFERENCED);
         for (Resource child : children) {
             // TODO bypass the register versioning here
-            register(newReg, child.inModel(Closure.closure(child, false)), false);
+            Resource entity = child.inModel(Closure.closure(child, false));
+            if (isReference) {
+                Model em = entity.getModel();
+                Resource ei = em.createResource()
+                        .addProperty(RDF.type, RegistryVocab.RegisterItem)
+                        .addProperty(RegistryVocab.definition, em.createResource().addProperty(RegistryVocab.entity, entity));
+                if (entity.getURI().startsWith(registry.getBaseURI())) {
+                    em.add( store.getDescription(entity.getURI()).getRoot().listProperties() );
+                }
+                register(newReg, ei, true);
+            } else {
+                register(newReg, entity, false);
+            }
         }
 
         return root;
@@ -207,6 +228,10 @@ public class CommandRegister extends Command {
         }
 
         // TODO validate completeness of description
+
+        if (statusOverride != null) {
+            ri.getRoot().addProperty(RegistryVocab.status, statusOverride.getResource());
+        }
 
         Resource entity = ri.getEntity();
         if( entity.hasProperty(RDF.type, RegistryVocab.Register) ) {

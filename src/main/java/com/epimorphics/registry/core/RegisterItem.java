@@ -317,13 +317,13 @@ public class RegisterItem extends Description {
             // relative URI
             String eNotation = uri.substring(BaseEndpoint.DUMMY_BASE_URI.length() + 1);
             if (!eNotation.equals(notation)) {
-                throw new WebApplicationException(Response.Status.BAD_REQUEST);
+                throw new WebApiException(Response.Status.BAD_REQUEST, "Entity relative path doesn't match its notation");
             }
             uri = makeEntityURI();
         } else if (uri.startsWith(parentURI)) {
             String eNotation = uri.substring(parentURI.length() + 1);
             if (!eNotation.equals(notation)) {
-                throw new WebApplicationException(Response.Status.BAD_REQUEST);
+                throw new WebApiException(Response.Status.BAD_REQUEST, "Entity path doesn't match its notation");
             }
             uri = makeEntityURI();
         }
