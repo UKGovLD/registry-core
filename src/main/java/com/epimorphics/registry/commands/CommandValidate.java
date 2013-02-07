@@ -9,11 +9,19 @@
 
 package com.epimorphics.registry.commands;
 
+import java.util.List;
+
+
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.core.Status;
+import com.epimorphics.registry.store.EntityInfo;
+import com.epimorphics.registry.webapi.Parameters;
+import com.epimorphics.server.webapi.WebApiException;
 
 
 public class CommandValidate extends Command {
@@ -25,9 +33,34 @@ public class CommandValidate extends Command {
 
     @Override
     public Response doExecute() {
-        // TODO implement
-        System.out.println("Execute on " + this);
-        return Response.ok().build();
+        StringBuffer msg = new StringBuffer();
+        boolean valid = true;
+        for (String uri : parameters.get(Parameters.VALIDATE)) {
+            uri = uri.trim();
+            if (uri.isEmpty()) continue;
+            boolean thisValid = false;
+            List<EntityInfo> infos = store.listEntityOccurences(uri);
+            for (EntityInfo info : infos) {
+                if (info.getRegisterURI().startsWith(target) && info.getStatus().isA(Status.Valid)) {
+                    thisValid = true;
+                    break;
+                }
+            }
+            if (!thisValid) {
+                if (infos.isEmpty()) {
+                    msg.append("URI not found anywhere: ");
+                } else {
+                    msg.append("URI known but not marked as valid within this register subtree: ");
+                }
+                msg.append(uri);  msg.append("\n");
+                valid = false;
+            }
+        }
+        if (valid) {
+            return Response.ok().build();
+        } else {
+            throw new WebApiException(BAD_REQUEST, msg.toString());
+        }
     }
 
 }

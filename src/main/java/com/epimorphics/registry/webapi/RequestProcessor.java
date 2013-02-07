@@ -31,6 +31,7 @@ import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Command.Operation;
 import com.epimorphics.registry.util.PATCH;
 import com.epimorphics.server.webapi.BaseEndpoint;
+import com.hp.hpl.jena.util.FileManager;
 
 /**
  * Filter all requests as possible register API requests.
@@ -59,8 +60,10 @@ public class RequestProcessor extends BaseEndpoint {
         MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
         Command command = null;
         if ( parameters.get(Parameters.VALIDATE) != null ) {
+            for (String uri : FileManager.get().readWholeFileAsUTF8(body).split("\\s")) {
+                parameters.add(Parameters.VALIDATE, uri);
+            }
             command = makeCommand(Operation.Validate);
-            command.setPayload( getBodyModel(hh, body) );
         } else if ( parameters.get(Parameters.STATUS_UPDATE) != null ) {
             command = makeCommand(Operation.StatusUpdate);
         } else {

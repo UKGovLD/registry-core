@@ -204,6 +204,13 @@ public class TestAPI extends TomcatTestBase {
         checkRegisterList( 
                 getModelResponse(BASE_URL + "collection/collection?status=stable"), ROOT_REGISTER + "collection/collection");
         
+        assertEquals(400, postFileStatus("test/validation-request1.txt", BASE_URL + "?validate" ));
+        assertEquals(204, post(BASE_URL + "collection?update&status=stable").getStatus());
+        assertEquals(200, postFileStatus("test/validation-request1.txt", BASE_URL + "?validate" ));
+        assertEquals(400, postFileStatus("test/validation-request2.txt", BASE_URL + "?validate" ));
+        assertEquals(200, post(BASE_URL + "?validate=http://location.data.gov.uk/collection/item1").getStatus());
+        assertEquals(400, post(BASE_URL + "?validate=http://location.data.gov.uk/collection/item1&validate=http://location.data.gov.uk/collection/item8").getStatus());
+        
 //        m.write(System.out, "Turtle");
         
     }

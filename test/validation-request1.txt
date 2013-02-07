@@ -1,0 +1,2 @@
+http://location.data.gov.uk/collection/item1
+http://location.data.gov.uk/collection/item2

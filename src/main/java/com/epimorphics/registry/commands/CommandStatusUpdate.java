@@ -19,6 +19,7 @@ import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.server.webapi.WebApiException;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -36,24 +37,24 @@ public class CommandStatusUpdate extends Command {
 
     @Override
     public Response doExecute() {
-        if (!lastSegment.startsWith("_")) {
-            throw new WebApiException(BAD_REQUEST, "Can update the status of a register item");
-        }
         store.lock(target);
-        RegisterItem ri = store.getItem(target, false);
+        RegisterItem ri = store.getItem(itemURI(), false);
         try {
             if (ri != null) {
-                // TODO lifecyle checks
-                // TODO handle verification for accepted
                 String requestedStatus = parameters.getFirst(STATUS_PARAM);
-                Resource status = ri.setStatus(requestedStatus);
-                if (status == null) {
-                    throw new WebApplicationException(Response.Status.FORBIDDEN);
+                if (requestedStatus == null) {
+                    throw new WebApiException(BAD_REQUEST, "Could not determine status to update to");
                 }
-                if (status.equals(RegistryVocab.statusExperimental) || status.equals(RegistryVocab.statusStable)) {
-                    RDFUtil.timestamp(ri.getRoot(), DCTerms.dateAccepted);
+                if (ri.isRegister() && !lastSegment.startsWith("_")) {
+                    for (RegisterEntryInfo member : store.listMembers( ri.getAsRegister(store) )) {
+                        doStatusUpdate(store.getItem(member.getItemURI(), false), requestedStatus);
+                    }
+                } else {
+                    if (!lastSegment.startsWith("_")) {
+                        throw new WebApiException(BAD_REQUEST, "Can only update the status of a register item or whole register");
+                    }
+                    doStatusUpdate(ri, requestedStatus);
                 }
-                store.update(ri, false);
                 return Response.noContent().build();
             } else {
                 throw new NotFoundException();
@@ -61,6 +62,19 @@ public class CommandStatusUpdate extends Command {
         } finally {
             store.unlock(target);
         }
+    }
+
+    private void doStatusUpdate(RegisterItem ri, String requestedStatus) {
+        // TODO lifecyle checks
+        // TODO handle verification for accepted
+        Resource status = ri.setStatus(requestedStatus);
+        if (status == null) {
+            throw new WebApplicationException(Response.Status.FORBIDDEN);
+        }
+        if (status.equals(RegistryVocab.statusExperimental) || status.equals(RegistryVocab.statusStable)) {
+            RDFUtil.timestamp(ri.getRoot(), DCTerms.dateAccepted);
+        }
+        store.update(ri, false);
     }
 
 }

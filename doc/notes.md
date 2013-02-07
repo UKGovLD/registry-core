@@ -46,6 +46,11 @@
    * e-tag support
    * Validation hooks
 
+## Documentation updates
+
+   * status update on a whole register
+   * validate can pass URIs as arguments as well
+   
 ## Extensions
 
    * Register a non-RDF payload?  C.f. XML namespace.

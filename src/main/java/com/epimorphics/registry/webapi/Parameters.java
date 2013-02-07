@@ -32,5 +32,5 @@ public class Parameters {
 
     public static final String BATCH_REFERENCED = "batch-referenced";
     public static final String BATCH_MANAGED = "batch-managed";
-
+    
 }
