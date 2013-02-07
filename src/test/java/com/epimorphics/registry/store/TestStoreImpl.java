@@ -44,6 +44,7 @@ import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
 
 public class TestStoreImpl {
+    private static final String EXT_BLACK = "http://example.com/colours/black";
     static final String BOOTSTRAP_FILE = "src/main/webapp/WEB-INF/root-register.ttl";
     static final String ROOT_REGISTER = "http://location.data.gov.uk/";
     static final String REG1 = ROOT_REGISTER + "reg1";
@@ -296,8 +297,16 @@ public class TestStoreImpl {
         assertEquals("black", item.getNotation());
         assertEquals("black", RDFUtil.getStringValue(item.getRoot(), RDFS.label));
 
-        assertEquals("http://example.com/colours/black", item.getEntity().getURI());
+        assertEquals(EXT_BLACK, item.getEntity().getURI());
         assertEquals("black", RDFUtil.getStringValue(item.getEntity(), RDFS.label));
+        
+        List<EntityInfo> occurances = store.listEntityOccurences(EXT_BLACK);
+        assertEquals(1, occurances.size());
+        EntityInfo info = occurances.get(0);
+        assertEquals(EXT_BLACK, info.getEntityURI());
+        assertEquals(ROOT_REGISTER + "reg1/_black", info.getItemURI());
+        assertEquals(ROOT_REGISTER + "reg1", info.getRegisterURI());
+        assertEquals(Status.Submitted, info.getStatus());
     }
 
     @Test

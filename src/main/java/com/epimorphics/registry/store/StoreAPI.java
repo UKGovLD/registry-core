@@ -72,7 +72,7 @@ public interface StoreAPI {
      * Return the effective timestamp of a versioned resource
      */
     public long versionStartedAt(String uri);
-    
+
     /**
      * List all known verisons of a VersionedThing
      * @param uri the uri of the base VersionedThing
@@ -121,7 +121,11 @@ public interface StoreAPI {
      */
     public List<RegisterEntryInfo> listMembers(Register register);
 
-    // TODO need version  of this that retrieves versions of items as valid at the time a specific register version was created
+    /**
+     * Find all places where the given entity is registered and return the URIs for the coresponding
+     * item and the register it is in.
+     */
+    public List<EntityInfo> listEntityOccurences(String uri);
 
     // --- Methods for updating information in the store ---
 

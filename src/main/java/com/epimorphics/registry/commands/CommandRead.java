@@ -10,6 +10,7 @@
 package com.epimorphics.registry.commands;
 
 import static com.epimorphics.registry.webapi.Parameters.COLLECTION_METADATA_ONLY;
+import static com.epimorphics.registry.webapi.Parameters.ENTITY_LOOKUP;
 import static com.epimorphics.registry.webapi.Parameters.FIRST_PAGE;
 import static com.epimorphics.registry.webapi.Parameters.PAGE_NUMBER;
 import static com.epimorphics.registry.webapi.Parameters.STATUS;
@@ -18,10 +19,6 @@ import static com.epimorphics.registry.webapi.Parameters.VIEW;
 import static com.epimorphics.registry.webapi.Parameters.WITH_METADATA;
 import static com.epimorphics.registry.webapi.Parameters.WITH_VERSION;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
@@ -31,6 +28,7 @@ import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
+import com.epimorphics.registry.store.EntityInfo;
 import com.epimorphics.registry.util.Util;
 import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.server.webapi.WebApiException;
@@ -48,6 +46,7 @@ public class CommandRead extends Command {
     boolean paged;
     boolean versioned;
     boolean timestamped;
+    boolean entityLookup;
     int length = -1;
     int pagenum = 0;
 
@@ -70,10 +69,14 @@ public class CommandRead extends Command {
         }
         versioned = lastSegment.contains(":");
         timestamped = parameters.containsKey(VERSION_AT);
+        entityLookup = parameters.containsKey(ENTITY_LOOKUP);
     }
 
     @Override
     public Response doExecute() {
+        if (entityLookup) {
+            return entityLookup();
+        }
         Description d = null;
         boolean entityWithMetadata = false;
         if (lastSegment.startsWith("_")) {
@@ -126,22 +129,38 @@ public class CommandRead extends Command {
             m = registerRead(d.asRegister());
         }
 
-        URI uri;
-        try {
-            uri = new URI( d.getRoot().getURI() );
-        } catch (URISyntaxException e) {
-            throw new WebApplicationException(e);
-        }
-        return Response.ok().location(uri).entity( m ).build();
+        return returnModel(m, d.getRoot().getURI() );
     }
-    
+
+    private Response entityLookup() {
+        Model result = ModelFactory.createDefaultModel();
+        String uri = parameters.getFirst(ENTITY_LOOKUP);
+        Status statusFilter = Status.forString(parameters.getFirst(STATUS), Status.Any);
+        System.out.println("Target is: " + target);
+        for (EntityInfo entityInfo : store.listEntityOccurences(uri)) {
+            if (entityInfo.getStatus().isA(statusFilter)) {
+                if (entityInfo.getRegisterURI().startsWith(target)) {
+                    if (withMetadata) {
+                        RegisterItem ri = store.getItem(entityInfo.getItemURI(), true);
+                        result.add( ri.getRoot().getModel() );
+                        result.add( ri.getEntity().getModel() );
+                    } else {
+                        Description d = store.getCurrentVersion(entityInfo.getEntityURI());
+                        result.add(d.getRoot().getModel());
+                    }
+                }
+            }
+        }
+        return returnModel(result, target);
+    }
+
     Model registerRead(Register register) {
         if (parameters.containsKey(COLLECTION_METADATA_ONLY)) {
             return register.getRoot().getModel();
         } else {
             // Status filter option
             Status status = Status.forString( parameters.getFirst(STATUS), Status.Accepted );
-            
+
             // Select version of view
             long timestamp = -1;
             if (versioned) {
@@ -151,16 +170,16 @@ public class CommandRead extends Command {
             }
             Model view = ModelFactory.createDefaultModel();
             boolean complete = register.constructView(view, withVersion, withMetadata, status, pagenum * length, length, timestamp);
-            
+
             // Paging parameters
             if (paged) {
                 injectPagingInformation(view, register.getRoot(), !complete);
             }
-            
+
             return view;
         }
     }
-    
+
     private void injectPagingInformation(Model m, Resource regroot, boolean more) {
         String url = target + "?" + makeParamString(parameters);
         Resource page = m.createResource(url)

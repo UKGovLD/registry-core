@@ -25,6 +25,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.epimorphics.rdfutil.QueryUtil;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
@@ -253,9 +254,33 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         } finally {
             store.unlock();
         }
-        
     }
-    
+
+    @Override
+    public List<EntityInfo> listEntityOccurences(String uri) {
+        Resource entity = ResourceFactory.createResource(uri);
+        store.lock();
+        try {
+            ResultSet matches = QueryUtil.selectAll(getDefaultModel(), ENTITY_FIND_QUERY, Prefixes.get(), "entity", entity);
+            List<EntityInfo> results = new ArrayList<EntityInfo>();
+            while (matches.hasNext()) {
+                QuerySolution soln = matches.next();
+                results.add( new EntityInfo(entity, soln.getResource("item"), soln.getResource("register"), soln.getResource("status") ) );
+            }
+            return results;
+        } finally {
+            store.unlock();
+        }
+    }
+    static String ENTITY_FIND_QUERY =
+            "SELECT * WHERE { " +
+                    "?item reg:register ?register; " +
+                    "      version:currentVersion ?itemVer . " +
+                    "?itemVer reg:status ?status; " +
+                    "         reg:definition [reg:entity ?entity] . " +
+            "}";
+
+
     @Override
     public RegisterItem getItem(String uri, boolean withEntity) {
         return doGetItem(uri, withEntity, true);

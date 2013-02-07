@@ -23,9 +23,11 @@
    * plugin architecture for validators, use ServiceLoader machinery for that?
 
    * shake down StoreAPI - simplify version/flatten/item stuff - too many slightly variant methods
-     e.g. more getCurrentVersion, getVersion, getDescription to just get right one
+     e.g. merge getCurrentVersion, getVersion, getDescription to just get right one
      possible drop fetchAll and instead support add-to-model
-     
+     drop all versioning access
+     possibly also merge plain/item fetching
+
    * internal caching for read (zap on update)
 
 ## Stack
@@ -35,7 +37,6 @@
    * test cases for location allocation (null, relative, bnode, skos:notation, absolute, non-local) + for update
    * validation of completeness of a Register spec
    * completion of void description
-   * auth hooks
    * logging of command request
    * If RI includes status value then need to authorize status update as well
    * caching control headers

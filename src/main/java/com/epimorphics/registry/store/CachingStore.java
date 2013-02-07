@@ -2,7 +2,7 @@
  * File:        CachingStore.java
  * Created by:  Dave Reynolds
  * Created on:  3 Feb 2013
- * 
+ *
  * (c) Copyright 2013, Epimorphics Limited
  *
  *****************************************************************/
@@ -21,21 +21,21 @@ import com.hp.hpl.jena.rdf.model.Resource;
 /**
  * Store wrapper that caches registers.
  * Could have a variant that caches individual descriptions though that seems less useful.
- * 
+ *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public class CachingStore implements StoreAPI {
 
     protected StoreAPI store;
     protected DescriptionCache cache;
-    
+
     public CachingStore(StoreAPI store, int cachesize) {
         this.store = store;
         cache = new DescriptionCache(cachesize);
     }
-    
+
     @Override
-    public void lock(String uri) { 
+    public void lock(String uri) {
         store.lock(uri);
     }
 
@@ -153,6 +153,11 @@ public class CachingStore implements StoreAPI {
     @Override
     public long versionStartedAt(String uri) {
         return store.versionStartedAt(uri);
+    }
+
+    @Override
+    public List<EntityInfo> listEntityOccurences(String uri) {
+        return store.listEntityOccurences(uri);
     }
 
 }

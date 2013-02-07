@@ -9,10 +9,13 @@
 
 package com.epimorphics.registry.core;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
@@ -174,5 +177,15 @@ public abstract class Command {
             }
         }
         return params.toString();
+    }
+
+    protected Response returnModel(Model m, String location) {
+        URI uri;
+        try {
+            uri = new URI( location );
+        } catch (URISyntaxException e) {
+            throw new WebApplicationException(e);
+        }
+        return Response.ok().location(uri).entity( m ).build();
     }
 }

@@ -26,6 +26,6 @@ public class TestUtil {
         assertEquals("2013-02-06", new SimpleDateFormat("yyyy-MM-dd").format(new Date(time)));
         
         time = Util.asTimestamp("2013-02-06T16:10:45");
-        assertEquals("2013-02-06T16:10:45",  new SimpleDateFormat("yyy-MM-dd'T'HH:mm:ss").format(new Date(time)));
+        assertEquals("2013-02-06T16:10:45",  new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(new Date(time)));
     }
 }
