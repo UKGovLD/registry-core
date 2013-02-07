@@ -532,6 +532,12 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         return newVersion.inModel(st);
     }
 
+    protected void doIndex(Resource root) {
+        if (indexer != null) {
+            indexer.updateGraph(root.getURI(), root.getModel());
+        }
+    }
+    
     @Override
     public String update(RegisterItem item, boolean withEntity, Calendar timestamp) {
         store.lockWrite();
@@ -548,6 +554,8 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     }
 
     private String doUpdateItem(RegisterItem item, boolean withEntity, Calendar now) {
+        doIndex(item.getRoot());
+
         Model storeModel = getDefaultModel();
         Resource oldVersion = mod(item).getPropertyResourceValue(Version.currentVersion);
 

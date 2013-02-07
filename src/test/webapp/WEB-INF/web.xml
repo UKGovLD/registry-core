@@ -12,16 +12,16 @@
 
   <context-param>
     <param-name>config.storeapi</param-name>
-    <param-value>com.epimorphics.registry.store.StoreBaseImpl,store=basestore
-    </param-value>
+<!--     <param-value>com.epimorphics.registry.store.StoreBaseImpl,store=basestore</param-value> -->
+    <param-value>com.epimorphics.registry.store.StoreBaseImpl,store=basestore,indexer=index</param-value>
+  </context-param>
+
+  <context-param>
+    <param-name>config.index</param-name>
+    <param-value>com.epimorphics.server.indexers.LuceneIndex, location=target/index, config=${webapp}/WEB-INF/index-config.ttl</param-value>
   </context-param>
 
 <!--
-  <context-param>
-    <param-name>config.index</param-name>
-    <param-value>com.epimorphics.server.indexers.LuceneIndex, location=/var/local/registry/index, config=${webapp}/WEB-INF/index-config.ttl</param-value>
-  </context-param>
-
   <context-param>
     <param-name>config.velocity</param-name>
     <param-value>com.epimorphics.server.templates.VelocityRender, templates=${webapp}/WEB-INF/templates, root=/ui,
