@@ -5,8 +5,8 @@
    1. minimal register create, item register, browse, no versioning - done
    1. text index and minimal UI - done
    1. versioning model
-   1. fuller API and test suite <---
-   1. base UI
+   1. fuller API and test suite
+   1. base UI <---
    1. minimal dispatch
    1. partitioning into distributable, replicable subsystems
 
@@ -35,7 +35,7 @@
 
    * bulk registration should dodge the register versioning somehow?
 
-   * need lucene index driver that handles periodic close of indexwriter
+   * need lucene index driver that handles periodic close of indexwriter and batches commits
 
 ## Stack
 
@@ -54,6 +54,8 @@
 
    * status update on a whole register
    * validate can pass URIs as arguments as well
+   * _view=version_list
+   * update&force
 
 ## Extensions
 
