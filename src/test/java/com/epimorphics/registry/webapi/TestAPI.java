@@ -213,7 +213,7 @@ public class TestAPI extends TomcatTestBase {
                 getModelResponse(BASE_URL + "collection/collection?status=stable"), ROOT_REGISTER + "collection/collection");
 
         assertEquals(400, postFileStatus("test/validation-request1.txt", BASE_URL + "?validate" ));
-        assertEquals(204, post(BASE_URL + "collection?update&status=stable").getStatus());
+        assertEquals(204, post(BASE_URL + "collection?update&status=stable&force").getStatus());
         assertEquals(200, postFileStatus("test/validation-request1.txt", BASE_URL + "?validate" ));
         assertEquals(400, postFileStatus("test/validation-request2.txt", BASE_URL + "?validate" ));
         assertEquals(200, post(BASE_URL + "?validate=http://location.data.gov.uk/collection/item1").getStatus());
@@ -226,6 +226,16 @@ public class TestAPI extends TomcatTestBase {
         // List versions
         m = getModelResponse(BASE_URL + "reg1/_red?_view=version_list");
         assertTrue( m.listSubjectsWithProperty(DCTerms.isVersionOf, m.getResource(ROOT_REGISTER + "reg1/_red")).toList().size() >= 4);
+
+        // Check some status transitions
+        assertEquals(403, post(REG1 + "/_blue?update&status=retired").getStatus());
+        assertEquals(403, post(REG1 + "/_blue?update&status=superseded").getStatus());
+        assertEquals(204, post(REG1 + "/_blue?update&status=experimental").getStatus());
+        assertEquals(204, post(REG1 + "/_blue?update&status=stable").getStatus());
+        assertEquals(403, post(REG1 + "/_blue?update&status=experimental").getStatus());
+        assertEquals(403, post(REG1 + "/_blue?update&status=submitted").getStatus());
+        assertEquals(204, post(REG1 + "/_blue?update&status=superseded").getStatus());
+        assertEquals(204, post(REG1 + "/_blue?update&status=invalid").getStatus());
 
 //        m.write(System.out, "Turtle");
     }

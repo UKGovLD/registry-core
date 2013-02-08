@@ -111,11 +111,11 @@ public class RegisterItem extends Description {
         }
         return parentURI;
     }
-    
+
     public boolean isRegister() {
         return root.hasProperty(RegistryVocab.itemClass, RegistryVocab.Register);
     }
-    
+
     public Register getAsRegister(StoreAPI store) {
         return Description.descriptionFrom( store.getEntity(this), store ).asRegister();
     }
@@ -171,16 +171,36 @@ public class RegisterItem extends Description {
     }
 
     /**
-     * Set the status of the item
+     * Set the status of the item, bypassing lifecycle checks
      */
-    public Resource setStatus(Status s) {
+    public Resource forceStatus(String status) {
+        return forceStatus( Status.forString(status, null) );
+    }
+
+    /**
+     * Set the status of the item, by passing lifecycle check
+     */
+    public Resource forceStatus(Status s) {
         if (s != null) {
             return setStatus( s.getResource() );
         }
         return null;
     }
 
-    public Resource setStatus(Resource status) {
+    /**
+     * Set the status of the item
+     */
+    public Resource setStatus(Status s) {
+        if (s != null) {
+            if (!getStatus().legalNextState(s)) {
+                return null;
+            }
+            return setStatus( s.getResource() );
+        }
+        return null;
+    }
+
+    private Resource setStatus(Resource status) {
         root.removeAll(RegistryVocab.status);
         root.addProperty(RegistryVocab.status, status);
         return status;

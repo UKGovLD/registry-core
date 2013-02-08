@@ -40,7 +40,7 @@ public enum Status {
     public static Status forResource(Resource r) {
         return r == null ? NotAccepted : Status.valueOf(r.getLocalName().substring(6));
     }
-    
+
     public static Status forString(String param, Status deflt) {
         if (param == null) {
             return deflt;
@@ -68,7 +68,10 @@ public enum Status {
     public boolean isDeprecated() {
         return this == Superseded || this == Retired;
     }
-    
+
+    /**
+     * Return true if this status is an instance of the target status category
+     */
     public boolean isA(Status target) {
         if (target == null || target == this) return true;
         switch (target) {
@@ -85,6 +88,29 @@ public enum Status {
         default:
             return false;
         }
+    }
+
+    /**
+     * Return true of the target status is a legal next state after this status.
+     * The target should be a concrete (leaf) status, other wise will return false.
+     */
+    public boolean legalNextState(Status target) {
+        if (target == null) return false;
+        if (target == this) return true;
+        switch (target) {
+        case Experimental:
+            return this == Submitted;
+        case Stable:
+            return this == Submitted || this == Experimental;
+        case Retired:
+        case Superseded:
+            return this == Experimental || this == Stable || this == Accepted || this == Valid;
+        case Invalid:
+            return true;
+        default:
+            return false;
+        }
+
     }
 
 }

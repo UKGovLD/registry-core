@@ -21,6 +21,7 @@ import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.epimorphics.registry.vocab.RegistryVocab;
+import com.epimorphics.registry.webapi.Parameters;
 import com.epimorphics.server.webapi.WebApiException;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.DCTerms;
@@ -67,7 +68,7 @@ public class CommandStatusUpdate extends Command {
     private void doStatusUpdate(RegisterItem ri, String requestedStatus) {
         // TODO lifecyle checks
         // TODO handle verification for accepted
-        Resource status = ri.setStatus(requestedStatus);
+        Resource status = parameters.containsKey(Parameters.FORCE) ? ri.forceStatus(requestedStatus): ri.setStatus(requestedStatus);
         if (status == null) {
             throw new WebApplicationException(Response.Status.FORBIDDEN);
         }
