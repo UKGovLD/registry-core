@@ -190,6 +190,7 @@ public class TestAPI extends TomcatTestBase {
         checkModelResponse(m, ROOT_REGISTER + "collection", "test/expected/updated-collection-register.ttl");
 
         // Deletion
+        long timestamp = System.currentTimeMillis();
         assertEquals(204, invoke("DELETE", null, BASE_URL + "collection/collection/item1").getStatus());
         checkRegisterList(
                 getModelResponse(BASE_URL + "collection/collection?status=stable"), ROOT_REGISTER + "collection/collection", "item 2", "item 3");
@@ -198,6 +199,9 @@ public class TestAPI extends TomcatTestBase {
         checkRegisterList(
                 getModelResponse(BASE_URL + "collection/collection?status=stable"), ROOT_REGISTER + "collection/collection", "item 3");
 
+        // Reconstruct register pre-delete
+        checkRegisterList(
+                getModelResponse(BASE_URL + "collection/collection?status=stable&_versionAt=" + timestamp), ROOT_REGISTER + "collection/collection", "item 1", "item 2", "item 3");
 
         Resource collection = ResourceFactory.createResource("http://location.data.gov.uk/collection");
         Resource collectionCollection = ResourceFactory.createResource("http://location.data.gov.uk/collection/collection");
@@ -214,8 +218,10 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(200, post(BASE_URL + "?validate=http://location.data.gov.uk/collection/item1").getStatus());
         assertEquals(400, post(BASE_URL + "?validate=http://location.data.gov.uk/collection/item1&validate=http://location.data.gov.uk/collection/item8").getStatus());
 
-//        m.write(System.out, "Turtle");
+        m = getModelResponse(BASE_URL + "?status=any");
+        checkRegisterList(m, RDFS.member, ROOT_REGISTER, "register 1", "A test collection", "Long register", "A nice test collection", "A test concept scheme") ;
 
+//        m.write(System.out, "Turtle");
     }
 
     private void checkPageResponse(Model m, String nextpage, int length) {

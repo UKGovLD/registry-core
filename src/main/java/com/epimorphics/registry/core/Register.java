@@ -40,11 +40,11 @@ public class Register extends Description {
     public Resource getRegister() {
         return getRoot();
     }
-    
+
     public void setStore(StoreAPI store) {
         this.store = store;
     }
-    
+
     public List<RegisterEntryInfo> getMembers() {
         if (members == null) {
             members = store.listMembers(this);
@@ -54,7 +54,7 @@ public class Register extends Description {
 
     /**
      * Fetch all the members of the register and construct an RDF view
-     * according the given flags. 
+     * according the given flags.
      *
      * @param model model in which to store the results
      * @param withVersion  if true then versioning information is included, if false the Version/VersionedThing pairs are merged
@@ -69,17 +69,21 @@ public class Register extends Description {
         getMembers();
         List<String> itemURIs = new ArrayList<String>( length == -1 ? 50 : length );
         List<String> entityURIs = new ArrayList<String>( length == -1 ? 50 : length );
-        
+
         int count = 0;
         boolean incomplete = false;
         int limit = length == -1 ? Integer.MAX_VALUE : offset + length;
         for (RegisterEntryInfo info : members) {
-            boolean valid = info.getStatus().isA(status);
+            boolean valid = (timestamp == -1) ? info.getStatus().isA(status) : true;
             if (valid) {
                 if (timestamp != -1) {
                     Description d = store.getVersionAt(info.getItemURI(), timestamp);
                     if (d != null) {
-                        model.add( store.getEntity(d.asRegisterItem()).getModel() );
+                        if (d.asRegisterItem().getStatus().isA(status)) {
+                            model.add( store.getEntity(d.asRegisterItem()).getModel() );
+                        } else {
+                            valid = false;
+                        }
                     } else {
                         valid = false;
                     }
@@ -97,7 +101,7 @@ public class Register extends Description {
                 if (count > limit) break;
             }
         }
-        
+
         if (timestamp != -1) {
             // already fetched while checking for valid entries
         } else if (withMetadata && !itemURIs.isEmpty()) {
@@ -105,10 +109,10 @@ public class Register extends Description {
             model.add( items.get(0).getRoot().getModel() );
         } else {
             for (String uri : entityURIs) {
-                model.add( store.getDescription(uri).getRoot().getModel() );
+                model.add( store.getCurrentVersion(uri).getRoot().getModel() );
             }
         }
-        
+
         model.add( root.getModel() );
 
         Resource predicateR = null;
@@ -136,6 +140,6 @@ public class Register extends Description {
 
         return !incomplete;
     }
-    
+
 
 }

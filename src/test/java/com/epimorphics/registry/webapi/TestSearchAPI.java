@@ -47,6 +47,8 @@ public class TestSearchAPI extends TomcatTestBase {
 
     @Test
     public void testSearch() {
+        checkLive();
+
         // Set up some examples
         assertEquals("Register a register", 204, postFile("test/reg1.ttl", BASE_URL, "text/turtle").getStatus());
         assertEquals(204, postFileStatus("test/red.ttl", REG1));
@@ -73,7 +75,7 @@ public class TestSearchAPI extends TomcatTestBase {
 
         assertEquals(204, post(BASE_URL + "collection/_item2?update&status=stable").getStatus());
         checkSearch("query=collection+item&status=http://purl.org/linked-data/registry%23statusStable", "item 2");
-        
+
 //        m.write(System.out, "Turtle");
     }
 

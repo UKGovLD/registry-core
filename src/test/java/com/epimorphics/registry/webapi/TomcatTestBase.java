@@ -26,6 +26,7 @@ import com.epimorphics.rdfutil.QueryUtil;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.util.TestUtil;
+import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -192,10 +193,14 @@ public abstract class TomcatTestBase {
     }
 
     protected void checkRegisterList(Model m, String rooturi, String...colours) {
+        checkRegisterList(m, SKOS.member, rooturi, colours);
+    }
+
+    protected void checkRegisterList(Model m, Property link, String rooturi, String...colours) {
         Resource register = m.getResource(rooturi);
         assertTrue( register.hasProperty(RDF.type, RegistryVocab.Register));
         List<String> actualColours = new ArrayList<String>();
-        ResultSet rs = QueryUtil.selectAll(m, "SELECT ?label WHERE {?register skos:member [rdfs:label ?label]}", Prefixes.get(), "register", rooturi);
+        ResultSet rs = QueryUtil.selectAll(m, "SELECT ?label WHERE {?register ?link[rdfs:label ?label]}", Prefixes.get(), "register", rooturi, "link", link);
         while (rs.hasNext()) {
             actualColours.add( rs.next().getLiteral("label").getLexicalForm() );
         }
