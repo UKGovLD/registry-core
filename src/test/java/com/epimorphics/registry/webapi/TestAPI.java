@@ -28,6 +28,7 @@ import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
+import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
 import com.ibm.icu.util.Calendar;
@@ -218,8 +219,13 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(200, post(BASE_URL + "?validate=http://location.data.gov.uk/collection/item1").getStatus());
         assertEquals(400, post(BASE_URL + "?validate=http://location.data.gov.uk/collection/item1&validate=http://location.data.gov.uk/collection/item8").getStatus());
 
+        // List a register - was a bug here
         m = getModelResponse(BASE_URL + "?status=any");
         checkRegisterList(m, RDFS.member, ROOT_REGISTER, "register 1", "A test collection", "Long register", "A nice test collection", "A test concept scheme") ;
+
+        // List versions
+        m = getModelResponse(BASE_URL + "reg1/_red?_view=version_list");
+        assertTrue( m.listSubjectsWithProperty(DCTerms.isVersionOf, m.getResource(ROOT_REGISTER + "reg1/_red")).toList().size() >= 4);
 
 //        m.write(System.out, "Turtle");
     }

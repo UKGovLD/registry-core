@@ -22,6 +22,7 @@ public class Parameters {
     public static final String VIEW = "_view";
     public static final String WITH_METADATA = "with_metadata";
     public static final String WITH_VERSION = "version";
+    public static final String VERSION_LIST = "version_list";
     public static final String ENTITY_LOOKUP = "entity";
     public static final String VERSION_AT = "_versionAt";
 

@@ -16,10 +16,12 @@ import static com.epimorphics.registry.webapi.Parameters.VERSION_AT;
 import static com.epimorphics.registry.webapi.Parameters.VIEW;
 import static com.epimorphics.registry.webapi.Parameters.WITH_METADATA;
 import static com.epimorphics.registry.webapi.Parameters.WITH_VERSION;
+import static com.epimorphics.registry.webapi.Parameters.VERSION_LIST;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
+import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
@@ -27,9 +29,17 @@ import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.store.EntityInfo;
+import com.epimorphics.registry.store.VersionInfo;
 import com.epimorphics.registry.util.Util;
+import com.epimorphics.registry.vocab.RegistryVocab;
+import com.epimorphics.registry.vocab.Version;
+import com.epimorphics.vocabs.Time;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.vocabulary.DCTerms;
+import com.hp.hpl.jena.vocabulary.RDF;
 import com.sun.jersey.api.NotFoundException;
 
 
@@ -37,6 +47,7 @@ public class CommandRead extends Command {
 
     boolean withVersion;
     boolean withMetadata;
+    boolean versionList;
     boolean versioned;
     boolean timestamped;
     boolean entityLookup;
@@ -45,6 +56,7 @@ public class CommandRead extends Command {
         super(operation, target, parameters, registry);
         withVersion = hasParamValue(VIEW, WITH_VERSION);
         withMetadata = hasParamValue(VIEW, WITH_METADATA);
+        versionList = hasParamValue(VIEW, VERSION_LIST);
         versioned = lastSegment.contains(":");
         timestamped = parameters.containsKey(VERSION_AT);
         entityLookup = parameters.containsKey(ENTITY_LOOKUP);
@@ -71,6 +83,9 @@ public class CommandRead extends Command {
                     d = store.getItemWithVersion(target, true);
                 } else {
                     d = store.getItem(target, true) ;
+                }
+                if (versionList) {
+                    injectVersionHistory(d);
                 }
             }
         } else {
@@ -108,6 +123,29 @@ public class CommandRead extends Command {
         }
 
         return returnModel(m, d.getRoot().getURI() );
+    }
+
+    private void injectVersionHistory(Description d) {
+        Model m = d.getRoot().getModel();
+        for (VersionInfo vi : store.listVersions(target)) {
+            Resource interval = m.createResource();
+            addTimestamp(interval, Time.hasBeginning, vi.getFromTime());
+            addTimestamp(interval, Time.hasEnd, vi.getToTime());
+
+            m.createResource( vi.getUri() )
+                .addProperty(DCTerms.isVersionOf, d.getRoot())
+                .addProperty(RDF.type, RegistryVocab.RegisterItem)
+                .addProperty(RDF.type, Version.Version)
+                .addProperty(Version.interval, interval);
+        }
+    }
+
+    private void addTimestamp(Resource interval, Property p, long time) {
+        if (time != -1) {
+            Resource mark = interval.getModel().createResource()
+                    .addProperty(Time.inXSDDateTime, RDFUtil.fromDateTime(time));
+            interval.addProperty(Time.hasBeginning, mark);
+        }
     }
 
     private Response entityLookup() {
