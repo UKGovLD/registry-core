@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import com.epimorphics.registry.commands.CommandDelete;
 import com.epimorphics.registry.commands.CommandRead;
 import com.epimorphics.registry.commands.CommandRegister;
+import com.epimorphics.registry.commands.CommandSearch;
 import com.epimorphics.registry.commands.CommandStatusUpdate;
 import com.epimorphics.registry.commands.CommandUpdate;
 import com.epimorphics.registry.commands.CommandValidate;
@@ -52,7 +53,7 @@ public class Registry extends ServiceBase implements Service {
     public static final String PAGE_SIZE_PARAM = "pageSize";
 
     public static final int DEFAULT_PAGE_SIZE = 50;
-    
+
     protected StoreAPI store;
     protected String baseURI;
     protected int pageSize;
@@ -104,7 +105,7 @@ public class Registry extends ServiceBase implements Service {
     public StoreAPI getStore() {
         return store;
     }
-    
+
     public int getPageSize() {
         return pageSize;
     }
@@ -117,6 +118,7 @@ public class Registry extends ServiceBase implements Service {
         case Update:       return new CommandUpdate(operation, target, parameters, this);
         case StatusUpdate: return new CommandStatusUpdate(operation, target, parameters, this);
         case Validate:     return new CommandValidate(operation, target, parameters, this);
+        case Search:       return new CommandSearch(operation, target, parameters, this);
         }
         return null;    // Should never get here but the compiler doesn't seem to know that
     }

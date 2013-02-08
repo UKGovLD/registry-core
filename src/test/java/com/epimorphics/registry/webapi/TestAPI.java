@@ -9,10 +9,10 @@
 
 package com.epimorphics.registry.webapi;
 
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
-import java.util.List;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -22,15 +22,12 @@ import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.util.TestUtil;
 import com.epimorphics.vocabs.SKOS;
-import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
-import com.hp.hpl.jena.util.FileManager;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
 import com.ibm.icu.util.Calendar;
@@ -51,8 +48,14 @@ public class TestAPI extends TomcatTestBase {
     static final String REG1_ITEM = ROOT_REGISTER + "_reg1";
     static final String REGL_URL = BASE_URL + "regL";
 
+    String getWebappRoot() {
+        return "src/test/webapp";
+    }
+
     @Test
     public void testBasics() {
+        checkLive();
+
         // Registration
         ClientResponse response = postFile("test/reg1.ttl", BASE_URL, "text/turtle");
         assertEquals("Register a register", 204, response.getStatus());
@@ -185,42 +188,34 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(204, invoke("PATCH", "test/register-update.ttl", BASE_URL + "collection?non-member-properties").getStatus());
         m = getModelResponse(BASE_URL + "collection?non-member-properties");
         checkModelResponse(m, ROOT_REGISTER + "collection", "test/expected/updated-collection-register.ttl");
-        
+
         // Deletion
         assertEquals(204, invoke("DELETE", null, BASE_URL + "collection/collection/item1").getStatus());
-        checkRegisterList( 
+        checkRegisterList(
                 getModelResponse(BASE_URL + "collection/collection?status=stable"), ROOT_REGISTER + "collection/collection", "item 2", "item 3");
-        
+
         assertEquals(204, invoke("DELETE", null, BASE_URL + "collection/collection/_item2").getStatus());
-        checkRegisterList( 
+        checkRegisterList(
                 getModelResponse(BASE_URL + "collection/collection?status=stable"), ROOT_REGISTER + "collection/collection", "item 3");
 
-        
+
         Resource collection = ResourceFactory.createResource("http://location.data.gov.uk/collection");
         Resource collectionCollection = ResourceFactory.createResource("http://location.data.gov.uk/collection/collection");
         assertTrue( getModelResponse(BASE_URL + "collection?status=stable").contains(collection, SKOS.member, collectionCollection));
         assertEquals(204, invoke("DELETE", null, BASE_URL + "collection/collection").getStatus());
         assertFalse( getModelResponse(BASE_URL + "collection?status=stable").contains(collection, SKOS.member, collectionCollection));
-        checkRegisterList( 
+        checkRegisterList(
                 getModelResponse(BASE_URL + "collection/collection?status=stable"), ROOT_REGISTER + "collection/collection");
-        
+
         assertEquals(400, postFileStatus("test/validation-request1.txt", BASE_URL + "?validate" ));
         assertEquals(204, post(BASE_URL + "collection?update&status=stable").getStatus());
         assertEquals(200, postFileStatus("test/validation-request1.txt", BASE_URL + "?validate" ));
         assertEquals(400, postFileStatus("test/validation-request2.txt", BASE_URL + "?validate" ));
         assertEquals(200, post(BASE_URL + "?validate=http://location.data.gov.uk/collection/item1").getStatus());
         assertEquals(400, post(BASE_URL + "?validate=http://location.data.gov.uk/collection/item1&validate=http://location.data.gov.uk/collection/item8").getStatus());
-        
-//        m.write(System.out, "Turtle");
-        
-    }
 
-    private void printStatus(ClientResponse response) {
-        String msg = "Response: " + response.getStatus();
-        if (response.hasEntity() && response.getStatus() != 204) {
-            msg += " (" + response.getEntity(String.class) + ")";
-        }
-        System.out.println(msg);
+//        m.write(System.out, "Turtle");
+
     }
 
     private void checkPageResponse(Model m, String nextpage, int length) {
@@ -259,36 +254,4 @@ public class TestAPI extends TomcatTestBase {
         }
     }
 
-    private Model checkModelResponse(String fetch, String rooturi, String file, Property...omit) {
-        Model m = getModelResponse(fetch);
-        Resource actual = m.getResource(rooturi);
-        Resource expected = FileManager.get().loadModel(file).getResource(rooturi);
-        assertTrue(expected.listProperties().hasNext());  // guard against wrong rooturi in config
-        TestUtil.testResourcesMatch(expected, actual, omit);
-        return m;
-    }
-
-    private Model checkModelResponse(Model m, String rooturi, String file, Property...omit) {
-        Resource actual = m.getResource(rooturi);
-        Resource expected = FileManager.get().loadModel(file).getResource(rooturi);
-        assertTrue(expected.listProperties().hasNext());  // guard against wrong rooturi in config
-        TestUtil.testResourcesMatch(expected, actual, omit);
-        return m;
-    }
-
-    private void checkEntity(Model m, String itemURI, String entityURI) {
-        Resource entity = m.getResource(itemURI).getPropertyResourceValue(RegistryVocab.definition).getPropertyResourceValue(RegistryVocab.entity);
-        assertEquals(entityURI, entity.getURI());
-    }
-
-    private void checkRegisterList(Model m, String rooturi, String...colours) {
-        Resource register = m.getResource(rooturi);
-        assertTrue( register.hasProperty(RDF.type, RegistryVocab.Register));
-        List<String> actualColours = new ArrayList<String>();
-        ResultSet rs = QueryUtil.selectAll(m, "SELECT ?label WHERE {?register skos:member [rdfs:label ?label]}", Prefixes.get(), "register", rooturi);
-        while (rs.hasNext()) {
-            actualColours.add( rs.next().getLiteral("label").getLexicalForm() );
-        }
-        TestUtil.testArray(actualColours, colours);
-    }
 }

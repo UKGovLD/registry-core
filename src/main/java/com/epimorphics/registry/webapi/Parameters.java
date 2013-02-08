@@ -17,6 +17,7 @@ package com.epimorphics.registry.webapi;
 public class Parameters {
     public static final String VALIDATE = "validate";
     public static final String STATUS_UPDATE = "update";
+    public static final String QUERY = "query";
 
     public static final String VIEW = "_view";
     public static final String WITH_METADATA = "with_metadata";
@@ -32,5 +33,5 @@ public class Parameters {
 
     public static final String BATCH_REFERENCED = "batch-referenced";
     public static final String BATCH_MANAGED = "batch-managed";
-    
+
 }

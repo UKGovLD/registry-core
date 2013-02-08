@@ -15,8 +15,8 @@
    * Schemagen plugin runs on the "translate" maven lifecycle. Eclipse m2e can't cope with that the so the vocab sources aren't automatically built within Eclipse. Current workaround is a manual copy to of the target/generated-sources output to the checked-in build path
 
    * The root register must end in "/" to avoid the version info being treated as part of the dns name.
-   
-   * Lucene index on every item update costs 3x slow down on in-memory test case
+
+   * Lucene index on every item update costs 3x slow down on in-memory test case, actually 6x on a machine with spinning disc
 
 ## Future redesign for scale
 
@@ -27,13 +27,15 @@
 
    * shake down StoreAPI - simplify version/flatten/item stuff - too many slightly variant methods
      e.g. merge getCurrentVersion, getVersion, getDescription to just get right one
-     possible drop fetchAll and instead support add-to-model
+     fetchAll should stuff either entity OR item OR both into a target model?
      drop all versioning access
      possibly also merge plain/item fetching
      scrap update(Register)?
    * As part of API shake down, scrap the incremental-delta machinery on Description
 
    * bulk registration should dodge the register versioning somehow?
+
+   * need lucene index driver that handles periodic close of indexwriter
 
 ## Stack
 
@@ -52,7 +54,7 @@
 
    * status update on a whole register
    * validate can pass URIs as arguments as well
-   
+
 ## Extensions
 
    * Register a non-RDF payload?  C.f. XML namespace.

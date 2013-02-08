@@ -9,8 +9,13 @@
 
 package com.epimorphics.registry.core;
 
+import static com.epimorphics.registry.webapi.Parameters.FIRST_PAGE;
+import static com.epimorphics.registry.webapi.Parameters.PAGE_NUMBER;
+
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,7 +25,9 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import com.epimorphics.registry.store.StoreAPI;
+import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.server.webapi.WebApiException;
+import com.epimorphics.util.EpiException;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDF;
@@ -33,7 +40,7 @@ import com.hp.hpl.jena.vocabulary.RDF;
  */
 public abstract class Command {
 
-    public enum Operation { Read, Register, Delete, Update, StatusUpdate, Validate };
+    public enum Operation { Read, Register, Delete, Update, StatusUpdate, Validate, Search };
 
     protected Operation operation;
     protected String target;
@@ -43,6 +50,9 @@ public abstract class Command {
     protected Model payload;
     protected Registry registry;
     protected StoreAPI store;
+    protected boolean paged;
+    protected int length = -1;
+    protected int pagenum = 0;
 
     /**
      * Constructor
@@ -65,6 +75,20 @@ public abstract class Command {
             // Root register
             this.lastSegment = "";
             this.parent = target;
+        }
+
+        // Extract paging parameters, if any
+        if (parameters.containsKey(FIRST_PAGE)) {
+            paged = true;
+            length = registry.getPageSize();
+        } else if (parameters.containsKey(PAGE_NUMBER)) {
+            paged = true;
+            length = registry.getPageSize();
+            try {
+                pagenum = Integer.parseInt( parameters.getFirst(PAGE_NUMBER) );
+            } catch (NumberFormatException e) {
+                throw new WebApiException(javax.ws.rs.core.Response.Status.BAD_REQUEST, "Illegal page number");
+            }
         }
     }
     static final Pattern LAST_SEGMENT = Pattern.compile("(^.*)/([^/]+)$");
@@ -176,7 +200,12 @@ public abstract class Command {
                 } else {
                     started = true;
                 }
-                params.append(value);
+//                params.append( value );
+                try {
+                    params.append( URLEncoder.encode(value, "UTF-8") );
+                } catch (UnsupportedEncodingException e) {
+                    throw new EpiException(e);  // Can't happen :)
+                }
             }
         }
         return params.toString();
@@ -191,4 +220,21 @@ public abstract class Command {
         }
         return Response.ok().location(uri).entity( m ).build();
     }
+
+    protected Resource injectPagingInformation(Model m, Resource root,
+            boolean more) {
+                String url = target + "?" + makeParamString(parameters);
+                Resource page = m.createResource(url)
+                    .addProperty(RDF.type, Ldbp.Page)
+                    .addProperty(Ldbp.pageOf, root);
+                if (more) {
+                    String pageParams = "?" + PAGE_NUMBER + "=" + (pagenum+1);
+                    String otherParams = makeParamString(parameters, FIRST_PAGE, PAGE_NUMBER);
+                    if (!otherParams.isEmpty()) {
+                        pageParams += "&" + otherParams;
+                    }
+                    page.addProperty(Ldbp.nextPage, m.createResource( target + pageParams ));
+                }
+                return page;
+            }
 }

@@ -22,6 +22,17 @@ import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.ws.rs.core.Response.Status;
+
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +50,9 @@ import com.epimorphics.server.core.Indexer;
 import com.epimorphics.server.core.Service;
 import com.epimorphics.server.core.ServiceBase;
 import com.epimorphics.server.core.Store;
+import com.epimorphics.server.indexers.LuceneIndex;
+import com.epimorphics.server.indexers.LuceneResult;
+import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.vocabs.Time;
 import com.hp.hpl.jena.query.QuerySolution;
@@ -532,12 +546,12 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         return newVersion.inModel(st);
     }
 
-    protected void doIndex(Resource root) {
+    protected void doIndex(Resource root, String graph) {
         if (indexer != null) {
-            indexer.updateGraph(root.getURI(), root.getModel());
+            indexer.updateGraph(graph, root.getModel());
         }
     }
-    
+
     @Override
     public String update(RegisterItem item, boolean withEntity, Calendar timestamp) {
         store.lockWrite();
@@ -554,12 +568,13 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     }
 
     private String doUpdateItem(RegisterItem item, boolean withEntity, Calendar now) {
-        doIndex(item.getRoot());
-
         Model storeModel = getDefaultModel();
         Resource oldVersion = mod(item).getPropertyResourceValue(Version.currentVersion);
 
         Resource newVersion = doUpdate(item.getRoot(), now, RegisterItem.RIGID_PROPS);
+
+        doIndex(item.getRoot(), newVersion.getURI());
+
         if (withEntity) {
             Resource entity = item.getEntity();
             Resource entityRef = newVersion.getPropertyResourceValue(RegistryVocab.definition);
@@ -622,6 +637,39 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         return false;
     }
 
+    @Override
+    public LuceneResult[] search(String query, int offset, int maxresults, String... fields) {
+        if (indexer != null) {
+            Analyzer analyzer = new StandardAnalyzer(org.apache.lucene.util.Version.LUCENE_40);
+            QueryParser parser = new QueryParser(org.apache.lucene.util.Version.LUCENE_40, LuceneIndex.FIELD_LABEL, analyzer);
+            Query search;
+            try {
+                search = parser.parse( query );
+            } catch (ParseException e) {
+                throw new WebApiException(Status.BAD_REQUEST, "Could not parse query: " + e.getMessage());
+            }
+            if (fields.length != 0) {
+                BooleanQuery bq = new BooleanQuery();
+                for (int i = 0; i < fields.length;) {
+                    String key = SearchTagname.expandKey(fields[i++]);
+                    if (i >= fields.length) {
+                        throw new EpiException("Odd number of fields in search call");
+                    }
+                    String value = fields[i++];
+                    Term t = new Term(key, value);
+                    bq.add(new TermQuery( t ), BooleanClause.Occur.MUST);
+                }
+                bq.add(search, BooleanClause.Occur.MUST );
+                search = bq;
+            }
+
+            return ((LuceneIndex)indexer).search(search, offset, maxresults);
+        } else {
+            return new LuceneResult[0];
+        }
+    }
+
+    // Debug support only
     public void dump() {
         store.lock();
         try {

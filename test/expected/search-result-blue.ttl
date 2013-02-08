@@ -1,0 +1,17 @@
+<http://location.data.gov.uk/?query=blue&firstPage>
+      a       <http://www.w3.org/ns/ldp#Page> ;
+      <http://purl.org/linked-data/api/vocab#items>
+              (<http://location.data.gov.uk/reg1/blue>) ;
+      <http://www.w3.org/ns/ldp#pageOf>
+              <http://location.data.gov.uk/?query=blue> .
+
+<http://location.data.gov.uk/reg1/blue>
+      a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+      <http://www.w3.org/2000/01/rdf-schema#label>
+              "blue" ;
+      <http://purl.org/dc/terms/description>
+              "A concept for the colour blue" .
+
+<http://location.data.gov.uk/?query=blue>
+      <http://www.w3.org/2000/01/rdf-schema#member>
+              <http://location.data.gov.uk/reg1/blue> .

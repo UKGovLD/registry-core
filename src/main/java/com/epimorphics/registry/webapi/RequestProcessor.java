@@ -43,7 +43,12 @@ public class RequestProcessor extends BaseEndpoint {
     @GET
     @Produces({MIME_TURTLE, MIME_RDFXML})
     public Response read() {
-        Command command = makeCommand( Operation.Read );
+        Command command = null;
+        if (uriInfo.getQueryParameters().containsKey(Parameters.QUERY)) {
+            command = makeCommand( Operation.Search );
+        } else {
+            command = makeCommand( Operation.Read );
+        }
         return command.execute();
     }
 

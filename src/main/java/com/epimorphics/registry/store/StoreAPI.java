@@ -15,6 +15,7 @@ import java.util.List;
 import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
+import com.epimorphics.server.indexers.LuceneResult;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 
@@ -175,6 +176,15 @@ public interface StoreAPI {
 
 
     // --- misc operations ---
+
+    /**
+     * Free text search over the registered items
+     * @param query the text query, supports lucence search syntax
+     * @param offset the number of results to skip (to find desired page)
+     * @param maxresults the maximum number of results to return
+     * @param fields alternating list of tagname/tagvalue pairs
+     */
+    public LuceneResult[] search(String query, int offset, int maxresults, String...fields);
 
     /**
      * Tests if the register contains an item with the given notation (relative URI)
