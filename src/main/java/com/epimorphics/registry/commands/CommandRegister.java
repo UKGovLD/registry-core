@@ -200,7 +200,7 @@ public class CommandRegister extends Command {
             }
         }
 
-        return root;
+        return item;
     }
 
     private RegisterItem getBulkType(Resource ty) {

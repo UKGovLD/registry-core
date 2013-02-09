@@ -56,6 +56,7 @@
    * validate can pass URIs as arguments as well
    * _view=version_list
    * update&force
+   * suppress _view=version
 
 ## Extensions
 

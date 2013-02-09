@@ -74,7 +74,7 @@ public abstract class Command {
         } else {
             // Root register
             this.lastSegment = "";
-            this.parent = target;
+            this.parent = registry.getBaseURI();
         }
 
         // Extract paging parameters, if any

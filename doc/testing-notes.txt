@@ -31,3 +31,7 @@ curl -i -H "Content-Type: text/turtle" -X POST --data "@test/blue.ttl" http://lo
 curl -i -H "Content-Type: text/turtle" -X POST --data "@test/red.ttl" http://localhost:8080/def/colours
 curl -i -H "Content-Type: text/turtle" -X POST --data "@test/green.ttl" http://localhost:8080/def/colours
 curl -i -H "Content-Type: text/turtle" -X PUT --data "@test/reddish.ttl" http://localhost:8080/def/colours/red
+curl -i -H "Content-Type: text/turtle" -X POST --data "@test/bulk-skos-collection.ttl" "http://localhost:8080/?batch-managed&status=stable"
+
+curl -i -X POST "http://localhost:8080/?update&status=stable"
+

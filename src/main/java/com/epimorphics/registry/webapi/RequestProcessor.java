@@ -40,6 +40,13 @@ import com.hp.hpl.jena.util.FileManager;
 @Path("{path: .*}")
 public class RequestProcessor extends BaseEndpoint {
 
+    
+    @GET
+    @Produces("text/html")
+    public String htmlrender() {
+        return "Hello from the UI";
+    }
+
     @GET
     @Produces({MIME_TURTLE, MIME_RDFXML})
     public Response read() {
