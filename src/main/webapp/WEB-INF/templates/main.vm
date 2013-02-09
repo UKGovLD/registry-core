@@ -1,0 +1,28 @@
+#set($pageTitle="Hello")
+#parse("header.vm")
+#parse("navbar.vm")
+
+<div class="hero-unit">
+  <h1>UKGovLD Registry</h1>
+ </div>
+
+<div>
+  #set($response=$registry.perform("Read","?_view=with_metadata"))
+  <p>Status = $response.status</p>
+  <p>Entity = $response.entity</p>
+
+  #set($mw=$response.entity)
+  #set($reg=$mw.getNode("$registry.baseURI/$uri"))
+  $reg.getURI()
+  $reg.getPropertyValue("rdfs:label")
+  $reg.listPropertyValues("rdfs:member")
+  #foreach($pv in $reg.listProperties())
+    <div>
+       $pv.prop = #foreach($v in $pv.values)$v #end
+    </div>
+  #end
+  
+  
+</div>
+
+#parse("footer.vm")

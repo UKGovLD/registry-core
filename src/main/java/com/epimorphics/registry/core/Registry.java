@@ -9,14 +9,19 @@
 
 package com.epimorphics.registry.core;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.epimorphics.rdfutil.ModelWrapper;
 import com.epimorphics.registry.commands.CommandDelete;
 import com.epimorphics.registry.commands.CommandRead;
 import com.epimorphics.registry.commands.CommandRegister;
@@ -27,8 +32,15 @@ import com.epimorphics.registry.commands.CommandValidate;
 import com.epimorphics.registry.core.Command.Operation;
 import com.epimorphics.registry.store.CachingStore;
 import com.epimorphics.registry.store.StoreAPI;
+import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.server.core.Service;
 import com.epimorphics.server.core.ServiceBase;
+import com.epimorphics.server.core.ServiceConfig;
+import com.epimorphics.server.templates.VelocityRender;
+import com.epimorphics.util.EpiException;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.sun.jersey.api.NotFoundException;
+import com.sun.jersey.api.uri.UriComponent;
 
 /**
  * This the primary configuration point for the Registry.
@@ -44,6 +56,8 @@ import com.epimorphics.server.core.ServiceBase;
  */
 public class Registry extends ServiceBase implements Service {
     static final Logger log = LoggerFactory.getLogger( Registry.class );
+    
+    public static final String VELOCITY_SERVICE = "velocity";
 
     public static final String BASE_URI_PARAM = "baseURI";
     public static final String SERVICE_NAME = "configuration";
@@ -95,6 +109,9 @@ public class Registry extends ServiceBase implements Service {
             log.info("Installed bootstrap root register");
         }
 
+        ServiceConfig.get().getServiceAs(Registry.VELOCITY_SERVICE, VelocityRender.class)
+            .setPrefixes( Prefixes.get() );
+        
         registry = this;   // Assumes singleton registry
     }
 
@@ -110,6 +127,9 @@ public class Registry extends ServiceBase implements Service {
         return pageSize;
     }
 
+    /**
+     * Factory for command instances, used for handling API requests from the request processor
+     */
     public Command make(Operation operation, String target,  MultivaluedMap<String, String> parameters) {
         switch (operation) {
         case Read:         return new CommandRead(operation, target, parameters, this);
@@ -123,6 +143,42 @@ public class Registry extends ServiceBase implements Service {
         return null;    // Should never get here but the compiler doesn't seem to know that
     }
 
+    /**
+     * Instantiate and invoke commands, used from the ui
+     */
+    public Response perform(String operation, String uriTarget) {
+        Operation op = Operation.valueOf(operation);
+        URI uri;
+        try {
+            uri = new URI(uriTarget);
+        } catch (URISyntaxException e) {
+            throw new EpiException(e);
+        }
+        String encPath = uri.getRawPath();
+        String target = UriComponent.decode(encPath, UriComponent.Type.PATH);
+        MultivaluedMap<String, String> parameters = UriComponent.decodeQuery(uriTarget, true);
+        Command command = make(op, target, parameters);
+        System.out.println("Performing " + command);   // Temp
+        try {
+            Response response = command.execute();
+            if (response.getStatus() == 200 && response.getEntity() instanceof Model) {
+                Model m = (Model)response.getEntity();
+                m.setNsPrefixes(Prefixes.get());
+                return Response.ok( new ModelWrapper( m ) ).build();
+            } else {
+                return response;
+            }
+        } catch (WebApplicationException wae) {
+            if (wae.getResponse().getStatus() == 404) {
+                throw new NotFoundException();
+            } else {
+                return wae.getResponse();
+            }
+        } catch (Exception e) {
+            return Response.serverError().entity(e.getMessage()).build();
+        }
+    }
+    
     static Registry registry;
     public static Registry get() {
         return registry;

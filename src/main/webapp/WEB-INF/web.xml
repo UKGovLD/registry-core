@@ -28,7 +28,7 @@
 
   <context-param>
     <param-name>config.velocity</param-name>
-    <param-value>com.epimorphics.server.templates.VelocityRender, templates=${webapp}/WEB-INF/templates, root=/ui,
+    <param-value>com.epimorphics.server.templates.VelocityRender, templates=${webapp}/WEB-INF/templates, root=/system/ui,
     plugins=reg</param-value>
   </context-param>
 

@@ -4,6 +4,7 @@
 
 <div class="hero-unit">
   <h1>UKL Registry</h1>
+  $arg
  </div>
 
 #include("footer.vm")

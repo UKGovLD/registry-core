@@ -24,14 +24,18 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
 import com.epimorphics.registry.commands.CommandUpdate;
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Command.Operation;
 import com.epimorphics.registry.util.PATCH;
+import com.epimorphics.server.core.ServiceConfig;
+import com.epimorphics.server.templates.VelocityRender;
 import com.epimorphics.server.webapi.BaseEndpoint;
 import com.hp.hpl.jena.util.FileManager;
+import com.sun.jersey.api.NotFoundException;
 
 /**
  * Filter all requests as possible register API requests.
@@ -43,8 +47,15 @@ public class RequestProcessor extends BaseEndpoint {
     
     @GET
     @Produces("text/html")
-    public String htmlrender() {
-        return "Hello from the UI";
+    public StreamingOutput htmlrender() {
+        System.out.println("Path = " + uriInfo.getPath());
+        if (uriInfo.getPath().startsWith("system/ui") || uriInfo.getPath().equals("favicon.ico")) {
+            // Pass through all ui requests to the generic velocity handler, which in turn falls through to file serving
+            throw new NotFoundException();
+        }
+        VelocityRender velocity = ServiceConfig.get().getServiceAs(Registry.VELOCITY_SERVICE, VelocityRender.class);
+        return velocity.render("main.vm", uriInfo.getPath(), context, 
+                    "registry", Registry.get());
     }
 
     @GET
