@@ -59,11 +59,11 @@ public class TestAPI extends TomcatTestBase {
 
         // Registration
         ClientResponse response = postFile("test/reg1.ttl", BASE_URL, "text/turtle");
-        assertEquals("Register a register", 204, response.getStatus());
+        assertEquals("Register a register", 201, response.getStatus());
         assertEquals(REG1_ITEM, response.getLocation().toString());
         assertEquals("Register in non-existant location", 404, postFileStatus("test/reg1.ttl", BASE_URL+"foo"));
         assertEquals("Register the same again", 403, postFileStatus("test/reg1.ttl", BASE_URL));
-        assertEquals(204, postFileStatus("test/red.ttl", REG1));
+        assertEquals(201, postFileStatus("test/red.ttl", REG1));
 
         // Entity and item access
         checkModelResponse(REG1 + "/red", ROOT_REGISTER + "reg1/red", "test/expected/red.ttl");
@@ -83,7 +83,7 @@ public class TestAPI extends TomcatTestBase {
         checkModelResponse(m, ROOT_REGISTER + "reg1/_red:1",  "test/expected/red_item_version.ttl");
 
         // External (not managed) entities
-        assertEquals(204, postFileStatus("test/absolute-black.ttl", REG1));
+        assertEquals(201, postFileStatus("test/absolute-black.ttl", REG1));
         m = checkModelResponse(REG1 + "/_black", EXT_BLACK, "test/expected/absolute-black.ttl");
         checkEntity(m, ROOT_REGISTER + "reg1/_black", EXT_BLACK);
 
@@ -123,7 +123,7 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(ROOT_REGISTER + "reg1/red", uri);
 
         // Register listing
-        assertEquals(204, postFileStatus("test/blue.ttl", REG1));
+        assertEquals(201, postFileStatus("test/blue.ttl", REG1));
         checkModelResponse(REG1 + "?non-member-properties", REG1_URI, "test/expected/reg1-empty.ttl");
         checkRegisterList( getModelResponse(REG1 + "?status=stable"), REG1_URI, "red1b");
         checkRegisterList( getModelResponse(REG1 + "?status=experimental"), REG1_URI, "black");
@@ -161,11 +161,11 @@ public class TestAPI extends TomcatTestBase {
         // Bulk registration
         assertEquals("Not a bulk type", 400, postFileStatus("test/blue.ttl", BASE_URL + "?batch-managed"));
 
-        assertEquals(204, postFileStatus("test/bulk-skos-collection.ttl", BASE_URL + "?batch-managed"));
+        assertEquals(201, postFileStatus("test/bulk-skos-collection.ttl", BASE_URL + "?batch-managed"));
         m = getModelResponse(BASE_URL + "collection?status=any");
         checkRegisterList( m, ROOT_REGISTER + "collection", "item 1", "item 2", "item 3");
 
-        assertEquals(204, postFileStatus("test/bulk-skos-scheme.ttl", BASE_URL + "?batch-managed"));
+        assertEquals(201, postFileStatus("test/bulk-skos-scheme.ttl", BASE_URL + "?batch-managed"));
         m = getModelResponse(BASE_URL + "scheme?status=any");
         TestUtil.testArray(
                 m.listSubjectsWithProperty(SKOS.inScheme, m.getResource(ROOT_REGISTER + "scheme")).toList(),
@@ -176,11 +176,11 @@ public class TestAPI extends TomcatTestBase {
                 }
                 );
 
-        assertEquals(204, postFileStatus("test/bulk-skos-collection.ttl", BASE_URL + "collection?batch-managed&status=stable"));
+        assertEquals(201, postFileStatus("test/bulk-skos-collection.ttl", BASE_URL + "collection?batch-managed&status=stable"));
         m = getModelResponse(BASE_URL + "collection/collection?status=stable");
         checkRegisterList( m, ROOT_REGISTER + "collection/collection", "item 1", "item 2", "item 3");
 
-        assertEquals(204, postFileStatus("test/bulk-skos-collection-of-scheme.ttl", BASE_URL + "?batch-referenced"));
+        assertEquals(201, postFileStatus("test/bulk-skos-collection-of-scheme.ttl", BASE_URL + "?batch-referenced"));
         m = getModelResponse(BASE_URL + "scheme-collection?status=any");
         checkRegisterList( m, ROOT_REGISTER + "scheme-collection", "item 1", "item 2");
 
@@ -266,13 +266,13 @@ public class TestAPI extends TomcatTestBase {
         m.createResource("regL")
                 .addProperty(RDF.type, RegistryVocab.Register)
                 .addProperty(RDFS.label, "Long register");
-        assertEquals(204, postModel(m, BASE_URL).getStatus());
+        assertEquals(201, postModel(m, BASE_URL).getStatus());
         for (int i = 0; i < length; i++) {
             m = ModelFactory.createDefaultModel();
             m.createResource("item" +i)
                     .addProperty(RDFS.label, "item" + i)
                     .addProperty(RDF.type, SKOS.Concept);
-            assertEquals(204, postModel(m, REGL_URL).getStatus());
+            assertEquals(201, postModel(m, REGL_URL).getStatus());
         }
     }
 

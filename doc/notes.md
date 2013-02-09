@@ -57,6 +57,7 @@
    * _view=version_list
    * update&force
    * suppress _view=version
+   * registration response codes should be 201 not 204
 
 ## Extensions
 

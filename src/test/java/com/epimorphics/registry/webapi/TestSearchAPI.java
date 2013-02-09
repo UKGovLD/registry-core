@@ -50,15 +50,15 @@ public class TestSearchAPI extends TomcatTestBase {
         checkLive();
 
         // Set up some examples
-        assertEquals("Register a register", 204, postFile("test/reg1.ttl", BASE_URL, "text/turtle").getStatus());
-        assertEquals(204, postFileStatus("test/red.ttl", REG1));
-        assertEquals(204, postFileStatus("test/absolute-black.ttl", REG1));
-        assertEquals(204, postFileStatus("test/blue.ttl", REG1));
-        assertEquals(204, postFileStatus("test/green.ttl", REG1));
+        assertEquals("Register a register", 201, postFile("test/reg1.ttl", BASE_URL, "text/turtle").getStatus());
+        assertEquals(201, postFileStatus("test/red.ttl", REG1));
+        assertEquals(201, postFileStatus("test/absolute-black.ttl", REG1));
+        assertEquals(201, postFileStatus("test/blue.ttl", REG1));
+        assertEquals(201, postFileStatus("test/green.ttl", REG1));
 
         assertEquals(204,  invoke("PUT", "test/red1.ttl", REG1 + "/red").getStatus());
 
-        assertEquals(204, postFileStatus("test/bulk-skos-collection.ttl", BASE_URL + "?batch-managed"));
+        assertEquals(201, postFileStatus("test/bulk-skos-collection.ttl", BASE_URL + "?batch-managed"));
 
         Model m = getModelResponse(BASE_URL + "?query=blue");
         checkModelResponse(m, "test/expected/search-result-blue.ttl", API.items);

@@ -94,7 +94,7 @@ public class CommandRegister extends Command {
                 }
             }
             try {
-                return Response.noContent().location(new URI(location.getURI())).build();
+                return Response.created(new URI(location.getURI())).build();
             } catch (URISyntaxException e) {
                 throw new EpiException(e);
             }
