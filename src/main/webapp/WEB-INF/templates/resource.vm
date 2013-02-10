@@ -2,6 +2,7 @@
   <div class="span8">
     
     <h1>Resource: $entity.name</h1>
+    <p><strong>URI:</strong> $entity.uRI </p>
     #if($entity.getProperyValue("rdf:type"))
       <p><strong>Type:</strong> (#foreach($ty in $entity.listPropertyValues("rdf:type"))#linkfor($ty)#if( $foreach.hasNext ), #end#end) </p>
     #end

@@ -1,7 +1,7 @@
 ## Assumes uri is set to the uri of the entity/item/register being displayed
     #set($link="$root") 
     <ul class="breadcrumb">
-      <li><img src="$uiroot/img/molecule-medium.png"></img></li>
+##      <li><img src="$uiroot/img/molecule-medium.png"></img></li>
       <li><a href="$link/">$registry.baseURI</a> <span class="divider">/</span></li>
       #foreach($segment in $uri.split("/"))
         #set($link="$link/$segment")

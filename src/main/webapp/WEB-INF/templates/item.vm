@@ -8,6 +8,7 @@
   <div class="span8">
     
     <h1>Entity: $entity.name [$item.getPropertyValue("reg:status").name]</h1>
+    <p><strong>URI:</strong> $entity.uRI </p>
     <p><strong>Type:</strong> #foreach($ty in $entity.listPropertyValues("rdf:type"))#linkfor($ty)#if( $foreach.hasNext ), #end#end </p>
     <p>
     #if($entity.getPropertyValue("dct:description"))
@@ -21,6 +22,23 @@
   </div>
   
   <div class="span4">
+    <div class="row">
+     <div class="formats span4">
+       <div class="span1">
+         <img src="$uiroot/img/molecule-medium.png"></img>
+       </div>
+       <div class="span3">
+               <strong>Plain:</strong> 
+                  <a href="#linkhref($entity)?_format=ttl">ttl</a> | 
+                  <a href="#linkhref($entity)?_format=rdf">rdf/xml</a>
+                <br/>
+               <strong>With:</strong> 
+                 <a href="#linkhref($entity)?_format=ttl&_view=with_metadata">ttl</a> | 
+                 <a href="#linkhref($entity)?_format=rdf&_view=with_metadata">rdf/xml</a>
+       </div>       
+      </div>
+     </div>
+     
      <div class="panel">
        <div class="panel-head">
          <h4>Item metadata</h4>

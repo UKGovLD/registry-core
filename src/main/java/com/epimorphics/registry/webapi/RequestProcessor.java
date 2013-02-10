@@ -47,14 +47,25 @@ public class RequestProcessor extends BaseEndpoint {
     
     @GET
     @Produces("text/html")
-    public StreamingOutput htmlrender() {
+    public Response htmlrender() {
         if (uriInfo.getPath().startsWith("system/ui") || uriInfo.getPath().equals("favicon.ico")) {
             // Pass through all ui requests to the generic velocity handler, which in turn falls through to file serving
             throw new NotFoundException();
         }
-        VelocityRender velocity = ServiceConfig.get().getServiceAs(Registry.VELOCITY_SERVICE, VelocityRender.class);
-        return velocity.render("main.vm", uriInfo.getPath(), context, uriInfo.getQueryParameters(),
-                    "registry", Registry.get());
+        MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
+        if (parameters.containsKey(Parameters.FORMAT)) {
+            Response response = read();
+            if (parameters.getFirst(Parameters.FORMAT).equals("ttl")) {
+                return Response.ok().type(MIME_TURTLE).entity(response.getEntity()).build();
+            } else {
+                return Response.ok().type(MIME_RDFXML).entity(response.getEntity()).build();
+            }
+        } else {
+            VelocityRender velocity = ServiceConfig.get().getServiceAs(Registry.VELOCITY_SERVICE, VelocityRender.class);
+            StreamingOutput out = velocity.render("main.vm", uriInfo.getPath(), context, parameters,
+                        "registry", Registry.get());
+            return Response.ok().type("text/html").entity(out).build();
+        }
     }
 
     @GET
