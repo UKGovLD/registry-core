@@ -1,11 +1,14 @@
     <hr id="footer-line" />
     <div class="row footer">
-     <div class="pull-right">Copyright &copy; 2013 Epimorphics Ltd</div>
+     <div class="pull-right">Developed by <a href="http://www.epimorphics.com/">Epimorphics Ltd</a></div>
     </div>
    </div> <!-- End of container -->
 
-   <script type="text/javascript" src="${root}/system/ui/js/jquery-1.8.3.min.js"></script>
-   <script type="text/javascript" src="${root}/system/ui/js/bootstrap.min.js"></script>
+   <script type="text/javascript" src="$uiroot/js/jquery-1.8.3.min.js"></script>
+   <script type="text/javascript" src="$uiroot/js/bootstrap.min.js"></script>
+   <script type="text/javascript">
+     $(".popinfo").popover();
+   </script>
 
   </body>
 </html>

@@ -17,6 +17,8 @@
    * The root register must end in "/" to avoid the version info being treated as part of the dns name.
 
    * Lucene index on every item update costs 3x slow down on in-memory test case, actually 6x on a machine with spinning disc
+   
+   * Where do the labels for things like owner organization come from?
 
 ## Future redesign for scale
 

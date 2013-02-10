@@ -1,7 +1,18 @@
 ## Global macros
 
+#macro(showprop $node $label $prop)
+  #if($node.getPropertyValue($prop))
+    <tr>
+      <td><small><strong>$label</strong></small></td>
+      <td><small>$node.getPropertyValue($prop).name</small></td>
+    </tr>
+  #end
+#end
+
+#macro(linkhref $res)#if($res.uRI.startsWith($registry.baseURI))$res.uRI.substring($registry.baseURI.length())#else${root}/?entity=$lib.pathEncode($res.getURI())#end#end
+
 #macro(linkfor $res)
-   <a href="${root}/ui/view?uri=$lib.pathEncode($res.getURI())">$res.name</a>
+   <a href="#linkhref($res)">$res.name</a>
 #end
 
 #macro(render $v)
@@ -17,7 +28,7 @@
   #if($v.isList())
     <ul>
       #foreach($e in $v.asList())
-        <li>#resentry($e)</li>
+        <li>#resentry($e)</li>        
       #end
     </ul>
   #elseif($v.isAnon())
@@ -28,26 +39,24 @@
 #end
 
 ## Display a set of property/value pairs in the RDF browser
-#macro(restable $res)
-  <table class="table table-bordered table-striped">
-    <thead><tr><th>Property</th><th>Value</th></tr></thead>
+#macro(restable $res $classes)
+  <table class="table $classes">
+##    <thead><tr><th>Property</th><th>Value</th></tr></thead>
     <tbody>
       #foreach($pv in $res.listProperties())
         <tr>
-          <td> $pv.getProp().name </td>
+          <td> <strong>$pv.getProp().name</strong> </td>
           <td>
             #foreach($v in $pv.getValues())
               #if($v.isList())
-                <ul>
-                  #foreach($e in $v.asList())
-                    <li>#resentry($e)</li>
-                  #end
-                </ul>
+                  (#foreach($e in $v.asList())#resentry($e)#if( $foreach.hasNext ), #end#end)
               #elseif($v.isAnon())
                 #restable($v)
               #else
                 #resentry($v)
               #end
+              #if( $foreach.hasNext )|#end
+              #if( $foreach.count > 8 ) ... #break #end
             #end
             <br />
           </td>

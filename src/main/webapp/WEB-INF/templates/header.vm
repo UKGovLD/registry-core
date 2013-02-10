@@ -1,3 +1,4 @@
+#set($uiroot="$root/system/ui")
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -5,23 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title>#if($pageTitle) $pageTitle #else UKGovLD Registry #end</title>
-    <link type="text/css" rel="stylesheet" href="${root}/system/ui/css/bootstrap.min.css" />
-    <link type="text/css" rel="stylesheet" href="${root}/system/ui/css/ui.css" />
-    <style type="text/css">
-      body {
-        background: white url($root/system/ui/img/body_bg_big.png) repeat;
-        min-height: 600px;
-      }
-      .container {
-        background-color: white;
-        -moz-box-shadow: 0 5px 24px #888;
-        -webkit-box-shadow: 0 5px 24px #888;
-        box-shadow: 0 5px 24px #888;
-        padding-left: 10px;
-        padding-right: 10px;
-      }
-    </style>
-
+    <link type="text/css" rel="stylesheet" href="$uiroot/css/bootstrap.min.css" />
+    <link type="text/css" rel="stylesheet" href="$uiroot/css/ui.css" />
+    <link type="text/css" rel="stylesheet" href="$uiroot/css/bootstrap-responsive.min.css" />
   </head>
+  
   <body>
       <div class="container">

@@ -39,7 +39,6 @@ import com.epimorphics.server.core.ServiceConfig;
 import com.epimorphics.server.templates.VelocityRender;
 import com.epimorphics.util.EpiException;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.sun.jersey.api.NotFoundException;
 import com.sun.jersey.api.uri.UriComponent;
 
 /**
@@ -156,9 +155,13 @@ public class Registry extends ServiceBase implements Service {
         }
         String encPath = uri.getRawPath();
         String target = UriComponent.decode(encPath, UriComponent.Type.PATH);
-        MultivaluedMap<String, String> parameters = UriComponent.decodeQuery(uriTarget, true);
+        String queries = uriTarget;
+        int split = queries.indexOf("?");
+        if (split != -1) {
+            queries = queries.substring(split+1);
+        }
+        MultivaluedMap<String, String> parameters = UriComponent.decodeQuery(queries, true);
         Command command = make(op, target, parameters);
-        System.out.println("Performing " + command);   // Temp
         try {
             Response response = command.execute();
             if (response.getStatus() == 200 && response.getEntity() instanceof Model) {
@@ -169,11 +172,7 @@ public class Registry extends ServiceBase implements Service {
                 return response;
             }
         } catch (WebApplicationException wae) {
-            if (wae.getResponse().getStatus() == 404) {
-                throw new NotFoundException();
-            } else {
                 return wae.getResponse();
-            }
         } catch (Exception e) {
             return Response.serverError().entity(e.getMessage()).build();
         }

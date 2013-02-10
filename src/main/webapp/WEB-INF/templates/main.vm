@@ -1,28 +1,47 @@
-#set($pageTitle="Hello")
 #parse("header.vm")
+  #if($uri.isEmpty())
+    #set($nav="root")
+  #end
 #parse("navbar.vm")
 
-<div class="hero-unit">
-  <h1>UKGovLD Registry</h1>
- </div>
+#if($entity)
+  #set($response=$registry.perform("Read","$uri?entity=$entity&_view=with_metadata&status=any"))
+  #set($uri=$entity)
+#else
+  #set($response=$registry.perform("Read","$uri?_view=with_metadata&status=any"))
+#end
 
-<div>
-  #set($response=$registry.perform("Read","?_view=with_metadata"))
-  <p>Status = $response.status</p>
-  <p>Entity = $response.entity</p>
+#set($target="$registry.baseURI/$uri")
 
-  #set($mw=$response.entity)
-  #set($reg=$mw.getNode("$registry.baseURI/$uri"))
-  $reg.getURI()
-  $reg.getPropertyValue("rdfs:label")
-  $reg.listPropertyValues("rdfs:member")
-  #foreach($pv in $reg.listProperties())
-    <div>
-       $pv.prop = #foreach($v in $pv.values)$v #end
-    </div>
+#if($response.status == 404)
+  #parse("not-found.vm")
+#elseif($response.status >= 500)
+  #parse("internal-error.vm")
+#else
+  #set($model=$response.entity)
+  #set($node=$model.getNode($target))
+  #if($uri.isEmpty())
+    #parse("root.vm")
+  #elseif($node.hasResourceValue("rdf:type","reg:Register"))
+    #parse("register.vm")
+  #elseif($node.hasResourceValue("rdf:type","reg:RegisterItem"))
+    #set($item=$node)
+    #set($entity=$item.connectedNodes("reg:definition/reg:entity").get(0))
+    #if($entity.hasResourceValue("rdf:type","reg:Register"))
+      #parse("register.vm")
+    #else
+      #parse("item.vm")
+    #end
+  #else
+    #set($entity=$node)
+    #set($items=$node.connectedNodes("^reg:entity/^reg:definition"))
+    #if(!$items.isEmpty())
+      #set($item=$items.get(0))
+      #parse("item.vm")
+    #else
+      #parse("resource.vm")
+    #end
   #end
-  
-  
-</div>
+#end
 
 #parse("footer.vm")

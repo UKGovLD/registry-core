@@ -1,23 +1,20 @@
-.blob {
-  background-color: #eee;
-  -webkit-border-radius: 3px;
-     -moz-border-radius: 3px;
-          border-radius: 3px;
+/**
+ * UI additions to adapt bootstrap for registry UI. Dave Reynolds, 2013
+ */
+
+body {
+        background: white url(/system/ui/img/body_bg_big.png) repeat;
+        min-height: 600px;
+        margin-top: 40px;
 }
 
-.blob h3 {
-    text-align: center;
-}
-
-.blob h2 {
-    text-align: center;
-}
-
-.metadata-blob {
-  background-color: #eee;
-  -webkit-border-radius: 3px;
-     -moz-border-radius: 3px;
-          border-radius: 3px;
+.container {
+        background-color: white;
+        -moz-box-shadow: 0 5px 24px #888;
+        -webkit-box-shadow: 0 5px 24px #888;
+        box-shadow: 0 5px 24px #888;
+        padding-left: 10px;
+        padding-right: 10px;
 }
 
 .table {
@@ -26,16 +23,6 @@
 
 table tr td table {
    margin-bottom: 0em;
-}
-
-.box {
-  border-style:solid;
-  border-width:2px;
-  border-color:#eee;
-  padding: 4px;
-  -webkit-border-radius: 3px;
-     -moz-border-radius: 3px;
-          border-radius: 3px;
 }
 
 .space-above {
@@ -48,6 +35,42 @@ table tr td table {
 
 .nav-text {
     color: white;
+}
+
+.panel {
+   font-size: 80%;
+   line-spacing: 80%;
+}
+
+.panel-head {
+    background-color:  #222222;
+    color: lightgrey;
+    text-align: center;
+    -webkit-border-top-left-radius: 5px;
+    -webkit-border-top-right-radius: 5px;
+    -moz-border-radius-topleft: 5px;
+    -moz-border-radius-topright: 5px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    height: 30px;
+    padding: 3px;
+}
+
+.panel-body {
+   border-left: 5px solid lightgrey;
+   border-right: 5px solid lightgrey;
+   border-bottom: 5px solid lightgrey;
+   padding: 4px;
+}
+
+.result-blob {
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    background-color: #f5f5f5;
+    margin-bottom: 20px;
+    margin-right: 5px;
+    padding: 5px;
 }
 
 

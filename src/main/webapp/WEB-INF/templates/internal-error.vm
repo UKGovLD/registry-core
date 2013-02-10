@@ -1,0 +1,7 @@
+<h1>Oops: Internal error ($response.status)</h1>
+<p>
+  Sorry but an internal error has occurred.
+</p>
+<pre>
+  $response.entity
+</pre>

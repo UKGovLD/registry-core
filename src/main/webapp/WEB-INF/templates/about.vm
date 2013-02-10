@@ -1,0 +1,20 @@
+#parse("header.vm")
+#set($nav="about")
+#parse("navbar.vm")
+
+<div class="hero-unit">
+  <h1>About the registry</h1>
+</div>
+
+<p>
+  This is a proof-of-concept implementation of a linked data registry intended to help coordinate publishing across organizations. 
+</p>
+<p>
+  In a full implementation this front page could be used to also convey news and summary statistics.
+</p>
+<p>
+  For more information see the <a href="https://github.com/der/ukl-registry-poc/wiki">project wiki</a>. 
+</p>
+
+
+#parse("footer.vm")
