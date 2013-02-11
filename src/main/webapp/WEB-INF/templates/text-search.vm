@@ -5,7 +5,7 @@
 #set($target='<nullsearch>')
 #if($query && !$query.trim().isEmpty()) #set($target=$query) #end
 
-#set($response=$registry.perform("Search","?query=$lib.pathEncode($query)&_view=with_metadata"))
+#set($response=$registry.perform("Search","?query=$lib.pathEncode($query)&_view=with_metadata",$requestor))
 
 #if($response.status == 200)
   #set($model=$response.entity)

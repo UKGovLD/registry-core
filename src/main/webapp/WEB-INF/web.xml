@@ -9,8 +9,7 @@
     <param-name>config.basestore</param-name>
     <param-value>com.epimorphics.server.stores.TDBStore,
     location=/var/local/registry/store,
-    union=true,
-    ep=service,
+    ep=system,
     log=/var/local/registry/logstore</param-value>
   </context-param>
 
@@ -80,7 +79,7 @@
 
     <servlet-mapping>
         <servlet-name>sparql</servlet-name>
-        <url-pattern>/service/query</url-pattern>
+        <url-pattern>/system/query</url-pattern>
     </servlet-mapping>
 
 <!--

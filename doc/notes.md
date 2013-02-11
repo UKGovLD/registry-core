@@ -6,8 +6,8 @@
    1. text index and minimal UI - done
    1. versioning model
    1. fuller API and test suite
-   1. base UI <---
-   1. minimal dispatch
+   1. base UI
+   1. minimal dispatch  <---
    1. partitioning into distributable, replicable subsystems
 
 ## Issues
@@ -22,7 +22,6 @@
 
 ## Future redesign for scale
 
-   * Separate out the UI as per the conceptual architecture
    * Switch to a message-oriented design for connecting the registry core logic to the store, indexers and other possible data consumers - but what message structure BSON encoding?
      support pub/sub for e.g. watcher API
    * plugin architecture for validators, use ServiceLoader machinery for that?
@@ -43,10 +42,8 @@
 
    * create void description for registers
    * creating of void:example from early registrations
-   * test cases for location allocation (null, relative, bnode, skos:notation, absolute, non-local) + for update
    * validation of completeness of a Register spec
    * completion of void description
-   * logging of command request
    * If RI includes status value then need to authorize status update as well
    * caching control headers
    * e-tag support
@@ -60,6 +57,8 @@
    * faceted filter on search results
    * browsing of non-registered entities which are/could be in a local ontology cache
    * inject resource labels into results models, need a label utility (caching?) which handles that and knows about prefixes and registered ontologies
+   * paging of register listings
+   * and search results
 
 ## Documentation updates
 
