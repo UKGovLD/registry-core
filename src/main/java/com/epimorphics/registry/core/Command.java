@@ -16,6 +16,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,6 +25,9 @@ import java.util.regex.Pattern;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.vocab.Ldbp;
@@ -39,21 +44,25 @@ import com.hp.hpl.jena.vocabulary.RDF;
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public abstract class Command {
+    static final Logger log = LoggerFactory.getLogger( Command.class );
 
     public enum Operation { Read, Register, Delete, Update, StatusUpdate, Validate, Search };
 
     protected Operation operation;
     protected String target;
-    protected String parent;
-    protected String lastSegment;
     protected MultivaluedMap<String, String> parameters;
     protected Model payload;
-    protected Registry registry;
-    protected StoreAPI store;
+
+    protected String requestor;
+
+    protected String parent;
+    protected String lastSegment;
     protected boolean paged;
     protected int length = -1;
     protected int pagenum = 0;
 
+    protected Registry registry;
+    protected StoreAPI store;
     /**
      * Constructor
      * @param operation   operation request, as determined by HTTP verb
@@ -113,6 +122,14 @@ public abstract class Command {
         return parameters;
     }
 
+    public String getRequestor() {
+        return requestor;
+    }
+
+    public void setRequestor(String requestor) {
+        this.requestor = requestor;
+    }
+
     @Override
     public String toString() {
         return String.format("Command: %s on %s", operation, target);
@@ -122,9 +139,29 @@ public abstract class Command {
 
     public Response execute()  {
         // TODO - authorization
-        Response response = doExecute();
-        // TODO catch and rethrow exceptions to capture 404 and other status responses
-        // TODO - logging and notification
+
+        Response response = null;
+        try {
+            response = doExecute();
+        } catch (WebApplicationException wae) {
+            response =  wae.getResponse();
+        } catch (Exception e) {
+            log.error("Internal error", e);
+            response = Response.serverError().entity(e.getMessage()).build();
+        }
+
+        // TODO - logging notification
+
+        Date now = new Date(System.currentTimeMillis());
+        log.info(String.format("%s [%s] %s \"%s?%s\"%s %d",
+                requestor,
+                new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z").format(now),
+                operation.toString(),
+                target,
+                makeParamString(parameters),
+                (response.getStatus() == 201) ? " -> " + response.getMetadata().get("Location") : "",
+                response.getStatus()));
+
         return response;
     }
 

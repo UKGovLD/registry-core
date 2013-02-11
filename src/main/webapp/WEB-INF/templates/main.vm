@@ -5,11 +5,11 @@
 #parse("navbar.vm")
 
 #if($entity)
-  #set($response=$registry.perform("Read","$uri?entity=$entity&_view=with_metadata&status=any"))
+  #set($response=$registry.perform("Read","$uri?entity=$entity&_view=with_metadata&status=any", $requestor))
   #set($target=$entity)
   #set($uri=$entity)
 #else
-  #set($response=$registry.perform("Read","$uri?_view=with_metadata&status=any"))
+  #set($response=$registry.perform("Read","$uri?_view=with_metadata&status=any", $requestor))
   #set($target="$registry.baseURI/$uri")
 #end
 

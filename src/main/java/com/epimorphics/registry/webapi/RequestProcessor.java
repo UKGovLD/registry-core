@@ -44,14 +44,11 @@ import com.sun.jersey.api.NotFoundException;
 @Path("{path: .*}")
 public class RequestProcessor extends BaseEndpoint {
 
-    
+
     @GET
     @Produces("text/html")
     public Response htmlrender() {
-        if (uriInfo.getPath().startsWith("system/ui") || uriInfo.getPath().equals("favicon.ico")) {
-            // Pass through all ui requests to the generic velocity handler, which in turn falls through to file serving
-            throw new NotFoundException();
-        }
+        checkForPassThrough();
         MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
         if (parameters.containsKey(Parameters.FORMAT)) {
             Response response = read();
@@ -63,7 +60,7 @@ public class RequestProcessor extends BaseEndpoint {
         } else {
             VelocityRender velocity = ServiceConfig.get().getServiceAs(Registry.VELOCITY_SERVICE, VelocityRender.class);
             StreamingOutput out = velocity.render("main.vm", uriInfo.getPath(), context, parameters,
-                        "registry", Registry.get());
+                        "registry", Registry.get(), "requestor", getRequestor());
             return Response.ok().type("text/html").entity(out).build();
         }
     }
@@ -71,6 +68,7 @@ public class RequestProcessor extends BaseEndpoint {
     @GET
     @Produces({MIME_TURTLE, MIME_RDFXML})
     public Response read() {
+        checkForPassThrough();
         Command command = null;
         if (uriInfo.getQueryParameters().containsKey(Parameters.QUERY)) {
             command = makeCommand( Operation.Search );
@@ -80,11 +78,17 @@ public class RequestProcessor extends BaseEndpoint {
         return command.execute();
     }
 
+    private void checkForPassThrough() {
+        if (uriInfo.getPath().startsWith("system/ui") || uriInfo.getPath().equals("favicon.ico")) {
+            // Pass through all ui requests to the generic velocity handler, which in turn falls through to file serving
+            throw new NotFoundException();
+        }
+    }
+
     private Command makeCommand(Operation op) {
-//        System.out.println("Absolute path " + uriInfo.getAbsolutePath());
-//        System.out.println("Path path " + uriInfo.getPath());
-//        System.out.println("Request uri " + uriInfo.getRequestUri());
-        return Registry.get().make(op, uriInfo.getPath(), uriInfo.getQueryParameters());
+        Command c = Registry.get().make(op, uriInfo.getPath(), uriInfo.getQueryParameters());
+        c.setRequestor(getRequestor());
+        return c;
     }
 
     @POST
