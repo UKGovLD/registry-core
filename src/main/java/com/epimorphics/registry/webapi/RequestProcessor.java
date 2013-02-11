@@ -80,7 +80,8 @@ public class RequestProcessor extends BaseEndpoint {
 
     private void checkForPassThrough() {
         String path = uriInfo.getPath();
-        if (path.startsWith("system/ui") || path.startsWith("system/query") || path.equals("favicon.ico")) {
+        System.out.println("Path check on " + path);
+        if (path.startsWith("ui") || path.startsWith("system/query") || path.equals("favicon.ico")) {
             // Pass through all ui requests to the generic velocity handler, which in turn falls through to file serving
             throw new NotFoundException();
         }

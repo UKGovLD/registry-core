@@ -1,15 +1,15 @@
-#set($uiroot="$root/system/ui")
+#set($uiroot="$root/ui")
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+
     <title>#if($pageTitle) $pageTitle #else UKGovLD Registry #end</title>
     <link type="text/css" rel="stylesheet" href="$uiroot/css/bootstrap.min.css" />
     <link type="text/css" rel="stylesheet" href="$uiroot/css/ui.css" />
     <link type="text/css" rel="stylesheet" href="$uiroot/css/bootstrap-responsive.min.css" />
   </head>
-  
+
   <body>
       <div class="container">

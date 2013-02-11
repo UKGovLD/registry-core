@@ -26,16 +26,20 @@
     reg:notation "system";
     reg:definition [ reg:entity <system> ];
     ldp:membershipPredicate rdfs:member;
+    reg:itemClass reg:Register ;
     version:currentVersion <_system>;
     .
-    
+
 <system> a reg:Register;
     rdfs:label "system register"@en;
     dct:description "Registers which control system operation"@en;
     reg:owner      <http://example.com/UKLocation> ;
     reg:manager   <http://www.epimorphics.com/#id> ;
     reg:containedItemClass reg:Register;
+    reg:subregister <system/bulkCollectionTypes> ;
     .
+
+<> reg:subregister <system> .
 
 <system/_bulkCollectionTypes> a reg:RegisterItem;
     rdfs:label "bulk collection types"@en;
@@ -46,8 +50,9 @@
     reg:definition [ reg:entity <system/bulkCollectionTypes> ];
     ldp:membershipPredicate rdfs:member;
     version:currentVersion <system/_bulkCollectionTypes>;
+    reg:itemClass reg:Register ;
     .
-    
+
 <system/bulkCollectionTypes> a reg:Register;
     rdfs:label "bulk collection types"@en;
     dct:description "Register of bulk collection types"@en;
