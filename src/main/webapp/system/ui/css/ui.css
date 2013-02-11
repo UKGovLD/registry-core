@@ -100,9 +100,19 @@ table tr td table {
     background-color: grey;
     text-align: center;
  }
- 
+
  .test-border {
     border: 2px solid lightgrey;
  }
- 
- 
+
+ .tab-content {
+    border-left: 1px solid lightgrey;
+    border-right: 1px solid lightgrey;
+    border-bottom: 1px solid lightgrey;
+    padding:  5px;
+ }
+
+.nav-compact {
+    margin-bottom: 0px;
+}
+

@@ -3,12 +3,12 @@
     #parse("breadcrumbs.vm")
   </div>
  </div>
- 
+
  <div class="row">
   <div class="span8">
-    
+
     <h1>Entity: $entity.name</h1>
-    
+
     <div class="row">
       <div class="span6">
         <p><strong>URI:</strong> $entity.uRI </p>
@@ -25,13 +25,32 @@
         #showstatus($item.getPropertyValue("reg:status"))
       </div>
     </div>
-    
-    #restable($entity, "table-striped table-condensed table-bordered")
+
+    <ul class="nav nav-tabs nav-compact">
+      <li class="active"><a href="#properties" data-toggle="tab">Properties</a></li>
+      <li><a href="#history" data-toggle="tab">History</a></li>
+      <li><a href="#administer" data-toggle="tab">Administer</a></li>
+    </ul>
+
+    <div class="tab-content">
+      <div class="tab-pane active" id="properties">
+        #restable($entity, "table-striped table-condensed table-bordered")
+      </div>
+
+      <div class="tab-pane" id="history">
+        <p>To be implemented.</p>
+      </div>
+
+      <div class="tab-pane" id="administer">
+        <p>To be implemented.</p>
+      </div>
+    </div>
+
   </div>
-  
+
   <div class="span4">
     #parse("formats.vm")
-     
+
      <div class="panel">
        <div class="panel-head">
          <h4>Item metadata</h4>

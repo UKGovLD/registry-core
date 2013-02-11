@@ -11,13 +11,12 @@
     location=/var/local/registry/store,
     union=true,
     ep=service,
-    indexer=index,
     log=/var/local/registry/logstore</param-value>
   </context-param>
 
   <context-param>
     <param-name>config.storeapi</param-name>
-    <param-value>com.epimorphics.registry.store.StoreBaseImpl,store=basestore
+    <param-value>com.epimorphics.registry.store.StoreBaseImpl,store=basestore,indexer=index
     </param-value>
   </context-param>
 

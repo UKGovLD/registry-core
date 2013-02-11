@@ -55,7 +55,7 @@ import com.sun.jersey.api.uri.UriComponent;
  */
 public class Registry extends ServiceBase implements Service {
     static final Logger log = LoggerFactory.getLogger( Registry.class );
-    
+
     public static final String VELOCITY_SERVICE = "velocity";
 
     public static final String BASE_URI_PARAM = "baseURI";
@@ -108,9 +108,11 @@ public class Registry extends ServiceBase implements Service {
             log.info("Installed bootstrap root register");
         }
 
-        ServiceConfig.get().getServiceAs(Registry.VELOCITY_SERVICE, VelocityRender.class)
-            .setPrefixes( Prefixes.get() );
-        
+        VelocityRender velocity = ServiceConfig.get().getServiceAs(Registry.VELOCITY_SERVICE, VelocityRender.class);
+        if (velocity != null) {
+            velocity.setPrefixes( Prefixes.get() );
+        }
+
         registry = this;   // Assumes singleton registry
     }
 
@@ -177,7 +179,7 @@ public class Registry extends ServiceBase implements Service {
             return Response.serverError().entity(e.getMessage()).build();
         }
     }
-    
+
     static Registry registry;
     public static Registry get() {
         return registry;

@@ -14,6 +14,6 @@
 
 :config a li:Config;
     li:labelProp rdfs:label, dct:title, foaf:name;
-    li:valueProp rdf:type, reg:status, reg:category, reg:itemClass ;
+    li:valueProp rdf:type, reg:status, reg:category, reg:itemClass, dct:description ;
     .
 

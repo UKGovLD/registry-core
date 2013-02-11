@@ -2,17 +2,17 @@
 
 #macro(showstatus $status)
   #if($status.uRI.endsWith("Stable"))
-    <div class="alert alert-success">Stable</div>
+    <span class="label label-success">Stable</span>
   #elseif($status.uRI.endsWith("Experimental"))
-    <div class="alert alert-success">Experimental</div>
+    <span class="label label-warning">Experimental</span>
   #elseif($status.uRI.endsWith("Submitted"))
-    <div class="alert alert-info">Submitted</div>
+    <span class="label">Submitted</span>
   #elseif($status.uRI.endsWith("Invalid"))
-    <div class="alert alert-error">Invalid</div>
+    <span class="label label-important">Invalid</span>
   #elseif($status.uRI.endsWith("Superseded"))
-    <div class="alert">Superseded</div>
+    <span class="label label-inverse">Superseded</span>
   #elseif($status.uRI.endsWith("Retired"))
-    <div class="alert">Retired</div>
+    <span class="label label-inverse">Retired</span>
   #else
     $status.name
   #end
@@ -37,7 +37,7 @@
   #if($v.isList())
     <ul>
       #foreach($e in $v.asList())
-        <li>#resentry($e)</li>        
+        <li>#resentry($e)</li>
       #end
     </ul>
   #elseif($v.isAnon())

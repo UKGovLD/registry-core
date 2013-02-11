@@ -17,7 +17,7 @@
    * The root register must end in "/" to avoid the version info being treated as part of the dns name.
 
    * Lucene index on every item update costs 3x slow down on in-memory test case, actually 6x on a machine with spinning disc
-   
+
    * Where do the labels for things like owner organization come from?
 
 ## Future redesign for scale
@@ -37,7 +37,7 @@
 
    * bulk registration should dodge the register versioning somehow?
 
-   * need lucene index driver that handles periodic close of indexwriter and batches commits
+   * need lucene index driver that handles periodic close of indexwriter and batches (and maybe delays) commits, could catchup missed index commits from logs?
 
 ## Stack
 
@@ -51,6 +51,15 @@
    * caching control headers
    * e-tag support
    * Validation hooks
+
+## UI Stack
+
+   * table view of registers with sorting on status etc
+   * Adminstration interfaces for registers and items
+   * Support for simple batch uploading
+   * faceted filter on search results
+   * browsing of non-registered entities which are/could be in a local ontology cache
+   * inject resource labels into results models, need a label utility (caching?) which handles that and knows about prefixes and registered ontologies
 
 ## Documentation updates
 

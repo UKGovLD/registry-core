@@ -548,7 +548,8 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     protected void doIndex(Resource root, String graph) {
         if (indexer != null) {
-            indexer.updateGraph(graph, root.getModel());
+//            indexer.updateGraph(graph, root.getModel());
+            indexer.addGraph(graph, root.getModel());
         }
     }
 

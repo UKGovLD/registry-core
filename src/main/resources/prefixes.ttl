@@ -13,5 +13,6 @@
 @prefix void: <http://rdfs.org/ns/void#> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix time: <http://www.w3.org/2006/time#> .
+@prefix api:  <http://purl.org/linked-data/api/vocab#> .
 
 @prefix reg:  <http://purl.org/linked-data/registry#> .
