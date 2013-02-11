@@ -163,7 +163,7 @@ public class CachingStore implements StoreAPI {
 
     @Override
     public LuceneResult[] search(String query, int offset, int maxresults, String... fields) {
-        return search(query, offset, maxresults, fields);
+        return store.search(query, offset, maxresults, fields);
     }
 
 }

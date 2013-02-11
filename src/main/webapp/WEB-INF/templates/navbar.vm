@@ -23,7 +23,7 @@
             About</a></li>
       </ul>
       
-      <form action="text-search" method="get" class="navbar-search">
+      <form action="$uiroot/text-search" method="get" class="navbar-search">
         <input type="search" class="search-query" placeholder="Search" #if($query)value="$query"#end name="query"/>
 ##             <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;" />
       </form>

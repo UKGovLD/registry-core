@@ -1,18 +1,27 @@
 ## Global macros
 
-#macro(showprop $node $label $prop)
-  #if($node.getPropertyValue($prop))
-    <tr>
-      <td><small><strong>$label</strong></small></td>
-      <td><small>$node.getPropertyValue($prop).name</small></td>
-    </tr>
+#macro(showstatus $status)
+  #if($status.uRI.endsWith("Stable"))
+    <div class="alert alert-success">Stable</div>
+  #elseif($status.uRI.endsWith("Experimental"))
+    <div class="alert alert-success">Experimental</div>
+  #elseif($status.uRI.endsWith("Submitted"))
+    <div class="alert alert-info">Submitted</div>
+  #elseif($status.uRI.endsWith("Invalid"))
+    <div class="alert alert-error">Invalid</div>
+  #elseif($status.uRI.endsWith("Superseded"))
+    <div class="alert">Superseded</div>
+  #elseif($status.uRI.endsWith("Retired"))
+    <div class="alert">Retired</div>
+  #else
+    $status.name
   #end
 #end
 
 #macro(linkhref $res)#if($res.uRI.startsWith($registry.baseURI))$res.uRI.substring($registry.baseURI.length())#else${root}/?entity=$lib.pathEncode($res.getURI())#end#end
 
 #macro(linkfor $res)
-   <a href="#linkhref($res)">$res.name</a>
+   <a href="#linkhref($res)" title="$res.uRI">$res.name</a>
 #end
 
 #macro(render $v)

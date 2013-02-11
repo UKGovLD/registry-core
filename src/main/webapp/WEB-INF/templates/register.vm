@@ -30,18 +30,20 @@
           <div class="result-blob">
             <div class="row">
               <div class="span6">
-                <strong>Register:</strong> #linkfor($reg)
+                <div class="blob-inner">
+                    <strong>Register:</strong> #linkfor($reg)
+                    #if($reg.getPropertyValue("reg:containedItemClass"))    
+                      <p><strong>Contains types:</strong> #foreach($ty in $reg.listPropertyValues("reg:containedItemClass"))#linkfor($ty)#if( $foreach.hasNext ), #end#end </p>
+                    #end
+                    #if($reg.getPropertyValue("dct:description"))
+                      <p>$reg.getPropertyValue("dct:description").lexicalForm</p>
+                    #end
+                </div>
               </div>
-              <div class="span1">
-                $item.getPropertyValue("reg:status").name
+              <div class="span2">
+                #showstatus($item.getPropertyValue("reg:status"))              
               </div>
             </div>
-            #if($reg.getPropertyValue("reg:containedItemClass"))    
-              <p><strong>Contains types:</strong> #foreach($ty in $reg.listPropertyValues("reg:containedItemClass"))#linkfor($ty)#if( $foreach.hasNext ), #end#end </p>
-            #end
-            #if($reg.getPropertyValue("dct:description"))
-              <p>$reg.getPropertyValue("dct:description").lexicalForm</p>
-            #end
           </div>
         #end
       #end
@@ -56,18 +58,19 @@
           #end
           <div class="result-blob">
             <div class="row">
-              <div class="span5">
-                <strong>Item:</strong> "$item.name" had notation <a href="#linkhref($item)">$item.getPropertyValue("reg:notation").lexicalForm</a>
-                
+              <div class="span6">
+                <div class="blob-inner">
+                    <strong>Item:</strong> "$item.name" had notation <a href="#linkhref($item)">$item.getPropertyValue("reg:notation").lexicalForm</a>
+                    <p><strong>Type:</strong> #foreach($ty in $item.listPropertyValues("reg:itemClass"))#linkfor($ty)#if( $foreach.hasNext ), #end#end </p>
+                    #if($item.getPropertyValue("dct:description"))
+                      <p>$item.getPropertyValue("dct:description").lexicalForm</p>
+                    #end
+                </div>
               </div>
               <div class="span2">
-                $item.getPropertyValue("reg:status").name
+                #showstatus($item.getPropertyValue("reg:status"))              
               </div>
             </div>
-            <p><strong>Type:</strong> #foreach($ty in $item.listPropertyValues("reg:itemClass"))#linkfor($ty)#if( $foreach.hasNext ), #end#end </p>
-            #if($item.getPropertyValue("dct:description"))
-              <p>$item.getPropertyValue("dct:description").lexicalForm</p>
-            #end
           </div>
         #end
         #end
@@ -83,7 +86,8 @@
   </div>
     
   <div class="span4">
-    <div class="row">
+    #set($entity=$node)
+    #parse("formats.vm")
     
      <div class="panel">
        <div class="panel-head">
@@ -94,7 +98,6 @@
       </div>
      </div>
      
-    </div>
   </div>
   
 </div>

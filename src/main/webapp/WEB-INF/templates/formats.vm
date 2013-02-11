@@ -1,0 +1,16 @@
+      <div class="formats">
+        <table class="table table-condensed">
+          <tr>
+            <td>
+              <img src="$uiroot/img/molecule-medium.png"></img>
+            </td><td>
+              <dl class="dl-horizontal">
+                <dt>plain:</dt>
+                <dd><a href="#linkhref($entity)?_format=ttl">ttl</a> | <a href="#linkhref($entity)?_format=rdf">rdf/xml</a></dd>
+                <dt>with metadata:</dt>
+                <dd> <a href="#linkhref($entity)?_format=ttl&_view=with_metadata">ttl</a> | <a href="#linkhref($entity)?_format=rdf&_view=with_metadata">rdf/xml</a> </dd>
+              </dl>
+            </td>
+          </tr>
+        </table>
+      </div>

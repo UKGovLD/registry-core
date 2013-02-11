@@ -3,30 +3,15 @@
 #parse("navbar.vm")
 
 #set($target='<nullsearch>')
-#if($query && !$query.trim().isEmpty()) #set($target="'+${query}*'") #end
+#if($query && !$query.trim().isEmpty()) #set($target=$query) #end
+
+#set($response=$registry.perform("Search","$uri?query=$lib.pathEncode($query)&_view=with_metadata"))
+
+$response.status
+$response.metadata
+$response.entity
 
 <h3>Search results for: $query</h3>
 
-<table class="table table-striped">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>URI</th>
-    </tr>
-  </thead>
-  <tbody>
-#set($query=$lib.expander.parse($query))
-#foreach($result in $index.search($query, 0, 50))
-  #set($r = $model.getNode($result.uRI))
-
-  #if($r.hasResourceValue("rdf:type", "reg:RegisterItem"))
-    <tr>
-      <td>$r.name</td>
-      <td><a href="${root}/ui/view?uri=$result.uRI">$result.uRI</a></td>
-    </tr>
-  #end
-#end
-  </tbody>
-</table>
 
 #include("footer.vm")
