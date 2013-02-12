@@ -72,19 +72,20 @@ public abstract class TomcatTestBase {
 
         tomcat.addWebapp(contextPath,  rootF.getAbsolutePath());
         tomcat.start();
-        Thread.sleep(500);
-
+        
         // Allow arbitrary HTTP methods so we can use PATCH
         DefaultClientConfig config = new DefaultClientConfig();
         config.getProperties().put(URLConnectionClientHandler.PROPERTY_HTTP_URL_CONNECTION_SET_METHOD_WORKAROUND, true);
         c = Client.create(config);
+        
+        checkLive(200);
     }
 
     @After
     public void containerStop() throws Exception {
         tomcat.stop();
         tomcat.destroy();
-        Thread.sleep(500);
+        checkLive(503);
     }
 
     protected int postFileStatus(String file, String uri) {
@@ -216,12 +217,12 @@ public abstract class TomcatTestBase {
     }
 
 
-    protected void checkLive() {
+    protected void checkLive(int targetStatus) {
         boolean tomcatLive = false;
         int count = 0;
         while (!tomcatLive) {
             int status = getResponse(BASE_URL).getStatus();
-            if (status == 503) {
+            if (status != targetStatus) {
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
@@ -232,7 +233,6 @@ public abstract class TomcatTestBase {
                     assertTrue("Too many tries", false);
                 }
             } else {
-                assertEquals("Startup probe", 200, status);
                 tomcatLive = true;
             }
         }

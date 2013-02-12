@@ -47,8 +47,6 @@ public class TestSearchAPI extends TomcatTestBase {
 
     @Test
     public void testSearch() {
-        checkLive();
-
         // Set up some examples
         assertEquals("Register a register", 201, postFile("test/reg1.ttl", BASE_URL, "text/turtle").getStatus());
         assertEquals(201, postFileStatus("test/red.ttl", REG1));

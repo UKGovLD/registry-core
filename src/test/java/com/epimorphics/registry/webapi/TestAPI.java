@@ -55,8 +55,6 @@ public class TestAPI extends TomcatTestBase {
 
     @Test
     public void testBasics() {
-        checkLive();
-
         // Registration
         ClientResponse response = postFile("test/reg1.ttl", BASE_URL, "text/turtle");
         assertEquals("Register a register", 201, response.getStatus());
