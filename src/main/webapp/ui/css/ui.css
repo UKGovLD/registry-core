@@ -3,7 +3,7 @@
  */
 
 body {
-        background: white url(/system/ui/img/body_bg_big.png) repeat;
+        background: white url(/ui/img/body_bg_big.png) repeat;
         min-height: 600px;
         margin-top: 40px;
 }

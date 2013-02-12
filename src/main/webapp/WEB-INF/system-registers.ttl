@@ -15,7 +15,8 @@
 
 @prefix reg:  <http://purl.org/linked-data/registry#> .
 
-@base <http://location.data.gov.uk/> .
+# @base <http://location.data.gov.uk/> .
+@base <http://ukgovld-registry.dnsalias.net/> .
 
 
 <_system> a reg:RegisterItem;

@@ -15,11 +15,10 @@
 
 @prefix reg:  <http://purl.org/linked-data/registry#> .
 
-<http://location.data.gov.uk/> a reg:Register;
-    version:currentVersion <http://location.data.gov.uk/:1>;
-.
+@base <http://ukgovld-registry.dnsalias.net/> .
 
-<http://location.data.gov.uk/:1> a reg:Register;
+<> a reg:Register;
+    version:currentVersion <>;
     rdfs:label "root"@en;
     dct:description "The root register"@en;
     reg:owner      <http://example.com/UKLocation> ;
@@ -29,12 +28,13 @@
     owl:versionInfo 1;
 .
 
-<http://location.data.gov.uk/_> a reg:RegisterItem;
+<_> a reg:RegisterItem;
+    version:currentVersion <_>;
     rdfs:label "root"@en;
     dct:description "The root register"@en;
     reg:status reg:statusStable;
     reg:itemClass reg:Register;
     reg:notation "";
-    reg:definition [ reg:entity <http://location.data.gov.uk/> ];
+    reg:definition [ reg:entity <> ];
 .
 

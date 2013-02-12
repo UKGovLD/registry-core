@@ -26,7 +26,7 @@
 
   <context-param>
     <param-name>config.velocity</param-name>
-    <param-value>com.epimorphics.server.templates.VelocityRender, templates=${webapp}/WEB-INF/templates, root=/system/ui,
+    <param-value>com.epimorphics.server.templates.VelocityRender, templates=${webapp}/WEB-INF/templates, root=/ui,
     plugins=reg</param-value>
   </context-param>
 
@@ -38,7 +38,7 @@
   <context-param>
     <param-name>config.registry</param-name>
     <param-value>com.epimorphics.registry.core.Registry,
-    baseURI=http://location.data.gov.uk,
+    baseURI=http://ukgovld-registry.dnsalias.net/,
     store=storeapi,
     cacheSize=100,
     bootSpec=${webapp}/WEB-INF/root-register.ttl|${webapp}/WEB-INF/registry.ttl|${webapp}/WEB-INF/system-registers.ttl</param-value>
