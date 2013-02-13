@@ -108,6 +108,9 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             locks.put(uri, lock);
         }
         lock.lock();
+        if (indexer != null) {
+            indexer.startBatch();
+        }
     }
 
     /**
@@ -120,6 +123,9 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             throw new EpiException("Internal error: tried to unlock a resource which was not locked for update");
         }
         lock.unlock();
+        if (indexer != null) {
+            indexer.endBatch();
+        }
     }
 
     @Override

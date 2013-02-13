@@ -21,7 +21,10 @@
 
   <context-param>
     <param-name>config.index</param-name>
-    <param-value>com.epimorphics.server.indexers.LuceneIndex, location=/var/local/registry/index, config=${webapp}/WEB-INF/index-config.ttl</param-value>
+    <param-value>com.epimorphics.server.indexers.LuceneIndex,
+    location=/var/local/registry/index,
+    commitWindow=5,
+    config=${webapp}/WEB-INF/index-config.ttl</param-value>
   </context-param>
 
   <context-param>
