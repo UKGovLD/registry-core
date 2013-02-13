@@ -60,7 +60,7 @@
    * inject resource labels into results models, need a label utility (caching?) which handles that and knows about prefixes and registered ontologies
    * paging of register listings
    * and search results
-
+   * SPARQL form
 
 ## Extensions
 

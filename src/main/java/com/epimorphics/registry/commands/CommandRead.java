@@ -147,7 +147,7 @@ public class CommandRead extends Command {
         if (time != -1) {
             Resource mark = interval.getModel().createResource()
                     .addProperty(Time.inXSDDateTime, RDFUtil.fromDateTime(time));
-            interval.addProperty(Time.hasBeginning, mark);
+            interval.addProperty(p, mark);
         }
     }
 

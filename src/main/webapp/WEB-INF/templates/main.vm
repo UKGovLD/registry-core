@@ -10,9 +10,13 @@
   #set($uri=$entity)
 #else
   #set($response=$registry.perform("Read","$uri?_view=with_metadata&status=any", $requestor))
+  #set($versionNumber=$lib.regex($uri,".*:(\d+)$"))
+  #if($versionNumber)
+    #set($versionNumber=$versionNumber[0])
+    #set($uri=$lib.replaceAll($uri,":\d+$",""))
+  #end
   #set($target="$registry.baseURI/$uri")
 #end
-
 
 #if($response.status == 404)
   #parse("not-found.vm")
@@ -21,6 +25,7 @@
 #else
   #set($model=$response.entity)
   #set($node=$model.getNode($target))
+
   #if($uri.isEmpty())
     #parse("root.vm")
   #elseif($node.hasResourceValue("rdf:type","reg:Register"))
