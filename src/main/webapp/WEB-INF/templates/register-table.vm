@@ -1,0 +1,40 @@
+#set($response=$registry.perform("Read","$uri?status=any&_view=with_metadata", $requestor))
+#set($target="$registry.baseURI/$uri")
+
+#if($response.status == 404)
+  #parse("not-found.vm")
+
+#elseif($response.status >= 500)
+  #parse("internal-error.vm")
+
+#else
+
+  #set($model=$response.entity)
+  #set($node=$model.getNode($target))
+
+  #set($members= $node.connectedNodes("^reg:register"))
+  <table class="datatable">
+    <thead>
+      <tr>
+        <th>Notation</th>
+        <th>Label</th>
+        <th>Type(s)</th>
+        <th>Register/item</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      #foreach($item in $members)
+        <tr>
+          <td> <a href="#linkhref($item)">$item.getPropertyValue("reg:notation").lexicalForm</a> </td>
+          <td> $item.name </td>
+          <td> #foreach($ty in $item.listPropertyValues("reg:itemClass"))$ty.name#if( $foreach.hasNext ), #end#end</td>
+          <td>#if($item.hasResourceValue("reg:itemClass", "reg:Register")) register #else item #end</td>
+          <td>#showstatus($item.getPropertyValue("reg:status"))</td>
+        </tr>
+      #end
+    </tbody>
+  </table>
+#end
+
+

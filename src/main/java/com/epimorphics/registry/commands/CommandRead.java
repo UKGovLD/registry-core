@@ -120,6 +120,11 @@ public class CommandRead extends Command {
         }
         if (d instanceof Register) {
             m = registerRead(d.asRegister());
+        } else if (d instanceof RegisterItem) {
+            Resource entity = d.asRegisterItem().getEntity();
+            if (entity != null && entity.hasProperty(RDF.type, RegistryVocab.Register)) {
+                m.add( registerRead( Description.descriptionFrom(entity, store).asRegister() ) );
+            }
         }
 
         return returnModel(m, d.getRoot().getURI() );

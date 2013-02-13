@@ -11,11 +11,11 @@
     #if($node.getPropertyValue("dct:description"))
       $node.getPropertyValue("dct:description").lexicalForm
     #else
-      << no description supplied >>
+      <em>no description supplied</em>
     #end
     </p>
 
-    <ul class="nav nav-tabs nav-compact">
+    <ul class="nav nav-tabs nav-compact action-tab">
       <li class="active"><a href="#list" data-toggle="tab">List</a></li>
       <li><a href="#table" data-toggle="tab">Table</a></li>
       <li><a href="#administer" data-toggle="tab">Administer</a></li>
@@ -76,7 +76,7 @@
         #end
       #end
       </div>
-      <div class="tab-pane" id="table">
+      <div class="tab-pane" id="table" data-action="register-table">
         <p>To be implemented.</p>
       </div>
       <div class="tab-pane" id="administer">

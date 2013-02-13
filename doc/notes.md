@@ -51,7 +51,6 @@
 
 ## UI Stack
 
-   * table view of registers with sorting on status etc
    * Adminstration interfaces for registers and items
    * separate 'add' UI with both forms and upload-based entry
    * Support for simple batch uploading
@@ -61,6 +60,7 @@
    * paging of register listings
    * and search results
    * SPARQL form
+   * show register at an earlier time - would be nice to have a timeline widget for this
 
 ## Extensions
 
