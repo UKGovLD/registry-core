@@ -132,11 +132,14 @@ public class CommandRead extends Command {
             addTimestamp(interval, Time.hasBeginning, vi.getFromTime());
             addTimestamp(interval, Time.hasEnd, vi.getToTime());
 
-            m.createResource( vi.getUri() )
+            Resource ver = m.createResource( vi.getUri() )
                 .addProperty(DCTerms.isVersionOf, d.getRoot())
                 .addProperty(RDF.type, RegistryVocab.RegisterItem)
                 .addProperty(RDF.type, Version.Version)
                 .addProperty(Version.interval, interval);
+            if (vi.getReplaces() != null) {
+                ver.addProperty(DCTerms.replaces, m.createResource(vi.getReplaces()));
+            }
         }
     }
 

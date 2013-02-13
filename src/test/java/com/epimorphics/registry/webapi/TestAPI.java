@@ -224,6 +224,7 @@ public class TestAPI extends TomcatTestBase {
         // List versions
         m = getModelResponse(BASE_URL + "reg1/_red?_view=version_list");
         assertTrue( m.listSubjectsWithProperty(DCTerms.isVersionOf, m.getResource(ROOT_REGISTER + "reg1/_red")).toList().size() >= 4);
+        assertTrue( m.contains(m.getResource(ROOT_REGISTER + "reg1/_red:3"), DCTerms.replaces, m.getResource(ROOT_REGISTER + "reg1/_red:2")) );
 
         // Check some status transitions
         assertEquals(403, post(REG1 + "/_blue?update&status=retired").getStatus());

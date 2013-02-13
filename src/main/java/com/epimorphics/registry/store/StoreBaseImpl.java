@@ -238,12 +238,16 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             List<VersionInfo> results = new ArrayList<VersionInfo>();
             while (rs.hasNext()) {
                 QuerySolution soln = rs.next();
-                results.add(
-                        new VersionInfo(
-                                soln.getResource("version"),
-                                soln.getLiteral("info"),
-                                soln.getLiteral("from"),
-                                soln.getLiteral("to")      ));
+                VersionInfo vi = new VersionInfo(
+                        soln.getResource("version"),
+                        soln.getLiteral("info"),
+                        soln.getLiteral("from"),
+                        soln.getLiteral("to")      );
+                Resource replaces = soln.getResource("replaces");
+                if (replaces != null) {
+                    vi.setReplaces(replaces.getURI());
+                }
+                results.add( vi );
             }
             return results;
         } finally {
@@ -251,12 +255,13 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         }
     }
     static String VERSION_LIST_QUERY =
-            "SELECT ?version ?info ?from ?to WHERE \n" +
+            "SELECT ?version ?info ?from ?to ?replaces WHERE \n" +
             "{  \n" +
             "    ?version dct:isVersionOf ?root; \n" +
             "             owl:versionInfo ?info . \n" +
             "   OPTIONAL {?version version:interval [time:hasBeginning [time:inXSDDateTime ?from]].} \n" +
             "   OPTIONAL {?version version:interval [time:hasEnd [time:inXSDDateTime ?to]].} \n" +
+            "   OPTIONAL {?version dct:replaces ?replaces.} \n" +
             "} ORDER BY ?info \n";
 
     @Override
