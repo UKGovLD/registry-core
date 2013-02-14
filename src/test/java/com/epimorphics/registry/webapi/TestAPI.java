@@ -14,6 +14,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+
 import org.junit.Test;
 
 import com.epimorphics.rdfutil.QueryUtil;
@@ -21,9 +23,12 @@ import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.util.TestUtil;
+import com.epimorphics.vocabs.API;
 import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.RDFList;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
@@ -258,6 +263,8 @@ public class TestAPI extends TomcatTestBase {
             count++;
         }
         assertEquals(length, count);
+        List<RDFNode> items = page.getPropertyResourceValue(API.items).as(RDFList.class).asJavaList();
+        assertEquals(length, items.size());
     }
 
     private void makeRegister(int length) {

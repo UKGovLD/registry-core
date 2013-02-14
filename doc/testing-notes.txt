@@ -35,3 +35,5 @@ curl -i -H "Content-Type: text/turtle" -X POST --data "@test/bulk-skos-collectio
 curl -i -H "Accept:text/turtle" http://localhost:8080/?query=red
 curl -i -X POST "http://localhost:8080/?update&status=stable"
 
+curl -i -H "Content-Type: text/turtle" -X POST --data "@test/big-bulk-skos-collection.ttl" "http://localhost:8080/?batch-managed&status=stable"
+
