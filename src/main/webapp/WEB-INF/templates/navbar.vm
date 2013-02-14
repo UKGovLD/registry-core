@@ -1,35 +1,35 @@
-      
+
   <div class="navbar navbar-fixed-top  navbar-inverse">
-    <div class="span1"> 
+    <div class="span1">
     </div>
     <div class="navbar-inner">
       <ul class="nav">
-        <li #if($nav=="root")class="active"#end><a class="brand popinfo" href="/$root" data-trigger="hover" data-placement="bottom" 
+        <li #if($nav=="root")class="active"#end><a class="brand popinfo" href="/$root" data-trigger="hover" data-placement="bottom"
             data-content="Return to the registry home page and the root register.">
          UKGovLD Registry</a></li>
       </ul>
       <div class="span1"> </div>
       <ul class="nav">
-        <li><a href="#" class="popinfo" data-trigger="hover" data-placement="bottom" 
+        <li><a href="$uiroot/check" class="popinfo" data-trigger="hover" data-placement="bottom"
             data-content="Support for checking whether a set of resources have been registered and are current valid (tbd).">
             Check URI</a></li>
-        <li><a href="#" class="popinfo" data-trigger="hover" data-placement="bottom" 
+        <li><a href="#" class="popinfo" data-trigger="hover" data-placement="bottom"
             data-content="View and approve/reject any pending submissions (tbd).">
             Approvals</a></li>
-        <li><a href="#" class="popinfo" data-trigger="hover" data-placement="bottom" 
+        <li><a href="#" class="popinfo" data-trigger="hover" data-placement="bottom"
             data-content="General administration of the registry (tbd).">
             Admin</a></li>
         <li #if($nav=="about")class="active"#end><a href="$uiroot/about">
             About</a></li>
       </ul>
-      
+
       <form action="$uiroot/text-search" method="get" class="navbar-search">
         <input type="search" class="search-query" placeholder="Search" #if($query)value="$query"#end name="query"/>
 ##             <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;" />
       </form>
-           
+
       <ul class="nav pull-right">
-        <li class="popinfo" data-trigger="hover" data-placement="bottom" 
+        <li class="popinfo" data-trigger="hover" data-placement="bottom"
             data-content="Login to allow access to adminstration functions (tbd).">
           <a href="#"><span class="muted">Not logged in</span>
           <i class="icon-user icon-white"></i></a>
