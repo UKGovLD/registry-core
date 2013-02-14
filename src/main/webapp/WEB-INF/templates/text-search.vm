@@ -5,11 +5,19 @@
 #set($target='<nullsearch>')
 #if($query && !$query.trim().isEmpty()) #set($target=$query) #end
 
-#set($response=$registry.perform("Search","?query=$lib.pathEncode($query)&_view=with_metadata",$requestor))
+#if($page)
+  #set($paging="_page=$page")
+#else
+  #set($paging="firstPage")
+#end
+
+#set($response=$registry.perform("Search","?query=$lib.pathEncode($query)&_view=with_metadata&$paging",$requestor))
 
 #if($response.status == 200)
   #set($model=$response.entity)
-  #set($items=$model.querySelectW("SELECT * WHERE {?page a ldp:Page; api:items ?items}").get(0).items.asList())
+  #set($qr=$model.querySelectW("SELECT * WHERE {?page a ldp:Page; api:items ?items}")[0])
+  #set($items=$qr.items.asList())
+  #set($pageres=$qr.page)
 
   <h3>Search results for: $query</h3>
 
@@ -38,6 +46,10 @@
             </div>
           </div>
         #end
+
+        #set($qparam="&query=$lib.pathEncode($query)")
+        #parse("paging.vm")
+
     </div>
 
     <div class="span4">

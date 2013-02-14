@@ -59,8 +59,6 @@
    * faceted filter on search results
    * browsing of non-registered entities which are/could be in a local ontology cache
    * inject resource labels into results models, need a label utility (caching?) which handles that and knows about prefixes and registered ontologies
-   * paging of register listings
-   * and search results
    * SPARQL form
    * show register at an earlier time - would be nice to have a timeline widget for this
 

@@ -8,6 +8,8 @@
     #set($pageres=$items.get(0).page)
     #if(!$members.isEmpty())
 
+    #parse("paging.vm")
+
 ## Walk through finding registers
 
       #if($node.getPropertyValue("reg:subregister"))
@@ -65,40 +67,8 @@
 
 ## Now showing paging information if necessary
 
-      #if($page)
-       #set($Integer = 0)
-       #set($pagenum = $Integer.parseInt($page))
-
-        <div class="pagination">
-          <ul>
-            #if($pagenum > 0)
-              #set($prev=$pagenum - 1)
-              <li><a href="?page=$prev">Prev</a></li>
-              #foreach($p in [0..$prev])
-                <li><a href="?page=$p">$p</a></li>
-              #end
-            #else
-              <li class="disabled"><a href="#">Prev</a></li>
-            #end
-
-            <li class="active"><a href="?page=$pagenum">$pagenum</a></li>
-
-            #if($pageres.getPropertyValue("ldp:nextPage"))
-              #set($next=$pagenum + 1)
-              <li><a href="?page=$next">Next page</a></li>
-            #end
-          </ul>
-        </div>
-
-      #elseif($pageres.getPropertyValue("ldp:nextPage"))
-        <div class="pagination">
-          <ul>
-            <li class="disabled"><a href="#">Prev</a></li>
-            <li class="active"><a href="#">0</a></li>
-            <li><a href="?page=1">Next page</a></li>
-          </ul>
-        </div>
-      #end
+    #set($qparam="")
+    #parse("paging.vm")
 
     #end
   #end
