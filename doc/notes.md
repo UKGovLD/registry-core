@@ -38,6 +38,8 @@
 
    * bulk registration should dodge the register versioning somehow?
 
+   * Would be nice if the search API returned the total number of matches to allow for pagination of results
+
 ## Stack
 
    * create void description for registers

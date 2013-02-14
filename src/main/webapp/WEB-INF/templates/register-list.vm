@@ -1,0 +1,104 @@
+## $model and $node should be bond to the register
+
+## Find the page and order entries
+
+  #set($items = $model.querySelectW("SELECT * where {?page a ldp:Page; api:items ?items.}"))
+  #if (!$items.isEmpty())
+    #set($members=$items.get(0).items.asList())
+    #set($pageres=$items.get(0).page)
+    #if(!$members.isEmpty())
+
+## Walk through finding registers
+
+      #if($node.getPropertyValue("reg:subregister"))
+        <h3>Sub-registers</h3>
+        #foreach($member in $members)
+          #set($item=$member.connectedNodes("^reg:entity/^reg:definition").get(0))
+          #if($item.hasResourceValue("reg:itemClass", "reg:Register"))
+          <div class="result-blob">
+            <div class="row">
+              <div class="span6">
+                <div class="blob-inner">
+                    <strong>Register:</strong> #linkfor($member)
+                    #if($member.getPropertyValue("dct:description"))
+                      <p>$member.getPropertyValue("dct:description").lexicalForm</p>
+                    #end
+                </div>
+              </div>
+              <div class="span1 pull-right">
+                #showstatus($item.getPropertyValue("reg:status"))
+              </div>
+            </div>
+          </div>
+          #end
+        #end
+      #end
+
+## now the members
+
+      #set($started=false)
+      #foreach($member in $members)
+        #set($item=$member.connectedNodes("^reg:entity/^reg:definition").get(0))
+        #if(!$item.hasResourceValue("reg:itemClass", "reg:Register"))
+          #if(!$started)
+            #set($started=true)
+            <h3>Members</h3>
+          #end
+          <div class="result-blob">
+            <div class="row">
+              <div class="span6">
+                <div class="blob-inner">
+                  <strong>Item:</strong> <a href="#linkhref($item)">$item.getPropertyValue("reg:notation").lexicalForm</a> ("$item.name")
+                  <p><strong>Type:</strong> #foreach($ty in $item.listPropertyValues("reg:itemClass"))#linkfor($ty)#if( $foreach.hasNext ), #end#end </p>
+                  #if($item.getPropertyValue("dct:description"))
+                    <p>$item.getPropertyValue("dct:description").lexicalForm</p>
+                  #end
+                </div>
+              </div>
+              <div class="span1 pull-right">
+                #showstatus($item.getPropertyValue("reg:status"))
+              </div>
+            </div>
+          </div>
+        #end
+      #end
+
+## Now showing paging information if necessary
+
+      #if($page)
+       #set($Integer = 0)
+       #set($pagenum = $Integer.parseInt($page))
+
+        <div class="pagination">
+          <ul>
+            #if($pagenum > 0)
+              #set($prev=$pagenum - 1)
+              <li><a href="?page=$prev">Prev</a></li>
+              #foreach($p in [0..$prev])
+                <li><a href="?page=$p">$p</a></li>
+              #end
+            #else
+              <li class="disabled"><a href="#">Prev</a></li>
+            #end
+
+            <li class="active"><a href="?page=$pagenum">$pagenum</a></li>
+
+            #if($pageres.getPropertyValue("ldp:nextPage"))
+              #set($next=$pagenum + 1)
+              <li><a href="?page=$next">Next page</a></li>
+            #end
+          </ul>
+        </div>
+
+      #elseif($pageres.getPropertyValue("ldp:nextPage"))
+        <div class="pagination">
+          <ul>
+            <li class="disabled"><a href="#">Prev</a></li>
+            <li class="active"><a href="#">0</a></li>
+            <li><a href="?page=1">Next page</a></li>
+          </ul>
+        </div>
+      #end
+
+    #end
+  #end

@@ -44,6 +44,7 @@
     baseURI=http://ukgovld-registry.dnsalias.net/,
     store=storeapi,
     cacheSize=100,
+    pageSize=25,
     bootSpec=${webapp}/WEB-INF/root-register.ttl|${webapp}/WEB-INF/registry.ttl|${webapp}/WEB-INF/system-registers.ttl</param-value>
   </context-param>
 
