@@ -3,6 +3,7 @@
 ##    $page the current pagenumber from query parameters
 ##    $qparam to any additional query parameters to pass in the paging calls, if not empty it should include '&'
 
+      #if(!$qparam)#set($qparam="")#end
       #if($page)
        #set($Integer = 0)
        #set($pagenum = $Integer.parseInt($page))
