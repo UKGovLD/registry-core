@@ -14,6 +14,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Calendar;
+
 import org.junit.Test;
 
 import com.epimorphics.rdfutil.QueryUtil;
@@ -31,7 +33,6 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
-import com.ibm.icu.util.Calendar;
 import com.sun.jersey.api.client.ClientResponse;
 
 
