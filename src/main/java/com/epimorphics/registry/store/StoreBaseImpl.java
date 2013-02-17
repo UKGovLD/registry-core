@@ -122,20 +122,57 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         if (lock == null) {
             throw new EpiException("Internal error: tried to unlock a resource which was not locked for update");
         }
+        if (storeLocked) {
+            store.unlock();
+            storeLocked = false;
+            lockIsWrite = false;
+        }
         lock.unlock();
         if (indexer != null) {
             indexer.endBatch();
         }
     }
+    
+    
+    // Attempt to maintain store lock through a registry back operation while supporting simple lock promotion
+    // TODO completely restructure store API so that read/write lock is taken by caller once and for all
+    
+    boolean storeLocked = false;
+    boolean lockIsWrite = false;
+
+    protected synchronized void unlockStore() {
+        // Leave it lock until the end of the overall update
+    }
+
+    protected synchronized void lockStore() {
+        if (!storeLocked) {
+            store.lock();
+            storeLocked = true;
+        }
+    }
+
+    protected synchronized void lockStoreWrite() {
+        if (storeLocked) {
+            if (lockIsWrite) {
+                return;
+            } else {
+                // close read lock, to be replaced by a write lock
+                store.unlock();
+            }
+        }
+        store.lockWrite();
+        lockIsWrite = true;
+        storeLocked = true;
+    }
 
     @Override
     public Description getDescription(String uri) {
-        store.lock();
+        lockStore();
         try {
             Description d = asDescription( describe(uri, null) );
             return d;
         } finally {
-            store.unlock();
+            unlockStore();
         }
     }
 
@@ -160,12 +197,12 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     @Override
     public Description getCurrentVersion(String uri) {
-        store.lock();
+        lockStore();
         try {
             Description d = asDescription( doGetCurrentVersion(uri, true, null) );
             return d;
         } finally {
-            store.unlock();
+            unlockStore();
         }
     }
 
@@ -181,11 +218,11 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     @Override
     public Description getVersion(String uri) {
-        store.lock();
+        lockStore();
         try {
             return doGetVersion(uri, true);
         } finally {
-            store.unlock();
+            unlockStore();
         }
     }
 
@@ -203,7 +240,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     @Override
     public Description getVersionAt(String uri, long time) {
-        store.lock();
+        lockStore();
         try {
             RDFNode version = selectFirstVar("version", getDefaultModel(), VERSION_AT_QUERY, Prefixes.get(),
                     "root", ResourceFactory.createResource(uri), "time", RDFUtil.fromDateTime(time) );
@@ -213,7 +250,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
                 return null;
             }
         } finally {
-            store.unlock();
+            unlockStore();
         }
     }
     static String VERSION_AT_QUERY =
@@ -231,7 +268,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     @Override
     public List<VersionInfo> listVersions(String uri) {
-        store.lock();
+        lockStore();
         try {
             ResultSet rs = selectAll(getDefaultModel(), VERSION_LIST_QUERY, Prefixes.get(),
                 createBindings("root", ResourceFactory.createResource(uri)));
@@ -251,7 +288,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             }
             return results;
         } finally {
-            store.unlock();
+            unlockStore();
         }
     }
     static String VERSION_LIST_QUERY =
@@ -266,7 +303,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     @Override
     public long versionStartedAt(String uri) {
-        store.lock();
+        lockStore();
         try {
             Resource root = getDefaultModel().getResource(uri);
             Resource interval = root.getPropertyResourceValue(Version.interval);
@@ -277,14 +314,14 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
                         .getProperty(Time.inXSDDateTime)
                         .getObject() );
         } finally {
-            store.unlock();
+            unlockStore();
         }
     }
 
     @Override
     public List<EntityInfo> listEntityOccurences(String uri) {
         Resource entity = ResourceFactory.createResource(uri);
-        store.lock();
+        lockStore();
         try {
             ResultSet matches = QueryUtil.selectAll(getDefaultModel(), ENTITY_FIND_QUERY, Prefixes.get(), "entity", entity);
             List<EntityInfo> results = new ArrayList<EntityInfo>();
@@ -294,7 +331,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             }
             return results;
         } finally {
-            store.unlock();
+            unlockStore();
         }
     }
     static String ENTITY_FIND_QUERY =
@@ -316,7 +353,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     }
 
     private RegisterItem doGetItem(String uri, boolean withEntity, boolean flatten) {
-        store.lock();
+        lockStore();
         try {
             Resource root = doGetCurrentVersion(uri, flatten, null);
             if (! root.hasProperty(RDF.type, RegistryVocab.RegisterItem)) {
@@ -328,9 +365,10 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             }
             return item;
         } finally {
-            store.unlock();
+            unlockStore();
         }
     }
+
     protected Resource doGetEntity(RegisterItem item, boolean flatten, Model dest) {
         Resource root = item.getRoot();
         if (!flatten) {
@@ -363,17 +401,17 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     @Override
     public Resource getEntity(RegisterItem item) {
-        store.lock();
+        lockStore();
         try {
             return doGetEntity(item, true, null);
         } finally {
-            store.unlock();
+            unlockStore();
         }
     }
 
     @Override
     public List<RegisterItem> fetchAll(List<String> itemURIs, boolean withEntity, boolean withVersion) {
-        store.lock();
+        lockStore();
         try {
             Model shared = ModelFactory.createDefaultModel();
             List<RegisterItem> results = new ArrayList<RegisterItem>(itemURIs.size());
@@ -387,13 +425,13 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             }
             return results;
         } finally {
-            store.unlock();
+            unlockStore();
         }
     }
 
 
     public  List<RegisterItem>  doFetchMembers(Register register, boolean withEntity, boolean flatten) {
-        store.lock();
+        lockStore();
         try {
             // A shared model would save having 2N models around but makes filtering painful
 //            Model shared = ModelFactory.createDefaultModel();
@@ -412,7 +450,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             }
             return results;
         } finally {
-            store.unlock();
+            unlockStore();
         }
     }
     static String REGISTER_ENUM_QUERY =
@@ -420,7 +458,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     @Override
     public List<RegisterEntryInfo> listMembers(Register register) {
-        store.lock();
+        lockStore();
         try {
             ResultSet rs = selectAll(getDefaultModel(), REGISTER_LIST_QUERY, Prefixes.get(),
                                         createBindings("register", register.getRoot()) );
@@ -447,7 +485,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             }
             return results;
         } finally {
-            store.unlock();
+            unlockStore();
         }
     }
     static String REGISTER_LIST_QUERY =
@@ -464,24 +502,25 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     @Override
     public boolean contains(Register register, String notation) {
-        store.lock();
+        lockStore();
         try {
             String base = RDFUtil.getNamespace( register.getRoot() );
             Resource ri = ResourceFactory.createResource( base + "_" + notation);
             return getDefaultModel().contains(ri, RDF.type, RegistryVocab.RegisterItem);
         } finally {
-            store.unlock();
+            unlockStore();
         }
     }
 
     @Override
     public void loadBootstrap(String filename) {
         Model bootmodel = FileManager.get().loadModel(filename); // Load first in case of errors
-        store.lockWrite();
+        lock("all");
+        lockStoreWrite();
         try {
             getDefaultModel().add( bootmodel );
         } finally {
-            store.unlock();
+            unlock("all");
         }
     }
 
@@ -492,7 +531,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     @Override
     public void addToRegister(Register register, RegisterItem item, Calendar now) {
-        store.lockWrite();
+        lockStoreWrite();
         try {
             doUpdateItem(item, true, now);
             doUpdate(register.getRoot(), now);
@@ -503,8 +542,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             }
             modCurrent(register).removeAll(DCTerms.modified).addProperty(DCTerms.modified, getDefaultModel().createTypedLiteral(now));
         } finally {
-//            unlock(register.getRoot().getURI());
-            store.unlock();
+unlockStore();
         }
     }
 
@@ -524,11 +562,11 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     @Override
     public String update(Register register, Calendar timestamp) {
-        store.lockWrite();
+        lockStoreWrite();
         try {
             return doUpdateRegister(register.getRoot(), timestamp).getURI();
         } finally {
-            store.unlock();
+            unlockStore();
         }
     }
 
@@ -566,11 +604,11 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     @Override
     public String update(RegisterItem item, boolean withEntity, Calendar timestamp) {
-        store.lockWrite();
+        lockStoreWrite();
         try {
             return doUpdateItem(item, withEntity, timestamp);
         } finally {
-            store.unlock();
+            unlockStore();
         }
     }
 
@@ -683,11 +721,11 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     // Debug support only
     public void dump() {
-        store.lock();
+        lockStore();
         try {
             getDefaultModel().write(System.out, "Turtle");
         } finally {
-            store.unlock();
+            unlockStore();
         }
     }
 
