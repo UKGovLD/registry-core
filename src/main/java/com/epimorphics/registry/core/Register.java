@@ -63,9 +63,10 @@ public class Register extends Description {
      * @param offset offset in the list to start the return window
      * @param length then maximum number of members to return, -1 for no limit
      * @param timestamp the time at which the values should be valid, -1 for current value
+     * @param items an array in which to return an ordered list of the items, if null if not required
      * @return whether the view is complete
      */
-    public boolean constructView(Model model, boolean withVersion, boolean withMetadata, Status status, int offset, int length, long timestamp) {
+    public boolean constructView(Model model, boolean withVersion, boolean withMetadata, Status status, int offset, int length, long timestamp, List<Resource> results) {
         getMembers();
         List<String> itemURIs = new ArrayList<String>( length == -1 ? 50 : length );
         List<String> entityURIs = new ArrayList<String>( length == -1 ? 50 : length );
@@ -79,8 +80,9 @@ public class Register extends Description {
                 if (timestamp != -1) {
                     Description d = store.getVersionAt(info.getItemURI(), timestamp);
                     if (d != null) {
-                        if (d.asRegisterItem().getStatus().isA(status)) {
-                            model.add( store.getEntity(d.asRegisterItem()).getModel() );
+                        RegisterItem ri = d.asRegisterItem();
+                        if (ri.getStatus().isA(status)) {
+                            model.add( store.getEntity(ri).getModel() );
                         } else {
                             valid = false;
                         }
@@ -115,6 +117,7 @@ public class Register extends Description {
 
         model.add( root.getModel() );
 
+        // Membership relations
         Resource predicateR = null;
         boolean isInverse = false;
         predicateR = root.getPropertyResourceValue(Ldbp.membershipPredicate);
@@ -135,6 +138,13 @@ public class Register extends Description {
                 entity.addProperty(predicate, reg);
             } else {
                 reg.addProperty(predicate, entity);
+            }
+        }
+
+        // Paging
+        if (results != null) {
+            for (String uri : entityURIs) {
+                results.add( model.getResource(uri) );
             }
         }
 

@@ -21,7 +21,7 @@
    * Where do the labels for things like owner organization come from?
 
    * If lucene update breaks (e.g. write lock left behind) then the update fails uncleanly, need to abort in that case
-   
+
 ## Future redesign for scale
 
    * Switch to a message-oriented design for connecting the registry core logic to the store, indexers and other possible data consumers - but what message structure BSON encoding?
@@ -38,7 +38,7 @@
 
    * bulk registration should dodge the register versioning somehow?
 
-   * need lucene index driver that handles periodic close of indexwriter and batches (and maybe delays) commits, could catchup missed index commits from logs?
+   * Would be nice if the search API returned the total number of matches to allow for pagination of results
 
 ## Stack
 
@@ -53,32 +53,21 @@
 
 ## UI Stack
 
-   * table view of registers with sorting on status etc
    * Adminstration interfaces for registers and items
+   * separate 'add' UI with both forms and upload-based entry
    * Support for simple batch uploading
    * faceted filter on search results
    * browsing of non-registered entities which are/could be in a local ontology cache
    * inject resource labels into results models, need a label utility (caching?) which handles that and knows about prefixes and registered ontologies
-   * paging of register listings
-   * and search results
-
-## Documentation updates
-
-   * status update on a whole register
-   * validate can pass URIs as arguments as well
-   * _view=version_list
-   * update&force
-   * suppress _view=version
-   * status=any
-   * registration response codes should be 201 not 204
-   * _format=ttl/rdf
+   * SPARQL form
+   * show register at an earlier time - would be nice to have a timeline widget for this
 
 ## Extensions
 
    * Register a non-RDF payload?  C.f. XML namespace.
    * Open annotation graphs - for provenance, for dataset analysis?
-   
+
 ## Trial deployment notes
 
    * Set baseURI in web.xml and @base in root-register.ttl and system-registers.ttl
-      
+

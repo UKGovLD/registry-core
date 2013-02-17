@@ -1,0 +1,59 @@
+#parse("header.vm")
+  #if($uri.isEmpty())
+    #set($nav="root")
+  #end
+#parse("navbar.vm")
+
+<div class="row">
+  <h1 class="span8">Check whether a URI is registered</h1>
+</div>
+
+<div class="row">
+  <div class="offset2 span8">
+    <form action="$uiroot/check" method="get">
+      <fieldset>
+        <div class="input-append">
+          <input class="span4" id="appendedInputButton" type="text"  placeholder="URI to check ..." name="validate" #if($validate)value="$validate"#end ></input>
+          <input type="submit" class="btn" type="button" value="check">check</input>
+        </div>
+      </fieldset>
+    </form>
+  </div>
+</div>
+
+#if($validate)
+  <div class="row space-above">
+  #set($response=$registry.perform("Read","?entity=$lib.pathEncode($validate)&_view=with_metadata", $requestor))
+  #set($model=$response.entity)
+
+  #set($occurs=$model.querySelectW("SELECT ?register ?status WHERE {[] reg:definition [reg:entity <$validate>]; reg:register ?register; reg:status ?status}"))
+
+  #if ($occurs.isEmpty())
+    <div class="offset2 span4 alert">
+       <strong>Not found.</strong> URI <$validate> does not seem to be registered.
+    </div>
+  #else
+    <div class="offset1 span2">
+      URI is registered:
+    </div>
+    <table class="table table-bordered table-condensed span4">
+      <thead>
+        <tr>
+          <th>Register</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        #foreach($occur in $occurs)
+          <tr>
+            <td>#linkfor($occur.register)</td>
+            <td>#showstatus($occur.status)</td>
+          </tr>
+        #end
+      </tbody>
+    </table>
+  #end
+  </div>
+#end
+
+#parse("footer.vm")

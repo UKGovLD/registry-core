@@ -9,6 +9,7 @@
     <link type="text/css" rel="stylesheet" href="$uiroot/css/bootstrap.min.css" />
     <link type="text/css" rel="stylesheet" href="$uiroot/css/ui.css" />
     <link type="text/css" rel="stylesheet" href="$uiroot/css/bootstrap-responsive.min.css" />
+    <link type="text/css" rel="stylesheet" href="$uiroot/css/jquery.dataTables.css" />
   </head>
 
   <body>

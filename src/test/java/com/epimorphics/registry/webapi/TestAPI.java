@@ -15,6 +15,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Calendar;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -23,9 +24,12 @@ import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.util.TestUtil;
+import com.epimorphics.vocabs.API;
 import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.RDFList;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
@@ -225,6 +229,7 @@ public class TestAPI extends TomcatTestBase {
         // List versions
         m = getModelResponse(BASE_URL + "reg1/_red?_view=version_list");
         assertTrue( m.listSubjectsWithProperty(DCTerms.isVersionOf, m.getResource(ROOT_REGISTER + "reg1/_red")).toList().size() >= 4);
+        assertTrue( m.contains(m.getResource(ROOT_REGISTER + "reg1/_red:3"), DCTerms.replaces, m.getResource(ROOT_REGISTER + "reg1/_red:2")) );
 
         // Check some status transitions
         assertEquals(403, post(REG1 + "/_blue?update&status=retired").getStatus());
@@ -258,6 +263,8 @@ public class TestAPI extends TomcatTestBase {
             count++;
         }
         assertEquals(length, count);
+        List<RDFNode> items = page.getPropertyResourceValue(API.items).as(RDFList.class).asJavaList();
+        assertEquals(length, items.size());
     }
 
     private void makeRegister(int length) {

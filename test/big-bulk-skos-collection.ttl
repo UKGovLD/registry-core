@@ -1,0 +1,266 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix ldp:  <http://www.w3.org/ns/ldp#> .
+
+@prefix reg:  <http://purl.org/linked-data/registry#> .
+
+<big-collection> a skos:Collection ;
+    rdfs:label "A larger test collection";
+    skos:member
+      <collection/item0>,
+      <collection/item1>,
+      <collection/item2>,
+      <collection/item3>,
+      <collection/item4>,
+      <collection/item5>,
+      <collection/item6>,
+      <collection/item7>,
+      <collection/item8>,
+      <collection/item9>,
+      <collection/item10>,
+      <collection/item11>,
+      <collection/item12>,
+      <collection/item13>,
+      <collection/item14>,
+      <collection/item15>,
+      <collection/item16>,
+      <collection/item17>,
+      <collection/item18>,
+      <collection/item19>,
+      <collection/item20>,
+      <collection/item21>,
+      <collection/item22>,
+      <collection/item23>,
+      <collection/item24>,
+      <collection/item25>,
+      <collection/item26>,
+      <collection/item27>,
+      <collection/item28>,
+      <collection/item29>,
+      <collection/item30>,
+      <collection/item31>,
+      <collection/item32>,
+      <collection/item33>,
+      <collection/item34>,
+      <collection/item35>,
+      <collection/item36>,
+      <collection/item37>,
+      <collection/item38>,
+      <collection/item39>,
+      <collection/item40>,
+      <collection/item41>,
+      <collection/item42>,
+      <collection/item43>,
+      <collection/item44>,
+      <collection/item45>,
+      <collection/item46>,
+      <collection/item47>,
+      <collection/item48>,
+      <collection/item49>,
+      <collection/item50>,
+      <collection/item51>,
+      <collection/item52>,
+      <collection/item53>,
+      <collection/item54>,
+      <collection/item55>,
+      <collection/item56>,
+      <collection/item57>,
+      <collection/item58>,
+      <collection/item59>,
+      <collection/item60>,
+      <collection/item61>,
+      <collection/item62>,
+      <collection/item63>,
+      <collection/item64>,
+      <collection/item65>,
+      <collection/item66>,
+      <collection/item67>,
+      <collection/item68>,
+      <collection/item69>,
+      <collection/item70>,
+      <collection/item71>,
+      <collection/item72>,
+      <collection/item73>,
+      <collection/item74>,
+      <collection/item75>,
+      <collection/item76>,
+      <collection/item77>,
+      <collection/item78>,
+      <collection/item79>
+      .
+
+<collection/item0>
+    a skos:Concept; rdfs:label "item 0".
+<collection/item1>
+    a skos:Concept; rdfs:label "item 1".
+<collection/item2>
+    a skos:Concept; rdfs:label "item 2".
+<collection/item3>
+    a skos:Concept; rdfs:label "item 3".
+<collection/item4>
+    a skos:Concept; rdfs:label "item 4".
+<collection/item5>
+    a skos:Concept; rdfs:label "item 5".
+<collection/item6>
+    a skos:Concept; rdfs:label "item 6".
+<collection/item7>
+    a skos:Concept; rdfs:label "item 7".
+<collection/item8>
+    a skos:Concept; rdfs:label "item 8".
+<collection/item9>
+    a skos:Concept; rdfs:label "item 9".
+<collection/item10>
+    a skos:Concept; rdfs:label "item 10".
+<collection/item11>
+    a skos:Concept; rdfs:label "item 11".
+<collection/item12>
+    a skos:Concept; rdfs:label "item 12".
+<collection/item13>
+    a skos:Concept; rdfs:label "item 13".
+<collection/item14>
+    a skos:Concept; rdfs:label "item 14".
+<collection/item15>
+    a skos:Concept; rdfs:label "item 15".
+<collection/item16>
+    a skos:Concept; rdfs:label "item 16".
+<collection/item17>
+    a skos:Concept; rdfs:label "item 17".
+<collection/item18>
+    a skos:Concept; rdfs:label "item 18".
+<collection/item19>
+    a skos:Concept; rdfs:label "item 19".
+<collection/item20>
+    a skos:Concept; rdfs:label "item 20".
+<collection/item21>
+    a skos:Concept; rdfs:label "item 21".
+<collection/item22>
+    a skos:Concept; rdfs:label "item 22".
+<collection/item23>
+    a skos:Concept; rdfs:label "item 23".
+<collection/item24>
+    a skos:Concept; rdfs:label "item 24".
+<collection/item25>
+    a skos:Concept; rdfs:label "item 25".
+<collection/item26>
+    a skos:Concept; rdfs:label "item 26".
+<collection/item27>
+    a skos:Concept; rdfs:label "item 27".
+<collection/item28>
+    a skos:Concept; rdfs:label "item 28".
+<collection/item29>
+    a skos:Concept; rdfs:label "item 29".
+<collection/item30>
+    a skos:Concept; rdfs:label "item 30".
+<collection/item31>
+    a skos:Concept; rdfs:label "item 31".
+<collection/item32>
+    a skos:Concept; rdfs:label "item 32".
+<collection/item33>
+    a skos:Concept; rdfs:label "item 33".
+<collection/item34>
+    a skos:Concept; rdfs:label "item 34".
+<collection/item35>
+    a skos:Concept; rdfs:label "item 35".
+<collection/item36>
+    a skos:Concept; rdfs:label "item 36".
+<collection/item37>
+    a skos:Concept; rdfs:label "item 37".
+<collection/item38>
+    a skos:Concept; rdfs:label "item 38".
+<collection/item39>
+    a skos:Concept; rdfs:label "item 39".
+<collection/item40>
+    a skos:Concept; rdfs:label "item 40".
+<collection/item41>
+    a skos:Concept; rdfs:label "item 41".
+<collection/item42>
+    a skos:Concept; rdfs:label "item 42".
+<collection/item43>
+    a skos:Concept; rdfs:label "item 43".
+<collection/item44>
+    a skos:Concept; rdfs:label "item 44".
+<collection/item45>
+    a skos:Concept; rdfs:label "item 45".
+<collection/item46>
+    a skos:Concept; rdfs:label "item 46".
+<collection/item47>
+    a skos:Concept; rdfs:label "item 47".
+<collection/item48>
+    a skos:Concept; rdfs:label "item 48".
+<collection/item49>
+    a skos:Concept; rdfs:label "item 49".
+<collection/item50>
+    a skos:Concept; rdfs:label "item 50".
+<collection/item51>
+    a skos:Concept; rdfs:label "item 51".
+<collection/item52>
+    a skos:Concept; rdfs:label "item 52".
+<collection/item53>
+    a skos:Concept; rdfs:label "item 53".
+<collection/item54>
+    a skos:Concept; rdfs:label "item 54".
+<collection/item55>
+    a skos:Concept; rdfs:label "item 55".
+<collection/item56>
+    a skos:Concept; rdfs:label "item 56".
+<collection/item57>
+    a skos:Concept; rdfs:label "item 57".
+<collection/item58>
+    a skos:Concept; rdfs:label "item 58".
+<collection/item59>
+    a skos:Concept; rdfs:label "item 59".
+<collection/item60>
+    a skos:Concept; rdfs:label "item 60".
+<collection/item61>
+    a skos:Concept; rdfs:label "item 61".
+<collection/item62>
+    a skos:Concept; rdfs:label "item 62".
+<collection/item63>
+    a skos:Concept; rdfs:label "item 63".
+<collection/item64>
+    a skos:Concept; rdfs:label "item 64".
+<collection/item65>
+    a skos:Concept; rdfs:label "item 65".
+<collection/item66>
+    a skos:Concept; rdfs:label "item 66".
+<collection/item67>
+    a skos:Concept; rdfs:label "item 67".
+<collection/item68>
+    a skos:Concept; rdfs:label "item 68".
+<collection/item69>
+    a skos:Concept; rdfs:label "item 69".
+<collection/item70>
+    a skos:Concept; rdfs:label "item 70".
+<collection/item71>
+    a skos:Concept; rdfs:label "item 71".
+<collection/item72>
+    a skos:Concept; rdfs:label "item 72".
+<collection/item73>
+    a skos:Concept; rdfs:label "item 73".
+<collection/item74>
+    a skos:Concept; rdfs:label "item 74".
+<collection/item75>
+    a skos:Concept; rdfs:label "item 75".
+<collection/item76>
+    a skos:Concept; rdfs:label "item 76".
+<collection/item77>
+    a skos:Concept; rdfs:label "item 77".
+<collection/item78>
+    a skos:Concept; rdfs:label "item 78".
+<collection/item79>
+    a skos:Concept; rdfs:label "item 79".
+
+
+
+
+
+
+
+
+
+
+

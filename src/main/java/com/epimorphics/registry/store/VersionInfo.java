@@ -22,6 +22,7 @@ public class VersionInfo {
 
     protected String uri;
     protected String version;
+    protected String replaces;
     protected long fromTime = -1;
     protected long toTime = -1;
 
@@ -50,6 +51,14 @@ public class VersionInfo {
 
     public long getToTime() {
         return toTime;
+    }
+
+    public String getReplaces() {
+        return replaces;
+    }
+
+    public void setReplaces(String replaces) {
+        this.replaces = replaces;
     }
 
     @Override

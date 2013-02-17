@@ -18,6 +18,9 @@ import static com.epimorphics.registry.webapi.Parameters.WITH_METADATA;
 import static com.epimorphics.registry.webapi.Parameters.WITH_VERSION;
 import static com.epimorphics.registry.webapi.Parameters.VERSION_LIST;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
@@ -33,6 +36,7 @@ import com.epimorphics.registry.store.VersionInfo;
 import com.epimorphics.registry.util.Util;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
+import com.epimorphics.vocabs.API;
 import com.epimorphics.vocabs.Time;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -120,6 +124,11 @@ public class CommandRead extends Command {
         }
         if (d instanceof Register) {
             m = registerRead(d.asRegister());
+        } else if (d instanceof RegisterItem) {
+            Resource entity = d.asRegisterItem().getEntity();
+            if (entity != null && entity.hasProperty(RDF.type, RegistryVocab.Register)) {
+                m.add( registerRead( Description.descriptionFrom(entity, store).asRegister() ) );
+            }
         }
 
         return returnModel(m, d.getRoot().getURI() );
@@ -132,11 +141,14 @@ public class CommandRead extends Command {
             addTimestamp(interval, Time.hasBeginning, vi.getFromTime());
             addTimestamp(interval, Time.hasEnd, vi.getToTime());
 
-            m.createResource( vi.getUri() )
+            Resource ver = m.createResource( vi.getUri() )
                 .addProperty(DCTerms.isVersionOf, d.getRoot())
                 .addProperty(RDF.type, RegistryVocab.RegisterItem)
                 .addProperty(RDF.type, Version.Version)
                 .addProperty(Version.interval, interval);
+            if (vi.getReplaces() != null) {
+                ver.addProperty(DCTerms.replaces, m.createResource(vi.getReplaces()));
+            }
         }
     }
 
@@ -144,7 +156,7 @@ public class CommandRead extends Command {
         if (time != -1) {
             Resource mark = interval.getModel().createResource()
                     .addProperty(Time.inXSDDateTime, RDFUtil.fromDateTime(time));
-            interval.addProperty(Time.hasBeginning, mark);
+            interval.addProperty(p, mark);
         }
     }
 
@@ -184,11 +196,13 @@ public class CommandRead extends Command {
                 timestamp = Util.asTimestamp( parameters.getFirst(VERSION_AT) );
             }
             Model view = ModelFactory.createDefaultModel();
-            boolean complete = register.constructView(view, withVersion, withMetadata, status, pagenum * length, length, timestamp);
+            List<Resource> members = paged ? new ArrayList<Resource>(length) : null;
+            boolean complete = register.constructView(view, withVersion, withMetadata, status, pagenum * length, length, timestamp, members);
 
             // Paging parameters
             if (paged) {
-                injectPagingInformation(view, register.getRoot(), !complete);
+                Resource page = injectPagingInformation(view, register.getRoot(), !complete);
+                page.addProperty(API.items, view.createList(members.iterator()));
             }
 
             return view;

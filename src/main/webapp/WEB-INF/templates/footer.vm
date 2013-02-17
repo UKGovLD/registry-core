@@ -6,8 +6,25 @@
 
    <script type="text/javascript" src="$uiroot/js/jquery-1.8.3.min.js"></script>
    <script type="text/javascript" src="$uiroot/js/bootstrap.min.js"></script>
+   <script type="text/javascript" src="$uiroot/js/jquery.dataTables.min.js"></script>
    <script type="text/javascript">
-     $(".popinfo").popover();
+    $(function() {
+        // enable popups
+        $(".popinfo").popover();
+
+        // Set up ajax tabs
+        $('.action-tab').bind('show', function(e) {
+           var pattern=/#.+/gi
+           var contentID = e.target.toString().match(pattern)[0];
+           var action = $(contentID).attr('data-action')
+           $(contentID).load('$uiroot/' + action +'?uri=$lib.pathEncode($uri)&requestor=$requestor', function(){
+                $('.action-tab').tab(); //reinitialize tabs
+                $('.datatable').dataTable();
+            });
+        });
+
+    });
+
    </script>
 
   </body>

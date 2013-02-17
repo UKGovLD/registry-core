@@ -4,15 +4,25 @@
   #end
 #parse("navbar.vm")
 
+#if($page)
+  #set($paging="_page=$page")
+#else
+  #set($paging="firstPage")
+#end
+
 #if($entity)
-  #set($response=$registry.perform("Read","$uri?entity=$entity&_view=with_metadata&status=any", $requestor))
+  #set($response=$registry.perform("Read","$uri?entity=$entity&_view=with_metadata&status=any&$paging", $requestor))
   #set($target=$entity)
   #set($uri=$entity)
 #else
-  #set($response=$registry.perform("Read","$uri?_view=with_metadata&status=any", $requestor))
+  #set($response=$registry.perform("Read","$uri?_view=with_metadata&status=any&$paging", $requestor))
+  #set($versionNumber=$lib.regex($uri,".*:(\d+)$"))
+  #if($versionNumber)
+    #set($versionNumber=$versionNumber[0])
+    #set($uri=$lib.replaceAll($uri,":\d+$",""))
+  #end
   #set($target="$registry.baseURI/$uri")
 #end
-
 
 #if($response.status == 404)
   #parse("not-found.vm")
@@ -21,6 +31,7 @@
 #else
   #set($model=$response.entity)
   #set($node=$model.getNode($target))
+
   #if($uri.isEmpty())
     #parse("root.vm")
   #elseif($node.hasResourceValue("rdf:type","reg:Register"))
@@ -29,6 +40,8 @@
     #set($item=$node)
     #set($entity=$item.connectedNodes("reg:definition/reg:entity").get(0))
     #if($entity.hasResourceValue("rdf:type","reg:Register"))
+      #set($node=$entity)
+      #set($uri=$lib.replaceAll($uri,"/_([^/]+)$", "/$1"))
       #parse("register.vm")
     #else
       #parse("item.vm")

@@ -76,3 +76,12 @@
 
 #end
 
+## Debug utility to display the roots of a model
+#macro(showmodel $model)
+  #foreach($root in $model.listSubjects())
+    <h4>Root: $root.uRI</h4>
+    #restable($root, "table-condensed table-bordered")
+  #end
+#end
+
+

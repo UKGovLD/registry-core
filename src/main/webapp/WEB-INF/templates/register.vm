@@ -11,11 +11,11 @@
     #if($node.getPropertyValue("dct:description"))
       $node.getPropertyValue("dct:description").lexicalForm
     #else
-      << no description supplied >>
+      <em>no description supplied</em>
     #end
     </p>
 
-    <ul class="nav nav-tabs nav-compact">
+    <ul class="nav nav-tabs nav-compact action-tab">
       <li class="active"><a href="#list" data-toggle="tab">List</a></li>
       <li><a href="#table" data-toggle="tab">Table</a></li>
       <li><a href="#administer" data-toggle="tab">Administer</a></li>
@@ -23,61 +23,10 @@
 
     <div class="tab-content">
       <div class="tab-pane active" id="list">
-      #if($node.getPropertyValue("reg:subregister"))
-        <h3>Sub-registers</h3>
-        #foreach($reg in $node.listPropertyValues("reg:subregister"))
-          #set($item=$reg.connectedNodes("^reg:entity/^reg:definition").get(0))
-          <div class="result-blob">
-            <div class="row">
-              <div class="span6">
-                <div class="blob-inner">
-                    <strong>Register:</strong> #linkfor($reg)
-##                    #if($reg.getPropertyValue("reg:containedItemClass"))
-##                      <p><strong>Contains types:</strong> #foreach($ty in $reg.listPropertyValues("reg:containedItemClass"))#linkfor($ty)#if( $foreach.hasNext ), #end#end </p>
-##                    #end
-                    #if($reg.getPropertyValue("dct:description"))
-                      <p>$reg.getPropertyValue("dct:description").lexicalForm</p>
-                    #end
-                </div>
-              </div>
-              <div class="span1 pull-right">
-                #showstatus($item.getPropertyValue("reg:status"))
-              </div>
-            </div>
-          </div>
-        #end
-      #end
-      #set($members= $node.connectedNodes("^reg:register"))
-      #if(!$members.isEmpty())
-        #set($started=false)
-        #foreach($item in $members)
-        #if(!$item.hasResourceValue("reg:itemClass", "reg:Register"))
-          #if(!$started)
-            #set($started=true)
-            <h3>Members</h3>
-          #end
-          <div class="result-blob">
-            <div class="row">
-              <div class="span6">
-                <div class="blob-inner">
-                    <strong>Item:</strong> <a href="#linkhref($item)">$item.getPropertyValue("reg:notation").lexicalForm</a> ("$item.name")
-                    <p><strong>Type:</strong> #foreach($ty in $item.listPropertyValues("reg:itemClass"))#linkfor($ty)#if( $foreach.hasNext ), #end#end </p>
-                    #if($item.getPropertyValue("dct:description"))
-                      <p>$item.getPropertyValue("dct:description").lexicalForm</p>
-                    #end
-                </div>
-              </div>
-              <div class="span1 pull-right">
-                #showstatus($item.getPropertyValue("reg:status"))
-              </div>
-            </div>
-          </div>
-        #end
-        #end
-      #end
+        #parse("register-list.vm")
       </div>
-      <div class="tab-pane" id="table">
-        <p>To be implemented.</p>
+      <div class="tab-pane" id="table" data-action="register-table">
+        <p>Page is loading ...</p>
       </div>
       <div class="tab-pane" id="administer">
         <p>To be implemented.</p>
@@ -91,7 +40,7 @@
 
      <div class="panel">
        <div class="panel-head">
-         <h4>Register definition</h4>
+         <h4>Register metadata</h4>
        </div>
        <div class="panel-body">
          #restable($node, "table-striped table-condensed")
