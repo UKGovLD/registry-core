@@ -33,6 +33,7 @@ import com.epimorphics.registry.core.Command.Operation;
 import com.epimorphics.registry.store.CachingStore;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.util.Prefixes;
+import com.epimorphics.registry.webapi.ForwardingTable;
 import com.epimorphics.server.core.Service;
 import com.epimorphics.server.core.ServiceBase;
 import com.epimorphics.server.core.ServiceConfig;
@@ -113,6 +114,12 @@ public class Registry extends ServiceBase implements Service {
             velocity.setPrefixes( Prefixes.get() );
         }
 
+        ForwardingTable.ForwardingTableI ftable = ForwardingTable.get();
+        for (ForwardingRecord fr : store.listDelegations()) {
+            ftable.register(fr);
+        }
+        ftable.updateConfig();
+        
         registry = this;   // Assumes singleton registry
     }
 

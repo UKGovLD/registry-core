@@ -12,6 +12,7 @@ package com.epimorphics.registry.webapi;
 import static com.epimorphics.webapi.marshalling.RDFXMLMarshaller.MIME_RDFXML;
 
 import java.io.InputStream;
+import java.net.URI;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -28,12 +29,14 @@ import javax.ws.rs.core.StreamingOutput;
 
 import com.epimorphics.registry.commands.CommandUpdate;
 import com.epimorphics.registry.core.Command;
-import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Command.Operation;
+import com.epimorphics.registry.core.ForwardingRecord;
+import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.util.PATCH;
 import com.epimorphics.server.core.ServiceConfig;
 import com.epimorphics.server.templates.VelocityRender;
 import com.epimorphics.server.webapi.BaseEndpoint;
+import com.epimorphics.server.webapi.WebApiException;
 import com.hp.hpl.jena.util.FileManager;
 import com.sun.jersey.api.NotFoundException;
 
@@ -48,10 +51,13 @@ public class RequestProcessor extends BaseEndpoint {
     @GET
     @Produces("text/html")
     public Response htmlrender() {
-        checkForPassThrough();
+        Response response = checkForPassThrough();
+        if (response != null) {
+            return response;
+        }
         MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
         if (parameters.containsKey(Parameters.FORMAT)) {
-            Response response = read();
+            response = read();
             if (parameters.getFirst(Parameters.FORMAT).equals("ttl")) {
                 return Response.ok().type(MIME_TURTLE).entity(response.getEntity()).build();
             } else {
@@ -68,7 +74,10 @@ public class RequestProcessor extends BaseEndpoint {
     @GET
     @Produces({MIME_TURTLE, MIME_RDFXML})
     public Response read() {
-        checkForPassThrough();
+        Response response = checkForPassThrough();
+        if (response != null) {
+            return response;
+        }
         Command command = null;
         if (uriInfo.getQueryParameters().containsKey(Parameters.QUERY)) {
             command = makeCommand( Operation.Search );
@@ -78,12 +87,29 @@ public class RequestProcessor extends BaseEndpoint {
         return command.execute();
     }
 
-    private void checkForPassThrough() {
+    private Response checkForPassThrough() {
         String path = uriInfo.getPath();
         if (path.startsWith("ui") || path.startsWith("system/query") || path.equals("favicon.ico")) {
             // Pass through all ui requests to the generic velocity handler, which in turn falls through to file serving
             throw new NotFoundException();
         }
+        ForwardingTable.MatchResult match = ForwardingTable.get().match(path);
+        if (match != null) {
+            ForwardingRecord fr = match.getRecord();
+            String forwardTo = fr.getTarget();
+            if (!forwardTo.endsWith("/")) {
+                forwardTo += "/";
+            }
+            forwardTo += match.getPathRemainder();
+            URI location = null;
+            try {
+                location = new URI(forwardTo);
+            } catch (Exception e) {
+                throw new WebApiException(Response.Status.INTERNAL_SERVER_ERROR, "Illegal URI registered at " + fr.getLocation() + " - " + fr.getTarget());
+            }
+            return Response.ok().status(fr.getForwardingCode()).location(location).build();
+        }
+        return null;
     }
 
     private Command makeCommand(Operation op) {

@@ -235,10 +235,17 @@ public class CommandRegister extends Command {
         }
 
         Resource entity = ri.getEntity();
+        // Normalization closures
+        // TODO factor these out as SPARQL constructs in an external file?
         if( entity.hasProperty(RDF.type, RegistryVocab.Register) ) {
             // TODO fill in void description
             entity.addProperty(RDF.type, Ldbp.Container);
             log.info("Created new sub-register: " + ri.getNotation());
+        }
+        if (entity.hasProperty(RDF.type, RegistryVocab.FederatedRegister)
+                || entity.hasProperty(RDF.type, RegistryVocab.NamespaceForward)
+                || entity.hasProperty(RDF.type, RegistryVocab.DelegatedRegister)) {
+            entity.addProperty(RDF.type, RegistryVocab.Delegated);
         }
         store.addToRegister(parent, ri);
         return ri.getRoot();

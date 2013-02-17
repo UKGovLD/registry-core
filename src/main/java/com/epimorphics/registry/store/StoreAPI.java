@@ -13,6 +13,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import com.epimorphics.registry.core.Description;
+import com.epimorphics.registry.core.ForwardingRecord;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.server.indexers.LuceneResult;
@@ -199,4 +200,8 @@ public interface StoreAPI {
      */
     public void loadBootstrap(String filename);
 
+    /**
+     * List all delegation/forwarding/federation records in the registry.
+     */
+    public List<ForwardingRecord> listDelegations();
 }

@@ -13,6 +13,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import com.epimorphics.registry.core.Description;
+import com.epimorphics.registry.core.ForwardingRecord;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.util.DescriptionCache;
@@ -164,6 +165,12 @@ public class CachingStore implements StoreAPI {
     @Override
     public LuceneResult[] search(String query, int offset, int maxresults, String... fields) {
         return store.search(query, offset, maxresults, fields);
+    }
+
+    @Override
+    public List<ForwardingRecord> listDelegations() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

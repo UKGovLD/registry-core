@@ -38,7 +38,10 @@ import org.slf4j.LoggerFactory;
 
 import com.epimorphics.rdfutil.QueryUtil;
 import com.epimorphics.rdfutil.RDFUtil;
+import com.epimorphics.registry.core.DelegationRecord;
 import com.epimorphics.registry.core.Description;
+import com.epimorphics.registry.core.ForwardingRecord;
+import com.epimorphics.registry.core.ForwardingRecord.Type;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.util.DescriptionCache;
@@ -728,5 +731,52 @@ unlockStore();
             unlockStore();
         }
     }
+
+    @Override
+    public List<ForwardingRecord> listDelegations() {
+        List<ForwardingRecord> results = new ArrayList<>();
+        lockStore();
+        try {
+            Model m = getDefaultModel();
+            ResultSet rs = QueryUtil.selectAll(m, DELEGATION_LIST_QUERY, Prefixes.get());
+            while (rs.hasNext()) {
+                QuerySolution soln = rs.nextSolution();
+                Resource record = soln.getResource("record").inModel(m);
+                ForwardingRecord.Type type = Type.FORWARD;
+                if (record.hasProperty(RDF.type, RegistryVocab.FederatedRegister)) {
+                    type = Type.FEDERATE;
+                } else if (record.hasProperty(RDF.type, RegistryVocab.DelegatedRegister)) {
+                    type = Type.DELEGATE;
+                }
+                String target = soln.getResource("target").getURI();
+                ForwardingRecord fr = null;
+                if (type == Type.DELEGATE) {
+                    DelegationRecord dr = new DelegationRecord(record.getURI(), target, type);
+                    Resource s = soln.getResource("subject");
+                    if (s != null) dr.setSubject(s);
+                    Resource p = soln.getResource("predicate");
+                    if (p != null) dr.setPredicate(p);
+                    Resource o = soln.getResource("object");
+                    if (o != null) dr.setObject(o);
+                    fr = dr;
+                } else {
+                    fr = new ForwardingRecord(record.getURI(), target, type);
+                }
+                results.add(fr);
+            }
+            return results;
+        } finally {
+            unlockStore();
+        }
+    }
+    static String DELEGATION_LIST_QUERY =
+            "SELECT * WHERE { " +
+                    "?record a reg:Delegated; reg:delegationTarget ?target. " +
+                    "OPTIONAL {?record reg:forwardingCode ?code. } " +
+                    "OPTIONAL {?record reg:enumerationSubject ?subject. } " +
+                    "OPTIONAL {?record reg:enumerationPredicate ?predicate. } " +
+                    "OPTIONAL {?record reg:enumerationObject ?object. } " +
+                    "}";
+
 
 }
