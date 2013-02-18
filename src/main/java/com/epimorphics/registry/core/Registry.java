@@ -114,13 +114,13 @@ public class Registry extends ServiceBase implements Service {
             velocity.setPrefixes( Prefixes.get() );
         }
 
+        registry = this;   // Assumes singleton registry
+
         ForwardingTable.ForwardingTableI ftable = ForwardingTable.get();
         for (ForwardingRecord fr : store.listDelegations()) {
             ftable.register(fr);
         }
         ftable.updateConfig();
-        
-        registry = this;   // Assumes singleton registry
     }
 
     public String getBaseURI() {

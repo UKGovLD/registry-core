@@ -60,6 +60,7 @@ import com.epimorphics.util.EpiException;
 import com.epimorphics.vocabs.Time;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
@@ -125,47 +126,41 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         if (lock == null) {
             throw new EpiException("Internal error: tried to unlock a resource which was not locked for update");
         }
-        if (storeLocked) {
+        if (storeWriteLocked) {
+            log.debug("Unlocking write lock");
             store.unlock();
-            storeLocked = false;
-            lockIsWrite = false;
+            storeWriteLocked = false;
         }
         lock.unlock();
         if (indexer != null) {
             indexer.endBatch();
         }
     }
-    
-    
-    // Attempt to maintain store lock through a registry back operation while supporting simple lock promotion
-    // TODO completely restructure store API so that read/write lock is taken by caller once and for all
-    
-    boolean storeLocked = false;
-    boolean lockIsWrite = false;
+
+
+    // Attempt to maintain store lock through a registry block operation
+    boolean storeWriteLocked = false;
 
     protected synchronized void unlockStore() {
-        // Leave it lock until the end of the overall update
+        if (!storeWriteLocked) {
+            log.debug("Store unlocked");
+            store.unlock();
+        }
     }
 
     protected synchronized void lockStore() {
-        if (!storeLocked) {
+        if (!storeWriteLocked) {
+            log.debug("Store locked for read");
             store.lock();
-            storeLocked = true;
         }
     }
 
     protected synchronized void lockStoreWrite() {
-        if (storeLocked) {
-            if (lockIsWrite) {
-                return;
-            } else {
-                // close read lock, to be replaced by a write lock
-                store.unlock();
-            }
+        if (!storeWriteLocked) {
+            log.debug("Store locked for write");
+            store.lockWrite();
+            storeWriteLocked = true;
         }
-        store.lockWrite();
-        lockIsWrite = true;
-        storeLocked = true;
     }
 
     @Override
@@ -761,6 +756,10 @@ unlockStore();
                     fr = dr;
                 } else {
                     fr = new ForwardingRecord(record.getURI(), target, type);
+                    Literal code = soln.getLiteral("code");
+                    if (code != null) {
+                        fr.setForwardingCode( code.getInt() );
+                    }
                 }
                 results.add(fr);
             }
