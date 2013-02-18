@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.vocab.Ldbp;
+import com.epimorphics.registry.vocab.RegistryVocab;
+import com.epimorphics.registry.webapi.ForwardingTable;
 import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.util.EpiException;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -258,20 +260,28 @@ public abstract class Command {
         return Response.ok().location(uri).entity( m ).build();
     }
 
-    protected Resource injectPagingInformation(Model m, Resource root,
-            boolean more) {
-                String url = target + "?" + makeParamString(parameters);
-                Resource page = m.createResource(url)
-                    .addProperty(RDF.type, Ldbp.Page)
-                    .addProperty(Ldbp.pageOf, root);
-                if (more) {
-                    String pageParams = "?" + PAGE_NUMBER + "=" + (pagenum+1);
-                    String otherParams = makeParamString(parameters, FIRST_PAGE, PAGE_NUMBER);
-                    if (!otherParams.isEmpty()) {
-                        pageParams += "&" + otherParams;
-                    }
-                    page.addProperty(Ldbp.nextPage, m.createResource( target + pageParams ));
-                }
-                return page;
+    protected Resource injectPagingInformation(Model m, Resource root,  boolean more) {
+        String url = target + "?" + makeParamString(parameters);
+        Resource page = m.createResource(url)
+            .addProperty(RDF.type, Ldbp.Page)
+            .addProperty(Ldbp.pageOf, root);
+        if (more) {
+            String pageParams = "?" + PAGE_NUMBER + "=" + (pagenum+1);
+            String otherParams = makeParamString(parameters, FIRST_PAGE, PAGE_NUMBER);
+            if (!otherParams.isEmpty()) {
+                pageParams += "&" + otherParams;
             }
+            page.addProperty(Ldbp.nextPage, m.createResource( target + pageParams ));
+        }
+        return page;
+    }
+
+    protected void checkDelegation(RegisterItem item) {
+        if (item.getRoot().hasProperty(RegistryVocab.itemClass, RegistryVocab.Delegated)) {
+            if (item.getEntity() == null) {
+                store.getEntity(item);
+            }
+            ForwardingTable.update(item);
+        }
+    }
 }

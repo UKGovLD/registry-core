@@ -246,8 +246,10 @@ public class CommandRegister extends Command {
                 || entity.hasProperty(RDF.type, RegistryVocab.NamespaceForward)
                 || entity.hasProperty(RDF.type, RegistryVocab.DelegatedRegister)) {
             entity.addProperty(RDF.type, RegistryVocab.Delegated);
+            ri.getRoot().addProperty(RegistryVocab.itemClass, RegistryVocab.Delegated);
         }
         store.addToRegister(parent, ri);
+        checkDelegation(ri);
         return ri.getRoot();
     }
 

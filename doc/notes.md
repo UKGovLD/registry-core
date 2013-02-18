@@ -51,7 +51,7 @@
    * e-tag support
    * Validation hooks
 
-   * Validate delegations - relative to server base, legal java URI
+   * Validate delegations - relative to server base, legal java URI, if server code it is a valid integer and valid range
 
    * Change registration code to include other axioms in the definition graph? Basically remove the RegisterItem (if any) from the graph and keep the rest ?
 

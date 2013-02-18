@@ -76,6 +76,7 @@ public class CommandStatusUpdate extends Command {
             RDFUtil.timestamp(ri.getRoot(), DCTerms.dateAccepted);
         }
         store.update(ri, false);
+        checkDelegation(ri);
     }
 
 }
