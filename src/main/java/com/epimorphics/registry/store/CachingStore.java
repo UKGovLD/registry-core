@@ -169,8 +169,7 @@ public class CachingStore implements StoreAPI {
 
     @Override
     public List<ForwardingRecord> listDelegations() {
-        // TODO Auto-generated method stub
-        return null;
+        return store.listDelegations();
     }
 
 }

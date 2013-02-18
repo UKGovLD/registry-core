@@ -51,6 +51,10 @@
    * e-tag support
    * Validation hooks
 
+   * Validate delegations - relative to server base, legal java URI
+
+   * Change registration code to include other axioms in the definition graph? Basically remove the RegisterItem (if any) from the graph and keep the rest ?
+
 ## UI Stack
 
    * Adminstration interfaces for registers and items
