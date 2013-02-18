@@ -52,6 +52,7 @@
     store=storeapi,
     cacheSize=100,
     pageSize=25,
+    forwarder=forwarder,
     bootSpec=${webapp}/WEB-INF/root-register.ttl|${webapp}/WEB-INF/registry.ttl|${webapp}/WEB-INF/system-registers.ttl</param-value>
   </context-param>
 

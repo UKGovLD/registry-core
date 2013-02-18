@@ -116,12 +116,15 @@ public class Registry extends ServiceBase implements Service {
 
         registry = this;   // Assumes singleton registry
 
-        forwarder = getNamedService(getRequiredParam(FORWARDER_PARAM), ForwardingService.class);
-
-        for (ForwardingRecord fr : store.listDelegations()) {
-            forwarder.register(fr);
+        String fname = config.get(FORWARDER_PARAM);
+        if (fname != null) {
+            forwarder = getNamedService(fname, ForwardingService.class);
+    
+            for (ForwardingRecord fr : store.listDelegations()) {
+                forwarder.register(fr);
+            }
+            forwarder.updateConfig();
         }
-        forwarder.updateConfig();
     }
 
     public String getBaseURI() {

@@ -42,6 +42,11 @@ curl -i -X POST "http://localhost:8080/def/_eabw?update&status=stable"
 
 curl -i -H "Accept:text/turtle" http://localhost:8080/def/eabw/ukc2102-03600
 
+# OR this version
+curl -i -H "Content-Type: text/turtle" -X POST --data "@test/bw-proxy.ttl" http://localhost:8080/def
+curl -i -X POST "http://localhost:8080/def/_eabw?update&status=stable"
+curl -i -H "Accept:text/turtle" http://localhost:8080/def/eabw/ukc2102-03600
+
 
 # Configure proxy update permissions
 
@@ -55,3 +60,19 @@ der     ALL=NOPASSWD: /var/local/registry/proxy-conf.sh
 #!/bin/sh
 kill -HUP `cat /var/run/nginx.pid`
 ]]]
+
+/etc/nginx/sites-enabled/default (or /etc/nginx/nginx.conf on AWS machine
+[[[
+
+    proxy_set_header        X-Real-IP $remote_addr;
+    proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+
+    location / {
+      proxy_set_header      Host $http_host;
+      proxy_pass            http://localhost:8080;
+    }
+
+    include /var/local/registry/proxy-*.conf ;
+]]]
+
+

@@ -280,7 +280,12 @@ public abstract class Command {
             if (item.getEntity() == null) {
                 store.getEntity(item);
             }
-            Registry.get().getForwarder().update(item);
+            ForwardingService fs = Registry.get().getForwarder();
+            if (fs != null) {
+                fs.update(item);
+            } else {
+                log.error("No forwarded configure, delegation request for " + item.getRoot() + " can't be honoured");
+            }
         }
     }
 }

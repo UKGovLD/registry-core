@@ -9,6 +9,8 @@
 
 package com.epimorphics.registry.core;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,6 +47,8 @@ public class ForwardingServiceImpl extends ServiceBase implements ForwardingServ
 
     public static final String PROXY_CONF_DIR_PARAM = "proxyConfDir";
     public static final String PROXY_RESTART_SCRIPT_PARAM = "proxyRestartScript";
+    
+    static final String PROXY_FILE = "proxy-registry.conf";
 
     protected String confDir;
     protected String script;
@@ -145,8 +149,18 @@ public class ForwardingServiceImpl extends ServiceBase implements ForwardingServ
     @Override
     public synchronized void updateConfig() {
         if (configUpdateNeeded) {
+            try {
+                BufferedWriter file = new BufferedWriter( new FileWriter( confDir + "/" + PROXY_FILE ) );
+                for (String path : proxyForwards.keySet()) {
+                    file.write( String.format("location %s {\n    proxy_pass %s ;\n}\n", path, proxyForwards.get(path).getTarget()));
+                }
+                file.close();
+                
+                Runtime.getRuntime().exec(new String[]{ "/usr/bin/sudo", script});
+            } catch (Exception e) {
+                log.error("Fail to write or invoke new proxy configuration", e);
+            }
             configUpdateNeeded = false;
-            // TODO configure front end proxy, registrations should record 200 cases as a separate list
         }
     }
 

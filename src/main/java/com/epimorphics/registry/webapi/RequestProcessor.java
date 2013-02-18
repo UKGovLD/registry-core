@@ -33,6 +33,7 @@ import com.epimorphics.registry.commands.CommandUpdate;
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Command.Operation;
 import com.epimorphics.registry.core.ForwardingRecord;
+import com.epimorphics.registry.core.ForwardingService;
 import com.epimorphics.registry.core.MatchResult;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.util.PATCH;
@@ -97,21 +98,24 @@ public class RequestProcessor extends BaseEndpoint {
             throw new NotFoundException();
         }
 
-        MatchResult match = Registry.get().getForwarder().match(path);
-        if (match != null) {
-            ForwardingRecord fr = match.getRecord();
-            String forwardTo = fr.getTarget();
-            if (!forwardTo.endsWith("/")) {
-                forwardTo += "/";
+        ForwardingService fs = Registry.get().getForwarder();
+        if (fs != null) {
+            MatchResult match = fs.match(path);
+            if (match != null) {
+                ForwardingRecord fr = match.getRecord();
+                String forwardTo = fr.getTarget();
+                if (!forwardTo.endsWith("/")) {
+                    forwardTo += "/";
+                }
+                forwardTo += match.getPathRemainder();
+                URI location = null;
+                try {
+                    location = new URI(forwardTo);
+                } catch (Exception e) {
+                    throw new WebApiException(Response.Status.INTERNAL_SERVER_ERROR, "Illegal URI registered at " + fr.getLocation() + " - " + fr.getTarget());
+                }
+                return Response.ok().status(fr.getForwardingCode()).location(location).build();
             }
-            forwardTo += match.getPathRemainder();
-            URI location = null;
-            try {
-                location = new URI(forwardTo);
-            } catch (Exception e) {
-                throw new WebApiException(Response.Status.INTERNAL_SERVER_ERROR, "Illegal URI registered at " + fr.getLocation() + " - " + fr.getTarget());
-            }
-            return Response.ok().status(fr.getForwardingCode()).location(location).build();
         }
         return null;
     }
