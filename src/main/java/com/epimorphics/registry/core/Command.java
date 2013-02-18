@@ -284,7 +284,7 @@ public abstract class Command {
             if (fs != null) {
                 fs.update(item);
             } else {
-                log.error("No forwarded configure, delegation request for " + item.getRoot() + " can't be honoured");
+                log.error("No forwarder configured, delegation request for " + item.getRoot() + " can't be honoured");
             }
         }
     }

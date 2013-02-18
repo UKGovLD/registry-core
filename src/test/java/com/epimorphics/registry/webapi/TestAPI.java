@@ -20,6 +20,7 @@ import java.util.List;
 import org.junit.Test;
 
 import com.epimorphics.rdfutil.QueryUtil;
+import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.RegistryVocab;
@@ -241,6 +242,16 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(204, post(REG1 + "/_blue?update&status=superseded").getStatus());
         assertEquals(204, post(REG1 + "/_blue?update&status=invalid").getStatus());
 
+        // Check forwarding
+        assertEquals(201, postFileStatus("test/bw-forward.ttl", REG1));
+        assertEquals(404, getResponse(REG1 + "/eabw/ukc2102-03600").getStatus());
+        assertEquals(204, post(REG1 + "/_eabw?update&status=stable").getStatus());
+        assertEquals(200, getResponse(REG1 + "/eabw/ukc2102-03600").getStatus());
+        // This relies on EA service being up :)
+        m = getModelResponse(REG1 + "/eabw/ukc2102-03600");
+        Resource bw = m.getResource("http://environment.data.gov.uk/id/bathing-water/ukc2102-03600");
+        assertEquals("Spittal", RDFUtil.getStringValue(bw, SKOS.prefLabel));
+        
 //        m.write(System.out, "Turtle");
     }
 
