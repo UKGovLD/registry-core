@@ -41,3 +41,17 @@ curl -i -H "Content-Type: text/turtle" -X POST --data "@test/bw-forward.ttl" htt
 curl -i -X POST "http://localhost:8080/def/_eabw?update&status=stable"
 
 curl -i -H "Accept:text/turtle" http://localhost:8080/def/eabw/ukc2102-03600
+
+
+# Configure proxy update permissions
+
+Add to /etc/sudoers:
+[[[
+der     ALL=NOPASSWD: /var/local/registry/proxy-conf.sh
+]]]
+
+/var/local/registry/proxy-conf.sh
+[[[
+#!/bin/sh
+kill -HUP `cat /var/run/nginx.pid`
+]]]

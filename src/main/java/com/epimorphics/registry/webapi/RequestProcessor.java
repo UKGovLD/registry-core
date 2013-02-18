@@ -33,6 +33,7 @@ import com.epimorphics.registry.commands.CommandUpdate;
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Command.Operation;
 import com.epimorphics.registry.core.ForwardingRecord;
+import com.epimorphics.registry.core.MatchResult;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.util.PATCH;
 import com.epimorphics.server.core.ServiceConfig;
@@ -95,7 +96,8 @@ public class RequestProcessor extends BaseEndpoint {
             // Pass through all ui requests to the generic velocity handler, which in turn falls through to file serving
             throw new NotFoundException();
         }
-        ForwardingTable.MatchResult match = ForwardingTable.get().match(path);
+
+        MatchResult match = Registry.get().getForwarder().match(path);
         if (match != null) {
             ForwardingRecord fr = match.getRecord();
             String forwardTo = fr.getTarget();

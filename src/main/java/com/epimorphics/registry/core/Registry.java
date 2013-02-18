@@ -33,7 +33,6 @@ import com.epimorphics.registry.core.Command.Operation;
 import com.epimorphics.registry.store.CachingStore;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.util.Prefixes;
-import com.epimorphics.registry.webapi.ForwardingTable;
 import com.epimorphics.server.core.Service;
 import com.epimorphics.server.core.ServiceBase;
 import com.epimorphics.server.core.ServiceConfig;
@@ -60,8 +59,8 @@ public class Registry extends ServiceBase implements Service {
     public static final String VELOCITY_SERVICE = "velocity";
 
     public static final String BASE_URI_PARAM = "baseURI";
-    public static final String SERVICE_NAME = "configuration";
     public static final String BOOT_FILE_PARAM = "bootSpec";
+    public static final String FORWARDER_PARAM = "forwarder";
     public static final String STORE_PARAM = "store";
     public static final String CACHE_SIZE_PARAM = "cacheSize";
     public static final String PAGE_SIZE_PARAM = "pageSize";
@@ -71,6 +70,7 @@ public class Registry extends ServiceBase implements Service {
     protected StoreAPI store;
     protected String baseURI;
     protected int pageSize;
+    protected ForwardingService forwarder;
 
     @Override
     public void init(Map<String, String> config, ServletContext context) {
@@ -116,11 +116,12 @@ public class Registry extends ServiceBase implements Service {
 
         registry = this;   // Assumes singleton registry
 
-        ForwardingTable.ForwardingTableI ftable = ForwardingTable.get();
+        forwarder = getNamedService(getRequiredParam(FORWARDER_PARAM), ForwardingService.class);
+
         for (ForwardingRecord fr : store.listDelegations()) {
-            ftable.register(fr);
+            forwarder.register(fr);
         }
-        ftable.updateConfig();
+        forwarder.updateConfig();
     }
 
     public String getBaseURI() {
@@ -133,6 +134,10 @@ public class Registry extends ServiceBase implements Service {
 
     public int getPageSize() {
         return pageSize;
+    }
+
+    public ForwardingService getForwarder() {
+        return forwarder;
     }
 
     /**

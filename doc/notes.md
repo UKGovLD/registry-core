@@ -55,6 +55,8 @@
 
    * Change registration code to include other axioms in the definition graph? Basically remove the RegisterItem (if any) from the graph and keep the rest ?
 
+   * Search should include search over federated endpoints
+
 ## UI Stack
 
    * Adminstration interfaces for registers and items

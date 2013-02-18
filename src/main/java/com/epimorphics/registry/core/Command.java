@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.RegistryVocab;
-import com.epimorphics.registry.webapi.ForwardingTable;
 import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.util.EpiException;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -281,7 +280,7 @@ public abstract class Command {
             if (item.getEntity() == null) {
                 store.getEntity(item);
             }
-            ForwardingTable.update(item);
+            Registry.get().getForwarder().update(item);
         }
     }
 }
