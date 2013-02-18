@@ -55,6 +55,7 @@ public class CommandRead extends Command {
     boolean versioned;
     boolean timestamped;
     boolean entityLookup;
+    
     public CommandRead(Operation operation, String target,
             MultivaluedMap<String, String> parameters, Registry registry) {
         super(operation, target, parameters, registry);

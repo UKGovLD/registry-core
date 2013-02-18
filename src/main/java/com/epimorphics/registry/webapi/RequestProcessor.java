@@ -33,6 +33,7 @@ import com.epimorphics.registry.commands.CommandUpdate;
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Command.Operation;
 import com.epimorphics.registry.core.ForwardingRecord;
+import com.epimorphics.registry.core.ForwardingRecord.Type;
 import com.epimorphics.registry.core.ForwardingService;
 import com.epimorphics.registry.core.MatchResult;
 import com.epimorphics.registry.core.Registry;
@@ -55,13 +56,13 @@ public class RequestProcessor extends BaseEndpoint {
     @GET
     @Produces("text/html")
     public Response htmlrender() {
-        Response response = checkForPassThrough();
-        if (response != null) {
-            return response;
+        PassThroughResult result = checkForPassThrough();
+        if (result != null && result.isDone()) {
+            return result.getResponse();
         }
         MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
         if (parameters.containsKey(Parameters.FORMAT)) {
-            response = read();
+            Response response = doRead(result);
             if (parameters.getFirst(Parameters.FORMAT).equals("ttl")) {
                 return Response.ok().type(MIME_TURTLE).entity(response.getEntity()).build();
             } else {
@@ -78,20 +79,28 @@ public class RequestProcessor extends BaseEndpoint {
     @GET
     @Produces({MIME_TURTLE, MIME_RDFXML})
     public Response read() {
-        Response response = checkForPassThrough();
-        if (response != null) {
-            return response;
+        PassThroughResult result = checkForPassThrough();
+        if (result != null && result.isDone()) {
+            return result.getResponse();
+        } else {
+            return doRead(result);
         }
+    }
+    
+    private Response doRead(PassThroughResult ptr) {
         Command command = null;
         if (uriInfo.getQueryParameters().containsKey(Parameters.QUERY)) {
             command = makeCommand( Operation.Search );
         } else {
             command = makeCommand( Operation.Read );
+            if (ptr != null) {
+                command.setDelegation(ptr.getRecord());
+            }
         }
         return command.execute();
     }
 
-    private Response checkForPassThrough() {
+    private PassThroughResult checkForPassThrough() {
         String path = uriInfo.getPath();
         if (path.startsWith("ui") || path.startsWith("system/query") || path.equals("favicon.ico")) {
             // Pass through all ui requests to the generic velocity handler, which in turn falls through to file serving
@@ -103,6 +112,11 @@ public class RequestProcessor extends BaseEndpoint {
             MatchResult match = fs.match(path);
             if (match != null) {
                 ForwardingRecord fr = match.getRecord();
+                PassThroughResult result = new PassThroughResult(fr);
+                if (fr.getType() == Type.DELEGATE) {
+                    // Delegation should bubble up to the read command
+                    return result;
+                }
                 String forwardTo = fr.getTarget();
                 if (!forwardTo.endsWith("/")) {
                     forwardTo += "/";
@@ -114,7 +128,8 @@ public class RequestProcessor extends BaseEndpoint {
                 } catch (Exception e) {
                     throw new WebApiException(Response.Status.INTERNAL_SERVER_ERROR, "Illegal URI registered at " + fr.getLocation() + " - " + fr.getTarget());
                 }
-                return Response.ok().status(fr.getForwardingCode()).location(location).build();
+                result.setResponse( Response.ok().status(fr.getForwardingCode()).location(location).build() );
+                return result;
             }
         }
         return null;
@@ -168,4 +183,29 @@ public class RequestProcessor extends BaseEndpoint {
         return command.execute();
     }
 
+    static class PassThroughResult {
+        Response response;
+        ForwardingRecord record;
+        
+        public PassThroughResult(ForwardingRecord record) {
+            this.record = record;
+        }
+        
+        public boolean isDone() {
+            return response != null;
+        }
+
+        public Response getResponse() {
+            return response;
+        }
+
+        public void setResponse(Response response) {
+            this.response = response;
+        }
+
+        public ForwardingRecord getRecord() {
+            return record;
+        }
+        
+    }
 }

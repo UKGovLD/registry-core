@@ -64,6 +64,9 @@ public abstract class Command {
 
     protected Registry registry;
     protected StoreAPI store;
+    
+    protected ForwardingRecord delegation;
+    
     /**
      * Constructor
      * @param operation   operation request, as determined by HTTP verb
@@ -129,6 +132,14 @@ public abstract class Command {
 
     public void setRequestor(String requestor) {
         this.requestor = requestor;
+    }
+    
+    public ForwardingRecord getDelegation() {
+        return delegation;
+    }
+
+    public void setDelegation(ForwardingRecord delegation) {
+        this.delegation = delegation;
     }
 
     @Override
