@@ -14,6 +14,7 @@ import java.util.List;
 
 import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.epimorphics.registry.store.StoreAPI;
+import com.epimorphics.registry.util.Util;
 import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -27,6 +28,8 @@ import com.hp.hpl.jena.vocabulary.RDFS;
  */
 public class Register extends Description {
     List<RegisterEntryInfo> members;
+    List<Resource> delegatedMembers;
+
     StoreAPI store;
 
     public Register(Resource root) {
@@ -117,6 +120,21 @@ public class Register extends Description {
 
         model.add( root.getModel() );
 
+        List<Resource> entities = results;
+        if (entities == null) {
+            entities = new ArrayList<Resource>();
+        }
+
+        for (String uri : entityURIs) {
+            entities.add( model.getResource(uri) );
+        }
+
+        addMembership(model, entities);
+
+        return !incomplete;
+    }
+
+    protected void addMembership(Model model, List<Resource> entities) {
         // Membership relations
         Resource predicateR = null;
         boolean isInverse = false;
@@ -132,23 +150,44 @@ public class Register extends Description {
         Property predicate = ResourceFactory.createProperty( predicateR.getURI() );
 
         Resource reg = model.getResource(root.getURI());
-        for (String uri : entityURIs) {
-            Resource entity = model.getResource(uri);
+        for (Resource entity : entities) {
             if (isInverse) {
-                entity.addProperty(predicate, reg);
+                entity.inModel(model).addProperty(predicate, reg);
             } else {
                 reg.addProperty(predicate, entity);
             }
         }
+    }
 
-        // Paging
-        if (results != null) {
-            for (String uri : entityURIs) {
-                results.add( model.getResource(uri) );
-            }
+
+    /**
+     * Fetch all the members of a delegated register and construct an RDF view
+     * according the given flags.
+     *
+     * @param model model in which to store the results
+     * @param delegation description of the source delegated to
+     * @param offset offset in the list to start the return window
+     * @param length then maximum number of members to return, -1 for no limit
+     * @param items an array in which to return an ordered list of the items, if null if not required
+     */
+
+    public void constructDelegatedView(Model view, DelegationRecord delegation,
+            int offset, int length, List<Resource> items) {
+
+        if (delegatedMembers == null) {
+            delegatedMembers = delegation.listMembers();
         }
 
-        return !incomplete;
+        List<Resource> windowedMembers = Util.listWindow(delegatedMembers, offset, length);
+        delegation.fetchMembers(view,  windowedMembers);
+
+       view.add( root.getModel() );
+
+       addMembership(view, windowedMembers);
+
+       if (items != null) {
+           items.addAll(windowedMembers);
+       }
     }
 
 

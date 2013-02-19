@@ -2,23 +2,30 @@
  * File:        DelegationRecord.java
  * Created by:  Dave Reynolds
  * Created on:  17 Feb 2013
- * 
+ *
  * (c) Copyright 2013, Epimorphics Limited
  *
  *****************************************************************/
 
 package com.epimorphics.registry.core;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.hp.hpl.jena.query.QueryExecution;
+import com.hp.hpl.jena.query.QueryExecutionFactory;
+import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
- * 
+ *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public class DelegationRecord extends ForwardingRecord {
 
     protected Resource subject;
-    protected Resource predicate; 
+    protected Resource predicate;
     protected Resource object;
 
     public DelegationRecord(String location, String target, Type type) {
@@ -36,8 +43,58 @@ public class DelegationRecord extends ForwardingRecord {
     public void setObject(Resource object) {
         this.object = object;
     }
-    
-    // TODO implement list method
-    
-    // TODO implement get method
+
+    /**
+     * Enumerate all members of the delegated register
+     * @return
+     */
+    public List<Resource> listMembers() {
+        String query =
+                subject == null ?
+                        String.format("SELECT ?m WHERE {?m <%s> <%s>}", predicate.getURI(), object.getURI())
+                      : String.format("SELECT ?m WHERE {<%s> <%s> ?m}", subject.getURI(), predicate.getURI());
+        QueryExecution exec = QueryExecutionFactory.sparqlService(getTarget(), query + " ORDER BY ?m");
+        try {
+            List<Resource> members = new ArrayList<>();
+            ResultSet results = exec.execSelect();
+            while (results.hasNext()) {
+                members.add( results.next().getResource("m") );
+            }
+            return members;
+        } finally {
+            exec.close();
+        }
+    }
+
+    /**
+     * Return a description of a single delegated member
+     */
+    public Model describeMember(Resource member) {
+        QueryExecution exec = QueryExecutionFactory.sparqlService(getTarget(), "DESCRIBE <"+ member.getURI() + ">");
+        try {
+            return exec.execDescribe();
+        } finally {
+            exec.close();
+        }
+    }
+
+    /**
+     * Add a description of all of the list members to the given model.
+     */
+    public void fetchMembers(Model model, List<Resource> members) {
+        StringBuffer query = new StringBuffer();
+        query.append("DESCRIBE ");
+        for (Resource member : members) {
+            query.append(" <");
+            query.append(member.getURI());
+            query.append(">");
+        }
+        QueryExecution exec = QueryExecutionFactory.sparqlService(getTarget(), query.toString());
+        try {
+            exec.execDescribe(model);
+        } finally {
+            exec.close();
+        }
+    }
+
 }

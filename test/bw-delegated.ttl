@@ -1,0 +1,21 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix ldp:  <http://www.w3.org/ns/ldp#> .
+@prefix reg:  <http://purl.org/linked-data/registry#> .
+
+<bathingWaters> a reg:DelegatedRegister;
+    rdfs:label "Bathing waters"@en;
+    dct:description "Bathing Waters from the environment agency"@en;
+    reg:owner <http://reference.data.gov.uk/2011-09-30/id/public-body/environment-agency> ;
+    reg:manager <http://reference.data.gov.uk/2011-09-30/id/public-body/environment-agency> ;
+    ldp:membershipPredicate  rdfs:member;
+
+    reg:delegationTarget     <http://environment.data.gov.uk/sparql/bwq/query>;
+    reg:enumerationObject    <http://environment.data.gov.uk/id/bathing-water/>;
+    reg:enumerationPredicate <http://reference.data.gov.uk/def/reference/uriSet>;
+    .
+

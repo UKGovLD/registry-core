@@ -30,6 +30,7 @@ import com.epimorphics.registry.commands.CommandStatusUpdate;
 import com.epimorphics.registry.commands.CommandUpdate;
 import com.epimorphics.registry.commands.CommandValidate;
 import com.epimorphics.registry.core.Command.Operation;
+import com.epimorphics.registry.core.ForwardingRecord.Type;
 import com.epimorphics.registry.store.CachingStore;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.util.Prefixes;
@@ -119,7 +120,7 @@ public class Registry extends ServiceBase implements Service {
         String fname = config.get(FORWARDER_PARAM);
         if (fname != null) {
             forwarder = getNamedService(fname, ForwardingService.class);
-    
+
             for (ForwardingRecord fr : store.listDelegations()) {
                 forwarder.register(fr);
             }
@@ -180,6 +181,18 @@ public class Registry extends ServiceBase implements Service {
         MultivaluedMap<String, String> parameters = UriComponent.decodeQuery(queries, true);
         Command command = make(op, target, parameters);
         command.setRequestor(requestor);
+
+        ForwardingService fs = getForwarder();
+        if (fs != null) {
+            MatchResult match = fs.match(target);
+            if (match != null) {
+                ForwardingRecord fr = match.getRecord();
+                if (fr.getType() == Type.DELEGATE) {
+                    command.setDelegation(fr);
+                }
+            }
+        }
+
         try {
             Response response = command.execute();
             if (response.getStatus() == 200 && response.getEntity() instanceof Model) {

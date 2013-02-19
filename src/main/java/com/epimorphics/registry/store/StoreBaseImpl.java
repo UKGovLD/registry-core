@@ -769,15 +769,26 @@ unlockStore();
         }
     }
     static String DELEGATION_LIST_QUERY =
-            "SELECT * WHERE { " +
-                    "?record a reg:Delegated; reg:delegationTarget ?target. " +
-                    "?item reg:status ?status; reg:definition [reg:entity ?record] . " +
-                    "?itemver version:currentVersion ?item. " +
-                    "OPTIONAL {?record reg:forwardingCode ?code. } " +
-                    "OPTIONAL {?record reg:enumerationSubject ?subject. } " +
-                    "OPTIONAL {?record reg:enumerationPredicate ?predicate. } " +
-                    "OPTIONAL {?record reg:enumerationObject ?object. } " +
-                    "}";
+            "SELECT * WHERE {" +
+            "   { " +                              // DelegatedRegister case, registers are managed, hence additional versioning
+            "      ?record a reg:DelegatedRegister ; version:currentVersion ?ver ." +
+            "      ?ver reg:delegationTarget ?target. " +
+            "      ?item reg:status ?status; reg:definition [reg:entity ?record] . " +
+            "      [] version:currentVersion ?item. " +
+            "      OPTIONAL {?ver reg:forwardingCode ?code. } " +
+            "      OPTIONAL {?ver reg:enumerationSubject ?subject. } " +
+            "      OPTIONAL {?ver reg:enumerationPredicate ?predicate. } " +
+            "      OPTIONAL {?ver reg:enumerationObject ?object. } " +
+            "   } UNION {" +                        // Typical entity case
+            "      ?record a reg:Delegated ; reg:delegationTarget ?target. " +
+            "      ?item reg:status ?status; reg:definition [reg:entity ?record] . " +
+            "      [] version:currentVersion ?item. " +
+            "      OPTIONAL {?record reg:forwardingCode ?code. } " +
+            "      OPTIONAL {?record reg:enumerationSubject ?subject. } " +
+            "      OPTIONAL {?record reg:enumerationPredicate ?predicate. } " +
+            "      OPTIONAL {?record reg:enumerationObject ?object. } " +
+            "   } " +
+            "}";
 
 
 }

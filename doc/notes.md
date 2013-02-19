@@ -56,6 +56,9 @@
    * Change registration code to include other axioms in the definition graph? Basically remove the RegisterItem (if any) from the graph and keep the rest ?
 
    * Search should include search over federated endpoints
+   * Likewise entity lookup needs to check contained federated endpoints, possibly better done via cache than live
+
+   * Validation of delegation record needs to include testing have pair sp or po
 
 ## UI Stack
 

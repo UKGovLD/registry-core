@@ -26,6 +26,7 @@ import javax.ws.rs.core.Response;
 
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Command;
+import com.epimorphics.registry.core.DelegationRecord;
 import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
@@ -55,7 +56,7 @@ public class CommandRead extends Command {
     boolean versioned;
     boolean timestamped;
     boolean entityLookup;
-    
+
     public CommandRead(Operation operation, String target,
             MultivaluedMap<String, String> parameters, Registry registry) {
         super(operation, target, parameters, registry);
@@ -186,19 +187,30 @@ public class CommandRead extends Command {
         if (parameters.containsKey(COLLECTION_METADATA_ONLY)) {
             return register.getRoot().getModel();
         } else {
-            // Status filter option
-            Status status = Status.forString( parameters.getFirst(STATUS), Status.Accepted );
-
-            // Select version of view
-            long timestamp = -1;
-            if (versioned) {
-                timestamp = store.versionStartedAt(target);
-            } else {
-                timestamp = Util.asTimestamp( parameters.getFirst(VERSION_AT) );
-            }
             Model view = ModelFactory.createDefaultModel();
             List<Resource> members = paged ? new ArrayList<Resource>(length) : null;
-            boolean complete = register.constructView(view, withVersion, withMetadata, status, pagenum * length, length, timestamp, members);
+            boolean complete = false;
+
+            if (delegation != null && delegation instanceof DelegationRecord) {
+                register.constructDelegatedView(view, (DelegationRecord) delegation, pagenum * length, length, members);
+                if (length == -1 || members.size() < length) {
+                    complete = true;
+                }
+
+            } else {
+
+                // Status filter option
+                Status status = Status.forString( parameters.getFirst(STATUS), Status.Accepted );
+
+                // Select version of view
+                long timestamp = -1;
+                if (versioned) {
+                    timestamp = store.versionStartedAt(target);
+                } else {
+                    timestamp = Util.asTimestamp( parameters.getFirst(VERSION_AT) );
+                }
+                complete = register.constructView(view, withVersion, withMetadata, status, pagenum * length, length, timestamp, members);
+            }
 
             // Paging parameters
             if (paged) {

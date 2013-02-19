@@ -40,6 +40,11 @@ public class RegisterEntryInfo {
         this.notation = notation == null ? null : notation.getLexicalForm();
     }
 
+    public RegisterEntryInfo(Resource entity, Status status) {
+        this.status = status;
+        this.entityURI = entity.getURI();
+    }
+
     public void addLabel(Literal label) {
         labels.add(label);
     }
