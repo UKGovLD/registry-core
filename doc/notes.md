@@ -70,6 +70,8 @@
    * inject resource labels into results models, need a label utility (caching?) which handles that and knows about prefixes and registered ontologies
    * SPARQL form
    * show register at an earlier time - would be nice to have a timeline widget for this
+   * do a favicon
+   * separate delegated areas from members/subregisters list
 
 ## Extensions
 

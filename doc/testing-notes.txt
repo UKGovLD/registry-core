@@ -50,6 +50,7 @@ curl -i -H "Accept:text/turtle" http://localhost:8080/def/eabw/ukc2102-03600
 # OR
 curl -i -H "Content-Type: text/turtle" -X POST --data "@test/bw-delegated.ttl" http://localhost:8080/def
 curl -i -X POST "http://localhost:8080/def/_bathingWaters?update&status=stable"
+curl -i -H "Accept:text/turtle" http://localhost:8080/def/bathingWaters?firstPage
 
 
 # Configure proxy update permissions
