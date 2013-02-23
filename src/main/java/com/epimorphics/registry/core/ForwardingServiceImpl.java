@@ -11,7 +11,9 @@ package com.epimorphics.registry.core;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
@@ -26,6 +28,7 @@ import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.server.core.Service;
 import com.epimorphics.server.core.ServiceBase;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.util.iterator.Filter;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 /**
@@ -162,6 +165,21 @@ public class ForwardingServiceImpl extends ServiceBase implements ForwardingServ
             }
             configUpdateNeeded = false;
         }
+    }
+
+    @Override
+    public List<DelegationRecord> listDelegations(String path) {
+        List<ForwardingRecord> records = trie.findAll(path, new Filter<ForwardingRecord>() {
+            @Override
+            public boolean accept(ForwardingRecord o) {
+                return o instanceof DelegationRecord;
+            }
+        });
+        List<DelegationRecord> results = new ArrayList<DelegationRecord>(records.size());
+        for (ForwardingRecord rec : records) {
+            results.add( (DelegationRecord)rec );
+        }
+        return results;
     }
 
 

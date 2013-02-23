@@ -9,6 +9,8 @@
 
 package com.epimorphics.registry.core;
 
+import java.util.List;
+
 
 /**
  * Interface for a service that configures proxy/forwarding support for the register.
@@ -36,4 +38,6 @@ public interface ForwardingService {
     /** Call to finalize installation of registrations, e.g. by configuring an external proxy */
     public void updateConfig();
 
+    /** Find all DelegatedRecords below the given path */
+    public List<DelegationRecord> listDelegations(String path);
 }

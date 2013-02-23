@@ -46,6 +46,7 @@ public class CommandValidate extends Command {
                     break;
                 }
             }
+            // TODO validate in delegated registers as well
             if (!thisValid) {
                 if (infos.isEmpty()) {
                     msg.append("URI not found anywhere: ");

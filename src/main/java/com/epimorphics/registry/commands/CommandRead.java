@@ -42,7 +42,9 @@ import com.epimorphics.vocabs.Time;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
@@ -179,6 +181,23 @@ public class CommandRead extends Command {
                         result.add(d.getRoot().getModel());
                     }
                 }
+            }
+        }
+        
+        // Check for contained delegation points
+        Resource entity = ResourceFactory.createResource(uri);
+        for (DelegationRecord delegation : registry.getForwarder().listDelegations(path)) {
+            Model member = delegation.describeMember(entity);
+            result.add( member );
+            if (withMetadata && member.contains(entity, RDF.type, (RDFNode)null)) {
+                // Add pseudo RegisterItem so we know which register it was in
+                Resource entityRef = result.createResource().addProperty(RegistryVocab.entity, entity);
+                Resource registerRef = result.createResource(delegation.getLocation())
+                        .addProperty(RDF.type, RegistryVocab.Register)
+                        .addProperty(RDF.type, RegistryVocab.DelegatedRegister);
+                result.createResource()
+                    .addProperty(RegistryVocab.definition, entityRef)
+                    .addProperty(RegistryVocab.register, registerRef); 
             }
         }
         return returnModel(result, target);

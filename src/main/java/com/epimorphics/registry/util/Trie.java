@@ -9,8 +9,12 @@
 
 package com.epimorphics.registry.util;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import com.hp.hpl.jena.util.iterator.Filter;
 
 /**
  * Trie structure for matching URI prefixes. The trie is based on matching URI segments
@@ -34,10 +38,17 @@ public class Trie<T> {
         return root.match(split(uri), 0);
     }
     
+    public List<T> findAll(String path, Filter<T> filter) {
+        List<T> results = new ArrayList<T>();
+        root.findAll(split(path), 0, filter, results);
+        return results;
+    }
+    
     private String[] split(String path) {
         if (path.startsWith("/")) {
             path = path.substring(1);
         }
+        if (path.isEmpty()) return new String[0];
         return path.split("/");
     }
     
@@ -68,6 +79,8 @@ public class Trie<T> {
         public void register(String[] path, int index, T match);
         
         public void unregister(String[] path, int index);
+        
+        public void findAll(String[] path, int index, Filter<T> filter, List<T> results);
     }
     
     static class TrieTerminal<T> implements TrieNode<T> {
@@ -87,7 +100,15 @@ public class Trie<T> {
         @Override
         public void unregister(String[] path, int index) {
         }
-        
+
+        @Override
+        public void findAll(String[] path, int index, Filter<T> filter, List<T> results) {
+            if (index >= path.length -1) {
+                if (filter == null || filter.accept(match)) {
+                    results.add(match);
+                }
+            }
+        }
     }
     
     static class TrieBranch<T> implements TrieNode<T> {
@@ -130,6 +151,22 @@ public class Trie<T> {
                 }
             }
         }
-        
+
+        @Override
+        public void findAll(String[] path, int index, Filter<T> filter, List<T> results) {
+            if (index < path.length && path.length > 0) {
+                TrieNode<T> next = branches.get(path[index]);
+                if (next == null) {
+                    return;  // no further matches down this path
+                } else {
+                    next.findAll(path, index + 1, filter, results);
+                }
+            } else {
+                // End of match path, accumulate everything
+                for (String key : branches.keySet()) {
+                    branches.get(key).findAll(path, index, filter, results);
+                }
+            }
+        }        
     }
 }

@@ -51,6 +51,7 @@ public abstract class Command {
 
     protected Operation operation;
     protected String target;
+    protected String path;
     protected MultivaluedMap<String, String> parameters;
     protected Model payload;
 
@@ -77,6 +78,7 @@ public abstract class Command {
     public Command(Operation operation, String target,  MultivaluedMap<String, String> parameters, Registry registry) {
         this.operation = operation;
         this.target = registry.getBaseURI() + (target.isEmpty() ? "/" : "/" + target);
+        this.path = target;
         this.parameters = parameters;
         this.registry = registry;
         this.store = registry.getStore();

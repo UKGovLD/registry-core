@@ -252,6 +252,21 @@ public class TestAPI extends TomcatTestBase {
         Resource bw = m.getResource("http://environment.data.gov.uk/id/bathing-water/ukc2102-03600");
         assertEquals("Spittal", RDFUtil.getStringValue(bw, SKOS.prefLabel));
         
+        // Check read on delegated register
+        assertEquals(201, postFileStatus("test/bw-delegated.ttl", REG1));
+        assertEquals(204, post(REG1 + "/_bathingWaters?update&status=stable").getStatus());
+        m = getModelResponse(REG1 + "/bathingWaters?firstPage");
+        Resource register = m.getResource(REG1_URI + "/bathingWaters");
+        List<Resource> members = RDFUtil.allResourceValues(register, RDFS.member);
+        assertTrue(members.size() > 20);
+        for (Resource member : members) {
+            assertTrue(member.hasProperty(RDFS.label));
+            assertTrue(member.hasProperty(RDF.type));
+        }
+        m = getModelResponse(REG1 + "?entity=http://environment.data.gov.uk/id/bathing-water/ukc2102-03600");
+        bw = m.getResource("http://environment.data.gov.uk/id/bathing-water/ukc2102-03600");
+        assertEquals("Spittal", RDFUtil.getStringValue(bw, SKOS.prefLabel));
+        
 //        m.write(System.out, "Turtle");
     }
 
