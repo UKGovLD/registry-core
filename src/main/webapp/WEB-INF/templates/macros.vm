@@ -80,6 +80,11 @@
 
 #end
 
+## Conditional row in a metadata table
+#macro(metadatarow $label $values)
+  #if(!$values.isEmpty())<tr><td><strong>$label</strong></td><td>#foreach($value in $values)#render($value)#if( $foreach.hasNext )| #end#end</td></tr>#end
+#end
+
 ## Debug utility to display the roots of a model
 #macro(showmodel $model)
   #foreach($root in $model.listSubjects())
