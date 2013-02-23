@@ -13,24 +13,36 @@
   #set($node=$model.getNode($target))
 
   #set($members= $node.connectedNodes("^reg:register"))
+  #set($withItems=true)
+  #if($members.isEmpty())
+    #set($members= $node.connectedNodes("rdfs:member"))
+    #set($withItems=false)
+  #end
+  
   <table class="datatable">
     <thead>
       <tr>
-        <th>Notation</th>
+        #if($withItems)<th>Notation</th>#end
         <th>Label</th>
         <th>Type(s)</th>
         <th>Register/item</th>
-        <th>Status</th>
+        #if($withItems)<th>Status</th>#end
       </tr>
     </thead>
     <tbody>
-      #foreach($item in $members)
+      #foreach($member in $members)
         <tr>
-          <td> <a href="#linkhref($item)">$item.getPropertyValue("reg:notation").lexicalForm</a> </td>
-          <td> $item.name </td>
-          <td> #foreach($ty in $item.listPropertyValues("reg:itemClass"))$ty.name#if( $foreach.hasNext ), #end#end</td>
-          <td>#if($item.hasResourceValue("reg:itemClass", "reg:Register")) register #else item #end</td>
-          <td>#showstatus($item.getPropertyValue("reg:status"))</td>
+          #if($withItems)
+            <td> <a href="#linkhref($member)">$member.getPropertyValue("reg:notation").lexicalForm</a> </td>
+            <td> $member.name </td>
+            <td> #foreach($ty in $member.listPropertyValues("reg:itemClass"))$ty.name#if( $foreach.hasNext ), #end#end</td>
+            <td>#if($member.hasResourceValue("reg:itemClass", "reg:Register")) register #else item #end</td>
+            <td>#showstatus($member.getPropertyValue("reg:status"))</td>
+          #else
+            <td> <a href="#linkhref($member)">$member.name</a> </td>
+            <td> #foreach($ty in $member.listPropertyValues("rdf:type"))$ty.name#if( $foreach.hasNext ), #end#end</td>
+            <td>#if($member.hasResourceValue("rdf:type", "reg:Register")) register #else item #end</td>
+          #end
         </tr>
       #end
     </tbody>

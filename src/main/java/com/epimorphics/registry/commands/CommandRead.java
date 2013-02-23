@@ -45,6 +45,7 @@ import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.RDF;
+import com.hp.hpl.jena.vocabulary.RDFS;
 import com.sun.jersey.api.NotFoundException;
 
 
@@ -188,13 +189,22 @@ public class CommandRead extends Command {
             return register.getRoot().getModel();
         } else {
             Model view = ModelFactory.createDefaultModel();
-            List<Resource> members = paged ? new ArrayList<Resource>(length) : null;
+            List<Resource> members = (paged) ? new ArrayList<Resource>(length) : null;
+            if (!paged && withMetadata) {
+                members = new ArrayList<Resource>();
+            }
             boolean complete = false;
 
             if (delegation != null && delegation instanceof DelegationRecord) {
                 register.constructDelegatedView(view, (DelegationRecord) delegation, pagenum * length, length, members);
                 if (length == -1 || members.size() < length) {
                     complete = true;
+                }
+                if (withMetadata) {
+                    // No item information so add a consistent way to enumerate members
+                    for (Resource member : members) {
+                        member.addProperty(RDFS.member, register.getRoot());
+                    }
                 }
 
             } else {

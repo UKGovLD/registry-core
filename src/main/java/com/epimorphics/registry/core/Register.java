@@ -186,7 +186,9 @@ public class Register extends Description {
        addMembership(view, windowedMembers);
 
        if (items != null) {
-           items.addAll(windowedMembers);
+           for (Resource m : windowedMembers) {
+               items.add( m.inModel(view) );
+           }
        }
     }
 

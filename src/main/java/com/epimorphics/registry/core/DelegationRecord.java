@@ -12,6 +12,9 @@ package com.epimorphics.registry.core;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.ResultSet;
@@ -23,6 +26,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public class DelegationRecord extends ForwardingRecord {
+    static final Logger log = LoggerFactory.getLogger( DelegationRecord.class );
 
     protected Resource subject;
     protected Resource predicate;
@@ -49,6 +53,7 @@ public class DelegationRecord extends ForwardingRecord {
      * @return
      */
     public List<Resource> listMembers() {
+        log.debug("Fetch delegation members from " + getTarget());
         String query =
                 subject == null ?
                         String.format("SELECT ?m WHERE {?m <%s> <%s>}", predicate.getURI(), object.getURI())

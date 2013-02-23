@@ -59,6 +59,9 @@
    * Likewise entity lookup needs to check contained federated endpoints, possibly better done via cache than live
 
    * Validation of delegation record needs to include testing have pair sp or po
+   
+   * Table view of delegated register should probably do server side paging and sorting
+   * Cache management of delegated registers needs work, in fact all of cache management needs work - doesn't function through UI-
 
 ## UI Stack
 
