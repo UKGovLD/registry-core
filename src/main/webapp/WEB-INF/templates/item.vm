@@ -17,13 +17,15 @@
         #if($entity.getPropertyValue("dct:description"))
           $entity.getPropertyValue("dct:description").lexicalForm
         #else
-          << no description supplied >>
+          <em>no description supplied</em>
         #end
         </p>
       </div>
-      <div class="span2">
-        #showstatus($item.getPropertyValue("reg:status"))
-      </div>
+      #if($item.getPropertyValue("reg:status"))
+          <div class="span2">
+            #showstatus($item.getPropertyValue("reg:status"))
+          </div>
+      #end
     </div>
 
     <ul class="nav nav-tabs nav-compact action-tab">

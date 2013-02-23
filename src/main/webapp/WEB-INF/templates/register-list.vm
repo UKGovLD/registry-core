@@ -45,7 +45,7 @@
           #set($show=true)
         #else
           #set($item = $itemL[0])
-          #set($show = $item.hasResourceValue("reg:itemClass", "reg:Register"))
+          #set($show = !$item.hasResourceValue("reg:itemClass", "reg:Register"))
         #end
         #if($show)
           #if(!$started)

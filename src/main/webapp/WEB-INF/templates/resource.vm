@@ -10,7 +10,7 @@
     #if($entity.getPropertyValue("dct:description"))
       $entity.getPropertyValue("dct:description").lexicalForm
     #else
-      << no description supplied >>
+      <em>no description supplied</em>
     #end
     </p>
 
