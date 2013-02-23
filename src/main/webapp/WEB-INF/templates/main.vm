@@ -51,7 +51,11 @@
     #set($items=$node.connectedNodes("^reg:entity/^reg:definition"))
     #if(!$items.isEmpty())
       #set($item=$items.get(0))
-      #parse("item.vm")
+      #if($item.isAnon())
+        #parse("resource.vm")
+      #else
+        #parse("item.vm")
+      #end
     #else
       #parse("resource.vm")
     #end

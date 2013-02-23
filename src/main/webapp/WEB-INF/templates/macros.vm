@@ -32,6 +32,10 @@
       #end
 #end
 
+#macro(link $uri)
+  <a href="$uri">$uri</a>
+#end
+
 ## Display a property value in the RDF browser
 #macro(resentry $v)
   #if($v.isList())
