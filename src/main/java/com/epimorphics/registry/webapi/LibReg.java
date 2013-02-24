@@ -15,6 +15,7 @@ import com.epimorphics.rdfutil.ModelWrapper;
 import com.epimorphics.rdfutil.RDFNodeWrapper;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.util.Prefixes;
@@ -60,5 +61,24 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
             return null;
         }
         return getStore().listMembers(reg);
+    }
+    
+    public Status asStatus(Object state) {
+        if (state instanceof Status) {
+            return (Status)state;
+        } else if (state instanceof Resource) {
+            return Status.forResource((Resource)state);
+        } else if (state instanceof RDFNodeWrapper) {
+            return Status.forResource(((RDFNodeWrapper)state).asResource());
+        } else {
+            return null;
+        }
+    }
+    
+    public List<Status> nextStates(RDFNodeWrapper state) {
+        Status current = asStatus(state);
+        List<Status> next = current.nextStates();
+        next.remove(current);
+        return next;
     }
 }

@@ -1,22 +1,10 @@
 ## Global macros
 
 #macro(showstatus $status)
-  #if($status.uRI.endsWith("Stable"))
-    <span class="label label-success">Stable</span>
-  #elseif($status.uRI.endsWith("Experimental"))
-    <span class="label label-warning">Experimental</span>
-  #elseif($status.uRI.endsWith("Submitted"))
-    <span class="label">Submitted</span>
-  #elseif($status.uRI.endsWith("Invalid"))
-    <span class="label label-important">Invalid</span>
-  #elseif($status.uRI.endsWith("Superseded"))
-    <span class="label label-inverse">Superseded</span>
-  #elseif($status.uRI.endsWith("Retired"))
-    <span class="label label-inverse">Retired</span>
-  #else
-    $status.name
-  #end
+  <span class="label label-#statuslabel($lib.reg.asStatus($status).name())">$lib.reg.asStatus($status)</span>
 #end
+
+#macro(statuslabel $statusname)#if($statusname.equals("Stable"))success#elseif($statusname.equals("Experimental"))warning#elseif($statusname.equals("Invalid"))important#elseif($statusname.equals("Superseded"))inverse#elseif($statusname.equals("Retired"))inverse#else #end#end
 
 #macro(linkhref $res)#if($res.uRI.startsWith($registry.baseURI))$res.uRI.substring($registry.baseURI.length())#else${root}/?entity=$lib.pathEncode($res.getURI())#end#end
 

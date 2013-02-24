@@ -34,8 +34,10 @@
 
   #if($uri.isEmpty())
     #parse("root.vm")
+    
   #elseif($node.hasResourceValue("rdf:type","reg:Register"))
     #parse("register.vm")
+    
   #elseif($node.hasResourceValue("rdf:type","reg:RegisterItem"))
     #set($item=$node)
     #set($entity=$item.connectedNodes("reg:definition/reg:entity").get(0))
@@ -43,9 +45,11 @@
       #set($node=$entity)
       #set($uri=$lib.replaceAll($uri,"/_([^/]+)$", "/$1"))
       #parse("register.vm")
+      
     #else
       #parse("item.vm")
     #end
+    
   #else
     #set($entity=$node)
     #set($items=$node.connectedNodes("^reg:entity/^reg:definition"))

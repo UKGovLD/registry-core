@@ -66,7 +66,6 @@ public class CommandStatusUpdate extends Command {
     }
 
     private void doStatusUpdate(RegisterItem ri, String requestedStatus) {
-        // TODO lifecyle checks
         // TODO handle verification for accepted
         Resource status = parameters.containsKey(Parameters.FORCE) ? ri.forceStatus(requestedStatus): ri.setStatus(requestedStatus);
         if (status == null) {

@@ -9,6 +9,9 @@
 
 package com.epimorphics.registry.core;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.hp.hpl.jena.rdf.model.Resource;
 
@@ -110,7 +113,19 @@ public enum Status {
         default:
             return false;
         }
-
+    }
+    
+    /**
+     * Return a list of all status values which are legal successors to this one
+     */
+    public List<Status> nextStates() {
+        List<Status> results = new ArrayList<Status>();
+        for (Status s : Status.values()) {
+            if (legalNextState(s)) {
+                results.add(s);
+            }
+        }
+        return results;
     }
 
 }

@@ -60,17 +60,63 @@
 
      <div class="panel">
        <div class="panel-head">
-         <h4>Item metadata</h4>
+         <h4>About the Item</h4>
        </div>
        <div class="panel-body">
          <table class="table table-striped table-condensed">
-           #metadatarow("submitted on", $node.listPropertyValues("dct:dateSubmitted"))
-           #metadatarow("accepted  on", $node.listPropertyValues("dct:dateAccepted"))
-           #metadatarow("submitted by", $node.listPropertyValues("reg:submitter"))
-           #metadatarow("category", $node.listPropertyValues("reg:category"))
+           #metadatarow("submitted on", $item.listPropertyValues("dct:dateSubmitted"))
+           #metadatarow("accepted  on", $item.listPropertyValues("dct:dateAccepted"))
+           #metadatarow("submitted by", $item.listPropertyValues("reg:submitter"))
+           #metadatarow("category", $item.listPropertyValues("reg:category"))
          </table>
+       </div>
+     </div>
+
+     <div>
+       <h3 class="text-center">Actions</h3>
+       <a href="#status-dialog" role="button" class="btn" data-toggle="modal">Set status</a>
+     </div>
+     
+ 
+    <div id="status-dialog" class="modal hide" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3>Set status of $entity.name to ...</h3>
+      </div>
+      <div id="status-body" class="modal-body">
+        #foreach($status in $lib.reg.nextStates($item.getPropertyValue("reg:status")))
+            <button class="set-status btn btn-#statuslabel($status.name())" data-status="$status" data-target="#linkhref($item)">$status</button>
+        #end
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
       </div>
     </div>
+     
+    
   </div>
 </div>
 
+
+   <script type="text/javascript">
+    $(function() {
+
+       $(".set-status").click(function(event) {
+         var action = $(event.target).attr('data-target') + "?update&status=" + $(event.target).attr('data-status');
+         $.ajax(action,{
+            type : "POST",
+            complete : 
+              function(data, status, xhr){
+                $("#status-dialog").modal("hide");
+                location.reload();
+              },
+            error : 
+              function(xhr, status, error){ 
+               $("#status-body").html("<div class='alert'>Action failed: " + error + " - " + status + "</div>");
+              }  
+         }); 
+       });
+
+    });
+
+   </script>
