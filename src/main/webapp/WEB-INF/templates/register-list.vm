@@ -2,11 +2,8 @@
 
 ## Find the page and order entries
 
-  #set($items = $model.querySelectW("SELECT * where {?page a ldp:Page; api:items ?items.}"))
-  #if (!$items.isEmpty())
-    #set($members=$items.get(0).items.asList())
+  #if($hasmembers)
     #set($pageres=$items.get(0).page)
-    #if(!$members.isEmpty())
 
       #parse("paging.vm")
 
@@ -130,5 +127,4 @@
     #set($qparam="")
     #parse("paging.vm")
 
-    #end
   #end

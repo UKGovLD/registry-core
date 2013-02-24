@@ -1,3 +1,11 @@
+#set($items = $model.querySelectW("SELECT * where {?page a ldp:Page; api:items ?items.}"))
+#if (!$items.isEmpty())
+  #set($members=$items.get(0).items.asList())
+  #set($hasmembers=!$members.isEmpty())
+#else
+  #set($hasmembers=false)
+#end
+
  <div class="row space-above">
   <div class="span12">
     #parse("breadcrumbs.vm")
@@ -54,8 +62,82 @@
            #metadatarow("last changed on", $node.listPropertyValues("dct:modified"))
          </table>
       </div>
-     </div>
+    </div>
+     
+    ## Find a sample member
+    #if($hasmembers)
+      #set($itemL=$members[0].connectedNodes("^reg:entity/^reg:definition"))
+      #if(!$itemL.isEmpty())
+        #set($item=$itemL[0])
+      #else
+        #set($item=false)
+      #end
+    #end
+
+    <div>
+       <h3 class="text-center">Actions</h3>
+      #if($item)
+         <a href="#status-dialog" role="button" class="btn" data-toggle="modal">Set status</a>
+       #end
+       <a href="#register-dialog" role="button" class="btn" data-toggle="modal">Add registration</a>
+    </div>
+     
+    #if($item)
+        <div id="status-dialog" class="modal hide" tabindex="-1" role="dialog" aria-hidden="true">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3>Set status of whole register to ...</h3>
+          </div>
+          <div id="status-body" class="modal-body">
+            #foreach($status in $lib.reg.nextStates($item.getPropertyValue("reg:status")))
+                <button class="set-status btn btn-#statuslabel($status.name())" data-status="$status" data-target="#linkhref($node)">$status</button>
+            #end
+          </div>
+          <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+          </div>
+        </div>
+    #end
+
+    <div id="registration-dialog" class="modal hide" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3>Set status of whole register to ...</h3>
+      </div>
+      <div id="registration-body" class="modal-body">
+         Registration ...
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+      </div>
+    </div>
 
   </div>
 
 </div>
+
+
+<script type="text/javascript">
+    $(function() {
+
+#if($item)
+       $(".set-status").click(function(event) {
+         var action = $(event.target).attr('data-target') + "?update&status=" + $(event.target).attr('data-status');
+         $.ajax(action,{
+            type : "POST",
+            complete : 
+              function(data, status, xhr){
+                $("#status-dialog").modal("hide");
+                location.reload();
+              },
+            error : 
+              function(xhr, status, error){ 
+               $("#status-body").html("<div class='alert'>Action failed: " + error + " - " + status + "</div>");
+              }  
+         }); 
+       });
+#end
+
+    });
+
+</script>
