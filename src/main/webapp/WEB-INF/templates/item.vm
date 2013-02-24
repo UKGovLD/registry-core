@@ -87,6 +87,7 @@
         #foreach($status in $lib.reg.nextStates($item.getPropertyValue("reg:status")))
             <button class="set-status btn btn-#statuslabel($status.name())" data-status="$status" data-target="#linkhref($item)">$status</button>
         #end
+        <div id="status-error"></div>
       </div>
       <div class="modal-footer">
         <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
@@ -112,7 +113,7 @@
               },
             error : 
               function(xhr, status, error){ 
-               $("#status-body").html("<div class='alert'>Action failed: " + error + " - " + status + "</div>");
+               $("#status-error").html("<div class='alert'> <button type='button' class='close' data-dismiss='alert'>&times;</button>Action failed: " + error + " - " + status + "</div>");
               }  
          }); 
        });

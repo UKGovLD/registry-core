@@ -18,7 +18,6 @@ import java.net.URI;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -30,6 +29,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.epimorphics.registry.commands.CommandUpdate;
 import com.epimorphics.registry.core.Command;
@@ -44,8 +46,13 @@ import com.epimorphics.server.core.ServiceConfig;
 import com.epimorphics.server.templates.VelocityRender;
 import com.epimorphics.server.webapi.BaseEndpoint;
 import com.epimorphics.server.webapi.WebApiException;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.util.FileManager;
+import com.hp.hpl.jena.util.FileUtils;
 import com.sun.jersey.api.NotFoundException;
+import com.sun.jersey.core.header.FormDataContentDisposition;
+import com.sun.jersey.multipart.FormDataParam;
 
 /**
  * Filter all requests as possible register API requests.
@@ -53,6 +60,7 @@ import com.sun.jersey.api.NotFoundException;
  */
 @Path("{path: .*}")
 public class RequestProcessor extends BaseEndpoint {
+    static final Logger log = LoggerFactory.getLogger( RequestProcessor.class );
 
 
     @GET
@@ -186,10 +194,37 @@ public class RequestProcessor extends BaseEndpoint {
     }
     
     @POST
-    @Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_FORM_URLENCODED})
+    @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
     public Response simpleForm(@Context HttpHeaders hh, InputStream body) {
-        System.out.println("UI action called");
+        log.debug("simple form invoked");
         return register(hh, body);
+    }
+            
+    @POST
+    @Consumes({MediaType.MULTIPART_FORM_DATA})
+    public Response fileForm(@Context HttpHeaders hh,
+            @FormDataParam("file") InputStream uploadedInputStream,
+            @FormDataParam("file") FormDataContentDisposition fileDetail,
+            @FormDataParam("action") String action) {
+        log.debug("Multipart form invoked on file " + fileDetail.getFileName() + " action=" + action);
+        Model payload = ModelFactory.createDefaultModel();
+        if(fileDetail == null || fileDetail.getFileName() == null) {
+            throw new WebApiException(Response.Status.BAD_REQUEST, "No file uploaded");
+        }
+        if (fileDetail.getFileName().endsWith(".ttl")) {
+            payload.read(uploadedInputStream, DUMMY_BASE_URI, FileUtils.langTurtle);
+        } else {
+            payload.read(uploadedInputStream, DUMMY_BASE_URI, FileUtils.langXML);
+        }
+        Command command = null;
+        if (action.equals("register")) {
+            command = makeCommand( Operation.Register );
+        }
+        if (command == null) {
+            throw new WebApiException(Response.Status.BAD_REQUEST, "Action " + action + " not recognized");
+        }
+        command.setPayload(payload);
+        return command.execute();
     }
 
     static class PassThroughResult {

@@ -4,7 +4,6 @@
     </div>
    </div> <!-- End of container -->
 
-   <script type="text/javascript" src="$uiroot/js/jquery-1.8.3.min.js"></script>
    <script type="text/javascript" src="$uiroot/js/bootstrap.min.js"></script>
    <script type="text/javascript" src="$uiroot/js/jquery.dataTables.min.js"></script>
    <script type="text/javascript">
