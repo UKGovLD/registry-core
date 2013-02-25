@@ -131,6 +131,7 @@
           <li><a href="#forward" data-toggle="pill">Forward</a></li>
           <li><a href="#delegation" data-toggle="pill">Delegation</a></li>
         </ul>
+
         <div class="pill-content">
           <div class="pill-pane" id="item-upload">
             <form class="form-inline ajax-form" action="#linkhref($node)" method="post" enctype="multipart/form-data">
@@ -143,7 +144,9 @@
             </form>
             <div class="ajax-error"></div>
           </div>
+
           <div class="pill-pane" id="item">item</div>
+
           <div class="pill-pane" id="batch">
             <form class="form-inline ajax-form" action="#linkhref($node)?batch-managed" method="post" enctype="multipart/form-data">
               <label>
@@ -155,9 +158,13 @@
             </form>
             <div class="ajax-error"></div>
           </div>
+
           <div class="pill-pane" id="register">register</div>
+
           <div class="pill-pane" id="forward">forward</div>
+
           <div class="pill-pane" id="delegation">delegation</div>
+
         </div>
       </div>
       <div class="modal-footer">
