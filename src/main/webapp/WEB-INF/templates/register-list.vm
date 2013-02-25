@@ -18,13 +18,13 @@
             <div class="row">
               <div class="span6">
                 <div class="blob-inner">
-                    <strong>Register:</strong> #linkfor($member)
+                    <strong>Register:</strong> #linkfor($item)
                     #if($member.getPropertyValue("dct:description"))
                       <p>$member.getPropertyValue("dct:description").lexicalForm</p>
                     #end
                 </div>
               </div>
-              <div class="span1 pull-right">
+              <div class="pull-right">
                 #showstatus($item.getPropertyValue("reg:status"))
               </div>
             </div>
@@ -61,13 +61,13 @@
                 </div>
               </div>
               #if(!$itemL.isEmpty())
-                <div class="span1 pull-right">
+                <div class="pull-right">
                   #showstatus($item.getPropertyValue("reg:status"))
                 </div>
               #end
             </div>
           </div>
-          
+
         #end
       #end
 
@@ -99,13 +99,13 @@
                   #end
                 </div>
                 <div class="span2">
-                  <strong>Label:</strong> $item.name
+                  <strong>Label:</strong> $member.name
                 </div>
                 <div class="span2">
                   <strong>Type:</strong> #foreach($ty in $member.listPropertyValues("rdf:type"))#linkfor($ty)#if( $foreach.hasNext ), #end#end
                 </div>
               #if(!$itemL.isEmpty())
-                <div class="span1 pull-right">
+                <div class="pull-right">
                   #showstatus($item.getPropertyValue("reg:status"))
                 </div>
               #end

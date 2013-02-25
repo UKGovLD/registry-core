@@ -15,6 +15,8 @@ import static com.epimorphics.webapi.marshalling.RDFXMLMarshaller.MIME_RDFXML;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -51,7 +53,8 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.util.FileManager;
 import com.hp.hpl.jena.util.FileUtils;
 import com.sun.jersey.api.NotFoundException;
-import com.sun.jersey.core.header.FormDataContentDisposition;
+import com.sun.jersey.multipart.FormDataBodyPart;
+import com.sun.jersey.multipart.FormDataMultiPart;
 import com.sun.jersey.multipart.FormDataParam;
 
 /**
@@ -96,7 +99,7 @@ public class RequestProcessor extends BaseEndpoint {
             return doRead(result);
         }
     }
-    
+
     private Response doRead(PassThroughResult ptr) {
         Command command = null;
         if (uriInfo.getQueryParameters().containsKey(Parameters.QUERY)) {
@@ -192,49 +195,82 @@ public class RequestProcessor extends BaseEndpoint {
         command.setPayload( getBodyModel(hh, body) );
         return command.execute();
     }
-    
+
     @POST
     @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
     public Response simpleForm(@Context HttpHeaders hh, InputStream body) {
         log.debug("simple form invoked");
         return register(hh, body);
     }
-            
+
     @POST
     @Consumes({MediaType.MULTIPART_FORM_DATA})
-    public Response fileForm(@Context HttpHeaders hh,
-            @FormDataParam("file") InputStream uploadedInputStream,
-            @FormDataParam("file") FormDataContentDisposition fileDetail,
+    public Response fileForm(@Context HttpHeaders hh, FormDataMultiPart multiPart,
+//            @FormDataParam("file") InputStream uploadedInputStream,
+//            @FormDataParam("file") FormDataContentDisposition fileDetail,
             @FormDataParam("action") String action) {
-        log.debug("Multipart form invoked on file " + fileDetail.getFileName() + " action=" + action);
-        Model payload = ModelFactory.createDefaultModel();
-        if(fileDetail == null || fileDetail.getFileName() == null) {
+
+        List<FormDataBodyPart> fields = multiPart.getFields("file");
+        List<String> successfullyProcessed = new ArrayList<>();
+        int success = 0;
+        int failure = 0;
+        StringBuffer errorMessages = new StringBuffer();
+        for(FormDataBodyPart field : fields){
+            InputStream uploadedInputStream       = field.getValueAs(InputStream.class);
+            String filename = field.getContentDisposition().getFileName();
+            log.debug("Multipart form invoked on file " + filename + " action=" + action);
+            Model payload = ModelFactory.createDefaultModel();
+            if (filename.endsWith(".ttl")) {
+                payload.read(uploadedInputStream, DUMMY_BASE_URI, FileUtils.langTurtle);
+            } else {
+                payload.read(uploadedInputStream, DUMMY_BASE_URI, FileUtils.langXML);
+            }
+            Command command = null;
+            if (action.equals("register")) {
+                command = makeCommand( Operation.Register );
+            }
+            if (command == null) {
+                throw new WebApiException(Response.Status.BAD_REQUEST, "Action " + action + " not recognized");
+            }
+            command.setPayload(payload);
+            try {
+                Response response = command.execute();
+                if (response.getStatus() >= 400) {
+                    failure++;
+                    errorMessages.append("<p>" + filename + " - " + response.getEntity() + "</p>");
+                } else {
+                    success++;
+                    successfullyProcessed.add(filename);
+                }
+            } catch (Exception e) {
+                failure++;
+                errorMessages.append("<p>" + filename + " - internal error (" + e.getMessage() + ") </p>");
+            }
+        }
+        if (success + failure == 0) {
             throw new WebApiException(Response.Status.BAD_REQUEST, "No file uploaded");
         }
-        if (fileDetail.getFileName().endsWith(".ttl")) {
-            payload.read(uploadedInputStream, DUMMY_BASE_URI, FileUtils.langTurtle);
-        } else {
-            payload.read(uploadedInputStream, DUMMY_BASE_URI, FileUtils.langXML);
+        if (failure != 0) {
+            if (success > 0) {
+                errorMessages.append("<p>Other file were successfully processed: ");
+                for (String succeeded : successfullyProcessed) {
+                    errorMessages.append(" " + succeeded);
+                }
+                errorMessages.append("</p>");
+            }
+            throw new WebApiException(Response.Status.BAD_REQUEST, errorMessages.toString());
         }
-        Command command = null;
-        if (action.equals("register")) {
-            command = makeCommand( Operation.Register );
-        }
-        if (command == null) {
-            throw new WebApiException(Response.Status.BAD_REQUEST, "Action " + action + " not recognized");
-        }
-        command.setPayload(payload);
-        return command.execute();
+        return Response.ok().build();
     }
 
     static class PassThroughResult {
         Response response;
         ForwardingRecord record;
-        
+
         public PassThroughResult(ForwardingRecord record) {
             this.record = record;
         }
-        
+
         public boolean isDone() {
             return response != null;
         }
@@ -250,6 +286,6 @@ public class RequestProcessor extends BaseEndpoint {
         public ForwardingRecord getRecord() {
             return record;
         }
-        
+
     }
 }

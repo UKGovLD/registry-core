@@ -9,6 +9,7 @@
 
 package com.epimorphics.registry.webapi;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.epimorphics.rdfutil.ModelWrapper;
@@ -62,7 +63,7 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
         }
         return getStore().listMembers(reg);
     }
-    
+
     public Status asStatus(Object state) {
         if (state instanceof Status) {
             return (Status)state;
@@ -74,9 +75,10 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
             return null;
         }
     }
-    
+
     public List<Status> nextStates(RDFNodeWrapper state) {
         Status current = asStatus(state);
+        if (current == null) return new ArrayList<Status>();
         List<Status> next = current.nextStates();
         next.remove(current);
         return next;

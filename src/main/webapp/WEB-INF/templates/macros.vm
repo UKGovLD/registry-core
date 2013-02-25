@@ -73,6 +73,26 @@
   #if(!$values.isEmpty())<tr><td><strong>$label</strong></td><td>#foreach($value in $values)#render($value)#if( $foreach.hasNext )| #end#end</td></tr>#end
 #end
 
+## Insert a set status dialog which using item as the source of current status
+## target can be different to allow setting a whole register
+#macro(statusSet $dialogID $dialogCaption $item $target)
+        <div id="$dialogID" class="modal hide" tabindex="-1" role="dialog" aria-hidden="true">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3>$dialogCaption</h3>
+          </div>
+          <div id="status-body" class="modal-body">
+            #foreach($status in $lib.reg.nextStates($item.getPropertyValue("reg:status")))
+                <button class="set-status btn btn-#statuslabel($status.name())" data-status="$status" data-target="#linkhref($target)">$status</button>
+            #end
+          </div>
+          <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+          </div>
+        </div>
+#end
+
+
 ## Debug utility to display the roots of a model
 #macro(showmodel $model)
   #foreach($root in $model.listSubjects())
