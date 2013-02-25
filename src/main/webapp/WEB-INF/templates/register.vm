@@ -99,15 +99,15 @@
     <div>
        <h3 class="text-center">Actions</h3>
        #if($sample)
-         <div class="offset1 span3">
+         <div class="span3">
            <a href="#status-dialog" role="button" class="btn" data-toggle="modal">Set contents status</a>
          </div>
        #end
-       <div class="offset1 span3 space-above">
+       <div class="span3 space-above">
          <a href="#register-status-dialog" role="button" class="btn" data-toggle="modal">Set register status</a>
        </div>
-       <div class="offset1 span3 space-above">
-         <a href="#registration-dialog" role="button" class="btn" data-toggle="modal">Add registration</a>
+       <div class="span3 space-above">
+         <a href="#registration-dialog" role="button" class="btn btn-success" data-toggle="modal">Add registration</a>
        </div>
     </div>
 
@@ -144,7 +144,17 @@
             <div class="ajax-error"></div>
           </div>
           <div class="pill-pane" id="item">item</div>
-          <div class="pill-pane" id="batch">batch</div>
+          <div class="pill-pane" id="batch">
+            <form class="form-inline ajax-form" action="#linkhref($node)?batch-managed" method="post" enctype="multipart/form-data">
+              <label>
+                Choose a bulk file to upload:
+                <input type="file" name="file" multiple />
+              </label>
+              <input type="hidden" name="action" value="register" />
+              <button class="btn">Upload and register</button>
+            </form>
+            <div class="ajax-error"></div>
+          </div>
           <div class="pill-pane" id="register">register</div>
           <div class="pill-pane" id="forward">forward</div>
           <div class="pill-pane" id="delegation">delegation</div>
