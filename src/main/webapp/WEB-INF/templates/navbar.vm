@@ -11,7 +11,7 @@
       <div class="span1"> </div>
       <ul class="nav">
         <li><a href="$uiroot/check" class="popinfo" data-trigger="hover" data-placement="bottom"
-            data-content="Support for checking whether a set of resources have been registered and are current valid (tbd).">
+            data-content="Support for checking whether a set of resources have been registered and are current valid.">
             Check URI</a></li>
         <li><a href="#" class="popinfo" data-trigger="hover" data-placement="bottom"
             data-content="View and approve/reject any pending submissions (tbd).">
