@@ -9,6 +9,15 @@
 
 package com.epimorphics.registry.util;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import com.epimorphics.registry.core.Register;
+import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.store.RegisterEntryInfo;
+import com.epimorphics.registry.webapi.JsonContext;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.shared.PrefixMapping;
 import com.hp.hpl.jena.util.FileManager;
 
@@ -18,16 +27,83 @@ import com.hp.hpl.jena.util.FileManager;
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public class Prefixes {
-    static final String PREFIXES_FILE = "prefixes.ttl";
+    // Only used for bootstrapping
+    public static final String PREFIXES_FILE = "prefixes.ttl";
+
+    public static final String PREFIX_REGISTER = "/system/prefixes";
 
     static PrefixMapping prefixes;
+    static PrefixMapping defaultPrefixes;
+    static Map<String, Object> jsonldContext;
     
     static {
-        prefixes = FileManager.get().loadModel(PREFIXES_FILE);
+        defaultPrefixes = FileManager.get().loadModel(PREFIXES_FILE);
+    }
+
+    /**
+     * Return the hardwired default prefixes used during boostrap 
+     * and for internal query implementations
+     */
+    public static PrefixMapping getDefault() {
+        return defaultPrefixes;
     }
     
+    /**
+     * Return the prefix mapping derived from the prefixes system register
+     * use for external serializations
+     */
     public static PrefixMapping get() {
+        if (prefixes == null) {
+            prefixes = loadPrefixes();
+        }
         return prefixes;
     }
+    
+    /**
+     * Return a default JSON-LD context declaring all the known prefixes
+     */
+    public static Map<String, Object> getJsonldContext() {
+        if (jsonldContext == null) {
+            jsonldContext = new HashMap<String, Object>();
+            Map<String, String> map = get().getNsPrefixMap();
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                jsonldContext.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return jsonldContext;
+    }
+    
+    /**
+     * Return the URI of the prefixes register
+     */
+    public static String getPrefixRegisterURI() {
+        return  Registry.get().getBaseURI() + PREFIX_REGISTER;
+    }
+    
+    /**
+     * Return the URI of of the system json context
+     */
+    public static String getJsonContextURI() {
+        return  Registry.get().getBaseURI() + JsonContext.JSON_CONTEXT_PATH;
+    }
+    
+    /**
+     * Flush the cache if system/prefixes register has been updated
+     * TODO need notification mechanism to do this properly
+     */
+    public static void resetCache() {
+        prefixes = null;
+        jsonldContext = null;
+    }
+    
+    private static PrefixMapping loadPrefixes() {
+        Register prefixesRegister = new Register( ResourceFactory.createResource( getPrefixRegisterURI() ) );
+        prefixesRegister.setStore( Registry.get().getStore() );
+        PrefixMapping pm = ModelFactory.createDefaultModel();
+        for (RegisterEntryInfo info : prefixesRegister.getMembers()) {
+            pm.setNsPrefix(info.getNotation(), info.getEntityURI());
+        }
+        return pm;
+   }
 
 }

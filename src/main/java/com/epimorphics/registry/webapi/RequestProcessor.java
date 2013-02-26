@@ -43,6 +43,7 @@ import com.epimorphics.registry.core.ForwardingRecord.Type;
 import com.epimorphics.registry.core.ForwardingService;
 import com.epimorphics.registry.core.MatchResult;
 import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.util.JSONLDSupport;
 import com.epimorphics.registry.util.PATCH;
 import com.epimorphics.server.core.ServiceConfig;
 import com.epimorphics.server.templates.VelocityRender;
@@ -90,7 +91,7 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     @GET
-    @Produces({MIME_TURTLE, MIME_RDFXML})
+    @Produces({MIME_TURTLE, MIME_RDFXML, JSONLDSupport.MIME_JSONLD})
     public Response read() {
         PassThroughResult result = checkForPassThrough();
         if (result != null && result.isDone()) {
@@ -155,7 +156,7 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     @POST
-    @Consumes({MIME_TURTLE, MIME_RDFXML})
+    @Consumes({MIME_TURTLE, MIME_RDFXML, JSONLDSupport.MIME_JSONLD})
     public Response register(@Context HttpHeaders hh, InputStream body) {
         MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
         Command command = null;
@@ -174,7 +175,7 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     @PUT
-    @Consumes({MIME_TURTLE, MIME_RDFXML})
+    @Consumes({MIME_TURTLE, MIME_RDFXML, JSONLDSupport.MIME_JSONLD})
     public Response update(@Context HttpHeaders hh, InputStream body) {
         Command command = makeCommand( Operation.Update );
         command.setPayload( getBodyModel(hh, body) );
@@ -222,6 +223,8 @@ public class RequestProcessor extends BaseEndpoint {
             Model payload = ModelFactory.createDefaultModel();
             if (filename.endsWith(".ttl")) {
                 payload.read(uploadedInputStream, DUMMY_BASE_URI, FileUtils.langTurtle);
+            } else if (filename.endsWith(".jsonld")) {
+                payload = JSONLDSupport.readModel(uploadedInputStream);
             } else {
                 payload.read(uploadedInputStream, DUMMY_BASE_URI, FileUtils.langXML);
             }
@@ -261,6 +264,16 @@ public class RequestProcessor extends BaseEndpoint {
             throw new WebApiException(Response.Status.BAD_REQUEST, errorMessages.toString());
         }
         return Response.ok().build();
+    }
+
+    // Inject support for JSON-LD
+    @Override
+    public Model getBodyModel(HttpHeaders hh, InputStream body) {
+        if (hh.getMediaType().equals(JSONLDSupport.MT_JSONLD)) {
+            return JSONLDSupport.readModel(body);
+        } else {
+            return super.getBodyModel(hh, body);
+        }
     }
 
     static class PassThroughResult {

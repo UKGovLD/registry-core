@@ -41,10 +41,14 @@ public class DescriptionCache  {
     }
     
     public void flush(String uri) {
+        // TODO replace this with selective reset when we have event broadcast working
+        Prefixes.resetCache();
         cache.remove(uri);
     }
     
     public void clear() {
+        // TODO replace this with selective reset when we have event broadcast working
+        Prefixes.resetCache();
         cache.clear();
     }
 }

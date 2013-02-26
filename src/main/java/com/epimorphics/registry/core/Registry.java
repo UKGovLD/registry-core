@@ -109,13 +109,13 @@ public class Registry extends ServiceBase implements Service {
             }
             log.info("Installed bootstrap root register");
         }
+        
+        registry = this;   // Assumes singleton registry
 
         VelocityRender velocity = ServiceConfig.get().getServiceAs(Registry.VELOCITY_SERVICE, VelocityRender.class);
         if (velocity != null) {
             velocity.setPrefixes( Prefixes.get() );
         }
-
-        registry = this;   // Assumes singleton registry
 
         String fname = config.get(FORWARDER_PARAM);
         if (fname != null) {

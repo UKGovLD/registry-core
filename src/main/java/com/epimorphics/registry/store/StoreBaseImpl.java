@@ -237,7 +237,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     public Description getVersionAt(String uri, long time) {
         lockStore();
         try {
-            RDFNode version = selectFirstVar("version", getDefaultModel(), VERSION_AT_QUERY, Prefixes.get(),
+            RDFNode version = selectFirstVar("version", getDefaultModel(), VERSION_AT_QUERY, Prefixes.getDefault(),
                     "root", ResourceFactory.createResource(uri), "time", RDFUtil.fromDateTime(time) );
             if (version != null && version.isURIResource()) {
                 return doGetVersion( version.asResource().getURI(), true );
@@ -265,7 +265,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     public List<VersionInfo> listVersions(String uri) {
         lockStore();
         try {
-            ResultSet rs = selectAll(getDefaultModel(), VERSION_LIST_QUERY, Prefixes.get(),
+            ResultSet rs = selectAll(getDefaultModel(), VERSION_LIST_QUERY, Prefixes.getDefault(),
                 createBindings("root", ResourceFactory.createResource(uri)));
             List<VersionInfo> results = new ArrayList<VersionInfo>();
             while (rs.hasNext()) {
@@ -430,7 +430,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         try {
             // A shared model would save having 2N models around but makes filtering painful
 //            Model shared = ModelFactory.createDefaultModel();
-            List<RDFNode> items = selectAllVar("ri", getDefaultModel(), REGISTER_ENUM_QUERY, Prefixes.get(),
+            List<RDFNode> items = selectAllVar("ri", getDefaultModel(), REGISTER_ENUM_QUERY, Prefixes.getDefault(),
                     "register", register.getRoot() );
             List<RegisterItem> results = new ArrayList<RegisterItem>(items.size());
             for ( RDFNode itemR : items) {
@@ -455,7 +455,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     public List<RegisterEntryInfo> listMembers(Register register) {
         lockStore();
         try {
-            ResultSet rs = selectAll(getDefaultModel(), REGISTER_LIST_QUERY, Prefixes.get(),
+            ResultSet rs = selectAll(getDefaultModel(), REGISTER_LIST_QUERY, Prefixes.getDefault(),
                                         createBindings("register", register.getRoot()) );
             List<RegisterEntryInfo> results = new ArrayList<RegisterEntryInfo>();
             Resource priorItem = null;
@@ -510,12 +510,12 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     @Override
     public void loadBootstrap(String filename) {
         Model bootmodel = FileManager.get().loadModel(filename); // Load first in case of errors
-        lock("all");
+        lock("/");
         lockStoreWrite();
         try {
             getDefaultModel().add( bootmodel );
         } finally {
-            unlock("all");
+            unlock("/");
         }
     }
 
@@ -537,7 +537,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             }
             modCurrent(register).removeAll(DCTerms.modified).addProperty(DCTerms.modified, getDefaultModel().createTypedLiteral(now));
         } finally {
-unlockStore();
+            unlockStore();
         }
     }
 
@@ -730,7 +730,7 @@ unlockStore();
         lockStore();
         try {
             Model m = getDefaultModel();
-            ResultSet rs = QueryUtil.selectAll(m, DELEGATION_LIST_QUERY, Prefixes.get());
+            ResultSet rs = QueryUtil.selectAll(m, DELEGATION_LIST_QUERY, Prefixes.getDefault());
             while (rs.hasNext()) {
                 QuerySolution soln = rs.nextSolution();
                 Status status = Status.forResource( soln.getResource("status") );

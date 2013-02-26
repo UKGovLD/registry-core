@@ -52,6 +52,8 @@ curl -i -H "Content-Type: text/turtle" -X POST --data "@test/bw-delegated.ttl" h
 curl -i -X POST "http://localhost:8080/def/_bathingWaters?update&status=stable"
 curl -i -H "Accept:text/turtle" http://localhost:8080/def/bathingWaters?firstPage
 
+curl -i -H "Content-Type: application/ld+json" -X POST --data "@test/purple.jsonld" http://localhost:8080/def/colours
+
 
 # Configure proxy update permissions
 
