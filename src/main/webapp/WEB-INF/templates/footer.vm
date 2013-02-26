@@ -16,10 +16,12 @@
            var pattern=/#.+/gi
            var contentID = e.target.toString().match(pattern)[0];
            var action = $(contentID).attr('data-action')
-           $(contentID).load('$uiroot/' + action +'?uri=$lib.pathEncode($uri)&requestor=$requestor', function(){
+           if (action) {
+             $(contentID).load('$uiroot/' + action +'?uri=$lib.pathEncode($uri)&requestor=$requestor', function(){
                 $('.action-tab').tab(); //reinitialize tabs
                 $('.datatable').dataTable();
-            });
+              });
+           };
         });
 
     });

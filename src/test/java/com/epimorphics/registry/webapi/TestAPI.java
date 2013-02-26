@@ -24,10 +24,14 @@ import org.junit.Test;
 
 import com.epimorphics.rdfutil.QueryUtil;
 import com.epimorphics.rdfutil.RDFUtil;
+import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.util.JSONLDSupport;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.RegistryVocab;
+import com.epimorphics.server.core.ServiceConfig;
+import com.epimorphics.server.core.Store;
 import com.epimorphics.util.TestUtil;
 import com.epimorphics.vocabs.API;
 import com.epimorphics.vocabs.SKOS;
@@ -96,6 +100,9 @@ public class TestAPI extends TomcatTestBase {
         m = checkModelResponse(REG1 + "/_black", EXT_BLACK, "test/expected/absolute-black.ttl");
         checkEntity(m, ROOT_REGISTER + "reg1/_black", EXT_BLACK);
 
+        StoreAPI stsore = Registry.get().getStore();
+        
+                
         // Entity retrieval
         checkModelResponse(REG1 + "?entity=" + EXT_BLACK, EXT_BLACK, "test/expected/absolute-black.ttl");
         checkModelResponse(BASE_URL + "?entity=" + EXT_BLACK, EXT_BLACK, "test/expected/absolute-black.ttl");
@@ -133,7 +140,10 @@ public class TestAPI extends TomcatTestBase {
 
         // Register listing
         assertEquals(201, postFileStatus("test/blue.ttl", REG1));
-        checkModelResponse(REG1 + "?non-member-properties", REG1_URI, "test/expected/reg1-empty.ttl");
+        m = getModelResponse(REG1 + "?non-member-properties");
+        m.write(System.out, "Turtle");
+
+        checkModelResponse(m, REG1_URI, "test/expected/reg1-empty.ttl");
         checkRegisterList( getModelResponse(REG1 + "?status=stable"), REG1_URI, "red1b");
         checkRegisterList( getModelResponse(REG1 + "?status=experimental"), REG1_URI, "black");
         checkRegisterList( getModelResponse(REG1 + "?status=valid"), REG1_URI, "red1b", "black");
@@ -142,13 +152,16 @@ public class TestAPI extends TomcatTestBase {
         checkRegisterList( getModelResponse(REG1 + "?status=any"), REG1_URI, "red1b", "black", "blue");
 
         // Register metadata view
-        checkModelResponse(REG1 + "?non-member-properties&_view=with_metadata", REG1_URI, "test/expected/reg1_nmp_metadata.ttl");
+        m = getModelResponse(REG1 + "?non-member-properties&_view=with_metadata");
+        checkModelResponse(m, REG1_URI, "test/expected/reg1_nmp_metadata.ttl");
+        checkModelResponse(m, REG1_ITEM, "test/expected/reg1_nmp_metadata.ttl");
         m = getModelResponse(REG1 + "?_view=with_metadata");
         checkModelResponse(m, REG1_URI, "test/expected/reg1_red_black_metadata.ttl");
         checkModelResponse(m, REG1_URI+"/red", "test/expected/reg1_red_black_metadata.ttl");
         checkModelResponse(m, REG1_URI+"/_red", "test/expected/reg1_red_black_metadata.ttl");
         checkModelResponse(m, EXT_BLACK, "test/expected/reg1_red_black_metadata.ttl");
         checkModelResponse(m, REG1_URI+"/_black", "test/expected/reg1_red_black_metadata.ttl");
+        checkModelResponse(m, REG1_ITEM, "test/expected/reg1_nmp_metadata.ttl");
 
         // Register paging
         makeRegister(60);
@@ -288,7 +301,7 @@ public class TestAPI extends TomcatTestBase {
         pm = Prefixes.get().getNsPrefixMap();
         assertTrue(pm.containsKey("xyz"));
         assertEquals("http://example.com/xyz", pm.get("xyz"));
-        
+
         // JSON-LD checks
         assertEquals(201, postFileStatus("test/purple-testcase.jsonld", REG1, JSONLDSupport.MIME_JSONLD));
         m = getModelResponse(BASE_URL + "reg1/purple");
@@ -303,8 +316,11 @@ public class TestAPI extends TomcatTestBase {
         is.close();
         r = m.getResource(ROOT_REGISTER + "reg1/blue");
         assertEquals("blue", RDFUtil.getStringValue(r, RDFS.label));
-        
+
 //        m.write(System.out, "Turtle");
+
+//        System.out.println("Store dump");
+//        ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel().write(System.out, "Turtle");
     }
 
     private void checkPageResponse(Model m, String nextpage, int length) {

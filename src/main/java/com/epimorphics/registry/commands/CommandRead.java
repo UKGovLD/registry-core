@@ -127,12 +127,15 @@ public class CommandRead extends Command {
         if (entityWithMetadata) {
             d = Description.descriptionFrom(d.asRegisterItem().getEntity(), store);
         }
-        if (d instanceof Register) {
-            m = registerRead(d.asRegister());
-        } else if (d instanceof RegisterItem) {
-            Resource entity = d.asRegisterItem().getEntity();
-            if (entity != null && entity.hasProperty(RDF.type, RegistryVocab.Register)) {
-                m.add( registerRead( Description.descriptionFrom(entity, store).asRegister() ) );
+        if (!parameters.containsKey(COLLECTION_METADATA_ONLY)) {
+            if (d instanceof Register) {
+                // add this way round so as not to put members in the cached copy of the register description
+                m = registerRead(d.asRegister()).add(m);
+            } else if (d instanceof RegisterItem) {
+                Resource entity = d.asRegisterItem().getEntity();
+                if (entity != null && entity.hasProperty(RDF.type, RegistryVocab.Register)) {
+                    m.add( registerRead( Description.descriptionFrom(entity, store).asRegister() ) );
+                }
             }
         }
 
@@ -183,7 +186,7 @@ public class CommandRead extends Command {
                 }
             }
         }
-        
+
         // Check for contained delegation points
         Resource entity = ResourceFactory.createResource(uri);
         for (DelegationRecord delegation : registry.getForwarder().listDelegations(path)) {
@@ -197,7 +200,7 @@ public class CommandRead extends Command {
                         .addProperty(RDF.type, RegistryVocab.DelegatedRegister);
                 result.createResource()
                     .addProperty(RegistryVocab.definition, entityRef)
-                    .addProperty(RegistryVocab.register, registerRef); 
+                    .addProperty(RegistryVocab.register, registerRef);
             }
         }
         return returnModel(result, target);

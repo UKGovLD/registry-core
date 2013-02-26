@@ -22,10 +22,10 @@
     ## Name/description header section
     <div class="row">
       <div class="span6">
-        <h1>Register: $node.name</h1>
+        <h1>Register: $register.name</h1>
         <p>
-          #if($node.getPropertyValue("dct:description"))
-            $node.getPropertyValue("dct:description").lexicalForm
+          #if($register.getPropertyValue("dct:description"))
+            $register.getPropertyValue("dct:description").lexicalForm
           #else
             <em>no description supplied</em>
           #end
@@ -56,7 +56,7 @@
             <p>Page is loading ...</p>
           </div>
           <div class="tab-pane" id="metadata">
-             #restable($node, "table-striped table-condensed")
+             #restable($register, "table-striped table-condensed")
           </div>
           <div class="tab-pane" id="administer">
             <p>To be implemented.</p>
@@ -69,7 +69,7 @@
 
   ## Right hand column RDF access, metadata and actions
   <div class="span4">
-    #set($entity=$node)
+    #set($entity=$register)
     #parse("formats.vm")
 
     <div class="panel">
@@ -78,10 +78,10 @@
       </div>
       <div class="panel-body">
          <table class="table table-striped table-condensed">
-           #metadatarow("owned by", $node.listPropertyValues("reg:owner"))
-           #metadatarow("managed by", $node.listPropertyValues("reg:manager"))
-           #metadatarow("license", $node.listPropertyValues("dct:license"))
-           #metadatarow("last changed on", $node.listPropertyValues("dct:modified"))
+           #metadatarow("owned by", $register.listPropertyValues("reg:owner"))
+           #metadatarow("managed by", $register.listPropertyValues("reg:manager"))
+           #metadatarow("license", $register.listPropertyValues("dct:license"))
+           #metadatarow("last changed on", $register.listPropertyValues("dct:modified"))
          </table>
       </div>
     </div>
@@ -134,7 +134,7 @@
 
         <div class="pill-content">
           <div class="pill-pane" id="item-upload">
-            <form class="form-inline ajax-form" action="#linkhref($node)" method="post" enctype="multipart/form-data">
+            <form class="form-inline ajax-form" action="#linkhref($register)" method="post" enctype="multipart/form-data">
               <label>
                 Choose file(s) to upload:
                 <input type="file" name="file" multiple />
@@ -148,7 +148,7 @@
           <div class="pill-pane" id="item">item</div>
 
           <div class="pill-pane" id="batch">
-            <form class="form-inline ajax-form" action="#linkhref($node)?batch-managed" method="post" enctype="multipart/form-data">
+            <form class="form-inline ajax-form" action="#linkhref($register)?batch-managed" method="post" enctype="multipart/form-data">
               <label>
                 Choose a bulk file to upload:
                 <input type="file" name="file" multiple />
@@ -179,7 +179,6 @@
 <script type="text/javascript">
    $(document).ready(function () {
 
-#if($sample)
        $(".set-status").click(function(event) {
          var action = $(event.target).attr('data-target') + "?update&status=" + $(event.target).attr('data-status');
          $.ajax(action, {
@@ -195,7 +194,6 @@
               }
          });
        });
-#end
 
       $(".ajax-form").ajaxForm({
         success:

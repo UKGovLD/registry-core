@@ -18,7 +18,7 @@
             <div class="row">
               <div class="span6">
                 <div class="blob-inner">
-                    <strong>Register:</strong> #linkfor($item)
+                    <strong>Register:</strong> #linkfor($member)
                     #if($member.getPropertyValue("dct:description"))
                       <p>$member.getPropertyValue("dct:description").lexicalForm</p>
                     #end
