@@ -1,0 +1,7 @@
+{
+  "@context" : "http://location.data.gov.uk/system/json-context",
+  "@id" : "purple",
+  "@type" : "skos:Concept",
+  "rdfs:label" : "purple",
+  "dct:description" : "I am purple but described using JSON-LD, good luck with that"
+}

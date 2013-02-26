@@ -14,13 +14,17 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
 import com.epimorphics.rdfutil.QueryUtil;
 import com.epimorphics.rdfutil.RDFUtil;
+import com.epimorphics.registry.util.JSONLDSupport;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.RegistryVocab;
@@ -60,7 +64,8 @@ public class TestAPI extends TomcatTestBase {
     }
 
     @Test
-    public void testBasics() {
+    public void testBasics() throws IOException {
+        Model m = null;
         // Registration
         ClientResponse response = postFile("test/reg1.ttl", BASE_URL, "text/turtle");
         assertEquals("Register a register", 201, response.getStatus());
@@ -71,7 +76,7 @@ public class TestAPI extends TomcatTestBase {
 
         // Entity and item access
         checkModelResponse(REG1 + "/red", ROOT_REGISTER + "reg1/red", "test/expected/red.ttl");
-        Model m = getModelResponse(REG1 + "/red?_view=with_metadata");
+        m = getModelResponse(REG1 + "/red?_view=with_metadata");
         checkModelResponse(m, ROOT_REGISTER + "reg1/_red", "test/expected/red_item.ttl");
         checkModelResponse(m, ROOT_REGISTER + "reg1/red", "test/expected/red.ttl");
         checkEntity(m, ROOT_REGISTER + "reg1/_red",  ROOT_REGISTER + "reg1/red");
@@ -123,7 +128,7 @@ public class TestAPI extends TomcatTestBase {
         // Basic version view
         m = getModelResponse(REG1 + "/_red?_view=version");
         String uri = QueryUtil.selectFirstVar("entity", m, "SELECT ?entity WHERE { ?item version:currentVersion [ reg:definition [ reg:entity ?entity]].}",
-                                                    Prefixes.get(), "item", ROOT_REGISTER + "reg1/_red").asResource().getURI();
+                                                    Prefixes.getDefault(), "item", ROOT_REGISTER + "reg1/_red").asResource().getURI();
         assertEquals(ROOT_REGISTER + "reg1/red", uri);
 
         // Register listing
@@ -225,7 +230,7 @@ public class TestAPI extends TomcatTestBase {
 
         // List a register - was a bug here
         m = getModelResponse(BASE_URL + "?status=any");
-        checkRegisterList(m, RDFS.member, ROOT_REGISTER, "register 1", "A test collection", "Long register", "A nice test collection", "A test concept scheme") ;
+        checkRegisterList(m, RDFS.member, ROOT_REGISTER, "system register", "register 1", "A test collection", "Long register", "A nice test collection", "A test concept scheme") ;
 
         // List versions
         m = getModelResponse(BASE_URL + "reg1/_red?_view=version_list");
@@ -251,7 +256,7 @@ public class TestAPI extends TomcatTestBase {
         m = getModelResponse(REG1 + "/eabw/ukc2102-03600");
         Resource bw = m.getResource("http://environment.data.gov.uk/id/bathing-water/ukc2102-03600");
         assertEquals("Spittal", RDFUtil.getStringValue(bw, SKOS.prefLabel));
-        
+
         // Check read on delegated register
         assertEquals(201, postFileStatus("test/bw-delegated.ttl", REG1));
         assertEquals(204, post(REG1 + "/_bathingWaters?update&status=stable").getStatus());
@@ -266,6 +271,38 @@ public class TestAPI extends TomcatTestBase {
         m = getModelResponse(REG1 + "?entity=http://environment.data.gov.uk/id/bathing-water/ukc2102-03600");
         bw = m.getResource("http://environment.data.gov.uk/id/bathing-water/ukc2102-03600");
         assertEquals("Spittal", RDFUtil.getStringValue(bw, SKOS.prefLabel));
+
+        // Check prefix initialization
+        Map<String, String> pm = Prefixes.get().getNsPrefixMap();
+        assertTrue(pm.containsKey("rdf"));
+        assertEquals(RDF.getURI(), pm.get("rdf"));
+        assertTrue(pm.containsKey("reg"));
+        assertEquals(RegistryVocab.getURI(), pm.get("reg"));
+
+        assertEquals(200, getResponse(BASE_URL + "system").getStatus());
+        assertEquals(200, getResponse(BASE_URL + "system/prefixes").getStatus());
+        assertEquals(200, getResponse(BASE_URL + "system/prefixes").getStatus());
+
+        // Prefix update
+        assertEquals(201, postFileStatus("test/prefix-test-xyz.ttl", BASE_URL + "system/prefixes"));
+        pm = Prefixes.get().getNsPrefixMap();
+        assertTrue(pm.containsKey("xyz"));
+        assertEquals("http://example.com/xyz", pm.get("xyz"));
+        
+        // JSON-LD checks
+        assertEquals(201, postFileStatus("test/purple-testcase.jsonld", REG1, JSONLDSupport.MIME_JSONLD));
+        m = getModelResponse(BASE_URL + "reg1/purple");
+        Resource r = m.getResource(ROOT_REGISTER + "reg1/purple");
+        assertEquals("purple", RDFUtil.getStringValue(r, RDFS.label));
+        assertEquals("I am purple but described using JSON-LD, good luck with that", RDFUtil.getStringValue(r, DCTerms.description));
+
+        response = getResponse(BASE_URL + "reg1/blue", JSONLDSupport.MIME_JSONLD);
+        assertEquals(200, response.getStatus());
+        InputStream is = response.getEntityInputStream();
+        m = JSONLDSupport.readModel(is);
+        is.close();
+        r = m.getResource(ROOT_REGISTER + "reg1/blue");
+        assertEquals("blue", RDFUtil.getStringValue(r, RDFS.label));
         
 //        m.write(System.out, "Turtle");
     }

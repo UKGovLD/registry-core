@@ -12,11 +12,9 @@
 @prefix vs:   <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
 @prefix void: <http://rdfs.org/ns/void#> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
-
 @prefix reg:  <http://purl.org/linked-data/registry#> .
 
 @base <http://location.data.gov.uk/> .
-
 
 <_system> a reg:RegisterItem;
     rdfs:label "system register"@en;
@@ -26,16 +24,20 @@
     reg:notation "system";
     reg:definition [ reg:entity <system> ];
     ldp:membershipPredicate rdfs:member;
+    reg:itemClass reg:Register ;
     version:currentVersion <_system>;
     .
-    
+
 <system> a reg:Register;
     rdfs:label "system register"@en;
     dct:description "Registers which control system operation"@en;
     reg:owner      <http://example.com/UKLocation> ;
     reg:manager   <http://www.epimorphics.com/#id> ;
     reg:containedItemClass reg:Register;
+    reg:subregister <system/bulkCollectionTypes> ;
     .
+
+<> reg:subregister <system> .
 
 <system/_bulkCollectionTypes> a reg:RegisterItem;
     rdfs:label "bulk collection types"@en;
@@ -46,8 +48,9 @@
     reg:definition [ reg:entity <system/bulkCollectionTypes> ];
     ldp:membershipPredicate rdfs:member;
     version:currentVersion <system/_bulkCollectionTypes>;
+    reg:itemClass reg:Register ;
     .
-    
+
 <system/bulkCollectionTypes> a reg:Register;
     rdfs:label "bulk collection types"@en;
     dct:description "Register of bulk collection types"@en;
@@ -90,3 +93,26 @@
     reg:definition [ reg:entity reg:Register ];
     version:currentVersion <system/bulkCollectionTypes/_register>;
     .
+
+<system/_prefixes> a reg:RegisterItem;
+    rdfs:label "prefixes"@en;
+    dct:description "Register prefix mappings use in serializations"@en;
+    reg:status reg:statusStable;
+    reg:notation "prefixes";
+    reg:register <system> ;
+    reg:definition [ reg:entity <system/prefixes> ];
+    ldp:membershipPredicate rdfs:member;
+    version:currentVersion <system/_prefixes>;
+    reg:itemClass reg:Register ;
+    .
+
+<system/prefixes> a reg:Register;
+    rdfs:label "prefixes"@en;
+    dct:description "Register prefix mappings use in serializations"@en;
+    reg:owner      <http://example.com/UKLocation> ;
+    reg:manager   <http://www.epimorphics.com/#id> ;
+    reg:containedItemClass owl:Ontology;
+    .
+
+<system> reg:subregister <system/prefixes> .
+

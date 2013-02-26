@@ -43,7 +43,7 @@ import com.sun.jersey.client.urlconnection.URLConnectionClientHandler;
 public abstract class TomcatTestBase {
 
     static final String BASE_URL = "http://localhost:8070/";
-    static final String ROOT_REGISTER = "http://location.data.gov.uk/";
+    static final String ROOT_REGISTER =  "http://location.data.gov.uk/";
 
     Tomcat tomcat ;
     Client c;
@@ -72,12 +72,12 @@ public abstract class TomcatTestBase {
 
         tomcat.addWebapp(contextPath,  rootF.getAbsolutePath());
         tomcat.start();
-        
+
         // Allow arbitrary HTTP methods so we can use PATCH
         DefaultClientConfig config = new DefaultClientConfig();
         config.getProperties().put(URLConnectionClientHandler.PROPERTY_HTTP_URL_CONNECTION_SET_METHOD_WORKAROUND, true);
         c = Client.create(config);
-        
+
         checkLive(200);
     }
 
@@ -160,8 +160,12 @@ public abstract class TomcatTestBase {
     }
 
     protected ClientResponse getResponse(String uri) {
+        return getResponse(uri, "text/turtle");
+    }
+
+    protected ClientResponse getResponse(String uri, String mime) {
         WebResource r = c.resource( uri );
-        return r.accept("text/turtle").get(ClientResponse.class);
+        return r.accept(mime).get(ClientResponse.class);
     }
 
 
@@ -205,7 +209,7 @@ public abstract class TomcatTestBase {
         Resource register = m.getResource(rooturi);
         assertTrue( register.hasProperty(RDF.type, RegistryVocab.Register));
         List<String> actualColours = new ArrayList<String>();
-        ResultSet rs = QueryUtil.selectAll(m, "SELECT ?label WHERE {?register ?link[rdfs:label ?label]}", Prefixes.get(), "register", rooturi, "link", link);
+        ResultSet rs = QueryUtil.selectAll(m, "SELECT ?label WHERE {?register ?link[rdfs:label ?label]}", Prefixes.getDefault(), "register", rooturi, "link", link);
         while (rs.hasNext()) {
             actualColours.add( rs.next().getLiteral("label").getLexicalForm() );
         }

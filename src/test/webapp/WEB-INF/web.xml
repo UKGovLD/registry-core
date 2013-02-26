@@ -33,7 +33,7 @@
     <param-value>com.epimorphics.registry.webapi.LibReg</param-value>
   </context-param>
  -->
- 
+
   <context-param>
     <param-name>config.forwarder</param-name>
     <param-value>com.epimorphics.registry.core.ForwardingServiceImpl,
@@ -44,11 +44,11 @@
   <context-param>
     <param-name>config.registry</param-name>
     <param-value>com.epimorphics.registry.core.Registry,
-    baseURI=http://location.data.gov.uk,
+    baseURI=http://location.data.gov.uk/,
     store=storeapi,
     forwarder=forwarder,
-<!--    cacheSize=100,  -->
-    bootSpec=${webapp}/WEB-INF/root-register.ttl|${webapp}/WEB-INF/registry.ttl|${webapp}/WEB-INF/system-registers.ttl</param-value>
+    cacheSize=100,
+    bootSpec=${webapp}/WEB-INF/root-register.ttl|${webapp}/WEB-INF/registry.ttl|${webapp}/WEB-INF/system-registers.ttl|${webapp}/WEB-INF/prefixes-register.ttl</param-value>
   </context-param>
 
 

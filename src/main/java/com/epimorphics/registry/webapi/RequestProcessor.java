@@ -77,11 +77,14 @@ public class RequestProcessor extends BaseEndpoint {
         MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
         if (parameters.containsKey(Parameters.FORMAT)) {
             Response response = doRead(result);
-            if (parameters.getFirst(Parameters.FORMAT).equals("ttl")) {
-                return Response.ok().type(MIME_TURTLE).entity(response.getEntity()).build();
-            } else {
-                return Response.ok().type(MIME_RDFXML).entity(response.getEntity()).build();
+            String mime = MIME_RDFXML;
+            String format = parameters.getFirst(Parameters.FORMAT);
+            if (format.equals("ttl")) {
+                mime = MIME_TURTLE;
+            } else if (format.equals("jsonld")) {
+                mime = JSONLDSupport.MIME_JSONLD;
             }
+            return Response.ok().type(mime).entity(response.getEntity()).build();
         } else {
             VelocityRender velocity = ServiceConfig.get().getServiceAs(Registry.VELOCITY_SERVICE, VelocityRender.class);
             StreamingOutput out = velocity.render("main.vm", uriInfo.getPath(), context, parameters,

@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -66,6 +67,14 @@ public class TestStoreImpl {
         this.store = store;
         store.loadBootstrap(BOOTSTRAP_FILE);
     }
+
+    @After
+    public void tearDown() {
+        basestore = null;
+        store = null;
+        ServiceConfig.get().clearServices();
+    }
+
 
     @Test
     public void testBaseLoad() {
@@ -203,7 +212,7 @@ public class TestStoreImpl {
         }
         return store.fetchAll(itemURIs, withEntity, false);
     }
-    
+
     @Test
     public void testVersionRetrieval() throws InterruptedException {
         addEntry("file:test/reg1.ttl", ROOT_REGISTER);
@@ -300,7 +309,7 @@ public class TestStoreImpl {
 
         assertEquals(EXT_BLACK, item.getEntity().getURI());
         assertEquals("black", RDFUtil.getStringValue(item.getEntity(), RDFS.label));
-        
+
         List<EntityInfo> occurances = store.listEntityOccurences(EXT_BLACK);
         assertEquals(1, occurances.size());
         EntityInfo info = occurances.get(0);

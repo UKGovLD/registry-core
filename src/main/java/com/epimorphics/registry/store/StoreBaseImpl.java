@@ -318,7 +318,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         Resource entity = ResourceFactory.createResource(uri);
         lockStore();
         try {
-            ResultSet matches = QueryUtil.selectAll(getDefaultModel(), ENTITY_FIND_QUERY, Prefixes.get(), "entity", entity);
+            ResultSet matches = QueryUtil.selectAll(getDefaultModel(), ENTITY_FIND_QUERY, Prefixes.getDefault(), "entity", entity);
             List<EntityInfo> results = new ArrayList<EntityInfo>();
             while (matches.hasNext()) {
                 QuerySolution soln = matches.next();

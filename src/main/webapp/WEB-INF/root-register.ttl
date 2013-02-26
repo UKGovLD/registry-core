@@ -24,7 +24,6 @@
     reg:owner      <http://example.com/UKLocation> ;
     reg:manager   <http://www.epimorphics.com/#id> ;
     reg:containedItemClass reg:Register;
-    dct:isVersionOf <http://location.data.gov.uk/> ;
     owl:versionInfo 1;
 .
 

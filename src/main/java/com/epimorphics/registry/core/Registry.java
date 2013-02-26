@@ -105,11 +105,12 @@ public class Registry extends ServiceBase implements Service {
         if (root == null) {
             // Blank store, need to install a bootstrap root registers
             for(String bootSrc : getRequiredFileParam(BOOT_FILE_PARAM).split("\\|")) {
+                log.info("Loading boostrap file " + bootSrc);
                 store.loadBootstrap( bootSrc );
             }
             log.info("Installed bootstrap root register");
         }
-        
+
         registry = this;   // Assumes singleton registry
 
         VelocityRender velocity = ServiceConfig.get().getServiceAs(Registry.VELOCITY_SERVICE, VelocityRender.class);
