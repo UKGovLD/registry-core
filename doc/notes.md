@@ -7,8 +7,8 @@
    1. versioning model
    1. fuller API and test suite
    1. base UI
-   1. minimal dispatch  <---
-   1. partitioning into distributable, replicable subsystems
+   1. minimal dispatch
+   1. partitioning into distributable, replicable subsystems   <---
 
 ## Issues
 
@@ -56,25 +56,18 @@
    * Change registration code to include other axioms in the definition graph? Basically remove the RegisterItem (if any) from the graph and keep the rest ?
 
    * Search should include search over federated endpoints
-   * Likewise entity lookup needs to check contained federated endpoints, possibly better done via cache than live
 
    * Validation of delegation record needs to include testing have pair sp or po
-   
+
    * Table view of delegated register should probably do server side paging and sorting
    * Cache management of delegated registers needs work, in fact all of cache management needs work - doesn't function through UI-
 
 ## UI Stack
 
-   * Adminstration interfaces for registers and items
-   * separate 'add' UI with both forms and upload-based entry
-   * Support for simple batch uploading
    * faceted filter on search results
-   * browsing of non-registered entities which are/could be in a local ontology cache
    * inject resource labels into results models, need a label utility (caching?) which handles that and knows about prefixes and registered ontologies
-   * SPARQL form
    * show register at an earlier time - would be nice to have a timeline widget for this
    * do a favicon
-   * separate delegated areas from members/subregisters list
 
 ## Extensions
 
