@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.epimorphics.registry.store.StoreAPI;
+import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.server.webapi.WebApiException;
@@ -65,9 +66,9 @@ public abstract class Command {
 
     protected Registry registry;
     protected StoreAPI store;
-    
+
     protected ForwardingRecord delegation;
-    
+
     /**
      * Constructor
      * @param operation   operation request, as determined by HTTP verb
@@ -135,7 +136,7 @@ public abstract class Command {
     public void setRequestor(String requestor) {
         this.requestor = requestor;
     }
-    
+
     public ForwardingRecord getDelegation() {
         return delegation;
     }
@@ -263,6 +264,7 @@ public abstract class Command {
     }
 
     protected Response returnModel(Model m, String location) {
+        m.setNsPrefixes(Prefixes.get());
         URI uri;
         try {
             uri = new URI( location );
