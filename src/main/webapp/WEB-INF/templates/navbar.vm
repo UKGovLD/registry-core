@@ -19,6 +19,9 @@
         <li><a href="#" class="popinfo" data-trigger="hover" data-placement="bottom"
             data-content="General administration of the registry (tbd).">
             Admin</a></li>
+        <li #if($nav=="sparql")class="active"#end><a href="$uiroot/sparql-form" class="popinfo" data-trigger="hover" data-placement="bottom"
+            data-content="Run raw sparql queries.">
+            Sparql</a></li>
         <li #if($nav=="about")class="active"#end><a href="$uiroot/about">
             About</a></li>
       </ul>

@@ -10,6 +10,12 @@
     <link type="text/css" rel="stylesheet" href="$uiroot/css/ui.css" />
     <link type="text/css" rel="stylesheet" href="$uiroot/css/bootstrap-responsive.min.css" />
     <link type="text/css" rel="stylesheet" href="$uiroot/css/jquery.dataTables.css" />
+
+    #if($extraCSS)
+      #foreach($file in $extraCSS.split(","))
+        <link type="text/css" rel="stylesheet" href="$uiroot/css/$file" />
+      #end
+    #end
     <script type="text/javascript" src="$uiroot/js/jquery-1.8.3.min.js"></script>
     <script type="text/javascript" src="$uiroot/js/jquery.form.js"></script>
   </head>

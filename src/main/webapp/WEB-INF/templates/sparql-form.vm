@@ -1,0 +1,105 @@
+#set($pageTitle="Registry sparql query")
+#set($extraCSS="qonsole.css,codemirror.css")
+#parse("header.vm")
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <script src="js/sprintf-0.7-beta1.js"></script>
+    <script src="js/qonsole.js"></script>
+    <script src="js/codemirror.js"></script>
+    <script src="js/sparql.js"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">google.load('visualization', '1.0', {'packages':['table']});</script>
+
+    <script type="text/javascript">
+        $(function() {qonsole.init("/ui/js/qonfig.json");});
+    </script>
+
+#set($nav="sparql")
+#parse("navbar.vm")
+
+  </head>
+
+      <div class="row-fluid">
+        <div class="span2">
+          <div class="well sidebar-nav">
+            <ul class="nav nav-list">
+              <li class="nav-header">Queries</li>
+              <li><ul class="unstyled" id="queries"></ul></li>
+            </ul>
+            <ul class="nav nav-list">
+              <li class="nav-header">Output formats</li>
+              <li>
+                <div class="btn-group btn-group-vertical" data-toggle="buttons-radio" id="format-choice">
+                  <button type="button" class="btn" data-format="text">plain text</button>
+                  <button type="button" class="btn " data-format="json">JSON</button>
+                  <button type="button" class="btn active" data-format="tsv">table</button>
+                  <button type="button" class="btn " data-format="xml">XML</button>
+                </div>
+              </li>
+            </ul>
+            <ul class="nav nav-list">
+              <li class="nav-header">Prefixes <a class="inline-control" data-toggle="collapse" href="#" data-target="#prefixes"><i class="icon-circle-arrow-down"></i></a></li>
+              <li><ul class="unstyled collapse" id="prefixes"></ul></li>
+            </ul>
+            <ul id="layout-options" class="nav nav-list">
+              <li class="nav-header">Layout</li>
+              <li>
+                <div class="btn-group btn-group-vertical" data-toggle="buttons-radio">
+                  <button type="button" class="btn active" data-layout="vertical"><img src="img/icon-vertical-stack.20x20.png"> vertical</button>
+                  <button type="button" class="btn" data-layout="horizontal"><img src="img/icon-horizontal-stack.20x20.png"> horizontal</button>
+                </div>
+              </li>
+            </ul>
+          </div><!--/.well -->
+        </div><!--/span-->
+
+        <div class="span10">
+          <!-- query -->
+          <div class="row-fluid">
+            <div id="query-block" class="span12 sparql">
+              <div class="well">
+                <div class="row-fluid" id="query-edit">
+                  <h2 class="span12">Query</h2>
+                  <!-- <textarea class="span12"></textarea> -->
+                  <div id="query-edit-cm" class="span12"></div>
+                </div>
+                <div class="row-fluid">
+                  <div class="span12" id="query-chrome1">
+                    <span class="span12"><em>Query description</em></span>
+                  </div>
+                </div>
+                <div class="row-fluid" id="query-chrome2">
+                  <span class="span10">
+                    <span class="input-prepend"><span class="add-on">SPARQL endpoint: </span><input class="span8" type="text"></input></span>
+                  </span>
+                  <span class="span2 pull-right"><a href="#" class="btn btn-primary">run query</a></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- results -->
+            <div id="results-block" class="row-fluid sparql sparql-results">
+              <div class="span12">
+                <div class="well">
+                  <div class="row-fluid">
+                    <h2 class="span12">
+                      Query results
+                      <span id="loadingSpinner" class="">
+                        <img src="img/wait30.gif" alt="waiting for server action to complete"></img>
+                      </span>
+                      <span id="timeTaken" class="hidden">
+                      </span>
+                  </h2>
+                </div>
+                  <div class="row-fluid"><div class="span12" id="results"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!--/row-->
+
+#parse("footer.vm")

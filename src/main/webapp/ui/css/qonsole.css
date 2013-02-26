@@ -1,0 +1,62 @@
+#queries label, #prefixes label {
+  /*display: inline;*/
+}
+
+a.inline-control {
+  display: inline !important;
+  margin-left: 1px !important;
+  padding-left: 0 !important;
+}
+
+.sparql h2 {
+  font-size: 10px;
+  color: #666666;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.sparql .well {
+  padding: 5px;
+}
+
+.sparql textarea {
+  font-family: Inconsolata, Courier-new, Courier, monospace;
+  font-size: 10pt;*/
+  line-height: 1.2;*/
+  min-height: 250px !important;
+  resize: vertical;
+}
+
+#results {
+  overflow: auto;
+}
+
+#results .results-plain {
+  background-color: white;
+}
+
+#query-edit-cm {
+  background-color: white;
+  margin: 0 0 10px 0;
+  padding: 0;
+  border: 1px solid #E3E3E3;
+  border-radius: 4px;
+}
+
+#timeTaken {
+  font-style: italic;
+  text-transform: none;
+}
+
+pre.errorText {
+  color: #d02020;
+}
+
+.navbar h1.brand, .navbar h2.brand {
+  line-height: 12px;
+}
+
+.navbar h1.brand {
+  font-weight: bold;
+  font-size: 20pt;
+}
