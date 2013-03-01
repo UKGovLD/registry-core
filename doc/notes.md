@@ -62,6 +62,8 @@
    * Table view of delegated register should probably do server side paging and sorting
    * Cache management of delegated registers needs work, in fact all of cache management needs work - doesn't function through UI-
 
+   * logging is seeing the nginx proxy, the requestor forwarding is getting lost
+
 ## UI Stack
 
    * faceted filter on search results

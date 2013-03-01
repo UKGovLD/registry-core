@@ -30,6 +30,7 @@ import com.epimorphics.registry.util.JSONLDSupport;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.RegistryVocab;
+import com.epimorphics.registry.vocab.Version;
 import com.epimorphics.server.core.ServiceConfig;
 import com.epimorphics.server.core.Store;
 import com.epimorphics.util.TestUtil;
@@ -101,8 +102,8 @@ public class TestAPI extends TomcatTestBase {
         checkEntity(m, ROOT_REGISTER + "reg1/_black", EXT_BLACK);
 
         StoreAPI stsore = Registry.get().getStore();
-        
-                
+
+
         // Entity retrieval
         checkModelResponse(REG1 + "?entity=" + EXT_BLACK, EXT_BLACK, "test/expected/absolute-black.ttl");
         checkModelResponse(BASE_URL + "?entity=" + EXT_BLACK, EXT_BLACK, "test/expected/absolute-black.ttl");
@@ -249,6 +250,7 @@ public class TestAPI extends TomcatTestBase {
         m = getModelResponse(BASE_URL + "reg1/_red?_view=version_list");
         assertTrue( m.listSubjectsWithProperty(DCTerms.isVersionOf, m.getResource(ROOT_REGISTER + "reg1/_red")).toList().size() >= 4);
         assertTrue( m.contains(m.getResource(ROOT_REGISTER + "reg1/_red:3"), DCTerms.replaces, m.getResource(ROOT_REGISTER + "reg1/_red:2")) );
+        assertTrue( m.contains(m.getResource(ROOT_REGISTER + "reg1/_red"), Version.currentVersion, m.getResource(ROOT_REGISTER + "reg1/_red:4")) );
 
         // Check some status transitions
         assertEquals(403, post(REG1 + "/_blue?update&status=retired").getStatus());

@@ -157,6 +157,9 @@ public class CommandRead extends Command {
             if (vi.getReplaces() != null) {
                 ver.addProperty(DCTerms.replaces, m.createResource(vi.getReplaces()));
             }
+            if (vi.getToTime() == -1) {
+                m.add(d.getRoot(), Version.currentVersion, ver);
+            }
         }
     }
 
