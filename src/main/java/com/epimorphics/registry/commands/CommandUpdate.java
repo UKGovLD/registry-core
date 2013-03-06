@@ -21,6 +21,7 @@ import javax.ws.rs.core.Response.Status;
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.core.ValidationResponse;
 import com.epimorphics.registry.util.PatchUtil;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.Parameters;
@@ -40,6 +41,14 @@ public class CommandUpdate extends Command {
 
     public void setToPatch() {
         isPatch = true;
+    }
+
+    @Override
+    public ValidationResponse validate() {
+        // Payload must match target
+        // Target must exist
+        // TODO implement
+        return ValidationResponse.OK;
     }
 
     @Override

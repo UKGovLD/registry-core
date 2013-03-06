@@ -152,7 +152,20 @@ public abstract class Command {
 
     public abstract Response doExecute() ;
 
+    /**
+     * Test that the request is legal. Subclasses should provide
+     * an appropriate implementation.
+     */
+    public ValidationResponse validate() {
+        return ValidationResponse.OK;
+    }
+
     public Response execute()  {
+        ValidationResponse validity = validate();
+        if (!validity.isOk()) {
+            throw new WebApiException(validity.getStatus(), validity.getMessage());
+        }
+
         // TODO - authorization
 
         Response response = null;

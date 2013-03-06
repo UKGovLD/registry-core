@@ -65,18 +65,88 @@ public class TestAPI extends TomcatTestBase {
 
     @Test
     public void testBasics() throws IOException {
-        Model m = null;
-        // Registration
+        // Create reg1
+        doRegisterRegistrationTests();
+
+        // Puts red in reg1/red
+        doItemRegistrationTests();
+
+        // Adds external resource reg1/black
+        doExternalRegistrationTests();
+
+        // Updates red to be called red1
+        String versionSuffix = doUpdateTest();
+
+        // Patches reg to be called red1b
+        Calendar checkpoint = Calendar.getInstance();
+        doPatchTest();
+
+        // Check we can still get back the old version of reg from before the last patch
+        checkModelResponse(REG1 + "/_red" + versionSuffix, ROOT_REGISTER + "reg1/red", "test/expected/red1.ttl");
+
+        // Adds reg1/blue and tests views with different status setting and metadata
+        doRegisterListingTest();
+
+        // Create a large register regL and checks paged views and retrieving early version of register
+        doPagingTest();
+        doRegisterVersionRetrievalTest();
+
+        // Register timestamp view - predates changing red1 to red1b and adding blue
+        checkRegisterList( getModelResponse(REG1 + "?status=any&_versionAt=" + checkpoint.getTimeInMillis()), REG1_URI, "red1", "black");
+
+        // List versions
+        doListVersionsTest();
+
+        // Check some status transitions
+        doStatusTransitionsTest();
+
+        // Checking of legal relative URIs in registration payload
+        assertEquals(400, postFileStatus("test/bad-green.ttl", REG1));
+
+        // Bulk registration - creates a collection and a scheme register from skos collection and concept scheme
+        doBulkRegistrationTest();
+
+        // Check patching of register metadata - tests on /collection created in prior step
+        doRegisterMetadataPatchTest();
+
+        // Test deletions using the /collection register
+        doDeletionTest();
+
+        // List a register - was a bug here
+        Model m = getModelResponse(BASE_URL + "?status=any");
+        checkRegisterList(m, RDFS.member, ROOT_REGISTER, "system register", "register 1", "A test collection", "Long register", "A nice test collection", "A test concept scheme") ;
+
+        // Delegation tests
+        doForwardingTest();
+        doDelegationTest();
+
+        // Check prefix system register
+        doPrefixTests();
+
+        // Check we can register and patch using jsonld syntax payloads
+        doJsonldTests();
+
+//        System.out.println("Store dump");
+//        ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel().write(System.out, "Turtle");
+    }
+
+    private void doRegisterRegistrationTests() {
+        // Leaves register reg1 set up
         ClientResponse response = postFile("test/reg1.ttl", BASE_URL, "text/turtle");
         assertEquals("Register a register", 201, response.getStatus());
         assertEquals(REG1_ITEM, response.getLocation().toString());
         assertEquals("Register in non-existant location", 404, postFileStatus("test/reg1.ttl", BASE_URL+"foo"));
         assertEquals("Register the same again", 403, postFileStatus("test/reg1.ttl", BASE_URL));
+    }
+
+    // Assumes reg1 has been created
+    // Adds an item (reg1/red) and checks it all looks OK
+    // Leaves reg1/red in plce
+    private void doItemRegistrationTests() {
         assertEquals(201, postFileStatus("test/red.ttl", REG1));
 
-        // Entity and item access
         checkModelResponse(REG1 + "/red", ROOT_REGISTER + "reg1/red", "test/expected/red.ttl");
-        m = getModelResponse(REG1 + "/red?_view=with_metadata");
+        Model m = getModelResponse(REG1 + "/red?_view=with_metadata");
         checkModelResponse(m, ROOT_REGISTER + "reg1/_red", "test/expected/red_item.ttl");
         checkModelResponse(m, ROOT_REGISTER + "reg1/red", "test/expected/red.ttl");
         checkEntity(m, ROOT_REGISTER + "reg1/_red",  ROOT_REGISTER + "reg1/red");
@@ -86,17 +156,15 @@ public class TestAPI extends TomcatTestBase {
         checkModelResponse(m, ROOT_REGISTER + "reg1/red", "test/expected/red.ttl");
         checkEntity(m, ROOT_REGISTER + "reg1/_red",  ROOT_REGISTER + "reg1/red");
 
-        // _view=version has been withdrawn
-//        m = getModelResponse(REG1 + "/_red", "_view", "version");
-//        checkModelResponse(m, ROOT_REGISTER + "reg1/red",  "test/expected/red.ttl");
-//        checkModelResponse(m, ROOT_REGISTER + "reg1/_red",  "test/expected/red_item_version.ttl");
-//        checkModelResponse(m, ROOT_REGISTER + "reg1/_red:1",  "test/expected/red_item_version.ttl");
+    }
 
+    // Assumes reg1 has been created
+    // Adds an external entity and check it can be retrieved
+    private void doExternalRegistrationTests() {
         // External (not managed) entities
         assertEquals(201, postFileStatus("test/absolute-black.ttl", REG1));
-        m = checkModelResponse(REG1 + "/_black", EXT_BLACK, "test/expected/absolute-black.ttl");
+        Model m = checkModelResponse(REG1 + "/_black", EXT_BLACK, "test/expected/absolute-black.ttl");
         checkEntity(m, ROOT_REGISTER + "reg1/_black", EXT_BLACK);
-
 
         // Entity retrieval
         checkModelResponse(REG1 + "?entity=" + EXT_BLACK, EXT_BLACK, "test/expected/absolute-black.ttl");
@@ -104,39 +172,43 @@ public class TestAPI extends TomcatTestBase {
         m = getModelResponse(BASE_URL, "entity", EXT_BLACK, "_view", "with_metadata");
         checkModelResponse(m, EXT_BLACK, "test/expected/absolute-black.ttl");
         checkModelResponse(m, ROOT_REGISTER + "reg1/_black", "test/expected/absolute-black.ttl");
+    }
 
+    // Assumes reg1 and reg1/red exists
+    // Updates name of red to red1
+    // Returns the version number of the new version
+    private String doUpdateTest() {
         // Updates, change properties on red
-        response = invoke("PUT", "test/red1.ttl", REG1 + "/red");
+        ClientResponse response = invoke("PUT", "test/red1.ttl", REG1 + "/red");
         assertEquals(204,  response.getStatus());
         String red1Version = response.getLocation().toString();
         assertTrue(red1Version.startsWith(ROOT_REGISTER + "reg1/_red:"));
         String versionSuffix = red1Version.substring( red1Version.length()-2 );
         checkModelResponse(REG1 + "/red", ROOT_REGISTER + "reg1/red", "test/expected/red1.ttl");
+        return versionSuffix;
+    }
 
-        Calendar checkpoint = Calendar.getInstance();
-
-        response = invoke("PATCH", "test/red1b.ttl", REG1 + "/red");
+    // Assumes reg1/red exists
+    // Patch its name to red1b
+    private void doPatchTest() {
+        ClientResponse response = invoke("PATCH", "test/red1b.ttl", REG1 + "/red");
         assertEquals(204,  response.getStatus());
         checkModelResponse(REG1 + "/red", ROOT_REGISTER + "reg1/red", "test/expected/red1b.ttl");
+    }
 
-        checkModelResponse(REG1 + "/_red" + versionSuffix, ROOT_REGISTER + "reg1/red", "test/expected/red1.ttl");
-
+    // Assumes reg1 exists and already has red (now called red1b) and black in it
+    // Tests listing different status filters and basic metadata access
+    // Leaves register with blue as well, red as "stable" and black as "experimental"
+    private void doRegisterListingTest() {
         // Register read
         checkModelResponse(REG1, ROOT_REGISTER + "reg1", "test/expected/reg1-empty.ttl");
         assertEquals(204, post(REG1 + "/_red?update&status=stable").getStatus());
         assertEquals(204, post(REG1 + "/_black?update&status=experimental").getStatus());
         checkModelResponse(REG1, ROOT_REGISTER + "reg1", "test/expected/reg1_red_black.ttl");
 
-        // _view=version has been withdrawn
-//        m = getModelResponse(REG1 + "/_red?_view=version");
-//        String uri = QueryUtil.selectFirstVar("entity", m, "SELECT ?entity WHERE { ?item version:currentVersion [ reg:definition [ reg:entity ?entity]].}",
-//                                                    Prefixes.getDefault(), "item", ROOT_REGISTER + "reg1/_red").asResource().getURI();
-//        assertEquals(ROOT_REGISTER + "reg1/red", uri);
-
         // Register listing
         assertEquals(201, postFileStatus("test/blue.ttl", REG1));
-        m = getModelResponse(REG1 + "?non-member-properties");
-        m.write(System.out, "Turtle");
+        Model m = getModelResponse(REG1 + "?non-member-properties");
 
         checkModelResponse(m, REG1_URI, "test/expected/reg1-empty.ttl");
         checkRegisterList( getModelResponse(REG1 + "?status=stable"), REG1_URI, "red1b");
@@ -157,29 +229,29 @@ public class TestAPI extends TomcatTestBase {
         checkModelResponse(m, EXT_BLACK, "test/expected/reg1_red_black_metadata.ttl");
         checkModelResponse(m, REG1_URI+"/_black", "test/expected/reg1_red_black_metadata.ttl");
         checkModelResponse(m, REG1_ITEM, "test/expected/reg1_nmp_metadata.ttl");
+    }
 
+    private void doPagingTest() {
         // Register paging
         makeRegister(60);
         checkPageResponse(getModelResponse(REGL_URL + "?firstPage&status=notaccepted"), "1", 50);
         checkPageResponse(getModelResponse(REGL_URL + "?_page=1&status=notaccepted"), null, 10);
+    }
 
+    private void doRegisterVersionRetrievalTest() {
         // Register version view
-        m = getModelResponse(REGL_URL + ":3?status=notaccepted");
+        Model m = getModelResponse(REGL_URL + ":3?status=notaccepted");
         checkModelResponse(m, ROOT_REGISTER + "regL", "test/expected/regL-two-entries.ttl");
         checkModelResponse(m, ROOT_REGISTER + "regL/item0", "test/expected/regL-two-entries.ttl");
         checkModelResponse(m, ROOT_REGISTER + "regL/item1", "test/expected/regL-two-entries.ttl");
+    }
 
-        // Register timestamp view - predates changing red1 to red1b and adding blue
-        checkRegisterList( getModelResponse(REG1 + "?status=any&_versionAt=" + checkpoint.getTimeInMillis()), REG1_URI, "red1", "black");
-
-        // Checking of legal relative URIs in registration payload
-        assertEquals(400, postFileStatus("test/bad-green.ttl", REG1));
-
-        // Bulk registration
+    // Leaves new registers /collection and /scheme
+    private void doBulkRegistrationTest() {
         assertEquals("Not a bulk type", 400, postFileStatus("test/blue.ttl", BASE_URL + "?batch-managed"));
 
         assertEquals(201, postFileStatus("test/bulk-skos-collection.ttl", BASE_URL + "?batch-managed"));
-        m = getModelResponse(BASE_URL + "collection?status=any");
+        Model m = getModelResponse(BASE_URL + "collection?status=any");
         checkRegisterList( m, ROOT_REGISTER + "collection", "item 1", "item 2", "item 3");
 
         assertEquals(201, postFileStatus("test/bulk-skos-scheme.ttl", BASE_URL + "?batch-managed"));
@@ -200,14 +272,20 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(201, postFileStatus("test/bulk-skos-collection-of-scheme.ttl", BASE_URL + "?batch-referenced"));
         m = getModelResponse(BASE_URL + "scheme-collection?status=any");
         checkRegisterList( m, ROOT_REGISTER + "scheme-collection", "item 1", "item 2");
+    }
 
+    // Assumes /collection exists from bulk registration test
+    private void doRegisterMetadataPatchTest() {
         // Updating register metadata
         assertEquals(400, invoke("PATCH", "test/register-update.ttl", BASE_URL + "collection").getStatus());
         assertEquals(204, invoke("PATCH", "test/register-update.ttl", BASE_URL + "collection?non-member-properties").getStatus());
-        m = getModelResponse(BASE_URL + "collection?non-member-properties");
+        Model m = getModelResponse(BASE_URL + "collection?non-member-properties");
         checkModelResponse(m, ROOT_REGISTER + "collection", "test/expected/updated-collection-register.ttl");
+    }
 
-        // Deletion
+    // Assumes /colleciton exists from bulk registration tests
+    // Test deletion of items from register
+    private void doDeletionTest() {
         long timestamp = System.currentTimeMillis();
         assertEquals(204, invoke("DELETE", null, BASE_URL + "collection/collection/item1").getStatus());
         checkRegisterList(
@@ -235,18 +313,18 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(400, postFileStatus("test/validation-request2.txt", BASE_URL + "?validate" ));
         assertEquals(200, post(BASE_URL + "?validate=http://location.data.gov.uk/collection/item1").getStatus());
         assertEquals(400, post(BASE_URL + "?validate=http://location.data.gov.uk/collection/item1&validate=http://location.data.gov.uk/collection/item8").getStatus());
+    }
 
-        // List a register - was a bug here
-        m = getModelResponse(BASE_URL + "?status=any");
-        checkRegisterList(m, RDFS.member, ROOT_REGISTER, "system register", "register 1", "A test collection", "Long register", "A nice test collection", "A test concept scheme") ;
-
-        // List versions
-        m = getModelResponse(BASE_URL + "reg1/_red?_view=version_list");
+    // Assumes reg1/red exists and has go through update (to red1) and patch (to red1b) and status change
+    private void doListVersionsTest() {
+        Model m = getModelResponse(BASE_URL + "reg1/_red?_view=version_list");
         assertTrue( m.listSubjectsWithProperty(DCTerms.isVersionOf, m.getResource(ROOT_REGISTER + "reg1/_red")).toList().size() >= 4);
         assertTrue( m.contains(m.getResource(ROOT_REGISTER + "reg1/_red:3"), DCTerms.replaces, m.getResource(ROOT_REGISTER + "reg1/_red:2")) );
         assertTrue( m.contains(m.getResource(ROOT_REGISTER + "reg1/_red"), Version.currentVersion, m.getResource(ROOT_REGISTER + "reg1/_red:4")) );
+    }
 
-        // Check some status transitions
+    // Asumes reg1/blue exists, leaves it in "invalid" status
+    private void doStatusTransitionsTest() {
         assertEquals(403, post(REG1 + "/_blue?update&status=retired").getStatus());
         assertEquals(403, post(REG1 + "/_blue?update&status=superseded").getStatus());
         assertEquals(204, post(REG1 + "/_blue?update&status=experimental").getStatus());
@@ -255,21 +333,27 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(403, post(REG1 + "/_blue?update&status=submitted").getStatus());
         assertEquals(204, post(REG1 + "/_blue?update&status=superseded").getStatus());
         assertEquals(204, post(REG1 + "/_blue?update&status=invalid").getStatus());
+    }
 
-        // Check forwarding
+    // Set up a namespace forward to EA data and checks can access it
+    // Relies on the EA service being up :)
+    private void doForwardingTest() {
         assertEquals(201, postFileStatus("test/bw-forward.ttl", REG1));
         assertEquals(404, getResponse(REG1 + "/eabw/ukc2102-03600").getStatus());
         assertEquals(204, post(REG1 + "/_eabw?update&status=stable").getStatus());
         assertEquals(200, getResponse(REG1 + "/eabw/ukc2102-03600").getStatus());
-        // This relies on EA service being up :)
-        m = getModelResponse(REG1 + "/eabw/ukc2102-03600");
+        Model m = getModelResponse(REG1 + "/eabw/ukc2102-03600");
         Resource bw = m.getResource("http://environment.data.gov.uk/id/bathing-water/ukc2102-03600");
         assertEquals("Spittal", RDFUtil.getStringValue(bw, SKOS.prefLabel));
+    }
 
+    // Set up a delegated register for the EA bathingwaters URI set and checks register listing
+    // Relies on the EA service being up :)
+    private void doDelegationTest() {
         // Check read on delegated register
         assertEquals(201, postFileStatus("test/bw-delegated.ttl", REG1));
         assertEquals(204, post(REG1 + "/_bathingWaters?update&status=stable").getStatus());
-        m = getModelResponse(REG1 + "/bathingWaters?firstPage");
+        Model m = getModelResponse(REG1 + "/bathingWaters?firstPage");
         Resource register = m.getResource(REG1_URI + "/bathingWaters");
         List<Resource> members = RDFUtil.allResourceValues(register, RDFS.member);
         assertTrue(members.size() > 20);
@@ -278,10 +362,11 @@ public class TestAPI extends TomcatTestBase {
             assertTrue(member.hasProperty(RDF.type));
         }
         m = getModelResponse(REG1 + "?entity=http://environment.data.gov.uk/id/bathing-water/ukc2102-03600");
-        bw = m.getResource("http://environment.data.gov.uk/id/bathing-water/ukc2102-03600");
+        Resource bw = m.getResource("http://environment.data.gov.uk/id/bathing-water/ukc2102-03600");
         assertEquals("Spittal", RDFUtil.getStringValue(bw, SKOS.prefLabel));
+    }
 
-        // Check prefix initialization
+    private void doPrefixTests() {
         Map<String, String> pm = Prefixes.get().getNsPrefixMap();
         assertTrue(pm.containsKey("rdf"));
         assertEquals(RDF.getURI(), pm.get("rdf"));
@@ -297,15 +382,19 @@ public class TestAPI extends TomcatTestBase {
         pm = Prefixes.get().getNsPrefixMap();
         assertTrue(pm.containsKey("xyz"));
         assertEquals("http://example.com/xyz", pm.get("xyz"));
+    }
 
-        // JSON-LD checks
+    // Assumes /reg1 exists all earlier tests run (so has at least blue in it)
+    // Leaves it with /reg1/purple and with reg1 dct:description changed
+    private void doJsonldTests() throws IOException {
+        // Assumes reg1 set up
         assertEquals(201, postFileStatus("test/purple-testcase.jsonld", REG1, JSONLDSupport.MIME_JSONLD));
-        m = getModelResponse(BASE_URL + "reg1/purple");
+        Model m = getModelResponse(BASE_URL + "reg1/purple");
         Resource r = m.getResource(ROOT_REGISTER + "reg1/purple");
         assertEquals("purple", RDFUtil.getStringValue(r, RDFS.label));
         assertEquals("I am purple but described using JSON-LD, good luck with that", RDFUtil.getStringValue(r, DCTerms.description));
 
-        response = getResponse(BASE_URL + "reg1/blue", JSONLDSupport.MIME_JSONLD);
+        ClientResponse response = getResponse(BASE_URL + "reg1/blue", JSONLDSupport.MIME_JSONLD);
         assertEquals(200, response.getStatus());
         InputStream is = response.getEntityInputStream();
         m = JSONLDSupport.readModel(is);
@@ -318,10 +407,6 @@ public class TestAPI extends TomcatTestBase {
         m = getModelResponse(REG1 + "?non-member-properties");
         assertEquals("Updated register 1", RDFUtil.getStringValue(m.getResource(REG1_URI), DCTerms.description));
 
-//        m.write(System.out, "Turtle");
-
-//        System.out.println("Store dump");
-//        ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel().write(System.out, "Turtle");
     }
 
     private void checkPageResponse(Model m, String nextpage, int length) {
