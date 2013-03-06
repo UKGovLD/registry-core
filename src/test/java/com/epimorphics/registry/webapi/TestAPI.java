@@ -86,6 +86,7 @@ public class TestAPI extends TomcatTestBase {
         checkModelResponse(m, ROOT_REGISTER + "reg1/red", "test/expected/red.ttl");
         checkEntity(m, ROOT_REGISTER + "reg1/_red",  ROOT_REGISTER + "reg1/red");
 
+        // _view=version has been withdrawn
 //        m = getModelResponse(REG1 + "/_red", "_view", "version");
 //        checkModelResponse(m, ROOT_REGISTER + "reg1/red",  "test/expected/red.ttl");
 //        checkModelResponse(m, ROOT_REGISTER + "reg1/_red",  "test/expected/red_item_version.ttl");
@@ -95,8 +96,6 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(201, postFileStatus("test/absolute-black.ttl", REG1));
         m = checkModelResponse(REG1 + "/_black", EXT_BLACK, "test/expected/absolute-black.ttl");
         checkEntity(m, ROOT_REGISTER + "reg1/_black", EXT_BLACK);
-
-//        StoreAPI stsore = Registry.get().getStore();
 
 
         // Entity retrieval
@@ -128,7 +127,7 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(204, post(REG1 + "/_black?update&status=experimental").getStatus());
         checkModelResponse(REG1, ROOT_REGISTER + "reg1", "test/expected/reg1_red_black.ttl");
 
-        // Basic version view
+        // _view=version has been withdrawn
 //        m = getModelResponse(REG1 + "/_red?_view=version");
 //        String uri = QueryUtil.selectFirstVar("entity", m, "SELECT ?entity WHERE { ?item version:currentVersion [ reg:definition [ reg:entity ?entity]].}",
 //                                                    Prefixes.getDefault(), "item", ROOT_REGISTER + "reg1/_red").asResource().getURI();
@@ -313,6 +312,11 @@ public class TestAPI extends TomcatTestBase {
         is.close();
         r = m.getResource(ROOT_REGISTER + "reg1/blue");
         assertEquals("blue", RDFUtil.getStringValue(r, RDFS.label));
+
+        // JSON-LD patch
+        assertEquals(204, invoke("PATCH", "test/reg1-patch.jsonld", REG1 + "?non-member-properties", "application/ld+json").getStatus());
+        m = getModelResponse(REG1 + "?non-member-properties");
+        assertEquals("Updated register 1", RDFUtil.getStringValue(m.getResource(REG1_URI), DCTerms.description));
 
 //        m.write(System.out, "Turtle");
 

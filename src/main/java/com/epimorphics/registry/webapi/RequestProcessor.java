@@ -192,7 +192,7 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     @PATCH
-    @Consumes({MIME_TURTLE, MIME_RDFXML})
+    @Consumes({MIME_TURTLE, MIME_RDFXML, JSONLDSupport.MIME_JSONLD})
     public Response updatePatch(@Context HttpHeaders hh, InputStream body) {
         Command command = makeCommand( Operation.Update );
         ((CommandUpdate)command).setToPatch();
