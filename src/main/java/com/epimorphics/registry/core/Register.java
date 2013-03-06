@@ -69,7 +69,7 @@ public class Register extends Description {
      * @param items an array in which to return an ordered list of the items, if null if not required
      * @return whether the view is complete
      */
-    public boolean constructView(Model model, boolean withVersion, boolean withMetadata, Status status, int offset, int length, long timestamp, List<Resource> results) {
+    public boolean constructView(Model model, boolean withMetadata, Status status, int offset, int length, long timestamp, List<Resource> results) {
         getMembers();
         List<String> itemURIs = new ArrayList<String>( length == -1 ? 50 : length );
         List<String> entityURIs = new ArrayList<String>( length == -1 ? 50 : length );
@@ -110,7 +110,7 @@ public class Register extends Description {
         if (timestamp != -1) {
             // already fetched while checking for valid entries
         } else if (withMetadata && !itemURIs.isEmpty()) {
-            List<RegisterItem> items = store.fetchAll(itemURIs, true, withVersion);
+            List<RegisterItem> items = store.fetchAll(itemURIs, true);
             model.add( items.get(0).getRoot().getModel() );
         } else {
             for (String uri : entityURIs) {

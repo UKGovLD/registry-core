@@ -83,10 +83,10 @@ public class CachingStore implements StoreAPI {
         return store.getItem(uri, withEntity);
     }
 
-    @Override
-    public RegisterItem getItemWithVersion(String uri, boolean withEntity) {
-        return store.getItemWithVersion(uri, withEntity);
-    }
+//    @Override
+//    public RegisterItem getItemWithVersion(String uri, boolean withEntity) {
+//        return store.getItemWithVersion(uri, withEntity);
+//    }
 
     @Override
     public Resource getEntity(RegisterItem item) {
@@ -148,8 +148,8 @@ public class CachingStore implements StoreAPI {
 
     @Override
     public List<RegisterItem> fetchAll(List<String> itemURIs,
-            boolean withEntity, boolean withVersion) {
-        return store.fetchAll(itemURIs, withEntity, withVersion);
+            boolean withEntity) {
+        return store.fetchAll(itemURIs, withEntity);
     }
 
     @Override

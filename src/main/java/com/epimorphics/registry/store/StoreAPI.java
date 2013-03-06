@@ -102,7 +102,7 @@ public interface StoreAPI {
      * @param withEntity if true then the entity definition should be retrieved as well
      */
 
-    public RegisterItem getItemWithVersion(String uri, boolean withEntity);
+//    public RegisterItem getItemWithVersion(String uri, boolean withEntity);
 
     /**
      * Fetch the entity specified by the Register item and add it to the item's data structure.
@@ -113,9 +113,8 @@ public interface StoreAPI {
      * Retrieve a set of RegisterItems
      * @param itemURIs the URIs of the items to retrieve
      * @param withEntity if true then the entity definition should be retrieved as well
-     * @param withVersion if true then the version information should be retained instead of being flattend out.
      */
-    public List<RegisterItem> fetchAll(List<String> itemURIs, boolean withEntity, boolean withVersion);
+    public List<RegisterItem> fetchAll(List<String> itemURIs, boolean withEntity);
 
     /**
      * List all members of a register. This gives a low cost way to enumerate the core information

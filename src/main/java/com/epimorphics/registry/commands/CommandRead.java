@@ -13,10 +13,9 @@ import static com.epimorphics.registry.webapi.Parameters.COLLECTION_METADATA_ONL
 import static com.epimorphics.registry.webapi.Parameters.ENTITY_LOOKUP;
 import static com.epimorphics.registry.webapi.Parameters.STATUS;
 import static com.epimorphics.registry.webapi.Parameters.VERSION_AT;
+import static com.epimorphics.registry.webapi.Parameters.VERSION_LIST;
 import static com.epimorphics.registry.webapi.Parameters.VIEW;
 import static com.epimorphics.registry.webapi.Parameters.WITH_METADATA;
-import static com.epimorphics.registry.webapi.Parameters.WITH_VERSION;
-import static com.epimorphics.registry.webapi.Parameters.VERSION_LIST;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +52,6 @@ import com.sun.jersey.api.NotFoundException;
 
 public class CommandRead extends Command {
 
-    boolean withVersion;
     boolean withMetadata;
     boolean versionList;
     boolean versioned;
@@ -63,7 +61,6 @@ public class CommandRead extends Command {
     public CommandRead(Operation operation, String target,
             MultivaluedMap<String, String> parameters, Registry registry) {
         super(operation, target, parameters, registry);
-        withVersion = hasParamValue(VIEW, WITH_VERSION);
         withMetadata = hasParamValue(VIEW, WITH_METADATA);
         versionList = hasParamValue(VIEW, VERSION_LIST);
         versioned = lastSegment.contains(":");
@@ -88,11 +85,7 @@ public class CommandRead extends Command {
                 }
             } else {
                 //  plain item
-                if (withVersion) {
-                    d = store.getItemWithVersion(target, true);
-                } else {
-                    d = store.getItem(target, true) ;
-                }
+                d = store.getItem(target, true) ;
                 if (versionList) {
                     injectVersionHistory(d);
                 }
@@ -244,7 +237,7 @@ public class CommandRead extends Command {
                 } else {
                     timestamp = Util.asTimestamp( parameters.getFirst(VERSION_AT) );
                 }
-                complete = register.constructView(view, withVersion, withMetadata, status, pagenum * length, length, timestamp, members);
+                complete = register.constructView(view, withMetadata, status, pagenum * length, length, timestamp, members);
             }
 
             // Paging parameters

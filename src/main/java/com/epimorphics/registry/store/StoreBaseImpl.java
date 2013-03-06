@@ -11,8 +11,8 @@ package com.epimorphics.registry.store;
 
 import static com.epimorphics.rdfutil.QueryUtil.createBindings;
 import static com.epimorphics.rdfutil.QueryUtil.selectAll;
-import static com.epimorphics.rdfutil.QueryUtil.selectAllVar;
 import static com.epimorphics.rdfutil.QueryUtil.selectFirstVar;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -21,8 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -194,19 +192,19 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     public Description getCurrentVersion(String uri) {
         lockStore();
         try {
-            Description d = asDescription( doGetCurrentVersion(uri, true, null) );
+            Description d = asDescription( doGetCurrentVersion(uri, null) );
             return d;
         } finally {
             unlockStore();
         }
     }
 
-    protected Resource doGetCurrentVersion(String uri, boolean flatten, Model dest) {
+    protected Resource doGetCurrentVersion(String uri, Model dest) {
         Resource root = describe(uri, dest);
         Resource version = root.getPropertyResourceValue(Version.currentVersion);
         if (version != null) {
             Closure.closure(mod(version), false, root.getModel());
-            if (flatten) VersionUtil.flatten(root, version);
+            VersionUtil.flatten(root, version);
         }
         return root;
     }
@@ -340,23 +338,15 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     @Override
     public RegisterItem getItem(String uri, boolean withEntity) {
-        return doGetItem(uri, withEntity, true);
-    }
-
-    public RegisterItem getItemWithVersion(String uri, boolean withEntity) {
-        return doGetItem(uri, withEntity, false);
-    }
-
-    private RegisterItem doGetItem(String uri, boolean withEntity, boolean flatten) {
         lockStore();
         try {
-            Resource root = doGetCurrentVersion(uri, flatten, null);
+            Resource root = doGetCurrentVersion(uri, null);
             if (! root.hasProperty(RDF.type, RegistryVocab.RegisterItem)) {
                 return null;
             }
             RegisterItem item = new RegisterItem(root);
             if (withEntity) {
-                doGetEntity(item, flatten, null);
+                doGetEntity(item, null);
             }
             return item;
         } finally {
@@ -364,15 +354,9 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         }
     }
 
-    protected Resource doGetEntity(RegisterItem item, boolean flatten, Model dest) {
+
+    protected Resource doGetEntity(RegisterItem item, Model dest) {
         Resource root = item.getRoot();
-        if (!flatten) {
-            root = RDFUtil.getSubject(root.getModel(), DCTerms.isVersionOf, root);
-            if (root == null) {
-                log.error("Internal error finding non-flattened version of " + item.getRoot());
-                return null;
-            }
-        }
         if (dest == null) {
             dest = ModelFactory.createDefaultModel();
         }
@@ -384,7 +368,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
                 dest.add( store.asDataset().getNamedModel(srcGraph.getURI()) );
                 entity = entity.inModel(dest);
             } else {
-                entity = doGetCurrentVersion( entity.getURI(), flatten, dest );
+                entity = doGetCurrentVersion( entity.getURI(),  dest );
             }
             item.setEntity(entity);
             return entity;
@@ -398,23 +382,23 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     public Resource getEntity(RegisterItem item) {
         lockStore();
         try {
-            return doGetEntity(item, true, null);
+            return doGetEntity(item, null);
         } finally {
             unlockStore();
         }
     }
 
     @Override
-    public List<RegisterItem> fetchAll(List<String> itemURIs, boolean withEntity, boolean withVersion) {
+    public List<RegisterItem> fetchAll(List<String> itemURIs, boolean withEntity) {
         lockStore();
         try {
             Model shared = ModelFactory.createDefaultModel();
             List<RegisterItem> results = new ArrayList<RegisterItem>(itemURIs.size());
             for ( String uri : itemURIs ) {
-                Resource itemRoot = doGetCurrentVersion(uri, !withVersion, shared);
+                Resource itemRoot = doGetCurrentVersion(uri, shared);
                 RegisterItem item = new RegisterItem(itemRoot);
                 if (withEntity) {
-                    doGetEntity(item, !withVersion, shared);
+                    doGetEntity(item, shared);
                 }
                 results.add(item);
             }
@@ -425,31 +409,31 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     }
 
 
-    public  List<RegisterItem>  doFetchMembers(Register register, boolean withEntity, boolean flatten) {
-        lockStore();
-        try {
-            // A shared model would save having 2N models around but makes filtering painful
-//            Model shared = ModelFactory.createDefaultModel();
-            List<RDFNode> items = selectAllVar("ri", getDefaultModel(), REGISTER_ENUM_QUERY, Prefixes.getDefault(),
-                    "register", register.getRoot() );
-            List<RegisterItem> results = new ArrayList<RegisterItem>(items.size());
-            for ( RDFNode itemR : items) {
-                if (itemR.isURIResource()) {
-                    Resource itemRoot = doGetCurrentVersion(itemR.asResource().getURI(), flatten, null);
-                    RegisterItem item = new RegisterItem(itemRoot);
-                    doGetEntity(item, flatten, null);
-                    results.add(item);
-                } else {
-                    throw new EpiException("Found item which isn't a resource");
-                }
-            }
-            return results;
-        } finally {
-            unlockStore();
-        }
-    }
-    static String REGISTER_ENUM_QUERY =
-            "SELECT ?ri WHERE { ?ri reg:register ?register. }";
+//    public  List<RegisterItem>  doFetchMembers(Register register, boolean withEntity) {
+//        lockStore();
+//        try {
+//            // A shared model would save having 2N models around but makes filtering painful
+////            Model shared = ModelFactory.createDefaultModel();
+//            List<RDFNode> items = selectAllVar("ri", getDefaultModel(), REGISTER_ENUM_QUERY, Prefixes.getDefault(),
+//                    "register", register.getRoot() );
+//            List<RegisterItem> results = new ArrayList<RegisterItem>(items.size());
+//            for ( RDFNode itemR : items) {
+//                if (itemR.isURIResource()) {
+//                    Resource itemRoot = doGetCurrentVersion(itemR.asResource().getURI(), null);
+//                    RegisterItem item = new RegisterItem(itemRoot);
+//                    doGetEntity(item,  null);
+//                    results.add(item);
+//                } else {
+//                    throw new EpiException("Found item which isn't a resource");
+//                }
+//            }
+//            return results;
+//        } finally {
+//            unlockStore();
+//        }
+//    }
+//    static String REGISTER_ENUM_QUERY =
+//            "SELECT ?ri WHERE { ?ri reg:register ?register. }";
 
     @Override
     public List<RegisterEntryInfo> listMembers(Register register) {

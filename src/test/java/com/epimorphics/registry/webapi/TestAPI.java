@@ -22,17 +22,12 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import com.epimorphics.rdfutil.QueryUtil;
 import com.epimorphics.rdfutil.RDFUtil;
-import com.epimorphics.registry.core.Registry;
-import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.util.JSONLDSupport;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
-import com.epimorphics.server.core.ServiceConfig;
-import com.epimorphics.server.core.Store;
 import com.epimorphics.util.TestUtil;
 import com.epimorphics.vocabs.API;
 import com.epimorphics.vocabs.SKOS;
@@ -91,17 +86,17 @@ public class TestAPI extends TomcatTestBase {
         checkModelResponse(m, ROOT_REGISTER + "reg1/red", "test/expected/red.ttl");
         checkEntity(m, ROOT_REGISTER + "reg1/_red",  ROOT_REGISTER + "reg1/red");
 
-        m = getModelResponse(REG1 + "/_red", "_view", "version");
-        checkModelResponse(m, ROOT_REGISTER + "reg1/red",  "test/expected/red.ttl");
-        checkModelResponse(m, ROOT_REGISTER + "reg1/_red",  "test/expected/red_item_version.ttl");
-        checkModelResponse(m, ROOT_REGISTER + "reg1/_red:1",  "test/expected/red_item_version.ttl");
+//        m = getModelResponse(REG1 + "/_red", "_view", "version");
+//        checkModelResponse(m, ROOT_REGISTER + "reg1/red",  "test/expected/red.ttl");
+//        checkModelResponse(m, ROOT_REGISTER + "reg1/_red",  "test/expected/red_item_version.ttl");
+//        checkModelResponse(m, ROOT_REGISTER + "reg1/_red:1",  "test/expected/red_item_version.ttl");
 
         // External (not managed) entities
         assertEquals(201, postFileStatus("test/absolute-black.ttl", REG1));
         m = checkModelResponse(REG1 + "/_black", EXT_BLACK, "test/expected/absolute-black.ttl");
         checkEntity(m, ROOT_REGISTER + "reg1/_black", EXT_BLACK);
 
-        StoreAPI stsore = Registry.get().getStore();
+//        StoreAPI stsore = Registry.get().getStore();
 
 
         // Entity retrieval
@@ -134,10 +129,10 @@ public class TestAPI extends TomcatTestBase {
         checkModelResponse(REG1, ROOT_REGISTER + "reg1", "test/expected/reg1_red_black.ttl");
 
         // Basic version view
-        m = getModelResponse(REG1 + "/_red?_view=version");
-        String uri = QueryUtil.selectFirstVar("entity", m, "SELECT ?entity WHERE { ?item version:currentVersion [ reg:definition [ reg:entity ?entity]].}",
-                                                    Prefixes.getDefault(), "item", ROOT_REGISTER + "reg1/_red").asResource().getURI();
-        assertEquals(ROOT_REGISTER + "reg1/red", uri);
+//        m = getModelResponse(REG1 + "/_red?_view=version");
+//        String uri = QueryUtil.selectFirstVar("entity", m, "SELECT ?entity WHERE { ?item version:currentVersion [ reg:definition [ reg:entity ?entity]].}",
+//                                                    Prefixes.getDefault(), "item", ROOT_REGISTER + "reg1/_red").asResource().getURI();
+//        assertEquals(ROOT_REGISTER + "reg1/red", uri);
 
         // Register listing
         assertEquals(201, postFileStatus("test/blue.ttl", REG1));
