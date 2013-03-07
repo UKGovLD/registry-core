@@ -87,6 +87,9 @@ public class TestAPI extends TomcatTestBase {
         // Adds reg1/blue and tests views with different status setting and metadata
         doRegisterListingTest();
 
+        // Check for case of invalid patch requests
+        doInvalidUpdateTest();
+
         // Create a large register regL and checks paged views and retrieving early version of register
         doPagingTest();
         doRegisterVersionRetrievalTest();
@@ -128,6 +131,11 @@ public class TestAPI extends TomcatTestBase {
 
 //        System.out.println("Store dump");
 //        ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel().write(System.out, "Turtle");
+    }
+
+    private void doInvalidUpdateTest() {
+        assertEquals(400, invoke("PATCH", "test/blue-patch.ttl", BASE_URL).getStatus());
+        assertEquals(400, invoke("PATCH", "test/blue-patch.ttl", REG1).getStatus());
     }
 
     private void doRegisterRegistrationTests() {

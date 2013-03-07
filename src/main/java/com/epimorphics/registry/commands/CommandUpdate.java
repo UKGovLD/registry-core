@@ -46,8 +46,11 @@ public class CommandUpdate extends Command {
     @Override
     public ValidationResponse validate() {
         // Payload must match target
-        // Target must exist
-        // TODO implement
+        Resource item = payload.getResource( target );
+        if ( ! item.listProperties().hasNext() ){
+            // No properties, probably a URI mismatch
+            return new ValidationResponse(Response.Status.BAD_REQUEST, "Payload URI does not match target");
+        }
         return ValidationResponse.OK;
     }
 

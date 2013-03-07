@@ -55,6 +55,9 @@ curl -i -H "Accept:text/turtle" http://localhost:8080/def/bathingWaters?firstPag
 curl -i -H "Content-Type: application/ld+json" -X POST --data "@test/purple.jsonld" http://localhost:8080/def/colours
 
 
+// Should reject
+curl -i -H "Content-Type: text/turtle" -X PUT --data "@test/blue-patch.ttl" http://localhost:8080/def/colours
+
 # Configure proxy update permissions
 
 Add to /etc/sudoers:

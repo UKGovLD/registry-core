@@ -40,12 +40,10 @@ public class TestAPIDebug extends TomcatTestBase {
 //        Model m = null;
 
         // Set up some base data
-//        assertEquals(201, postFileStatus("test/reg1.ttl", BASE_URL));
-//        assertEquals(201, postFileStatus("test/red.ttl", REG1));
-//        assertEquals(201, postFileStatus("test/blue.ttl", REG1));
-//
-//        assertEquals(404, invoke("PATCH", "test/blue-patch.ttl", BASE_URL).getStatus());
-//        assertEquals(400, invoke("PATCH", "test/blue-patch.ttl", REG1).getStatus());
+        assertEquals(201, postFileStatus("test/reg1.ttl", BASE_URL));
+        assertEquals(201, postFileStatus("test/red.ttl", REG1));
+        assertEquals(201, postFileStatus("test/blue.ttl", REG1));
+
     }
 
 }
