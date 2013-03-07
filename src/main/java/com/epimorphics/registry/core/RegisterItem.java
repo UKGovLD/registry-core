@@ -19,7 +19,6 @@ import javax.ws.rs.core.Response;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.vocab.RegistryVocab;
-import com.epimorphics.server.webapi.BaseEndpoint;
 import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -283,13 +282,7 @@ public class RegisterItem extends Description {
         // Presumably a item under construction from a web request
         if (notation == null && root.isURIResource()) {
             String uri = root.getURI();
-            if (uri.equals(BaseEndpoint.DUMMY_BASE_URI)) {
-                // Empty relative URI specified
-                notation = getExplicitNotation(root);
-            } else if (uri.startsWith(BaseEndpoint.DUMMY_BASE_URI)) {
-                // relative URI
-                notation = validateNotation( uri.substring(BaseEndpoint.DUMMY_BASE_URI.length() + 1));
-            } else if (parentURI != null && uri.startsWith(parentURI)) {
+            if (parentURI != null && uri.startsWith(parentURI)) {
                 notation = validateNotation( uri.substring(parentURI.length() + 1) );
             } else {
                 // Register Item has explicit URI which is not relative to the target parent register
@@ -327,11 +320,8 @@ public class RegisterItem extends Description {
     public static String notationFromEntity(Resource entity, String parentURI) {
         String uri = entity.getURI();
         String notation = null;
-        if (entity.isAnon() || uri.equals(BaseEndpoint.DUMMY_BASE_URI)) {
+        if (entity.isAnon()) {
             notation = UUID.randomUUID().toString();
-        } else if (uri.startsWith(BaseEndpoint.DUMMY_BASE_URI)) {
-            // relative URI
-            notation = uri.substring(BaseEndpoint.DUMMY_BASE_URI.length() + 1);
         } else if (uri.startsWith(parentURI)) {
             notation = uri.substring(parentURI.length() + 1);
         } else {
@@ -346,14 +336,7 @@ public class RegisterItem extends Description {
 
     private String entityURI(Resource entity) {
         String uri = entity.getURI();
-        if (entity.isAnon() || uri.equals(BaseEndpoint.DUMMY_BASE_URI)) {
-            uri = makeEntityURI();
-        } else if (uri.startsWith(BaseEndpoint.DUMMY_BASE_URI)) {
-            // relative URI
-            String eNotation = uri.substring(BaseEndpoint.DUMMY_BASE_URI.length() + 1);
-            if (!eNotation.equals(notation)) {
-                throw new WebApiException(Response.Status.BAD_REQUEST, "Entity relative path doesn't match its notation");
-            }
+        if (entity.isAnon()) {
             uri = makeEntityURI();
         } else if (uri.startsWith(parentURI)) {
             String eNotation = uri.substring(parentURI.length() + 1);

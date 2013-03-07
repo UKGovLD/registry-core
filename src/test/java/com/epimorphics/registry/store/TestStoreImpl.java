@@ -9,7 +9,12 @@
 
 package com.epimorphics.registry.store;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -31,7 +36,7 @@ import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
 import com.epimorphics.server.core.ServiceConfig;
 import com.epimorphics.server.stores.MemStore;
-import com.epimorphics.server.webapi.BaseEndpoint;
+import com.epimorphics.util.NameUtils;
 import com.epimorphics.util.TestUtil;
 import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -146,12 +151,14 @@ public class TestStoreImpl {
 
     private long addEntry(String defFile, String parentURI) {
         Register parent = store.getCurrentVersion(parentURI).asRegister();
+        String target = NameUtils.stripLastSlash(parentURI);
+        String base = NameUtils.ensureLastSlash(parentURI);
         Model subregM = ModelFactory.createDefaultModel();
-        subregM.read(defFile, BaseEndpoint.DUMMY_BASE_URI, FileUtils.langTurtle);
+        subregM.read(defFile, base, FileUtils.langTurtle);
         Resource subregR = RDFUtil.findRoot( subregM );
 
         Calendar now = Calendar.getInstance();
-        RegisterItem subregItem = RegisterItem.fromEntityRequest(subregR, parentURI, true, now);
+        RegisterItem subregItem = RegisterItem.fromEntityRequest(subregR, target, true, now);
 
         store.addToRegister(parent, subregItem, now);
         return now.getTimeInMillis();
@@ -296,7 +303,7 @@ public class TestStoreImpl {
 
         Register parent = store.getCurrentVersion(REG1).asRegister();
         Model m = ModelFactory.createDefaultModel();
-        m.read("file:test/absolute-black.ttl", BaseEndpoint.DUMMY_BASE_URI, FileUtils.langTurtle);
+        m.read("file:test/absolute-black.ttl", REG1 + "/", FileUtils.langTurtle);
         Resource ri = m.listSubjectsWithProperty(RDF.type, RegistryVocab.RegisterItem).next();
 
         RegisterItem item = RegisterItem.fromRIRequest(ri, REG1, true);

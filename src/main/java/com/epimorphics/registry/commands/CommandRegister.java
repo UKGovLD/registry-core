@@ -9,6 +9,8 @@
 
 package com.epimorphics.registry.commands;
 
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -16,7 +18,6 @@ import java.util.List;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import static javax.ws.rs.core.Response.Status.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +34,6 @@ import com.epimorphics.registry.store.EntityInfo;
 import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.Parameters;
-import com.epimorphics.server.webapi.BaseEndpoint;
 import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.util.NameUtils;
@@ -45,7 +45,6 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.sparql.util.Closure;
-import com.hp.hpl.jena.util.ResourceUtils;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
@@ -157,17 +156,17 @@ public class CommandRegister extends Command {
             throw new WebApiException(BAD_REQUEST, "No children of bulk collection type found");
         }
 
-        // Relocate any relative children
-        if (root.getURI().startsWith(BaseEndpoint.DUMMY_BASE_URI)) {
-            int striplen = root.getURI().length();
-            for (int i = 0; i < children.size(); i++) {
-                Resource c = children.get(i);
-                if (c.getURI().startsWith(BaseEndpoint.DUMMY_BASE_URI)) {
-                    String uri = BaseEndpoint.DUMMY_BASE_URI + c.getURI().substring(striplen);
-                    children.set(i, ResourceUtils.renameResource(c, uri));
-                }
-            }
-        }
+//        // Relocate any relative children
+//        if (root.getURI().startsWith(BaseEndpoint.DUMMY_BASE_URI)) {
+//            int striplen = root.getURI().length();
+//            for (int i = 0; i < children.size(); i++) {
+//                Resource c = children.get(i);
+//                if (c.getURI().startsWith(BaseEndpoint.DUMMY_BASE_URI)) {
+//                    String uri = BaseEndpoint.DUMMY_BASE_URI + c.getURI().substring(striplen);
+//                    children.set(i, ResourceUtils.renameResource(c, uri));
+//                }
+//            }
+//        }
 
         // Register the collection
         root.addProperty(RDF.type, RegistryVocab.Register);

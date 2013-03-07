@@ -225,12 +225,13 @@ public class RequestProcessor extends BaseEndpoint {
             String filename = field.getContentDisposition().getFileName();
             log.debug("Multipart form invoked on file " + filename + " action=" + action);
             Model payload = ModelFactory.createDefaultModel();
+            String base = baseURI(true);
             if (filename.endsWith(".ttl")) {
-                payload.read(uploadedInputStream, DUMMY_BASE_URI, FileUtils.langTurtle);
+                payload.read(uploadedInputStream, base, FileUtils.langTurtle);
             } else if (filename.endsWith(".jsonld")) {
-                payload = JSONLDSupport.readModel(DUMMY_BASE_URI, uploadedInputStream);
+                payload = JSONLDSupport.readModel(base, uploadedInputStream);
             } else {
-                payload.read(uploadedInputStream, DUMMY_BASE_URI, FileUtils.langXML);
+                payload.read(uploadedInputStream, base, FileUtils.langXML);
             }
             Command command = null;
             if (action.equals("register")) {
