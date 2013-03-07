@@ -36,6 +36,7 @@ import com.epimorphics.registry.store.VersionInfo;
 import com.epimorphics.registry.util.Util;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
+import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.vocabs.API;
 import com.epimorphics.vocabs.Time;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -130,6 +131,10 @@ public class CommandRead extends Command {
                     m.add( registerRead( Description.descriptionFrom(entity, store).asRegister() ) );
                 }
             }
+        }
+
+        if (d == null) {
+            throw new WebApiException(Response.Status.INTERNAL_SERVER_ERROR, "Failed to reconstruct description, possible damaged repository");
         }
 
         return returnModel(m, d.getRoot().getURI() );

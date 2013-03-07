@@ -1,0 +1,11 @@
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix reg:     <http://purl.org/linked-data/registry#> .
+@prefix ldp:     <http://www.w3.org/ns/ldp#> .
+
+<codes>
+      a       reg:Register , ldp:Container ;
+      rdfs:label "codes"@en ;
+      reg:containedItemClass
+              reg:Register ;
+      reg:owner <http://example.com/department> ;
+      .

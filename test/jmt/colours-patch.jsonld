@@ -1,0 +1,8 @@
+{
+    "@context" : { "dct" : "http://purl.org/dc/terms/" },
+    "@id" : "http://ukgovld-registry.dnsalias.net/def/colours",
+    "dct:description" : {
+        "@value" : "Register to hold a code list of PRIMARY-ish colours",
+        "@language" : "en"
+        }
+}

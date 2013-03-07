@@ -1,0 +1,15 @@
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dct:     <http://purl.org/dc/terms/> .
+@prefix reg:     <http://purl.org/linked-data/registry#> .
+@prefix ldp:     <http://www.w3.org/ns/ldp#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+
+<http://ukgovld-registry.dnsalias.net/codes>
+      a       reg:Register , ldp:Container ;
+      rdfs:label "CODES+"@en ;
+      dct:description "Root (sub-)register for WMO code-tables+"@en ;
+      reg:containedItemClass
+              reg:Register ;
+      reg:owner <http://example.com/department> ;
+      owl:versionInfo 5 ;
+      .

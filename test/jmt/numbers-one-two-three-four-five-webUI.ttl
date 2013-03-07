@@ -1,0 +1,37 @@
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dct:     <http://purl.org/dc/terms/> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix reg:     <http://purl.org/linked-data/registry#> .
+
+<numbers>
+      a       skos:Collection ;
+      rdfs:label "numbers"@en ;
+      dct:description "The set of integer numbers (well - a few anyway)."@en ;
+      reg:owner <http://jeremytandy.me.uk/self#id> ;
+      skos:member <numbers/one>, <numbers/two>, <numbers/three>, <numbers/four>, <numbers/five> ;
+      .
+<numbers/one>
+      a       skos:Concept ;
+      rdfs:label "one"@en ;
+      dct:description "The lowest cardinal number; half of two; 1."@en ;
+      .
+<numbers/two>
+      a       skos:Concept ;
+      rdfs:label "two"@en ;
+      dct:description "Equivalent to the sum of one and one; one less than three; 2."@en ;
+      .
+<numbers/three>
+      a       skos:Concept ;
+      rdfs:label "three"@en ;
+      dct:description "Equivalent to the sum of one and two; one more than two; 3."@en ;
+      .
+<numbers/four>
+      a       skos:Concept ;
+      rdfs:label "four"@en ;
+      dct:description "Equivalent to the product of two and two; one more than three, or six less than ten; 4."@en ;
+      .
+<numbers/five>
+      a       skos:Concept ;
+      rdfs:label "five"@en ;
+      dct:description "Equivalent to the sum of two and three; one more than four, or half of ten; 5."@en ;
+      .

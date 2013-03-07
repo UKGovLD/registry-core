@@ -1,0 +1,16 @@
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dct:     <http://purl.org/dc/terms/> .
+@prefix reg:     <http://purl.org/linked-data/registry#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+
+<>
+      a       reg:RegisterItem ;
+      rdfs:label "Reserved"@en ;
+      dct:description "Reserved for future use"@en ;
+      reg:definition
+              [ reg:entity [] 
+              ] ;
+      reg:itemClass skos:Concept ;
+      reg:notation "six" ;
+      reg:register <http://ukgovld-registry.dnsalias.net/def/numbers> ;
+      .

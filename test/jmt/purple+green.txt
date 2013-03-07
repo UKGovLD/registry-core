@@ -1,0 +1,2 @@
+http://ukgovld-registry.dnsalias.net/def/colours/purple
+http://ukgovld-registry.dnsalias.net/def/colours/green

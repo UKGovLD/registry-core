@@ -58,6 +58,15 @@ curl -i -H "Content-Type: application/ld+json" -X POST --data "@test/purple.json
 // Should reject
 curl -i -H "Content-Type: text/turtle" -X PUT --data "@test/blue-patch.ttl" http://localhost:8080/def/colours
 
+
+// Issue 27 manual sequence
+curl -i -H "Content-Type:text/turtle" -H "Accept:text/plain" -X POST --data "@test/jmt/codes-post.ttl" http://localhost:8080/
+curl -i -H "Content-Type:text/turtle" -H "Accept:text/plain" -X PATCH --data "@test/jmt/codes-patch.ttl" http://localhost:8080/codes?non-member-properties
+curl -i -H "Content-Type:text/turtle" -H "Accept:text/plain" -X PUT --data "@test/jmt/codes-put.ttl" http://localhost:8080/codes?non-member-properties
+curl -i -H "Content-Type:text/turtle" -H "Accept:text/plain" -X PATCH --data "@test/jmt/codes-patch2.ttl" http://localhost:8080/codes?non-member-properties
+curl -i -H "Content-Type:text/turtle" -H "Accept:text/plain" -X PUT --data "@test/jmt/codes-put.ttl" http://localhost:8080/codes?non-member-properties
+curl -i -H "Accept:text/turtle" http://localhost:8080/codes
+
 # Configure proxy update permissions
 
 Add to /etc/sudoers:
