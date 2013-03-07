@@ -36,6 +36,7 @@ import com.epimorphics.registry.webapi.Parameters;
 import com.epimorphics.server.webapi.BaseEndpoint;
 import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.util.EpiException;
+import com.epimorphics.util.NameUtils;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
@@ -214,7 +215,8 @@ public class CommandRegister extends Command {
     }
 
     private Resource register(Register parent, Resource itemSpec, boolean withItemSpec) {
-        String parentURI = parent.getRoot().getURI();
+        String parentURI = NameUtils.stripLastSlash( parent.getRoot().getURI() );
+                // String stripLastSlash needed to cope with the out-of-pattern URI for the root register
         RegisterItem ri = null;
         if ( withItemSpec ) {
             ri = RegisterItem.fromRIRequest(itemSpec, parentURI, true);

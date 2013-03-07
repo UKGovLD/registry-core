@@ -49,6 +49,7 @@ import com.epimorphics.server.core.ServiceConfig;
 import com.epimorphics.server.templates.VelocityRender;
 import com.epimorphics.server.webapi.BaseEndpoint;
 import com.epimorphics.server.webapi.WebApiException;
+import com.epimorphics.util.NameUtils;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.util.FileManager;
@@ -172,7 +173,7 @@ public class RequestProcessor extends BaseEndpoint {
             command = makeCommand(Operation.StatusUpdate);
         } else {
             command = makeCommand(Operation.Register);
-            command.setPayload( getBodyModel(hh, body) );
+            command.setPayload( getBodyModel(hh, body, true) );
         }
         return command.execute();
     }
@@ -181,7 +182,7 @@ public class RequestProcessor extends BaseEndpoint {
     @Consumes({MIME_TURTLE, MIME_RDFXML, JSONLDSupport.MIME_JSONLD})
     public Response update(@Context HttpHeaders hh, InputStream body) {
         Command command = makeCommand( Operation.Update );
-        command.setPayload( getBodyModel(hh, body) );
+        command.setPayload( getBodyModel(hh, body, false) );
         return command.execute();
     }
 
@@ -196,7 +197,7 @@ public class RequestProcessor extends BaseEndpoint {
     public Response updatePatch(@Context HttpHeaders hh, InputStream body) {
         Command command = makeCommand( Operation.Update );
         ((CommandUpdate)command).setToPatch();
-        command.setPayload( getBodyModel(hh, body) );
+        command.setPayload( getBodyModel(hh, body, false) );
         return command.execute();
     }
 
@@ -227,7 +228,7 @@ public class RequestProcessor extends BaseEndpoint {
             if (filename.endsWith(".ttl")) {
                 payload.read(uploadedInputStream, DUMMY_BASE_URI, FileUtils.langTurtle);
             } else if (filename.endsWith(".jsonld")) {
-                payload = JSONLDSupport.readModel(uploadedInputStream);
+                payload = JSONLDSupport.readModel(DUMMY_BASE_URI, uploadedInputStream);
             } else {
                 payload.read(uploadedInputStream, DUMMY_BASE_URI, FileUtils.langXML);
             }
@@ -269,15 +270,51 @@ public class RequestProcessor extends BaseEndpoint {
         return Response.ok().build();
     }
 
-    // Inject support for JSON-LD
-    @Override
-    public Model getBodyModel(HttpHeaders hh, InputStream body) {
-        if (hh.getMediaType().equals(JSONLDSupport.MT_JSONLD)) {
-            return JSONLDSupport.readModel(body);
+    public Model getBodyModel(HttpHeaders hh, InputStream body, boolean isPOST) {
+        MediaType mediaType = hh.getMediaType();
+        if (mediaType == null) return null;
+        String mime = mediaType.toString();
+
+        if (mediaType.equals(JSONLDSupport.MT_JSONLD)) {
+            return JSONLDSupport.readModel(baseURI(isPOST), body);
+
         } else {
-            return super.getBodyModel(hh, body);
+            String lang = null;
+            if ( MIME_RDFXML.equals( mime ) ) {
+                lang = FileUtils.langXML;
+            } else if ( MIME_TURTLE.equals( mime ) ) {
+                lang = FileUtils.langTurtle;
+            } else {
+                return null;
+            }
+            Model m = ModelFactory.createDefaultModel();
+            m.read(body, baseURI(isPOST), lang);
+            return m;
         }
     }
+
+    /**
+     * Determine a suitable base URI to use for parsing RDF payloads.
+     * For POSTs the base is derived from the URL to which the post was made,
+     * for PUT/PATCH it is the parent of the target URL.
+     */
+    public String baseURI(boolean isPOST) {
+        String base = Registry.get().getBaseURI();
+        String path = uriInfo.getPath();
+        if (!isPOST) {
+            path = NameUtils.splitBeforeLast(path, "/");
+        }
+        if ( ! path.isEmpty()) {
+            base += "/" + path;
+        }
+        System.out.println("Base uri = " + base + "/");
+        return base + "/";
+    }
+
+    /**
+     * Handle relative URIs. Payloads with
+     * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
+     */
 
     static class PassThroughResult {
         Response response;

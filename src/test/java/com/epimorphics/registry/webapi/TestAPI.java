@@ -397,7 +397,7 @@ public class TestAPI extends TomcatTestBase {
         ClientResponse response = getResponse(BASE_URL + "reg1/blue", JSONLDSupport.MIME_JSONLD);
         assertEquals(200, response.getStatus());
         InputStream is = response.getEntityInputStream();
-        m = JSONLDSupport.readModel(is);
+        m = JSONLDSupport.readModel(RequestProcessor.DUMMY_BASE_URI, is);
         is.close();
         r = m.getResource(ROOT_REGISTER + "reg1/blue");
         assertEquals("blue", RDFUtil.getStringValue(r, RDFS.label));

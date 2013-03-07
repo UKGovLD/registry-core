@@ -14,7 +14,6 @@ import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
-import com.epimorphics.server.webapi.BaseEndpoint;
 import com.epimorphics.util.EpiException;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -38,22 +37,22 @@ public class JSONLDSupport {
     public static final String CONTEXT_KEY = "@context";
 
     static Options readOptions;
-    
-    static {
-        readOptions = new Options(BaseEndpoint.DUMMY_BASE_URI + "/");
-    }
-    
-    public static Model readModel(InputStream inputStream) {
+
+//    static {
+//        readOptions = new Options(BaseEndpoint.DUMMY_BASE_URI + "/");
+//    }
+
+    public static Model readModel(String baseURI, InputStream inputStream) {
         try {
             Object json = JSONUtils.fromInputStream(inputStream);
             inputStream.close();
-            return parseModel( json );
+            return parseModel(baseURI, json );
         } catch (Exception e) {
             throw new EpiException(e);
         }
     }
 
-    public static Model parseModel(Object jsonObject) {
+    public static Model parseModel(String baseURI, Object jsonObject) {
         try {
             // Identify system context
             if (jsonObject instanceof Map<?,?>) {
@@ -67,7 +66,7 @@ public class JSONLDSupport {
             JenaTripleCallback callback = new JenaTripleCallback();
             Model m = ModelFactory.createDefaultModel();
             callback.setJenaModel(m);
-            JSONLD.toRDF(jsonObject, readOptions, callback);
+            JSONLD.toRDF(jsonObject, new Options(baseURI), callback);
             return m;
         } catch (Exception e) {
             throw new EpiException(e);
