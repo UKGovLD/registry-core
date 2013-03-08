@@ -303,12 +303,16 @@ public class RequestProcessor extends BaseEndpoint {
         String base = Registry.get().getBaseURI();
         String path = uriInfo.getPath();
         if (!isPOST) {
-            path = NameUtils.splitBeforeLast(path, "/");
+            if (path.contains("/")) {
+                path = NameUtils.splitBeforeLast(path, "/"); 
+            } else {
+                path = "";
+            }
         }
         if ( ! path.isEmpty()) {
             base += "/" + path;
         }
-        System.out.println("Base uri = " + base + "/");
+//        log.debug("Base URI for payload parse: " +  base + "/" );
         return base + "/";
     }
 

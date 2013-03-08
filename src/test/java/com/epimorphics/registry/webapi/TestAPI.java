@@ -40,6 +40,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.vocabulary.DCTerms;
+import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
 import com.sun.jersey.api.client.ClientResponse;
@@ -86,6 +87,9 @@ public class TestAPI extends TomcatTestBase {
 
         // Adds reg1/blue and tests views with different status setting and metadata
         doRegisterListingTest();
+        
+        // Update tests on register itself, ISSUE-27, changes register name so so after listing test
+        doRegUpdateTest();
 
         // Check for case of invalid patch requests
         doInvalidUpdateTest();
@@ -194,6 +198,32 @@ public class TestAPI extends TomcatTestBase {
         String versionSuffix = red1Version.substring( red1Version.length()-2 );
         checkModelResponse(REG1 + "/red", ROOT_REGISTER + "reg1/red", "test/expected/red1.ttl");
         return versionSuffix;
+    }
+    
+    private void doRegUpdateTest() {
+        String reg1meta = REG1 + "?non-member-properties";
+        Model m = getModelResponse(reg1meta);
+        Resource reg1 = m.getResource(REG1_URI);
+        long version = RDFUtil.getLongValue(reg1, OWL.versionInfo);
+        
+        ClientResponse response = invoke("PUT", "test/reg1-put.ttl", reg1meta);
+        assertEquals(204, response.getStatus());
+        
+        m = getModelResponse(reg1meta);
+        reg1 = m.getResource(REG1_URI);
+        long newversion = RDFUtil.getLongValue(reg1, OWL.versionInfo);
+        assertEquals(version + 1, newversion);
+        assertEquals("Example register 1 - put update", RDFUtil.getStringValue(reg1, DCTerms.description));
+        
+        response = invoke("PATCH", "test/reg1-patch.ttl", reg1meta);
+        assertEquals(204, response.getStatus());
+        
+        m = getModelResponse(reg1meta);
+        reg1 = m.getResource(REG1_URI);
+        newversion = RDFUtil.getLongValue(reg1, OWL.versionInfo);
+        assertEquals(version + 2, newversion);
+        assertEquals("Example register 1 - patch update", RDFUtil.getStringValue(reg1, DCTerms.description));
+
     }
 
     // Assumes reg1/red exists

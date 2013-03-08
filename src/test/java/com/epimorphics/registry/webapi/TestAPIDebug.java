@@ -15,7 +15,19 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import com.epimorphics.rdfutil.RDFUtil;
+import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.store.CachingStore;
+import com.epimorphics.registry.util.Prefixes;
+import com.epimorphics.registry.vocab.Version;
+import com.epimorphics.server.core.ServiceConfig;
+import com.epimorphics.server.core.Store;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.sparql.util.Closure;
+import com.hp.hpl.jena.vocabulary.DCTerms;
+import com.hp.hpl.jena.vocabulary.OWL;
 import com.sun.jersey.api.client.ClientResponse;
 
 /**
@@ -43,7 +55,37 @@ public class TestAPIDebug extends TomcatTestBase {
         assertEquals(201, postFileStatus("test/reg1.ttl", BASE_URL));
         assertEquals(201, postFileStatus("test/red.ttl", REG1));
         assertEquals(201, postFileStatus("test/blue.ttl", REG1));
+        
+        String reg1meta = REG1 + "?non-member-properties";
+        Model m = getModelResponse(reg1meta);
+        Resource reg1 = m.getResource(REG1_URI);
+        long version = RDFUtil.getLongValue(reg1, OWL.versionInfo);
+        
+        ClientResponse response = invoke("PUT", "test/reg1-put.ttl", reg1meta);
+        assertEquals(204, response.getStatus());
+        
+        m = getModelResponse(reg1meta);
+        reg1 = m.getResource(REG1_URI);
+        long newversion = RDFUtil.getLongValue(reg1, OWL.versionInfo);
+        assertEquals(version + 1, newversion);
+        assertEquals("Example register 1 - put update", RDFUtil.getStringValue(reg1, DCTerms.description));
 
+    }
+    
+    // Debugging utility only, should not be used while transactions are live
+    public void printResourceState(String...uris) {
+        Model store = ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel();
+        Model description = ModelFactory.createDefaultModel();
+        for (String uri: uris) {
+            Resource r = store.getResource(uri);
+            Closure.closure(r, false, description);
+            if (r.hasProperty(Version.currentVersion)) {
+                r = r.getPropertyResourceValue(Version.currentVersion);
+                Closure.closure(r, false, description);
+            }
+        }
+        description.setNsPrefixes( Prefixes.get() );
+        description.write(System.out, "Turtle");
     }
 
 }

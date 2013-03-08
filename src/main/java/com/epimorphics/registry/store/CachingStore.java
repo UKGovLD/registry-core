@@ -126,13 +126,15 @@ public class CachingStore implements StoreAPI {
     @Override
     public String update(RegisterItem item, boolean withEntity) {
         cache.flush(item.getRegisterURI());
+        if (withEntity && item.isRegister()) {
+            cache.flush(item.getEntity().getURI());
+        }
         return store.update(item, withEntity);
     }
 
     @Override
     public String update(RegisterItem item, boolean withEntity,
             Calendar timestamp) {
-        cache.flush(item.getRegisterURI());
         return update(item, withEntity, timestamp);
     }
 

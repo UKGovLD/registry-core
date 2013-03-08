@@ -561,6 +561,9 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         if (temp != null) {
             current = temp;
         }
+        // doUpdate call will need current versionInfo to be able to allocate next version correctly 
+        RDFUtil.copyProperty( current, root, OWL.versionInfo );
+        // Preserve subregister - could this just be added to rigids
         RDFUtil.copyProperty( current, root, RegistryVocab.subregister );
         return doUpdate(root, cal, rigids);
     }
