@@ -217,12 +217,26 @@ public class TestAPI extends TomcatTestBase {
         
         response = invoke("PATCH", "test/reg1-patch.ttl", reg1meta);
         assertEquals(204, response.getStatus());
-        
         m = getModelResponse(reg1meta);
         reg1 = m.getResource(REG1_URI);
         newversion = RDFUtil.getLongValue(reg1, OWL.versionInfo);
         assertEquals(version + 2, newversion);
         assertEquals("Example register 1 - patch update", RDFUtil.getStringValue(reg1, DCTerms.description));
+        
+        // Safe against versioninfo being in payload
+        response = invoke("PUT", "test/reg1-put2.ttl", reg1meta);
+        m = getModelResponse(reg1meta);
+        m.write(System.out, "Turtle");
+        reg1 = m.getResource(REG1_URI);
+        newversion = RDFUtil.getLongValue(reg1, OWL.versionInfo);
+        assertEquals(version + 3, newversion);
+        assertEquals("Example register 1 - put update2", RDFUtil.getStringValue(reg1, DCTerms.description));
+        
+        // Try to change RDF type
+//        assertEquals(400, invoke("PUT", "test/reg1-bad-put1.ttl", reg1meta).getStatus());
+        
+        // Multiple roots in chang file
+        assertEquals(400, invoke("PUT", "test/reg1-bad-put2.ttl", reg1meta).getStatus());
 
     }
 

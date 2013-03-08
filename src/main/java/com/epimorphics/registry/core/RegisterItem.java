@@ -46,7 +46,7 @@ public class RegisterItem extends Description {
     String notation;
     String parentURI;
 
-    public static final Property[] RIGID_PROPS = new Property[] {RegistryVocab.register, RegistryVocab.notation, RegistryVocab.itemClass, RegistryVocab.predecessor, RegistryVocab.submitter};
+    public static final Property[] RIGID_PROPS = new Property[] {RegistryVocab.register, RegistryVocab.notation, RegistryVocab.itemClass, RegistryVocab.predecessor, RegistryVocab.submitter, RDF.type};
 
     /**
      * Construct a new register item from a loaded description
