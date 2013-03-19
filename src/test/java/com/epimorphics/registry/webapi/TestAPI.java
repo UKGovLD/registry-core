@@ -87,7 +87,7 @@ public class TestAPI extends TomcatTestBase {
 
         // Adds reg1/blue and tests views with different status setting and metadata
         doRegisterListingTest();
-        
+
         // Update tests on register itself, ISSUE-27, changes register name so so after listing test
         doRegUpdateTest();
 
@@ -199,22 +199,22 @@ public class TestAPI extends TomcatTestBase {
         checkModelResponse(REG1 + "/red", ROOT_REGISTER + "reg1/red", "test/expected/red1.ttl");
         return versionSuffix;
     }
-    
+
     private void doRegUpdateTest() {
         String reg1meta = REG1 + "?non-member-properties";
         Model m = getModelResponse(reg1meta);
         Resource reg1 = m.getResource(REG1_URI);
         long version = RDFUtil.getLongValue(reg1, OWL.versionInfo);
-        
+
         ClientResponse response = invoke("PUT", "test/reg1-put.ttl", reg1meta);
         assertEquals(204, response.getStatus());
-        
+
         m = getModelResponse(reg1meta);
         reg1 = m.getResource(REG1_URI);
         long newversion = RDFUtil.getLongValue(reg1, OWL.versionInfo);
         assertEquals(version + 1, newversion);
         assertEquals("Example register 1 - put update", RDFUtil.getStringValue(reg1, DCTerms.description));
-        
+
         response = invoke("PATCH", "test/reg1-patch.ttl", reg1meta);
         assertEquals(204, response.getStatus());
         m = getModelResponse(reg1meta);
@@ -222,19 +222,18 @@ public class TestAPI extends TomcatTestBase {
         newversion = RDFUtil.getLongValue(reg1, OWL.versionInfo);
         assertEquals(version + 2, newversion);
         assertEquals("Example register 1 - patch update", RDFUtil.getStringValue(reg1, DCTerms.description));
-        
+
         // Safe against versioninfo being in payload
         response = invoke("PUT", "test/reg1-put2.ttl", reg1meta);
         m = getModelResponse(reg1meta);
-        m.write(System.out, "Turtle");
         reg1 = m.getResource(REG1_URI);
         newversion = RDFUtil.getLongValue(reg1, OWL.versionInfo);
         assertEquals(version + 3, newversion);
         assertEquals("Example register 1 - put update2", RDFUtil.getStringValue(reg1, DCTerms.description));
-        
+
         // Try to change RDF type
 //        assertEquals(400, invoke("PUT", "test/reg1-bad-put1.ttl", reg1meta).getStatus());
-        
+
         // Multiple roots in chang file
         assertEquals(400, invoke("PUT", "test/reg1-bad-put2.ttl", reg1meta).getStatus());
 

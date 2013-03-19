@@ -16,8 +16,6 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.epimorphics.rdfutil.RDFUtil;
-import com.epimorphics.registry.core.Registry;
-import com.epimorphics.registry.store.CachingStore;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.Version;
 import com.epimorphics.server.core.ServiceConfig;
@@ -55,15 +53,15 @@ public class TestAPIDebug extends TomcatTestBase {
         assertEquals(201, postFileStatus("test/reg1.ttl", BASE_URL));
         assertEquals(201, postFileStatus("test/red.ttl", REG1));
         assertEquals(201, postFileStatus("test/blue.ttl", REG1));
-        
+
         String reg1meta = REG1 + "?non-member-properties";
         Model m = getModelResponse(reg1meta);
         Resource reg1 = m.getResource(REG1_URI);
         long version = RDFUtil.getLongValue(reg1, OWL.versionInfo);
-        
+
         ClientResponse response = invoke("PUT", "test/reg1-put.ttl", reg1meta);
         assertEquals(204, response.getStatus());
-        
+
         m = getModelResponse(reg1meta);
         reg1 = m.getResource(REG1_URI);
         long newversion = RDFUtil.getLongValue(reg1, OWL.versionInfo);
@@ -71,7 +69,7 @@ public class TestAPIDebug extends TomcatTestBase {
         assertEquals("Example register 1 - put update", RDFUtil.getStringValue(reg1, DCTerms.description));
 
     }
-    
+
     // Debugging utility only, should not be used while transactions are live
     public void printResourceState(String...uris) {
         Model store = ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel();
