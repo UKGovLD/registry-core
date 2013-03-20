@@ -66,7 +66,7 @@ public class CommandUpdate extends Command {
         
         if (lastSegment.startsWith("_")) {
             newitem = RegisterItem.fromRIRequest(root, parent, false);
-            isEntityUpdate = true;
+            isEntityUpdate = false;
         } else {
             newitem = RegisterItem.fromEntityRequest(root, parent, false);
         }

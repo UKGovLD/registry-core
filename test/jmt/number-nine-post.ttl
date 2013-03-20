@@ -1,0 +1,9 @@
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dct:     <http://purl.org/dc/terms/> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+
+<nine>
+      a       skos:Concept ;
+      rdfs:label "nine"@en ;
+      dct:description "Equivalent to the product of three and three; one more than eight, or one less than ten; 9."@en ;
+      .

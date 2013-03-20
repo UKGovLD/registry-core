@@ -9,7 +9,7 @@
 
 package com.epimorphics.registry.webapi;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 
@@ -23,7 +23,9 @@ import com.epimorphics.server.core.ServiceConfig;
 import com.epimorphics.server.core.Store;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.sparql.util.Closure;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.OWL;
@@ -51,30 +53,17 @@ public class TestAPIDebug extends TomcatTestBase {
         // Set up some base data
         assertEquals(201, postFileStatus("test/reg1.ttl", BASE_URL));
 
-        // Testing update of item + entity - ISSUE-38
-        ClientResponse response = postFile("test/jmt/number-eight-post-notation.ttl", REG1);
-        assertEquals(201, response.getStatus());
-        String itemURI = ROOT_REGISTER + "reg1/_eight";
-        assertEquals(itemURI, response.getLocation().toASCIIString());
+        // Testing ISSUE-39
+        assertEquals(201, postFileStatus("test/jmt/number-nine-post.ttl", REG1));
 
-        Model m = getModelResponse(REG1+"/eight?_view=with_metadata");
-        Resource item = m.getResource(itemURI);
-        assertEquals("http://ukgovld-registry.dnsalias.net/def/numbers/eight",
-                item.getPropertyResourceValue(RegistryVocab.definition)
-                    .getPropertyResourceValue(RegistryVocab.entity)
-                    .getURI());
-
-        response = postFile("test/jmt/number-eightb-post-relative.ttl", REG1);
-        assertEquals(201, response.getStatus());
-        itemURI = ROOT_REGISTER + "reg1/_eightb";
-        assertEquals(itemURI, response.getLocation().toASCIIString());
-        m = getModelResponse(REG1+"/_eightb");
-        item = m.getResource(itemURI);
-        assertEquals("eightb", RDFUtil.getStringValue(item, RegistryVocab.notation));
-        assertEquals("http://ukgovld-registry.dnsalias.net/def/numbers/eight",
-                item.getPropertyResourceValue(RegistryVocab.definition)
-                    .getPropertyResourceValue(RegistryVocab.entity)
-                    .getURI());
+        Property attributedTo = ResourceFactory.createProperty("http://www.w3.org/ns/prov#wasAttributedTo");
+        Resource item = getModelResponse(REG1 + "/nine?_view=with_metadata").getResource(REG1_URI + "/_nine");
+        assertFalse(item.hasProperty(attributedTo));
+        
+        assertEquals(204, invoke("PATCH", "test/jmt/number-nine-patch.ttl", REG1 + "/_nine").getStatus() );
+        
+        item = getModelResponse(REG1 + "/nine?_view=with_metadata").getResource(REG1_URI + "/_nine");
+        assertEquals("http://jeremytandy.me.uk/self#id", item.getPropertyResourceValue(attributedTo).getURI());
     }
 
     // Debugging utility only, should not be used while transactions are live
@@ -93,4 +82,10 @@ public class TestAPIDebug extends TomcatTestBase {
         description.write(System.out, "Turtle");
     }
 
+    public void debugStatus(ClientResponse response) {
+        if (response.getStatus() >= 400) {
+            System.out.println("Response was: " + response.getEntity(String.class) + " (" + response.getStatus() + ")");
+            assertTrue(false);
+        }
+    }
 }

@@ -133,9 +133,12 @@ public class TestAPI extends TomcatTestBase {
 
         // Check we can register and patch using jsonld syntax payloads
         doJsonldTests();
-        
+
         // Check registration of entity and item information together
         doRegisterWithMetadataTest();
+
+        // Check patching metadata annotations
+        doMetadataPatchTest();
 
 //        System.out.println("Store dump");
 //        ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel().write(System.out, "Turtle");
@@ -466,6 +469,7 @@ public class TestAPI extends TomcatTestBase {
 
     // Register two entries for "eight", both with explicit RegsiterItems as well as the associated entity
     // First version has no URI and gives notation, second uses relative URI to infer notation
+    // ISSUE-38
     private void doRegisterWithMetadataTest() {
 
         // Testing update of item + entity - ISSUE-38
@@ -481,7 +485,7 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(itemURI, response.getLocation().toASCIIString());
         checkRegisteredMetadata( getModelResponse(REG1+"/_eightb"), "eightb" );
     }
-    
+
     private void checkRegisteredMetadata(Model m, String notation) {
         String itemURI = ROOT_REGISTER + "reg1/_" + notation;
         Resource item = m.getResource(itemURI);
@@ -491,9 +495,25 @@ public class TestAPI extends TomcatTestBase {
                     .getPropertyResourceValue(RegistryVocab.entity)
                     .getURI());
         assertEquals(RegistryVocab.statusStable, item.getPropertyResourceValue(RegistryVocab.status));
-        
+
         Property attributedTo = m.getProperty("http://www.w3.org/ns/prov#wasAttributedTo");
         assertEquals("http://jeremytandy.me.uk/self#id", item.getPropertyResourceValue(attributedTo).getURI());
+    }
+
+    // Test patching a RegisterItem with external metadata
+    // ISSUE-39
+    private void doMetadataPatchTest() {
+        assertEquals(201, postFileStatus("test/jmt/number-nine-post.ttl", REG1));
+
+        Property attributedTo = ResourceFactory.createProperty("http://www.w3.org/ns/prov#wasAttributedTo");
+        Resource item = getModelResponse(REG1 + "/nine?_view=with_metadata").getResource(REG1_URI + "/_nine");
+        assertFalse(item.hasProperty(attributedTo));
+
+        assertEquals(204, invoke("PATCH", "test/jmt/number-nine-patch.ttl", REG1 + "/_nine").getStatus() );
+
+        item = getModelResponse(REG1 + "/nine?_view=with_metadata").getResource(REG1_URI + "/_nine");
+        assertEquals("http://jeremytandy.me.uk/self#id", item.getPropertyResourceValue(attributedTo).getURI());
+
     }
 
     private void checkPageResponse(Model m, String nextpage, int length) {
