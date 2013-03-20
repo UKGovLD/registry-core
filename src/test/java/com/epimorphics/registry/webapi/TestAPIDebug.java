@@ -17,6 +17,7 @@ import org.junit.Test;
 
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.util.Prefixes;
+import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
 import com.epimorphics.server.core.ServiceConfig;
 import com.epimorphics.server.core.Store;
@@ -47,27 +48,33 @@ public class TestAPIDebug extends TomcatTestBase {
 
     @Test
     public void testDebug() throws IOException {
-//        Model m = null;
-
         // Set up some base data
         assertEquals(201, postFileStatus("test/reg1.ttl", BASE_URL));
-        assertEquals(201, postFileStatus("test/red.ttl", REG1));
-        assertEquals(201, postFileStatus("test/blue.ttl", REG1));
 
-        String reg1meta = REG1 + "?non-member-properties";
-        Model m = getModelResponse(reg1meta);
-        Resource reg1 = m.getResource(REG1_URI);
-        long version = RDFUtil.getLongValue(reg1, OWL.versionInfo);
+        // Testing update of item + entity - ISSUE-38
+        ClientResponse response = postFile("test/jmt/number-eight-post-notation.ttl", REG1);
+        assertEquals(201, response.getStatus());
+        String itemURI = ROOT_REGISTER + "reg1/_eight";
+        assertEquals(itemURI, response.getLocation().toASCIIString());
 
-        ClientResponse response = invoke("PUT", "test/reg1-put.ttl", reg1meta);
-        assertEquals(204, response.getStatus());
+        Model m = getModelResponse(REG1+"/eight?_view=with_metadata");
+        Resource item = m.getResource(itemURI);
+        assertEquals("http://ukgovld-registry.dnsalias.net/def/numbers/eight",
+                item.getPropertyResourceValue(RegistryVocab.definition)
+                    .getPropertyResourceValue(RegistryVocab.entity)
+                    .getURI());
 
-        m = getModelResponse(reg1meta);
-        reg1 = m.getResource(REG1_URI);
-        long newversion = RDFUtil.getLongValue(reg1, OWL.versionInfo);
-        assertEquals(version + 1, newversion);
-        assertEquals("Example register 1 - put update", RDFUtil.getStringValue(reg1, DCTerms.description));
-
+        response = postFile("test/jmt/number-eightb-post-relative.ttl", REG1);
+        assertEquals(201, response.getStatus());
+        itemURI = ROOT_REGISTER + "reg1/_eightb";
+        assertEquals(itemURI, response.getLocation().toASCIIString());
+        m = getModelResponse(REG1+"/_eightb");
+        item = m.getResource(itemURI);
+        assertEquals("eightb", RDFUtil.getStringValue(item, RegistryVocab.notation));
+        assertEquals("http://ukgovld-registry.dnsalias.net/def/numbers/eight",
+                item.getPropertyResourceValue(RegistryVocab.definition)
+                    .getPropertyResourceValue(RegistryVocab.entity)
+                    .getURI());
     }
 
     // Debugging utility only, should not be used while transactions are live
