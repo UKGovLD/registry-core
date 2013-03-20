@@ -12,6 +12,7 @@ package com.epimorphics.registry.util;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.vocab.Version;
@@ -50,6 +51,12 @@ public class VersionUtil {
     public static String versionedURI(Resource r, int version) {
         return r.getURI() + ":" + version;
     }
+
+
+    public static boolean isVersionedResource(Resource r) {
+        return versionMatch.matcher(r.getURI()).matches();
+    }
+    static final Pattern versionMatch = Pattern.compile("^.*:\\d+");
 
     /**
      * Creates a new version of a given root resource, splitting the resource properties according to whether they are rigid or not.

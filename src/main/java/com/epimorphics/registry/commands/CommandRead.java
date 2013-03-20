@@ -76,34 +76,36 @@ public class CommandRead extends Command {
         }
         Description d = null;
         boolean entityWithMetadata = false;
-        if (lastSegment.startsWith("_")) {
-            // An item
-            if (versioned) {
-                // An explicit item version
-                d = store.getVersion(target);
-                if (d != null) {
-                    store.getEntity(d.asRegisterItem());
+        try {
+            if (lastSegment.startsWith("_")) {
+                // An item
+                if (versioned) {
+                    // An explicit item version
+                    d = store.getVersion(target, true);
+                } else {
+                    //  plain item
+                    d = store.getItem(target, true) ;
+                    if (versionList) {
+                        injectVersionHistory(d);
+                    }
                 }
             } else {
-                //  plain item
-                d = store.getItem(target, true) ;
-                if (versionList) {
-                    injectVersionHistory(d);
+                // An entity
+                if (versioned) {
+                    // This case only arises for registers
+                    d = store.getVersion(target, true);
+                } else  if ( withMetadata ) {
+                    // Entity with metadata
+                    entityWithMetadata = true;
+                    d = store.getItem(parent +"/_" + lastSegment, true);
+                } else {
+                    // plain entity
+                    d = store.getCurrentVersion(target);
                 }
             }
-        } else {
-            // An entity
-            if (versioned) {
-                // This case only arises for registers
-                d = store.getVersion(target);
-            } else  if ( withMetadata ) {
-                // Entity with metadata
-                entityWithMetadata = true;
-                d = store.getItem(parent +"/_" + lastSegment, true);
-            } else {
-                // plain entity
-                d = store.getCurrentVersion(target);
-            }
+        } catch (Exception e) {
+            // Typically an attempt to retrieve the version of something which doesn't not exist
+            // Fall through to "not found" case
         }
 
         if (d == null) {

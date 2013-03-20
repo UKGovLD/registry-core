@@ -53,17 +53,7 @@ public class TestAPIDebug extends TomcatTestBase {
         // Set up some base data
         assertEquals(201, postFileStatus("test/reg1.ttl", BASE_URL));
 
-        // Testing ISSUE-39
-        assertEquals(201, postFileStatus("test/jmt/number-nine-post.ttl", REG1));
 
-        Property attributedTo = ResourceFactory.createProperty("http://www.w3.org/ns/prov#wasAttributedTo");
-        Resource item = getModelResponse(REG1 + "/nine?_view=with_metadata").getResource(REG1_URI + "/_nine");
-        assertFalse(item.hasProperty(attributedTo));
-        
-        assertEquals(204, invoke("PATCH", "test/jmt/number-nine-patch.ttl", REG1 + "/_nine").getStatus() );
-        
-        item = getModelResponse(REG1 + "/nine?_view=with_metadata").getResource(REG1_URI + "/_nine");
-        assertEquals("http://jeremytandy.me.uk/self#id", item.getPropertyResourceValue(attributedTo).getURI());
     }
 
     // Debugging utility only, should not be used while transactions are live

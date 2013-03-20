@@ -71,4 +71,3 @@
               <http://location.data.gov.uk/reg1/red> , <http://example.com/colours/black> ;
       <http://www.w3.org/ns/ldp#membershipPredicate>
               <http://www.w3.org/2004/02/skos/core#member> .
-              

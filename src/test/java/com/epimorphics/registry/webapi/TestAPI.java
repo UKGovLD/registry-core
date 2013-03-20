@@ -230,6 +230,15 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(version + 2, newversion);
         assertEquals("Example register 1 - patch update", RDFUtil.getStringValue(reg1, DCTerms.description));
 
+        // Verify access to earlier version of the RegisterItem containing the register - ISSUE-26
+        Resource current = getModelResponse(BASE_URL + "_reg1").getResource(REG1_URI);
+        assertEquals(version + 2, RDFUtil.getLongValue(current, OWL.versionInfo).longValue());
+        assertEquals("Example register 1 - patch update", RDFUtil.getStringValue(current, DCTerms.description));
+        
+        Resource orig =  getModelResponse(BASE_URL + "_reg1:1").getResource(REG1_URI);
+        assertEquals(1, RDFUtil.getLongValue(orig, OWL.versionInfo).longValue());
+        assertEquals("Example register 1", RDFUtil.getStringValue(orig, DCTerms.description));
+        
         // Safe against versioninfo being in payload
         response = invoke("PUT", "test/reg1-put2.ttl", reg1meta);
         m = getModelResponse(reg1meta);
@@ -241,7 +250,7 @@ public class TestAPI extends TomcatTestBase {
         // Try to change RDF type
 //        assertEquals(400, invoke("PUT", "test/reg1-bad-put1.ttl", reg1meta).getStatus());
 
-        // Multiple roots in chang file
+        // Multiple roots in change file
         assertEquals(400, invoke("PUT", "test/reg1-bad-put2.ttl", reg1meta).getStatus());
 
     }

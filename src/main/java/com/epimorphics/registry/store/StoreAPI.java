@@ -58,9 +58,10 @@ public interface StoreAPI {
     /**
      * Return a specific version of a versioned resource .
      * @param uri the uri of the Version instance to be retrieved
+     * @param withEntity if this is true and the resource is a RegisterItem then will also retrieve the corresponding entity
      * @return Description containing a merge of the selected Version and the root VersionedThing
      */
-    public Description getVersion(String uri);
+    public Description getVersion(String uri, boolean withEntity);
 
     /**
      * Return a specific version of a versioned resource .

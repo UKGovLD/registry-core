@@ -9,10 +9,13 @@
 
 package com.epimorphics.registry.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Calendar;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
@@ -22,6 +25,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDF;
@@ -73,6 +77,16 @@ public class TestVersionUtil {
         assertTrue(newitem.hasProperty(Version.currentVersion, veritem));
         assertTrue(newitem.hasProperty(RDF.type, RegistryVocab.RegisterItem));
         return newitem;
+    }
+
+    @Test
+    public void testVersionURIs() {
+        Resource plain = ResourceFactory.createResource(BASE + "foo");
+        Resource versioned = ResourceFactory.createResource(BASE + "foo:4");
+        assertTrue( VersionUtil.isVersionedResource(versioned) );
+        assertFalse( VersionUtil.isVersionedResource(plain) );
+        Resource v = ResourceFactory.createResource( VersionUtil.versionedURI(plain, 6) );
+        assertTrue( VersionUtil.isVersionedResource( v ) );
     }
 
 }

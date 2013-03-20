@@ -113,7 +113,7 @@ public class TestStoreImpl {
         assertNotSame(-1, vi1.getToTime());
 
         String versionURI = vi1.getUri();
-        Register oldreg = store.getVersion(versionURI).asRegister();
+        Register oldreg = store.getVersion(versionURI, false).asRegister();
         assertEquals("root", RDFUtil.getStringValue(oldreg.getRoot(), RDFS.label));
     }
 

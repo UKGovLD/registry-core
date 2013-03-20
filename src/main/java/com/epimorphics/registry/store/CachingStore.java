@@ -64,8 +64,8 @@ public class CachingStore implements StoreAPI {
     }
 
     @Override
-    public Description getVersion(String uri) {
-        return store.getVersion(uri);
+    public Description getVersion(String uri, boolean withEntity) {
+        return store.getVersion(uri, withEntity);
     }
 
     @Override

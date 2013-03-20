@@ -1,15 +1,5 @@
 # Random notes and task lists during implementation
 
-## Possible iteration sequencing
-
-   1. minimal register create, item register, browse, no versioning - done
-   1. text index and minimal UI - done
-   1. versioning model
-   1. fuller API and test suite
-   1. base UI
-   1. minimal dispatch
-   1. partitioning into distributable, replicable subsystems   <---
-
 ## Issues
 
    * Schemagen plugin runs on the "translate" maven lifecycle. Eclipse m2e can't cope with that the so the vocab sources aren't automatically built within Eclipse. Current workaround is a manual copy to of the target/generated-sources output to the checked-in build path
@@ -34,7 +24,9 @@
      drop all versioning access
      possibly also merge plain/item fetching
      scrap update(Register)?
+   * Review handling of getting version of Register when retrieving versioned RegisterItem
    * As part of API shake down, scrap the incremental-delta machinery on Description
+
 
    * bulk registration should dodge the register versioning somehow?
 

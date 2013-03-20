@@ -210,10 +210,14 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     }
 
     @Override
-    public Description getVersion(String uri) {
+    public Description getVersion(String uri, boolean withEntity) {
         lockStore();
         try {
-            return doGetVersion(uri, true);
+            Description d = doGetVersion(uri, true);
+            if (d instanceof RegisterItem && withEntity) {
+                doGetEntity((RegisterItem)d, null, false);
+            }
+            return d;
         } finally {
             unlockStore();
         }
@@ -346,7 +350,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             }
             RegisterItem item = new RegisterItem(root);
             if (withEntity) {
-                doGetEntity(item, null);
+                doGetEntity(item, null, true);
             }
             return item;
         } finally {
@@ -354,8 +358,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         }
     }
 
-
-    protected Resource doGetEntity(RegisterItem item, Model dest) {
+    protected Resource doGetEntity(RegisterItem item, Model dest, boolean getCurrent) {
         Resource root = item.getRoot();
         if (dest == null) {
             dest = ModelFactory.createDefaultModel();
@@ -368,7 +371,17 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
                 dest.add( store.asDataset().getNamedModel(srcGraph.getURI()) );
                 entity = entity.inModel(dest);
             } else {
-                entity = doGetCurrentVersion( entity.getURI(),  dest );
+                // Occurs for versioned things i.e. Registers
+                if (getCurrent) {
+                    entity = doGetCurrentVersion( entity.getURI(),  dest );
+                } else {
+                    Resource regversion = entityRef.getPropertyResourceValue(RegistryVocab.entityVersion);
+                    if (regversion != null) {
+                        entity = doGetVersion(regversion.getURI(), true).getRoot();
+                    } else {
+                        throw new EpiException("Illegal state of item for a Resgister, could not find entityVersion: " + root);
+                    }
+                }
             }
             item.setEntity(entity);
             return entity;
@@ -382,7 +395,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     public Resource getEntity(RegisterItem item) {
         lockStore();
         try {
-            return doGetEntity(item, null);
+            return doGetEntity(item, null, true);
         } finally {
             unlockStore();
         }
@@ -398,7 +411,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
                 Resource itemRoot = doGetCurrentVersion(uri, shared);
                 RegisterItem item = new RegisterItem(itemRoot);
                 if (withEntity) {
-                    doGetEntity(item, shared);
+                    doGetEntity(item, shared, true);
                 }
                 results.add(item);
             }
@@ -561,7 +574,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         if (temp != null) {
             current = temp;
         }
-        // doUpdate call will need current versionInfo to be able to allocate next version correctly 
+        // doUpdate call will need current versionInfo to be able to allocate next version correctly
         RDFUtil.copyProperty( current, root, OWL.versionInfo );
         // Preserve subregister - could this just be added to rigids
         RDFUtil.copyProperty( current, root, RegistryVocab.subregister );
@@ -617,6 +630,13 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             }
             if (entity.hasProperty(RDF.type, RegistryVocab.Register)) {
                 doUpdateRegister( entity, now );
+                Resource currentRegVersion = entity.inModel(storeModel).getPropertyResourceValue(Version.currentVersion);
+                if (currentRegVersion != null) {
+                    entityRef.removeAll(RegistryVocab.entityVersion);
+                    entityRef.addProperty(RegistryVocab.entityVersion, currentRegVersion);
+                } else {
+                    log.warn("Possible internal inconsistency. No version information available for register: "  + entity);
+                }
             } else {
                 if (oldVersion != null) {
                     if (!removeGraphFor(oldVersion)) {
