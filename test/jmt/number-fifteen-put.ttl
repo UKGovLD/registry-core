@@ -1,0 +1,11 @@
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dct:     <http://purl.org/dc/terms/> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+
+<http://ukgovld-registry.dnsalias.net/def/numbers/fifteen>
+      a       skos:Concept ;
+      rdfs:label "Fifteen"@en ;
+      dct:description "15 (fifteen) is the natural number following 14 and preceding 16. In English, it is the smallest natural number with seven letters in its spelled name."@en ;
+      .
+
+      

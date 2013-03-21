@@ -1,0 +1,25 @@
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dct:     <http://purl.org/dc/terms/> .
+@prefix reg:     <http://purl.org/linked-data/registry#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix prov:    <http://www.w3.org/ns/prov#> . 
+
+[]
+      a       reg:RegisterItem ;
+      reg:definition
+              [ reg:entity <http://ukgovld-registry.dnsalias.net/def/numbers/fifteen>
+              ] ;
+      reg:itemClass skos:Concept ;
+      reg:notation "fifteen" ;
+      reg:register <http://ukgovld-registry.dnsalias.net/def/numbers> ;
+      reg:status reg:statusStable ;
+      prov:wasAttributedTo <http://jeremytandy.me.uk/self#id> ;
+      .
+
+<http://ukgovld-registry.dnsalias.net/def/numbers/fifteen>
+      a       skos:Concept ;
+      rdfs:label "Reserved"@en ;
+      dct:description "Reserved for future use."@en ;
+      skos:broader <http://ukgovld-registry.dnsalias.net/reserved> ;
+      .
+      
