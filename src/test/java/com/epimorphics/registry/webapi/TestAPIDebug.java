@@ -12,6 +12,8 @@ package com.epimorphics.registry.webapi;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -21,6 +23,8 @@ import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
 import com.epimorphics.server.core.ServiceConfig;
 import com.epimorphics.server.core.Store;
+import com.epimorphics.util.TestUtil;
+import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
@@ -52,8 +56,6 @@ public class TestAPIDebug extends TomcatTestBase {
     public void testDebug() throws IOException {
         // Set up some base data
         assertEquals(201, postFileStatus("test/reg1.ttl", BASE_URL));
-
-
     }
 
     // Debugging utility only, should not be used while transactions are live

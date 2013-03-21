@@ -201,19 +201,23 @@ public abstract class TomcatTestBase {
         assertEquals(entityURI, entity.getURI());
     }
 
-    protected void checkRegisterList(Model m, String rooturi, String...colours) {
-        checkRegisterList(m, SKOS.member, rooturi, colours);
+    protected void checkRegisterList(Model m, String rooturi, String...entries) {
+        checkRegisterList(m, SKOS.member, rooturi, entries);
     }
 
-    protected void checkRegisterList(Model m, Property link, String rooturi, String...colours) {
+    protected void checkRegisterList(Model m, Property link, String rooturi, String...entries) {
         Resource register = m.getResource(rooturi);
         assertTrue( register.hasProperty(RDF.type, RegistryVocab.Register));
-        List<String> actualColours = new ArrayList<String>();
+        TestUtil.testArray(getRegisterList(m, link, rooturi), entries);
+    }
+
+    protected List<String> getRegisterList(Model m, Property link, String rooturi) {
+        List<String> actualEntries = new ArrayList<String>();
         ResultSet rs = QueryUtil.selectAll(m, "SELECT ?label WHERE {?register ?link[rdfs:label ?label]}", Prefixes.getDefault(), "register", rooturi, "link", link);
         while (rs.hasNext()) {
-            actualColours.add( rs.next().getLiteral("label").getLexicalForm() );
+            actualEntries.add( rs.next().getLiteral("label").getLexicalForm() );
         }
-        TestUtil.testArray(actualColours, colours);
+        return actualEntries;
     }
 
     protected void printStatus(ClientResponse response) {

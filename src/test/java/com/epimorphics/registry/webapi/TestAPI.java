@@ -16,6 +16,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -140,6 +141,9 @@ public class TestAPI extends TomcatTestBase {
         // Check patching metadata annotations
         doMetadataPatchTest();
 
+        // Check upload of multiple items in a single payload
+        doMultiPostTest();
+
 //        System.out.println("Store dump");
 //        ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel().write(System.out, "Turtle");
     }
@@ -234,11 +238,11 @@ public class TestAPI extends TomcatTestBase {
         Resource current = getModelResponse(BASE_URL + "_reg1").getResource(REG1_URI);
         assertEquals(version + 2, RDFUtil.getLongValue(current, OWL.versionInfo).longValue());
         assertEquals("Example register 1 - patch update", RDFUtil.getStringValue(current, DCTerms.description));
-        
+
         Resource orig =  getModelResponse(BASE_URL + "_reg1:1").getResource(REG1_URI);
         assertEquals(1, RDFUtil.getLongValue(orig, OWL.versionInfo).longValue());
         assertEquals("Example register 1", RDFUtil.getStringValue(orig, DCTerms.description));
-        
+
         // Safe against versioninfo being in payload
         response = invoke("PUT", "test/reg1-put2.ttl", reg1meta);
         m = getModelResponse(reg1meta);
@@ -523,6 +527,25 @@ public class TestAPI extends TomcatTestBase {
         item = getModelResponse(REG1 + "/nine?_view=with_metadata").getResource(REG1_URI + "/_nine");
         assertEquals("http://jeremytandy.me.uk/self#id", item.getPropertyResourceValue(attributedTo).getURI());
 
+    }
+
+    // Test upload of multiple register items at the same time
+    private void doMultiPostTest() {
+        List<String> before = getRegisterList(getModelResponse(REG1 + "?status=stable"), SKOS.member, REG1_URI);
+        assertEquals(201, postFileStatus("test/jmt/number-eleven-twelve-post-rel.ttl", REG1));
+        List<String> after = getRegisterList(getModelResponse(REG1 + "?status=stable"), SKOS.member, REG1_URI);
+        checkAdded(before, after, "eleven", "twelve");
+
+        assertEquals(201, postFileStatus("test/jmt/number-eleven-twelve-post-bnode.ttl", REG1));
+        List<String> after2 = getRegisterList(getModelResponse(REG1 + "?status=stable"), SKOS.member, REG1_URI);
+        checkAdded(after, after2, "elevenb", "twelveb");
+    }
+
+    private void checkAdded(List<String> before, List<String> after, String...additions) {
+        assertTrue( after.containsAll(before) );
+        List<String> residual = new ArrayList<String>(after);
+        residual.removeAll(before);
+        TestUtil.testArray(residual, additions);
     }
 
     private void checkPageResponse(Model m, String nextpage, int length) {
