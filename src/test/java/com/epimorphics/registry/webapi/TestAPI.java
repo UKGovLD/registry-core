@@ -146,6 +146,10 @@ public class TestAPI extends TomcatTestBase {
 
         // Test reservation of entries using bNode entity addresses
         doReservationTest();
+        
+        // Check that an explicit reg:register in payload doesn't get through 
+        doBlockInternalPropertiesTest();
+
 
 //        System.out.println("Store dump");
 //        ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel().write(System.out, "Turtle");
@@ -560,6 +564,14 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(204, invoke("PUT", "test/jmt/number-six-update.ttl", REG1+"/_six").getStatus());
         m = getModelResponse(REG1+"?status=any&_view=with_metadata");
         validateReservedEntry(m, "http://example.com/six", "six");
+    }
+    
+    // Check that an explicit reg:register in payload doesn't get through 
+    private void doBlockInternalPropertiesTest() {
+        assertEquals(201, postFileStatus("test/jmt/number-fifteen-reserved-post.ttl", REG1));
+        Model m = getModelResponse(REG1 + "/_fifteen");
+        Resource r = m.getResource(REG1_URI + "/_fifteen");
+        TestUtil.testArray(RDFUtil.allResourceValues(r, RegistryVocab.register), new Resource[]{ m.getResource(REG1_URI)});
     }
 
     private void validateReservedEntry(Model m, String entityURI, String label) {

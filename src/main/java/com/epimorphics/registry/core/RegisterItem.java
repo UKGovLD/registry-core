@@ -47,16 +47,19 @@ public class RegisterItem extends Description {
     String notation;
     String parentURI;
 
-    // Properties that should not be changed once set
+    /** Properties that should not be changed once set */
     public static final Property[] RIGID_PROPS = new Property[] {
                                 RegistryVocab.register, RegistryVocab.notation,
                                 RegistryVocab.itemClass, RegistryVocab.predecessor,
                                 RegistryVocab.submitter, RDF.type,
                                 DCTerms.dateSubmitted, OWL.versionInfo};
 
-    // Properties that must be present so cannot be removed but may be updated
+    /** Properties that must be present so cannot be removed but may be updated */
     public static final Property[] REQUIRED_PROPS = new Property[] {RegistryVocab.status, RDFS.label};
 
+    /** Properties that are set internally and should not be set by register/update payload */
+    public static final Property[] INTERNAL_PROPS = new Property[] {RegistryVocab.register, RegistryVocab.subregister, OWL.versionInfo};
+   
     /**
      * Construct a new register item from a loaded description
      */
@@ -251,6 +254,7 @@ public class RegisterItem extends Description {
      */
     public void updateForEntity(boolean isNewSubmission, Calendar time) {
         if (isNewSubmission) {
+            root.removeAll(DCTerms.dateSubmitted);
             root.addProperty(DCTerms.dateSubmitted, root.getModel().createTypedLiteral(time));
         } else {
             root.removeAll(DCTerms.modified);

@@ -27,8 +27,8 @@ import com.epimorphics.registry.core.ValidationResponse;
 import com.epimorphics.registry.util.PatchUtil;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.Parameters;
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 
@@ -101,9 +101,12 @@ public class CommandUpdate extends Command {
             }
         }
 
-        // Update will handle regid properties but protect against version info issues
-        root.removeAll(OWL.versionInfo);
+        // Santization
+        for (Property p : RegisterItem.INTERNAL_PROPS) {
+            root.removeAll(p);
+        }
 
+        
         return ValidationResponse.OK;
     }
 

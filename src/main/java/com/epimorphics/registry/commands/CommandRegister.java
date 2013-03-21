@@ -237,6 +237,11 @@ public class CommandRegister extends Command {
             ri.getRoot().removeAll(RegistryVocab.status);
             ri.getRoot().addProperty(RegistryVocab.status, statusOverride.getResource());
         }
+        
+        // Santization
+        for (Property p : RegisterItem.INTERNAL_PROPS) {
+            ri.getRoot().removeAll(p);
+        }
 
         Resource entity = ri.getEntity();
         // Normalization closures
