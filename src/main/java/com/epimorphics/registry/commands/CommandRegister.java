@@ -78,6 +78,9 @@ public class CommandRegister extends Command {
             if (d == null) {
                 throw new NotFoundException();
             }
+            if (!(d instanceof Register)) {
+                throw new WebApiException(BAD_REQUEST, "Can only register items in a register");
+            }
             Register parent = d.asRegister();
 
             Resource location = null;

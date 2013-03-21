@@ -105,7 +105,7 @@ public class Registry extends ServiceBase implements Service {
         if (root == null) {
             // Blank store, need to install a bootstrap root registers
             for(String bootSrc : getRequiredFileParam(BOOT_FILE_PARAM).split("\\|")) {
-                log.info("Loading boostrap file " + bootSrc);
+                log.info("Loading bootstrap file " + bootSrc);
                 store.loadBootstrap( bootSrc );
             }
             log.info("Installed bootstrap root register");

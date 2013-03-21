@@ -3,13 +3,15 @@
 @prefix reg:     <http://purl.org/linked-data/registry#> .
 @prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
 
-<>
+<_six>
       a       reg:RegisterItem ;
-      rdfs:label "Reserved"@en ;
-      dct:description "Reserved for future use"@en ;
       reg:definition
-              [ reg:entity [a skos:Concept; rdfs:label "reserved"]
+              [ reg:entity <http://example.com/six>
               ] ;
-      reg:itemClass skos:Concept ;
-      reg:notation "six" ;
       .
+
+<http://example.com/six>
+    a skos:Concept;
+    rdfs:label "six"@en;
+    dct:description "The number six, two times three"@en;
+    .

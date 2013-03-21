@@ -25,15 +25,21 @@ import com.hp.hpl.jena.rdf.model.Resource;
 public class PatchUtil {
 
     /**
-     * Install the src data over the top of the dest data, preserving any of
-     * the rigid properties.
+     * Install the src data over the top of the dest data.
+     * Any rigid properties will not be changed.
+     * Any preserved properties which are missing from the src will be preserved by if present on the source they will be updated.
      */
-    public static void update(Resource src, Resource dest, Property...rigidProps) {
+    public static void update(Resource src, Resource dest, Property[] rigidProps, Property[] preserveProps) {
         Set<Property> toCopy = allPropertiesOf(src);
         Set<Property> toRemove = allPropertiesOf(dest);
         for (Property rigid : rigidProps) {
             toCopy.remove(rigid);
             toRemove.remove(rigid);
+        }
+        for (Property p : preserveProps) {
+            if (!toCopy.contains(p)) {
+                toRemove.remove(p);
+            }
         }
         for (Property p : toRemove){
             dest.removeAll(p);
@@ -41,6 +47,12 @@ public class PatchUtil {
         for (Property p : toCopy) {
             RDFUtil.copyProperty(src, dest, p);
         }
+    }
+
+    public static final Property[] EMPTY = new Property[0];
+
+    public static void update(Resource src, Resource dest) {
+        update(src, dest, EMPTY, EMPTY);
     }
 
     /**

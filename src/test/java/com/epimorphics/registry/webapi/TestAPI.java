@@ -144,6 +144,9 @@ public class TestAPI extends TomcatTestBase {
         // Check upload of multiple items in a single payload
         doMultiPostTest();
 
+        // Test reservation of entries using bNode entity addresses
+        doReservationTest();
+
 //        System.out.println("Store dump");
 //        ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel().write(System.out, "Turtle");
     }
@@ -546,6 +549,28 @@ public class TestAPI extends TomcatTestBase {
         List<String> residual = new ArrayList<String>(after);
         residual.removeAll(before);
         TestUtil.testArray(residual, additions);
+    }
+
+    // Test reservation of entries using bNode entity addresses
+    private void doReservationTest() {
+        assertEquals(201, postFileStatus("test/jmt/number-six-reserved-post.ttl", REG1));
+        Model m = getModelResponse(REG1+"?status=any&_view=with_metadata");
+        validateReservedEntry(m, null, "reserved");
+
+        assertEquals(204, invoke("PUT", "test/jmt/number-six-update.ttl", REG1+"/_six").getStatus());
+        m = getModelResponse(REG1+"?status=any&_view=with_metadata");
+        validateReservedEntry(m, "http://example.com/six", "six");
+    }
+
+    private void validateReservedEntry(Model m, String entityURI, String label) {
+        Resource reg1 = m.getResource(REG1_URI);
+        Resource _six = m.getResource(REG1_URI + "/_six");
+        assertTrue(m.contains(_six, RegistryVocab.register, reg1));
+        Resource entity = _six.getPropertyResourceValue(RegistryVocab.definition).getPropertyResourceValue(RegistryVocab.entity);
+        if (entityURI != null) {
+            assertEquals(entityURI, entity.getURI());
+        }
+        assertEquals(label, RDFUtil.getStringValue(entity, RDFS.label));
     }
 
     private void checkPageResponse(Model m, String nextpage, int length) {

@@ -16,24 +16,32 @@ import org.junit.Test;
 import com.epimorphics.util.TestUtil;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 public class TestPatchUtil {
 
     @Test
     public void testPatch() {
-        // Overwite everything
+        // Overwrite everything
         Resource dest = makeTest(null, new String[]{ "a", "b", "c", "e"});
         Resource src = makeTest(new String[]{ "a", "b", "c", "d"}, null);
         PatchUtil.update(src, dest);
         assertTrue( dest.getModel().isIsomorphicWith( src.getModel() ) );
 
-        // A rigid property to preserve
+        // A rigid property 
         dest = makeTest(null, new String[]{ "a", "b", "c", "e"});
         PatchUtil.update(
-                makeTest(new String[]{ "a", "b", "c", "d"}, null), dest, TestUtil.propertyFixture(null, "b"));
+                makeTest(new String[]{ "a", "b", "c", "d"}, null), dest, propSet("b"), propSet());
         assertTrue( dest.getModel().isIsomorphicWith( makeTest(new String[]{ "a", "c", "d"}, new String[]{"b"}).getModel() ) );
 
+        // A rigid property and a preserved property
+        dest = makeTest(null, new String[]{ "a", "b", "c", "e"});
+        PatchUtil.update(
+                makeTest(new String[]{ "a", "b", "d"}, null), dest, propSet("b"), propSet("c"));
+        assertTrue( dest.getModel().isIsomorphicWith( makeTest(new String[]{ "a", "d"}, new String[]{"b", "c"}).getModel() ) );
+
+        
         // Patch
         Resource destR = makeTest(null, new String[]{ "a", "b", "c", "e"});
         PatchUtil.patch(src, destR);
@@ -46,6 +54,13 @@ public class TestPatchUtil {
 
     }
 
+    private Property[] propSet(String...names) {
+        Property[] set = new Property[ names.length ];
+        for (int i = 0; i < names.length; i++) {
+            set[i] = TestUtil.propertyFixture(null, names[i]);
+        }
+        return set;
+    }
 
     private Resource makeTest(String[] srcProps, String[] destProps) {
         Resource result = TestUtil.resourceFixture(ModelFactory.createDefaultModel(), "root");

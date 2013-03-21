@@ -627,6 +627,13 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
                 entityRef = storeModel.createResource();
                 entityRef.addProperty(RegistryVocab.entity, entity);
                 newVersion.addProperty(RegistryVocab.definition, entityRef);
+            } else {
+                Resource oldEntity = entityRef.getPropertyResourceValue(RegistryVocab.entity);
+                if (!entity.equals(oldEntity)) {
+                    // Legality checks must be performed by API not by the store layer
+                    entityRef.removeAll(RegistryVocab.entity);
+                    entityRef.addProperty(RegistryVocab.entity, entity);
+                }
             }
             if (entity.hasProperty(RDF.type, RegistryVocab.Register)) {
                 doUpdateRegister( entity, now );

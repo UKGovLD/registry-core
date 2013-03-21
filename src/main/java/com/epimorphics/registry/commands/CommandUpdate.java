@@ -56,14 +56,14 @@ public class CommandUpdate extends Command {
             // No properties, probably a URI mismatch
             return new ValidationResponse(Response.Status.BAD_REQUEST, "Payload URI does not match target");
         }
-        
+
         // Only update one item this way, if there are multiple roots then reject
         List<Resource> roots = RDFUtil.findRoots(payload);
         if (roots.size() != 1 || !roots.get(0).getURI().equals(target)) {
             return new ValidationResponse(Response.Status.BAD_REQUEST, "Payload had multiple roots or root does not match target");
         }
         Resource root = roots.get(0);
-        
+
         if (lastSegment.startsWith("_")) {
             newitem = RegisterItem.fromRIRequest(root, parent, false);
             isEntityUpdate = false;
@@ -75,7 +75,7 @@ public class CommandUpdate extends Command {
         if (currentItem == null) {
             return new ValidationResponse(Response.Status.NOT_FOUND, "Item to update does not exist");
         }
-        
+
         // Validate RDF type invariants
         boolean isRegister = currentItem.isRegister();
         boolean typeOK = true;
@@ -93,17 +93,17 @@ public class CommandUpdate extends Command {
         if (!typeOK) {
             return new ValidationResponse(Response.Status.BAD_REQUEST, "The rdf:type of an entity cannot be changed once registered");
         }
-            
+
         // For registers can only update non-member properties this way
         if (isRegister && isEntityUpdate) {
             if (!parameters.containsKey(Parameters.COLLECTION_METADATA_ONLY)) {
                 return new ValidationResponse(Status.BAD_REQUEST, "Can only PUT/PATCH register metadadata, use non-member-properties to signal this");
             }
         }
-        
+
         // Update will handle regid properties but protect against version info issues
         root.removeAll(OWL.versionInfo);
-        
+
         return ValidationResponse.OK;
     }
 
@@ -133,7 +133,7 @@ public class CommandUpdate extends Command {
                 if (isPatch) {
                     PatchUtil.patch(newitem.getRoot(), currentItem.getRoot(), RegisterItem.RIGID_PROPS);
                 } else {
-                    PatchUtil.update(newitem.getRoot(), currentItem.getRoot(), RegisterItem.RIGID_PROPS);
+                    PatchUtil.update(newitem.getRoot(), currentItem.getRoot(), RegisterItem.RIGID_PROPS, RegisterItem.REQUIRED_PROPS);
                 }
             }
             String versionURI = store.update(currentItem, withEntity);

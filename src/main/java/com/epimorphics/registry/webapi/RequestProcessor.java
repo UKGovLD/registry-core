@@ -173,7 +173,11 @@ public class RequestProcessor extends BaseEndpoint {
             command = makeCommand(Operation.StatusUpdate);
         } else {
             command = makeCommand(Operation.Register);
-            command.setPayload( getBodyModel(hh, body, true) );
+            try {
+                command.setPayload( getBodyModel(hh, body, true) );
+            } catch(Exception e) {
+                throw new WebApiException(Response.Status.BAD_REQUEST, "Payload failed to parse: " + e.getMessage());
+            }
         }
         return command.execute();
     }
@@ -304,7 +308,7 @@ public class RequestProcessor extends BaseEndpoint {
         String path = uriInfo.getPath();
         if (!isPOST) {
             if (path.contains("/")) {
-                path = NameUtils.splitBeforeLast(path, "/"); 
+                path = NameUtils.splitBeforeLast(path, "/");
             } else {
                 path = "";
             }

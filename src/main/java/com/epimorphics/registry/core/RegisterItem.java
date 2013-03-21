@@ -29,6 +29,7 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.sparql.util.Closure;
 import com.hp.hpl.jena.util.ResourceUtils;
 import com.hp.hpl.jena.vocabulary.DCTerms;
+import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
 
@@ -46,7 +47,15 @@ public class RegisterItem extends Description {
     String notation;
     String parentURI;
 
-    public static final Property[] RIGID_PROPS = new Property[] {RegistryVocab.register, RegistryVocab.notation, RegistryVocab.itemClass, RegistryVocab.predecessor, RegistryVocab.submitter, RDF.type};
+    // Properties that should not be changed once set
+    public static final Property[] RIGID_PROPS = new Property[] {
+                                RegistryVocab.register, RegistryVocab.notation,
+                                RegistryVocab.itemClass, RegistryVocab.predecessor,
+                                RegistryVocab.submitter, RDF.type,
+                                DCTerms.dateSubmitted, OWL.versionInfo};
+
+    // Properties that must be present so cannot be removed but may be updated
+    public static final Property[] REQUIRED_PROPS = new Property[] {RegistryVocab.status, RDFS.label};
 
     /**
      * Construct a new register item from a loaded description
@@ -135,7 +144,8 @@ public class RegisterItem extends Description {
         item.relocate();
         if (entity != null) {
             entity = entity.inModel( Closure.closure(entity, false) );
-            item.relocateEntity(entity);
+//            item.relocateEntity(entity);
+            item.setEntity(entity);   // Don't relocate in this case, so that bNode reservations are preserved
             item.updateForEntity(isNewSubmission, now);
         }
         return item;
@@ -375,5 +385,10 @@ public class RegisterItem extends Description {
             return entity;
         }
         return null;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("RegisterItem %s (entity=%s)", root, entity);
     }
 }
