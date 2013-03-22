@@ -71,7 +71,7 @@ public class CommandUpdate extends Command {
             newitem = RegisterItem.fromEntityRequest(root, parent, false);
         }
 
-        currentItem = store.getItem(newitem.getRoot().getURI(), isPatch && isEntityUpdate);
+        currentItem = store.getItem(newitem.getRoot().getURI(), isEntityUpdate);
         if (currentItem == null) {
             return new ValidationResponse(Response.Status.NOT_FOUND, "Item to update does not exist");
         }
@@ -90,8 +90,17 @@ public class CommandUpdate extends Command {
                 typeOK = root.hasProperty(RDF.type, RegistryVocab.RegisterItem);
             }
         }
+        if (currentItem.getStatus().isAccepted() && wouldChange(currentItem.getEntity(), RDF.type)) {
+            typeOK = false;
+        }
         if (!typeOK) {
-            return new ValidationResponse(Response.Status.BAD_REQUEST, "The rdf:type of an entity cannot be changed once registered");
+            return new ValidationResponse(Response.Status.BAD_REQUEST, "The rdf:type of an entity cannot be changed once registered and accepted");
+        }
+
+        if (!isEntityUpdate && currentItem.getStatus().isAccepted()) {
+            if (!currentItem.getEntitySpec().equals( newitem.getEntitySpec() )) {
+                return new ValidationResponse(Status.BAD_REQUEST, "Request would change the URI of the registered entity, which is disallowed for items which have been accepted");
+            }
         }
 
         // For registers can only update non-member properties this way
@@ -106,8 +115,25 @@ public class CommandUpdate extends Command {
             root.removeAll(p);
         }
 
-        
         return ValidationResponse.OK;
+    }
+
+    /**
+     * Test if the (resource) values of a property will be changed by the replacement or patch.
+     * Relies on currentItem, newItem, isPatch being already set correctly.
+     * @param r the current resource
+     * @param p the property to test
+     */
+    private boolean wouldChange(Resource r, Property p) {
+        if (r == null) return false;
+
+        Resource newR = r.inModel( newitem.getRoot().getModel() );
+        if (isPatch && !newR.hasProperty(p)) return false;
+
+        List<Resource>  newValues = RDFUtil.allResourceValues(newR, p);
+        List<Resource>  currentValues = RDFUtil.allResourceValues(r, p);
+        if (newValues.size() != currentValues.size()) return true;
+        return ! newValues.containsAll(currentValues);
     }
 
     @Override

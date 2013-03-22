@@ -59,7 +59,7 @@ public class RegisterItem extends Description {
 
     /** Properties that are set internally and should not be set by register/update payload */
     public static final Property[] INTERNAL_PROPS = new Property[] {RegistryVocab.register, RegistryVocab.subregister, OWL.versionInfo};
-   
+
     /**
      * Construct a new register item from a loaded description
      */
@@ -105,8 +105,26 @@ public class RegisterItem extends Description {
         return notation;
     }
 
+    /**
+     * Return the associated entity resource, if any. A RegisterItem can be created
+     * or retrieved without also setting the entity so this may return null in those cases.
+     */
     public Resource getEntity() {
         return entity;
+    }
+
+    /**
+     * Return the entity specified by reg:definition/reg:entity.
+     * For a well-formed RegisterItem this should never return null, even
+     * if the entity itself hasn't been retrieved and attached to this wrapper object.
+     */
+    public Resource getEntitySpec() {
+        Resource def = root.getPropertyResourceValue(RegistryVocab.definition);
+        if (def != null) {
+            return def.getPropertyResourceValue(RegistryVocab.entity);
+        } else {
+            return null;
+        }
     }
 
     public Status getStatus() {

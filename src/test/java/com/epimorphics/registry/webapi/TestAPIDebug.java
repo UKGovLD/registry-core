@@ -60,15 +60,37 @@ public class TestAPIDebug extends TomcatTestBase {
         // Set up some base data
         assertEquals(201, postFileStatus("test/reg1.ttl", BASE_URL));
 
-        // Error case where register is explicitly stated in the payload
-        assertEquals(201, postFileStatus("test/jmt/number-fifteen-reserved-post.ttl", REG1));
-        Model m = getModelResponse(REG1 + "/_fifteen");
-        Resource r = m.getResource(REG1_URI + "/_fifteen");
-        TestUtil.testArray(RDFUtil.allResourceValues(r, RegistryVocab.register), new Resource[]{ m.getResource(REG1_URI)});
+        doReservationTest();
 
 //        printResourceState(REG1_URI+"/_six");
     }
 
+
+    // Test reservation of entries using bNode entity addresses
+    private void doReservationTest() {
+        assertEquals(201, postFileStatus("test/jmt/number-six-reserved-post.ttl", REG1));
+        Model m = getModelResponse(REG1+"?status=any&_view=with_metadata");
+        validateReservedEntry(m, null, "reserved");
+
+        assertEquals(204, invoke("PUT", "test/jmt/number-six-update.ttl", REG1+"/_six").getStatus());
+        m = getModelResponse(REG1+"?status=any&_view=with_metadata");
+        validateReservedEntry(m, "http://example.com/six", "six");
+        
+        // Check that once accepted can no longer change the entity URI
+        assertEquals(204, post(REG1 + "/_six?update&status=stable").getStatus());
+        assertEquals(400, invoke("PUT", "test/jmt/number-six-update2.ttl", REG1+"/_six").getStatus());
+    }
+
+    private void validateReservedEntry(Model m, String entityURI, String label) {
+        Resource reg1 = m.getResource(REG1_URI);
+        Resource _six = m.getResource(REG1_URI + "/_six");
+        assertTrue(m.contains(_six, RegistryVocab.register, reg1));
+        Resource entity = _six.getPropertyResourceValue(RegistryVocab.definition).getPropertyResourceValue(RegistryVocab.entity);
+        if (entityURI != null) {
+            assertEquals(entityURI, entity.getURI());
+        }
+        assertEquals(label, RDFUtil.getStringValue(entity, RDFS.label));
+    }
 
     // Debugging utility only, should not be used while transactions are live
     public void printResourceState(String...uris) {
