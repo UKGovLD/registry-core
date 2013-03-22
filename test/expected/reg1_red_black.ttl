@@ -18,8 +18,8 @@
               "register 1"@en ;
       <http://purl.org/dc/terms/description>
               "Example register 1"@en ;
-      <http://purl.org/linked-data/registry#containedItemClass>
-              <http://www.w3.org/2004/02/skos/core#Concept> ;
+#      <http://purl.org/linked-data/registry#containedItemClass>
+#              <http://www.w3.org/2004/02/skos/core#Concept> ;
       <http://purl.org/linked-data/registry#manager>
               <http://example.com/registryManagementLtd> ;
       <http://purl.org/linked-data/registry#owner>
@@ -31,4 +31,3 @@
       <http://www.w3.org/ns/ldp#membershipPredicate>
               <http://www.w3.org/2004/02/skos/core#member> ;
       <http://purl.org/dc/terms/modified> [] .
-              

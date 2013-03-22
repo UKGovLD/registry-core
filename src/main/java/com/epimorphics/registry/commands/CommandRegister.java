@@ -10,6 +10,7 @@
 package com.epimorphics.registry.commands;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -32,13 +33,18 @@ import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
+import com.epimorphics.registry.core.ValidationResponse;
 import com.epimorphics.registry.store.EntityInfo;
+import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.Parameters;
 import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.util.NameUtils;
+import com.epimorphics.util.PrefixUtils;
+import com.hp.hpl.jena.query.QueryExecution;
+import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
@@ -50,7 +56,6 @@ import com.hp.hpl.jena.sparql.util.Closure;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
-import com.sun.jersey.api.NotFoundException;
 
 /**
  * Command processor to handle registering a new entry.
@@ -64,9 +69,44 @@ public class CommandRegister extends Command {
 
     Status statusOverride = null;
 
+    Register parent;
+
     public CommandRegister(Operation operation, String target,
             MultivaluedMap<String, String> parameters, Registry registry) {
         super(operation, target, parameters, registry);
+    }
+
+    @Override
+    public ValidationResponse validate() {
+        store.lock(target);
+        try {
+            Description d = store.getCurrentVersion(target);
+            if (d == null) {
+                return new ValidationResponse(NOT_FOUND, "No such register");
+            }
+            if (!(d instanceof Register)) {
+                return new ValidationResponse(BAD_REQUEST, "Can only register items in a register");
+            }
+            parent = d.asRegister();
+        } finally {
+            store.unlock(target);
+        }
+
+        for (Resource validationQuery : RDFUtil.allResourceValues(parent.getRoot(), RegistryVocab.validationQuery)) {
+            String query = RDFUtil.getStringValue(validationQuery, RegistryVocab.query);
+            String expquery = PrefixUtils.expandQuery(query, Prefixes.get());
+            QueryExecution qexec = QueryExecutionFactory.create(expquery, payload);
+            try {
+                if (qexec.execAsk() == true) {
+                    String querymsg = RDFUtil.getStringValue(validationQuery, RDFS.label, query);
+                    return new ValidationResponse(BAD_REQUEST, "Validation query found error in request: " + querymsg );
+                }
+            } finally {
+                qexec.close();
+            }
+        }
+
+        return ValidationResponse.OK;
     }
 
     @Override
@@ -76,15 +116,6 @@ public class CommandRegister extends Command {
 
         store.lock(target);
         try {
-            Description d = store.getCurrentVersion(target);
-            if (d == null) {
-                throw new NotFoundException();
-            }
-            if (!(d instanceof Register)) {
-                throw new WebApiException(BAD_REQUEST, "Can only register items in a register");
-            }
-            Register parent = d.asRegister();
-
             Resource location = null;
             if (parameters.containsKey(Parameters.BATCH_MANAGED) || parameters.containsKey(Parameters.BATCH_REFERENCED)) {
                 location = batchRegister(parent);
@@ -173,18 +204,6 @@ public class CommandRegister extends Command {
             }
         }
 
-//        // Relocate any relative children
-//        if (root.getURI().startsWith(BaseEndpoint.DUMMY_BASE_URI)) {
-//            int striplen = root.getURI().length();
-//            for (int i = 0; i < children.size(); i++) {
-//                Resource c = children.get(i);
-//                if (c.getURI().startsWith(BaseEndpoint.DUMMY_BASE_URI)) {
-//                    String uri = BaseEndpoint.DUMMY_BASE_URI + c.getURI().substring(striplen);
-//                    children.set(i, ResourceUtils.renameResource(c, uri));
-//                }
-//            }
-//        }
-
         // Register the collection
         root.addProperty(RDF.type, RegistryVocab.Register);
         if (!root.hasProperty(RegistryVocab.owner)) {
@@ -245,7 +264,7 @@ public class CommandRegister extends Command {
             throw new WebApiException(Response.Status.FORBIDDEN, "Item already registered at request location: " + ri.getRoot());
         }
 
-        // TODO validate completeness of description
+        validateEntity(parent, ri.getEntity());
 
         if (statusOverride != null) {
             ri.getRoot().removeAll(RegistryVocab.status);
@@ -278,6 +297,30 @@ public class CommandRegister extends Command {
         store.addToRegister(parent, ri);
         checkDelegation(ri);
         return ri.getRoot();
+    }
+
+    /**
+     * Run validation checks on a submitted entity.
+     * Run here rather than as part of Command#validate because a single payload can contain
+     * multiple registration requrests.
+     */
+    private void validateEntity(Register parent, Resource entity) {
+        if ( !entity.hasProperty(RDF.type) || !entity.hasProperty(RDFS.label) ) {
+            throw new WebApiException(BAD_REQUEST, "Missing required property (rdf:type or rdfs:label) on " + entity);
+        }
+
+        List<Resource> itemClasses = RDFUtil.allResourceValues(parent.getRoot(), RegistryVocab.containedItemClass);
+        boolean foundLegalType = itemClasses.isEmpty();
+        for (Resource itemClass : itemClasses) {
+            if (entity.hasProperty(RDF.type, itemClass)) {
+                foundLegalType = true;
+                break;
+            }
+        }
+        if (!foundLegalType) {
+            throw new WebApiException(BAD_REQUEST, "Entity does not have one of the types required by this register: " + entity);
+        }
+
     }
 
 }

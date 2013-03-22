@@ -3,25 +3,25 @@
 @prefix owl:  <http://www.w3.org/2002/07/owl#> .
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
 @prefix dct:  <http://purl.org/dc/terms/> .
-@prefix dc:   <http://purl.org/dc/elements/1.1/> .
-@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix version:  <http://purl.org/linked-data/version#> .
 @prefix ldp:  <http://www.w3.org/ns/ldp#> .
-@prefix ssd:  <http://www.w3.org/ns/sparql-service-description#> .
-@prefix vs:   <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
-@prefix void: <http://rdfs.org/ns/void#> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
-
 @prefix reg:  <http://purl.org/linked-data/registry#> .
 
-<reg1> a reg:Register, skos:Collection ;
+<reg2> a reg:Register, skos:Collection ;
     ldp:membershipPredicate skos:member;
-    rdfs:label "register 1"@en;
-    dct:description "Example register 1 - put update2"@en;
-#    reg:containedItemClass skos:Concept;
+    rdfs:label "register 2"@en;
+    dct:description "Example register 2"@en;
+    reg:owner      <http://example.com/department> ;
+    reg:manager   <http://example.com/registryManagementLtd> ;
+    reg:containedItemClass skos:Concept;
     ldp:membershipPredicate skos:member;
-    owl:versionInfo "27"^^xsd:long;
-    version:currentVersion <junk>;
+
+    reg:validationQuery [
+        a reg:SPARQLAskQuery;
+        rdfs:label "All entries must have description";
+        reg:query "ASK { ?item a skos:Concept . FILTER NOT EXISTS {?item dct:description []}}";
+    ];
 .
 

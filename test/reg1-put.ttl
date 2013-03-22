@@ -19,7 +19,7 @@
     ldp:membershipPredicate skos:member;
     rdfs:label "register 1"@en;
     dct:description "Example register 1 - put update"@en;
-    reg:containedItemClass skos:Concept;
+#    reg:containedItemClass skos:Concept;
     ldp:membershipPredicate skos:member;
 .
 

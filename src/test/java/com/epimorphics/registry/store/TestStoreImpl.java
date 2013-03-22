@@ -134,7 +134,7 @@ public class TestStoreImpl {
         // Check the subregister itself
         Resource subregE = store.getEntity(ri);
         assertTrue (subregE.hasProperty(RDF.type, RegistryVocab.Register));
-        assertTrue (subregE.hasProperty(RegistryVocab.containedItemClass, SKOS.Concept));
+//        assertTrue (subregE.hasProperty(RegistryVocab.containedItemClass, SKOS.Concept));
 
         // Check the root register shows this
         List<RegisterEntryInfo> members = store.listMembers(rootreg);

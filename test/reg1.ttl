@@ -21,7 +21,7 @@
     dct:description "Example register 1"@en;
     reg:owner      <http://example.com/department> ;
     reg:manager   <http://example.com/registryManagementLtd> ;
-    reg:containedItemClass skos:Concept;
+#    reg:containedItemClass skos:Concept;
     ldp:membershipPredicate skos:member;
 .
 

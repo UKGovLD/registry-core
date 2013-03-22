@@ -150,6 +150,9 @@ public class TestAPI extends TomcatTestBase {
         // Check that an explicit reg:register in payload doesn't get through
         doBlockInternalPropertiesTest();
 
+        // Check validation of entries in a register with validation constraints
+        doValidationChecks();
+        
 
 //        System.out.println("Store dump");
 //        ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel().write(System.out, "Turtle");
@@ -589,6 +592,18 @@ public class TestAPI extends TomcatTestBase {
         Model m = getModelResponse(REG1 + "/_fifteen");
         Resource r = m.getResource(REG1_URI + "/_fifteen");
         TestUtil.testArray(RDFUtil.allResourceValues(r, RegistryVocab.register), new Resource[]{ m.getResource(REG1_URI)});
+    }
+
+    // Check validation of entries in a register with validation constraints
+    private void doValidationChecks() {
+        assertEquals(201, postFileStatus("test/reg2.ttl", BASE_URL));
+        assertEquals(201, postFileStatus("test/reg2-entry-good.ttl", BASE_URL+"reg2"));
+        checkRegisterList(getModelResponse(BASE_URL+"reg2?status=any"), ROOT_REGISTER + "reg2", "entry concept");
+
+        assertEquals(400, postFileStatus("test/reg2-entry-bad1.ttl", BASE_URL+"reg2"));
+        assertEquals(400, postFileStatus("test/reg2-entry-bad2.ttl", BASE_URL+"reg2"));
+        assertEquals(400, postFileStatus("test/reg2-entry-bad3.ttl", BASE_URL+"reg2"));
+        assertEquals(400, postFileStatus("test/reg2-entry-bad4.ttl", BASE_URL+"reg2"));
     }
 
     private void checkPageResponse(Model m, String nextpage, int length) {

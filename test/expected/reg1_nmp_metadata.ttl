@@ -36,8 +36,8 @@
       a       reg:Register , ldp:Container , skos:Collection ;
       rdfs:label "register 1"@en ;
       dct:description "Example register 1"@en ;
-      reg:containedItemClass
-              skos:Concept ;
+#      reg:containedItemClass
+#              skos:Concept ;
       reg:manager <http://example.com/registryManagementLtd> ;
       reg:owner <http://example.com/department> ;
       owl:versionInfo [] ;
