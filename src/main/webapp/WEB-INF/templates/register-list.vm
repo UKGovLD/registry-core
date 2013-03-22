@@ -95,7 +95,10 @@
                   #if($itemL.isEmpty())
                     <strong>Item:</strong> #linkfor($member)
                   #else
-                    <strong>Item:</strong> <a href="#linkhref($item)" title="$item.uRI">$item.getPropertyValue("reg:notation").lexicalForm</a>
+                    <strong>Item:</strong>
+                      #foreach($item in $itemL)
+                        <a href="#linkhref($item)" title="$item.uRI">$item.getPropertyValue("reg:notation").lexicalForm</a>#if( $foreach.hasNext ), #end
+                      #end
                   #end
                 </div>
                 <div class="span2">

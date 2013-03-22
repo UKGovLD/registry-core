@@ -23,7 +23,7 @@
     dct:description "The root register"@en;
     reg:owner      <http://example.com/UKLocation> ;
     reg:manager   <http://www.epimorphics.com/#id> ;
-    reg:containedItemClass reg:Register;
+    reg:containedItemClass reg:Register, skos:Collection, skos:ConceptScheme;
     owl:versionInfo 1;
 .
 

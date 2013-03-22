@@ -67,6 +67,12 @@ curl -i -H "Content-Type:text/turtle" -H "Accept:text/plain" -X PATCH --data "@t
 curl -i -H "Content-Type:text/turtle" -H "Accept:text/plain" -X PUT --data "@test/jmt/codes-put.ttl" http://localhost:8080/codes?non-member-properties
 curl -i -H "Accept:text/turtle" http://localhost:8080/codes
 
+// Testing JMT numbers case
+curl -i -H "Content-Type:text/turtle" -X POST --data "@test/jmt/numbers-one-two-three-four-five-webUI.ttl" "http://localhost:8080/?batch-managed&status=stable"
+curl -i -H "Content-Type:text/turtle" -X POST --data "@test/jmt/number-seven-reserved.ttl" "http://localhost:8080/numbers"
+curl -i -H "Content-Type:text/turtle" -X POST --data "@test/jmt/number-thirteen-reserved.ttl" "http://localhost:8080/numbers"
+
+
 # Configure proxy update permissions
 
 Add to /etc/sudoers:

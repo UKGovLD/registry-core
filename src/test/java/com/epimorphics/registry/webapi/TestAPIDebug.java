@@ -58,16 +58,7 @@ public class TestAPIDebug extends TomcatTestBase {
     @Test
     public void testDebug() throws IOException {
         // Set up some base data
-//        assertEquals(201, postFileStatus("test/reg1.ttl", BASE_URL));
-        
-        assertEquals(201, postFileStatus("test/reg2.ttl", BASE_URL));
-        assertEquals(201, postFileStatus("test/reg2-entry-good.ttl", BASE_URL+"reg2"));
-        checkRegisterList(getModelResponse(BASE_URL+"reg2?status=any"), ROOT_REGISTER + "reg2", "entry concept");
-
-        assertEquals(400, postFileStatus("test/reg2-entry-bad1.ttl", BASE_URL+"reg2"));
-        assertEquals(400, postFileStatus("test/reg2-entry-bad2.ttl", BASE_URL+"reg2"));
-        assertEquals(400, postFileStatus("test/reg2-entry-bad3.ttl", BASE_URL+"reg2"));
-        assertEquals(400, postFileStatus("test/reg2-entry-bad4.ttl", BASE_URL+"reg2"));
+        assertEquals(201, postFileStatus("test/reg1.ttl", BASE_URL));
 
         //        printResourceState(REG1_URI+"/_six");
     }
