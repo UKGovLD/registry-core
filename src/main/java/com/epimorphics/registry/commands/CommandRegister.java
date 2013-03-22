@@ -14,7 +14,9 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -159,6 +161,18 @@ public class CommandRegister extends Command {
             throw new WebApiException(BAD_REQUEST, "No children of bulk collection type found");
         }
 
+        // Check if there are any suspiciously surplus resources
+        Set<Resource> toIngest = new HashSet<Resource>();
+        toIngest.add( root );
+        toIngest.addAll( children );
+
+        for (ResIterator ri = payload.listSubjectsWithProperty(RDF.type); ri.hasNext();) {
+            Resource r = ri.next();
+            if (r.isURIResource() && !toIngest.contains(r)) {
+                throw new WebApiException(BAD_REQUEST, "Found resources other than batch root and child entities in the payload: " + r);
+            }
+        }
+
 //        // Relocate any relative children
 //        if (root.getURI().startsWith(BaseEndpoint.DUMMY_BASE_URI)) {
 //            int striplen = root.getURI().length();
@@ -237,7 +251,7 @@ public class CommandRegister extends Command {
             ri.getRoot().removeAll(RegistryVocab.status);
             ri.getRoot().addProperty(RegistryVocab.status, statusOverride.getResource());
         }
-        
+
         // Santization
         for (Property p : RegisterItem.INTERNAL_PROPS) {
             ri.getRoot().removeAll(p);

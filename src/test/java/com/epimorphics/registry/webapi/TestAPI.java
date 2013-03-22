@@ -350,6 +350,8 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(201, postFileStatus("test/bulk-skos-collection-of-scheme.ttl", BASE_URL + "?batch-referenced"));
         m = getModelResponse(BASE_URL + "scheme-collection?status=any");
         checkRegisterList( m, ROOT_REGISTER + "scheme-collection", "item 1", "item 2");
+
+        assertEquals(400, postFileStatus("test/bulk-skos-collection-spurious.ttl", BASE_URL + "?batch-managed") );
     }
 
     // Assumes /collection exists from bulk registration test
