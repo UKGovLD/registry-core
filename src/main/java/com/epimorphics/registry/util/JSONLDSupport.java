@@ -33,6 +33,7 @@ import de.dfki.km.json.jsonld.impl.JenaTripleCallback;
 public class JSONLDSupport {
 
     public static final String MIME_JSONLD = "application/ld+json";
+    public static final String FULL_MIME_JSONLD = "application/ld+json; charset=UTF-8";
     public static final MediaType MT_JSONLD = new MediaType("application", "ld+json");
     public static final String CONTEXT_KEY = "@context";
 

@@ -12,6 +12,7 @@
 package com.epimorphics.registry.webapi;
 
 import static com.epimorphics.webapi.marshalling.RDFXMLMarshaller.MIME_RDFXML;
+import static com.epimorphics.webapi.marshalling.RDFXMLMarshaller.FULL_MIME_RDFXML;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -67,7 +68,8 @@ import com.sun.jersey.multipart.FormDataParam;
 public class RequestProcessor extends BaseEndpoint {
     static final Logger log = LoggerFactory.getLogger( RequestProcessor.class );
 
-
+    public static final String FULL_MIME_TURTLE = "text/turtle; charset=UTF-8";
+    
     @GET
     @Produces("text/html")
     public Response htmlrender() {
@@ -81,9 +83,9 @@ public class RequestProcessor extends BaseEndpoint {
             String mime = MIME_RDFXML;
             String format = parameters.getFirst(Parameters.FORMAT);
             if (format.equals("ttl")) {
-                mime = MIME_TURTLE;
+                mime = FULL_MIME_TURTLE;
             } else if (format.equals("jsonld")) {
-                mime = JSONLDSupport.MIME_JSONLD;
+                mime = JSONLDSupport.FULL_MIME_JSONLD;
             }
             return Response.ok().type(mime).entity(response.getEntity()).build();
         } else {
@@ -101,7 +103,7 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     @GET
-    @Produces({MIME_TURTLE, MIME_RDFXML, JSONLDSupport.MIME_JSONLD})
+    @Produces({FULL_MIME_TURTLE, FULL_MIME_RDFXML, JSONLDSupport.FULL_MIME_JSONLD})
     public Response read() {
         PassThroughResult result = checkForPassThrough();
         if (result != null && result.isDone()) {
