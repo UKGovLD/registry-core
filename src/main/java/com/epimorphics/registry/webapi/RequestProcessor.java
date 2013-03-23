@@ -87,9 +87,15 @@ public class RequestProcessor extends BaseEndpoint {
             }
             return Response.ok().type(mime).entity(response.getEntity()).build();
         } else {
+            String language = request.getLocale().getLanguage();
+            if (language.isEmpty()) {
+                language = "en";
+            }
             VelocityRender velocity = ServiceConfig.get().getServiceAs(Registry.VELOCITY_SERVICE, VelocityRender.class);
             StreamingOutput out = velocity.render("main.vm", uriInfo.getPath(), context, parameters,
-                        "registry", Registry.get(), "requestor", getRequestor());
+                        "registry", Registry.get(), 
+                        "requestor", getRequestor(),
+                        "language", language);
             return Response.ok().type("text/html").entity(out).build();
         }
     }

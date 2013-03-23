@@ -32,6 +32,7 @@
   #parse("internal-error.vm")
 #else
   #set($model=$response.entity)
+  $model.setLanguage($language)
   #set($node=$model.getNode($target))
 
   #if($uri.isEmpty())

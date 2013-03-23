@@ -1,0 +1,6 @@
+@prefix dct:     <http://purl.org/dc/terms/> .
+
+<one>
+      dct:description 
+            "The smallest cardinal number, half of the two: 1."@en ,
+            "Le plus petit nombre cardinal, la moitié des deux; 1."@fr .

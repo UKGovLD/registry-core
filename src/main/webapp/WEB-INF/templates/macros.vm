@@ -1,17 +1,22 @@
 ## Global macros
 
+## Show status value as a suitably coloured blob
 #macro(showstatus $status)
   <span class="label label-#statuslabel($lib.reg.asStatus($status).name())">$lib.reg.asStatus($status)</span>
 #end
 
+## Determine the suffix of the label- css class to use to colour a status blob
 #macro(statuslabel $statusname)#if($statusname.equals("Stable"))success#elseif($statusname.equals("Experimental"))warning#elseif($statusname.equals("Invalid"))important#elseif($statusname.equals("Superseded"))inverse#elseif($statusname.equals("Retired"))inverse#else #end#end
 
+## Determine the href value to use in a link to the given resource, caters for managed/reference URIs
 #macro(linkhref $res)#if($res.uRI.startsWith($registry.baseURI))$res.uRI.substring($registry.baseURI.length())#else${root}/?entity=$lib.pathEncode($res.getURI())#end#end
 
+## Inject a link to the given resource
 #macro(linkfor $res)
    <a href="#linkhref($res)" title="$res.uRI">$res.name</a>
 #end
 
+## Render a value either as a link (if a resource) or as a (trimmed) lexical form
 #macro(render $v)
       #if($v.isResource())
         #linkfor($v)
@@ -20,6 +25,14 @@
       #end
 #end
 
+## Display a description for a resource if one is available, otherwise show the default (which can be empty)
+#macro(description $r $default)
+  #if($r.getPropertyValue("dct:description"))
+    <p>$r.getLocalizedValue("dct:description")</p>
+  #else$default#end
+#end
+
+## Inject a plain link for a resource - no encoding or mapping to the host
 #macro(link $uri)
   <a href="$uri">$uri</a>
 #end

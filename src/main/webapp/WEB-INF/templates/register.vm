@@ -23,13 +23,7 @@
     <div class="row">
       <div class="span6">
         <h1>Register: $register.name</h1>
-        <p>
-          #if($register.getPropertyValue("dct:description"))
-            $register.getPropertyValue("dct:description").lexicalForm
-          #else
-            <em>no description supplied</em>
-          #end
-        </p>
+        #description($register, "<p><em>no description supplied</em></p>")
       </div>
     #if($itemForReg.getPropertyValue("reg:status"))
       <div class="span2">
