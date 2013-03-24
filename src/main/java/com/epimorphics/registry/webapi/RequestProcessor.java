@@ -216,7 +216,7 @@ public class RequestProcessor extends BaseEndpoint {
     @POST
     @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
     public Response simpleForm(@Context HttpHeaders hh, InputStream body) {
-        log.debug("simple form invoked");
+//        log.debug("simple form invoked");
         return register(hh, body);
     }
 

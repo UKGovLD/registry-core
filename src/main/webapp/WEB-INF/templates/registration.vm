@@ -27,7 +27,9 @@
             <div class="ajax-error"></div>
           </div>
 
-          <div class="pill-pane" id="item">item</div>
+          <div class="pill-pane" id="item">
+            #restable($lib.reg.modelFor("$registry.baseURI/system/form-templates/concept"),"table-condensed") 
+          </div>
 
           <div class="pill-pane" id="batch">
             <form class="form-inline ajax-form" action="#linkhref($register)?batch-managed" method="post" enctype="multipart/form-data">

@@ -83,4 +83,9 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
         next.remove(current);
         return next;
     }
+    
+    public RDFNodeWrapper modelFor(String uri) {
+        Resource root = getStore().getCurrentVersion(uri).getRoot();
+        return new RDFNodeWrapper(new ModelWrapper(root.getModel()), root);
+    }
 }

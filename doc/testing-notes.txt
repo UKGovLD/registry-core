@@ -58,6 +58,10 @@ curl -i -H "Content-Type: application/ld+json" -X POST --data "@test/purple.json
 // Should reject
 curl -i -H "Content-Type: text/turtle" -X PUT --data "@test/blue-patch.ttl" http://localhost:8080/def/colours
 
+curl -i -H "Content-Type: text/turtle" -X POST --data "@test/form-templates.ttl" http://localhost:8080/system
+curl -i -X POST "http://localhost:8080/system/_form-templates?update&status=stable"
+curl -i -H "Content-Type: text/turtle" -X POST --data "@test/concept-template.ttl" http://localhost:8080/system/form-templates
+curl -i -X POST "http://localhost:8080/system/form-templates/_concept?update&status=stable"
 
 // Issue 27 manual sequence
 curl -i -H "Content-Type:text/turtle" -H "Accept:text/plain" -X POST --data "@test/jmt/codes-post.ttl" http://localhost:8080/
@@ -71,6 +75,7 @@ curl -i -H "Accept:text/turtle" http://localhost:8080/codes
 curl -i -H "Content-Type:text/turtle" -X POST --data "@test/jmt/numbers-one-two-three-four-five-webUI.ttl" "http://localhost:8080/?batch-managed&status=stable"
 curl -i -H "Content-Type:text/turtle" -X POST --data "@test/jmt/number-seven-reserved.ttl" "http://localhost:8080/numbers"
 curl -i -H "Content-Type:text/turtle" -X POST --data "@test/jmt/number-thirteen-reserved.ttl" "http://localhost:8080/numbers"
+
 
 
 # Configure proxy update permissions

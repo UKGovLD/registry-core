@@ -27,6 +27,7 @@
     reg:register <system/prefixes> ; 
     reg:definition [ reg:entity <http://purl.org/dc/elements/1.1/> ]; 
     version:currentVersion <system/prefixes/_dc>; 
+    owl:versionInfo 1 ;
     . 
 <http://purl.org/dc/elements/1.1/> a owl:Ontology; 
     rdfs:label "dc"@en; 
@@ -44,6 +45,7 @@
     reg:register <system/prefixes> ; 
     reg:definition [ reg:entity <http://www.w3.org/ns/sparql-service-description#> ]; 
     version:currentVersion <system/prefixes/_ssd>; 
+    owl:versionInfo 1 ;
     . 
 <http://www.w3.org/ns/sparql-service-description#> a owl:Ontology; 
     rdfs:label "ssd"@en; 
@@ -61,6 +63,7 @@
     reg:register <system/prefixes> ; 
     reg:definition [ reg:entity <http://www.w3.org/ns/prov#> ]; 
     version:currentVersion <system/prefixes/_prov>; 
+    owl:versionInfo 1 ;
     . 
 <http://www.w3.org/ns/prov#> a owl:Ontology; 
     rdfs:label "prov"@en; 
@@ -78,6 +81,7 @@
     reg:register <system/prefixes> ; 
     reg:definition [ reg:entity <http://xmlns.com/foaf/0.1/> ]; 
     version:currentVersion <system/prefixes/_foaf>; 
+    owl:versionInfo 1 ;
     . 
 <http://xmlns.com/foaf/0.1/> a owl:Ontology; 
     rdfs:label "foaf"@en; 
@@ -95,6 +99,7 @@
     reg:register <system/prefixes> ; 
     reg:definition [ reg:entity <http://rdfs.org/ns/void#> ]; 
     version:currentVersion <system/prefixes/_void>; 
+    owl:versionInfo 1 ;
     . 
 <http://rdfs.org/ns/void#> a owl:Ontology; 
     rdfs:label "void"@en; 
@@ -112,6 +117,7 @@
     reg:register <system/prefixes> ; 
     reg:definition [ reg:entity <http://purl.org/vocab/vann/> ]; 
     version:currentVersion <system/prefixes/_vann>; 
+    owl:versionInfo 1 ;
     . 
 <http://purl.org/vocab/vann/> a owl:Ontology; 
     rdfs:label "vann"@en; 
@@ -129,6 +135,7 @@
     reg:register <system/prefixes> ; 
     reg:definition [ reg:entity <http://www.w3.org/2003/06/sw-vocab-status/ns#> ]; 
     version:currentVersion <system/prefixes/_vs>; 
+    owl:versionInfo 1 ;
     . 
 <http://www.w3.org/2003/06/sw-vocab-status/ns#> a owl:Ontology; 
     rdfs:label "vs"@en; 
@@ -146,6 +153,7 @@
     reg:register <system/prefixes> ; 
     reg:definition [ reg:entity <http://purl.org/linked-data/version#> ]; 
     version:currentVersion <system/prefixes/_version>; 
+    owl:versionInfo 1 ;
     . 
 <http://purl.org/linked-data/version#> a owl:Ontology; 
     rdfs:label "version"@en; 
@@ -163,6 +171,7 @@
     reg:register <system/prefixes> ; 
     reg:definition [ reg:entity <http://www.w3.org/2000/01/rdf-schema#> ]; 
     version:currentVersion <system/prefixes/_rdfs>; 
+    owl:versionInfo 1 ;
     . 
 <http://www.w3.org/2000/01/rdf-schema#> a owl:Ontology; 
     rdfs:label "rdfs"@en; 
@@ -180,6 +189,7 @@
     reg:register <system/prefixes> ; 
     reg:definition [ reg:entity <http://www.w3.org/2006/time#> ]; 
     version:currentVersion <system/prefixes/_time>; 
+    owl:versionInfo 1 ;
     . 
 <http://www.w3.org/2006/time#> a owl:Ontology; 
     rdfs:label "time"@en; 
@@ -197,6 +207,7 @@
     reg:register <system/prefixes> ; 
     reg:definition [ reg:entity <http://purl.org/dc/terms/> ]; 
     version:currentVersion <system/prefixes/_dct>; 
+    owl:versionInfo 1 ;
     . 
 <http://purl.org/dc/terms/> a owl:Ontology; 
     rdfs:label "dct"@en; 
@@ -214,6 +225,7 @@
     reg:register <system/prefixes> ; 
     reg:definition [ reg:entity <http://purl.org/linked-data/registry#> ]; 
     version:currentVersion <system/prefixes/_reg>; 
+    owl:versionInfo 1 ;
     . 
 <http://purl.org/linked-data/registry#> a owl:Ontology; 
     rdfs:label "reg"@en; 
@@ -231,6 +243,7 @@
     reg:register <system/prefixes> ; 
     reg:definition [ reg:entity <http://www.w3.org/2001/XMLSchema#> ]; 
     version:currentVersion <system/prefixes/_xsd>; 
+    owl:versionInfo 1 ;
     . 
 <http://www.w3.org/2001/XMLSchema#> a owl:Ontology; 
     rdfs:label "xsd"@en; 
@@ -248,6 +261,7 @@
     reg:register <system/prefixes> ; 
     reg:definition [ reg:entity <http://www.w3.org/2002/07/owl#> ]; 
     version:currentVersion <system/prefixes/_owl>; 
+    owl:versionInfo 1 ;
     . 
 <http://www.w3.org/2002/07/owl#> a owl:Ontology; 
     rdfs:label "owl"@en; 
@@ -265,6 +279,7 @@
     reg:register <system/prefixes> ; 
     reg:definition [ reg:entity <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ]; 
     version:currentVersion <system/prefixes/_rdf>; 
+    owl:versionInfo 1 ;
     . 
 <http://www.w3.org/1999/02/22-rdf-syntax-ns#> a owl:Ontology; 
     rdfs:label "rdf"@en; 
@@ -282,6 +297,7 @@
     reg:register <system/prefixes> ; 
     reg:definition [ reg:entity <http://purl.org/linked-data/api/vocab#> ]; 
     version:currentVersion <system/prefixes/_api>; 
+    owl:versionInfo 1 ;
     . 
 <http://purl.org/linked-data/api/vocab#> a owl:Ontology; 
     rdfs:label "api"@en; 
@@ -299,6 +315,7 @@
     reg:register <system/prefixes> ; 
     reg:definition [ reg:entity <http://www.w3.org/2004/02/skos/core#> ]; 
     version:currentVersion <system/prefixes/_skos>; 
+    owl:versionInfo 1 ;
     . 
 <http://www.w3.org/2004/02/skos/core#> a owl:Ontology; 
     rdfs:label "skos"@en; 
@@ -316,6 +333,7 @@
     reg:register <system/prefixes> ; 
     reg:definition [ reg:entity <http://www.w3.org/ns/ldp#> ]; 
     version:currentVersion <system/prefixes/_ldp>; 
+    owl:versionInfo 1 ;
     . 
 <http://www.w3.org/ns/ldp#> a owl:Ontology; 
     rdfs:label "ldp"@en; 
