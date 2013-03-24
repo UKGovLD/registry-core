@@ -1,0 +1,54 @@
+## Generate the registration dialog
+
+    <div id="registration-dialog" class="modal hide" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3>Chose type of thing to register ...</h3>
+      </div>
+      <div id="registration-body" class="modal-body">
+        <ul class="nav nav-pills">
+          <li><a href="#item-upload" data-toggle="pill">Upload</a></li>
+          <li><a href="#batch" data-toggle="pill">Upload batchfile</a></li>
+          <li><a href="#register" data-toggle="pill">Subregister</a></li>
+          <li><a href="#item" data-toggle="pill">Concept</a></li>
+          <li><a href="#forward" data-toggle="pill">Forward</a></li>
+        </ul>
+
+        <div class="pill-content">
+          <div class="pill-pane" id="item-upload">
+            <form class="form-inline ajax-form" action="#linkhref($register)" method="post" enctype="multipart/form-data">
+              <label>
+                Choose file(s) to upload:
+                <input type="file" name="file" multiple />
+              </label>
+              <input type="hidden" name="action" value="register" />
+              <button class="btn">Upload and register</button>
+            </form>
+            <div class="ajax-error"></div>
+          </div>
+
+          <div class="pill-pane" id="item">item</div>
+
+          <div class="pill-pane" id="batch">
+            <form class="form-inline ajax-form" action="#linkhref($register)?batch-managed" method="post" enctype="multipart/form-data">
+              <label>
+                Choose a bulk file to upload:
+                <input type="file" name="file" multiple />
+              </label>
+              <input type="hidden" name="action" value="register" />
+              <button class="btn">Upload and register</button>
+            </form>
+            <div class="ajax-error"></div>
+          </div>
+
+          <div class="pill-pane" id="register">register</div>
+
+          <div class="pill-pane" id="forward">forward</div>
+
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+      </div>
+    </div>
