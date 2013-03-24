@@ -66,6 +66,8 @@ public class Registry extends ServiceBase implements Service {
     public static final String CACHE_SIZE_PARAM = "cacheSize";
     public static final String PAGE_SIZE_PARAM = "pageSize";
 
+    public static final boolean TEXT_INDEX_INCLUDES_HISTORY = true;
+    
     public static final int DEFAULT_PAGE_SIZE = 50;
 
     protected StoreAPI store;

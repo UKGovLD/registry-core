@@ -42,6 +42,7 @@ import com.epimorphics.registry.core.ForwardingRecord;
 import com.epimorphics.registry.core.ForwardingRecord.Type;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
+import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.util.DescriptionCache;
 import com.epimorphics.registry.util.Prefixes;
@@ -592,8 +593,13 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     protected void doIndex(Resource root, String graph) {
         if (indexer != null) {
-//            indexer.updateGraph(graph, root.getModel());
-            indexer.addGraph(graph, root.getModel());
+            // If use updateGraph then get one entry per entity, which is much more efficient
+            // However, then can't search on older names for entities which have been updated
+            if (Registry.TEXT_INDEX_INCLUDES_HISTORY) {
+                indexer.addGraph(graph, root.getModel());
+            } else {
+                indexer.updateGraph(graph, root.getModel());
+            }
         }
     }
 
@@ -722,7 +728,12 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
                 search = bq;
             }
 
-            return ((LuceneIndex)indexer).search(search, offset, maxresults);
+            LuceneIndex index = (LuceneIndex) indexer;
+            if (Registry.TEXT_INDEX_INCLUDES_HISTORY) {
+                return SearchFilter.search(index, search, offset, maxresults);
+            } else {
+                return index.search(search, offset, maxresults);
+            }
         } else {
             return new LuceneResult[0];
         }

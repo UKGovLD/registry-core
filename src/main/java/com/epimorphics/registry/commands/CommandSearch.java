@@ -67,6 +67,7 @@ public class CommandSearch extends Command {
         RDFNode[] members = new RDFNode[hits.length];
         int i = 0;
         for (String uri: uris) {
+            System.out.println("Search result uri: " + uri);
             RegisterItem ri = store.getItem(uri, true);
             Resource entity = ri.getEntity();
             if (entity == null) {
