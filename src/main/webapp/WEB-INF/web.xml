@@ -9,8 +9,7 @@
     <param-name>config.basestore</param-name>
     <param-value>com.epimorphics.server.stores.TDBStore,
     location=/var/local/registry/store,
-    ep=system,
-    log=/var/local/registry/logstore</param-value>
+    ep=system</param-value>
   </context-param>
 
   <context-param>
@@ -53,6 +52,7 @@
     cacheSize=100,
     pageSize=25,
     forwarder=forwarder,
+    log=/var/local/registry/logstore,
     bootSpec=${webapp}/WEB-INF/root-register.ttl|${webapp}/WEB-INF/registry.ttl|${webapp}/WEB-INF/system-registers.ttl|${webapp}/WEB-INF/prefixes-register.ttl,
     systemBoot=${webapp}/WEB-INF/systemboot</param-value>
   </context-param>

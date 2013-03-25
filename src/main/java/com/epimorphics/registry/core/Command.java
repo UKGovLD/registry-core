@@ -12,6 +12,9 @@ package com.epimorphics.registry.core;
 import static com.epimorphics.registry.webapi.Parameters.FIRST_PAGE;
 import static com.epimorphics.registry.webapi.Parameters.PAGE_NUMBER;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -37,6 +40,7 @@ import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.util.EpiException;
+import com.epimorphics.util.NameUtils;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDF;
@@ -191,6 +195,21 @@ public abstract class Command {
                 makeParamString(parameters),
                 (response.getStatus() == 201) ? " -> " + response.getMetadata().get("Location") : "",
                 response.getStatus()));
+
+        if (payload != null && registry.getLogDir() != null) {
+            String logfile = registry.getLogDir() + File.separator + String.format("on-%s-%s-%s.ttl",
+                    new SimpleDateFormat("dd-MMM-yyyy-HH-mm-ss").format(now),
+                    operation.toString(),
+                    NameUtils.encodeSafeName( target + "?" + makeParamString(parameters))
+                    );
+            try {
+                FileOutputStream out = new FileOutputStream(logfile);
+                payload.write(out, "Turtle");
+                out.close();
+            } catch (IOException e) {
+                log.error("Failed to write log of payload", e);
+            }
+        }
 
         return response;
     }

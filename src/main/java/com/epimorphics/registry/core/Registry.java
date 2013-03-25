@@ -66,6 +66,7 @@ public class Registry extends ServiceBase implements Service {
     public static final String BASE_URI_PARAM = "baseURI";
     public static final String BOOT_FILE_PARAM = "bootSpec";
     public static final String SYSTEM_BOOTSTRAP_DIR_PARAM = "systemBoot";
+    public static final String LOG_DIR_PARAM = "log";
     public static final String FORWARDER_PARAM = "forwarder";
     public static final String STORE_PARAM = "store";
     public static final String CACHE_SIZE_PARAM = "cacheSize";
@@ -79,6 +80,7 @@ public class Registry extends ServiceBase implements Service {
     protected String baseURI;
     protected int pageSize;
     protected ForwardingService forwarder;
+    protected String logDir;
 
     @Override
     public void init(Map<String, String> config, ServletContext context) {
@@ -144,6 +146,11 @@ public class Registry extends ServiceBase implements Service {
             }
             forwarder.updateConfig();
         }
+
+        logDir = config.get(LOG_DIR_PARAM);
+        if (logDir != null) {
+            logDir = ServiceConfig.get().expandFileLocation( logDir );
+        }
     }
 
     private void registerSystemFile(String file) {
@@ -182,6 +189,10 @@ public class Registry extends ServiceBase implements Service {
 
     public ForwardingService getForwarder() {
         return forwarder;
+    }
+
+    public String getLogDir() {
+        return logDir;
     }
 
     /**
