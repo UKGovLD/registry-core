@@ -240,6 +240,12 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     @POST
+    public Response nullForm(@Context HttpHeaders hh, InputStream body) {
+        // Default is to invoke register, e.g. for status update processing
+        return register(hh, body);
+    }
+
+    @POST
     @Consumes({MediaType.MULTIPART_FORM_DATA})
     public Response fileForm(@Context HttpHeaders hh, FormDataMultiPart multiPart,
 //            @FormDataParam("file") InputStream uploadedInputStream,

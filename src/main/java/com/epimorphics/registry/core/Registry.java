@@ -41,6 +41,7 @@ import com.epimorphics.server.core.ServiceConfig;
 import com.epimorphics.server.templates.VelocityRender;
 import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.util.EpiException;
+import com.epimorphics.util.FileUtil;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.util.FileManager;
@@ -149,6 +150,7 @@ public class Registry extends ServiceBase implements Service {
 
         logDir = config.get(LOG_DIR_PARAM);
         if (logDir != null) {
+            FileUtil.ensureDir(logDir);
             logDir = ServiceConfig.get().expandFileLocation( logDir );
         }
     }
