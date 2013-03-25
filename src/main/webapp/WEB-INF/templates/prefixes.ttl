@@ -12,5 +12,6 @@
 @prefix vs:   <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
 @prefix void: <http://rdfs.org/ns/void#> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix ui:   <http://purl.org/linked-data/registry-ui#> .
 
 @prefix reg:  <http://purl.org/linked-data/registry#> .

@@ -116,3 +116,8 @@ table tr td table {
     margin-bottom: 0px;
 }
 
+#registration-body {
+   min-height: 500px;
+   min-width: 400px;
+}
+

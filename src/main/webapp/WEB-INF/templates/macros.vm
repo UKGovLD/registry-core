@@ -59,7 +59,7 @@
     <tbody>
       #foreach($pv in $res.listProperties())
         <tr>
-          <td> <strong>$pv.getProp().name</strong> </td>
+          <td> <strong title="$pv.getProp().uRI">$pv.getProp().name</strong> </td>
           <td>
             #foreach($v in $pv.getValues())
               #if($v.isList())

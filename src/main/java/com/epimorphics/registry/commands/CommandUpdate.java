@@ -90,7 +90,7 @@ public class CommandUpdate extends Command {
                 typeOK = root.hasProperty(RDF.type, RegistryVocab.RegisterItem);
             }
         }
-        if (currentItem.getStatus().isAccepted() && wouldChange(currentItem.getEntity(), RDF.type)) {
+        if (currentItem.getStatus().isAccepted() && wouldChange(currentItem.getEntity(), newitem.getEntity(), RDF.type)) {
             typeOK = false;
         }
         if (!typeOK) {
@@ -124,10 +124,9 @@ public class CommandUpdate extends Command {
      * @param r the current resource
      * @param p the property to test
      */
-    private boolean wouldChange(Resource r, Property p) {
+    private boolean wouldChange(Resource r, Resource newR, Property p) {
         if (r == null) return false;
 
-        Resource newR = r.inModel( newitem.getRoot().getModel() );
         if (isPatch && !newR.hasProperty(p)) return false;
 
         List<Resource>  newValues = RDFUtil.allResourceValues(newR, p);

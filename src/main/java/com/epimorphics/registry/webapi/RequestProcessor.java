@@ -46,6 +46,8 @@ import com.epimorphics.registry.core.MatchResult;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.util.JSONLDSupport;
 import com.epimorphics.registry.util.PATCH;
+import com.epimorphics.registry.util.Prefixes;
+import com.epimorphics.registry.util.UiForm;
 import com.epimorphics.server.core.ServiceConfig;
 import com.epimorphics.server.templates.VelocityRender;
 import com.epimorphics.server.webapi.BaseEndpoint;
@@ -53,6 +55,7 @@ import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.util.NameUtils;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.util.FileManager;
 import com.hp.hpl.jena.util.FileUtils;
 import com.sun.jersey.api.NotFoundException;
@@ -69,7 +72,7 @@ public class RequestProcessor extends BaseEndpoint {
     static final Logger log = LoggerFactory.getLogger( RequestProcessor.class );
 
     public static final String FULL_MIME_TURTLE = "text/turtle; charset=UTF-8";
-    
+
     @GET
     @Produces("text/html")
     public Response htmlrender() {
@@ -95,7 +98,7 @@ public class RequestProcessor extends BaseEndpoint {
             }
             VelocityRender velocity = ServiceConfig.get().getServiceAs(Registry.VELOCITY_SERVICE, VelocityRender.class);
             StreamingOutput out = velocity.render("main.vm", uriInfo.getPath(), context, parameters,
-                        "registry", Registry.get(), 
+                        "registry", Registry.get(),
                         "requestor", getRequestor(),
                         "language", language);
             return Response.ok().type("text/html").entity(out).build();
@@ -215,9 +218,25 @@ public class RequestProcessor extends BaseEndpoint {
 
     @POST
     @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
-    public Response simpleForm(@Context HttpHeaders hh, InputStream body) {
-//        log.debug("simple form invoked");
-        return register(hh, body);
+    public Response simpleForm(@Context HttpHeaders hh, MultivaluedMap<String, String> form) {
+        String action = form.getFirst("action");
+        if ("register-inline".equals(action)) {
+            String target = uriInfo.getPath();
+            target = Registry.get().getBaseURI() + (target.isEmpty() ? "/" : "/" + target + "/");
+            Resource r = UiForm.create(form, target);
+
+            // TEMP debug
+            System.out.println("Form created resource:");
+            r.getModel().setNsPrefixes(Prefixes.get());
+            r.getModel().write(System.out, "Turtle");
+
+            Command command = makeCommand( Operation.Register );
+            command.setPayload( r.getModel() );
+            return command.execute();
+        } else {
+            // Default is to invoke register, e.g. for status update processing
+            return register(hh, null);
+        }
     }
 
     @POST
@@ -328,10 +347,6 @@ public class RequestProcessor extends BaseEndpoint {
         return base + "/";
     }
 
-    /**
-     * Handle relative URIs. Payloads with
-     * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
-     */
 
     static class PassThroughResult {
         Response response;

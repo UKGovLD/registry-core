@@ -14,6 +14,7 @@ import java.util.List;
 
 import com.epimorphics.rdfutil.ModelWrapper;
 import com.epimorphics.rdfutil.RDFNodeWrapper;
+import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
@@ -38,7 +39,14 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
     }
 
     public RDFNodeWrapper getResource(String uri) {
-        return wrapNode( getStore().getCurrentVersion(uri).getRoot() );
+        if ( ! uri.startsWith("http") ) {
+            uri = Registry.get().getBaseURI() + uri;
+        }
+        Description d = getStore().getCurrentVersion(uri);
+        if (d == null) {
+            return null;
+        }
+        return wrapNode( d.getRoot() );
     }
 
     private ModelWrapper wrapModel(Model m) {
@@ -83,9 +91,5 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
         next.remove(current);
         return next;
     }
-    
-    public RDFNodeWrapper modelFor(String uri) {
-        Resource root = getStore().getCurrentVersion(uri).getRoot();
-        return new RDFNodeWrapper(new ModelWrapper(root.getModel()), root);
-    }
+
 }

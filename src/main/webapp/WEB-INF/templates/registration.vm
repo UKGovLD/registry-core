@@ -7,16 +7,21 @@
       </div>
       <div id="registration-body" class="modal-body">
         <ul class="nav nav-pills">
-          <li><a href="#item-upload" data-toggle="pill">Upload</a></li>
-          <li><a href="#batch" data-toggle="pill">Upload batchfile</a></li>
-          <li><a href="#register" data-toggle="pill">Subregister</a></li>
-          <li><a href="#item" data-toggle="pill">Concept</a></li>
-          <li><a href="#forward" data-toggle="pill">Forward</a></li>
+          <li><a href="#item-upload" data-toggle="pill" class="popinfo" data-trigger="hover" data-placement="right"
+                 data-content="Register an entry by uploading an RDF file">Upload</a></li>
+          <li><a href="#batch" data-toggle="pill" class="popinfo" data-trigger="hover" data-placement="bottom"
+                 data-content="Register a collection of entries by uploading a bulk file">Upload batchfile</a></li>
+          <li><a href="#register" data-toggle="pill" class="popinfo" data-trigger="hover" data-placement="bottom"
+                 data-content="Create a new sub-register here">Subregister</a></li>
+          <li><a href="#item" data-toggle="pill" class="popinfo" data-trigger="hover" data-placement="bottom"
+                 data-content="Define a concept to add to this register">Concept</a></li>
+          <li><a href="#forward" data-toggle="pill" class="popinfo" data-trigger="hover" data-placement="bottom"
+                 data-content="Specify child URI to forward elsewhere">Forward</a></li>
         </ul>
 
         <div class="pill-content">
           <div class="pill-pane" id="item-upload">
-            <form class="form-inline ajax-form" action="#linkhref($register)" method="post" enctype="multipart/form-data">
+            <form class="form-horizontal ajax-form" action="#linkhref($register)" method="post" enctype="multipart/form-data">
               <label>
                 Choose file(s) to upload:
                 <input type="file" name="file" multiple />
@@ -28,7 +33,9 @@
           </div>
 
           <div class="pill-pane" id="item">
-            #restable($lib.reg.modelFor("$registry.baseURI/system/form-templates/concept"),"table-condensed") 
+            #set($spec=$lib.reg.getResource("/system/form-templates/concept"))
+            #parse("form-for.vm")
+            <div class="ajax-error"></div>
           </div>
 
           <div class="pill-pane" id="batch">
@@ -43,13 +50,21 @@
             <div class="ajax-error"></div>
           </div>
 
-          <div class="pill-pane" id="register">register</div>
+          <div class="pill-pane" id="register">
+            <div class="ajax-error"></div>
+            #set($spec=$lib.reg.getResource("/system/form-templates/register"))
+            #parse("form-for.vm")
+          </div>
 
-          <div class="pill-pane" id="forward">forward</div>
+          <div class="pill-pane" id="forward">
+            <div class="ajax-error"></div>
+            #set($spec=$lib.reg.getResource("/system/form-templates/forward"))
+            #parse("form-for.vm")
+          </div>
 
         </div>
       </div>
-      
+
       <div class="modal-footer">
         <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
       </div>

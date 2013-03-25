@@ -16,6 +16,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -154,6 +155,9 @@ public class CommandRegister extends Command {
             throw new WebApiException(BAD_REQUEST, "Could not find registered bulk type in payload");
         }
         List<Resource> roots = payload.listResourcesWithProperty(RDF.type, type).toList();
+        for (Iterator<Resource> i = roots.iterator(); i.hasNext();) {
+            if (i.next().isAnon()) i.remove();
+        }
         if (roots.size() != 1) {
             throw new WebApiException(BAD_REQUEST, "Multiple instances of bulk collection type");
         }

@@ -1,0 +1,179 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix dc:   <http://purl.org/dc/elements/1.1/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix version:  <http://purl.org/linked-data/version#> .
+@prefix ldp:  <http://www.w3.org/ns/ldp#> .
+@prefix ssd:  <http://www.w3.org/ns/sparql-service-description#> .
+@prefix vs:   <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+@prefix void: <http://rdfs.org/ns/void#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix time: <http://www.w3.org/2006/time#> .
+@prefix api:  <http://purl.org/linked-data/api/vocab#> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix reg:  <http://purl.org/linked-data/registry#> .
+@prefix ui:   <http://purl.org/linked-data/registry-ui#> .
+
+<prefixes> a reg:Register;
+    rdfs:label "prefixes"@en;
+    dct:description "Register prefix mappings use in serializations"@en;
+    reg:owner      <http://example.com/UKLocation> ;
+    reg:manager   <http://www.epimorphics.com/#id> ;
+    reg:containedItemClass owl:Ontology;
+    .
+
+<http://purl.org/dc/elements/1.1/> a owl:Ontology;
+    rdfs:label "dc"@en;
+    dct:description "dc prefix registration"@en;
+    vann:preferredNamespacePrefix "dc";
+    vann:preferredNamespaceUri "http://purl.org/dc/elements/1.1/";
+    .
+<prefixes> rdfs:member <http://purl.org/dc/elements/1.1/> .
+
+<http://www.w3.org/ns/sparql-service-description#> a owl:Ontology;
+    rdfs:label "ssd"@en;
+    dct:description "ssd prefix registration"@en;
+    vann:preferredNamespacePrefix "ssd";
+    vann:preferredNamespaceUri "http://www.w3.org/ns/sparql-service-description#";
+    .
+<prefixes> rdfs:member <http://www.w3.org/ns/sparql-service-description#> .
+
+<http://www.w3.org/ns/prov#> a owl:Ontology;
+    rdfs:label "prov"@en;
+    dct:description "prov prefix registration"@en;
+    vann:preferredNamespacePrefix "prov";
+    vann:preferredNamespaceUri "http://www.w3.org/ns/prov#";
+    .
+<prefixes> rdfs:member <http://www.w3.org/ns/prov#> .
+
+<http://xmlns.com/foaf/0.1/> a owl:Ontology;
+    rdfs:label "foaf"@en;
+    dct:description "foaf prefix registration"@en;
+    vann:preferredNamespacePrefix "foaf";
+    vann:preferredNamespaceUri "http://xmlns.com/foaf/0.1/";
+    .
+<prefixes> rdfs:member <http://xmlns.com/foaf/0.1/> .
+
+<http://rdfs.org/ns/void#> a owl:Ontology;
+    rdfs:label "void"@en;
+    dct:description "void prefix registration"@en;
+    vann:preferredNamespacePrefix "void";
+    vann:preferredNamespaceUri "http://rdfs.org/ns/void#";
+    .
+<prefixes> rdfs:member <http://rdfs.org/ns/void#> .
+
+<http://purl.org/vocab/vann/> a owl:Ontology;
+    rdfs:label "vann"@en;
+    dct:description "vann prefix registration"@en;
+    vann:preferredNamespacePrefix "vann";
+    vann:preferredNamespaceUri "http://purl.org/vocab/vann/";
+    .
+<prefixes> rdfs:member <http://purl.org/vocab/vann/> .
+
+<http://www.w3.org/2003/06/sw-vocab-status/ns#> a owl:Ontology;
+    rdfs:label "vs"@en;
+    dct:description "vs prefix registration"@en;
+    vann:preferredNamespacePrefix "vs";
+    vann:preferredNamespaceUri "http://www.w3.org/2003/06/sw-vocab-status/ns#";
+    .
+<prefixes> rdfs:member <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+
+<http://purl.org/linked-data/version#> a owl:Ontology;
+    rdfs:label "version"@en;
+    dct:description "version prefix registration"@en;
+    vann:preferredNamespacePrefix "version";
+    vann:preferredNamespaceUri "http://purl.org/linked-data/version#";
+    .
+<prefixes> rdfs:member <http://purl.org/linked-data/version#> .
+
+<http://www.w3.org/2000/01/rdf-schema#> a owl:Ontology;
+    rdfs:label "rdfs"@en;
+    dct:description "rdfs prefix registration"@en;
+    vann:preferredNamespacePrefix "rdfs";
+    vann:preferredNamespaceUri "http://www.w3.org/2000/01/rdf-schema#";
+    .
+<prefixes> rdfs:member <http://www.w3.org/2000/01/rdf-schema#> .
+
+<http://www.w3.org/2006/time#> a owl:Ontology;
+    rdfs:label "time"@en;
+    dct:description "time prefix registration"@en;
+    vann:preferredNamespacePrefix "time";
+    vann:preferredNamespaceUri "http://www.w3.org/2006/time#";
+    .
+<prefixes> rdfs:member <http://www.w3.org/2006/time#> .
+
+<http://purl.org/dc/terms/> a owl:Ontology;
+    rdfs:label "dct"@en;
+    dct:description "dct prefix registration"@en;
+    vann:preferredNamespacePrefix "dct";
+    vann:preferredNamespaceUri "http://purl.org/dc/terms/";
+    .
+<prefixes> rdfs:member <http://purl.org/dc/terms/> .
+
+<http://purl.org/linked-data/registry#> a owl:Ontology;
+    rdfs:label "reg"@en;
+    dct:description "reg prefix registration"@en;
+    vann:preferredNamespacePrefix "reg";
+    vann:preferredNamespaceUri "http://purl.org/linked-data/registry#";
+    .
+<prefixes> rdfs:member <http://purl.org/linked-data/registry#> .
+
+<http://www.w3.org/2001/XMLSchema#> a owl:Ontology;
+    rdfs:label "xsd"@en;
+    dct:description "xsd prefix registration"@en;
+    vann:preferredNamespacePrefix "xsd";
+    vann:preferredNamespaceUri "http://www.w3.org/2001/XMLSchema#";
+    .
+<prefixes> rdfs:member <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.w3.org/2002/07/owl#> a owl:Ontology;
+    rdfs:label "owl"@en;
+    dct:description "owl prefix registration"@en;
+    vann:preferredNamespacePrefix "owl";
+    vann:preferredNamespaceUri "http://www.w3.org/2002/07/owl#";
+    .
+<prefixes> rdfs:member <http://www.w3.org/2002/07/owl#> .
+
+<http://www.w3.org/1999/02/22-rdf-syntax-ns#> a owl:Ontology;
+    rdfs:label "rdf"@en;
+    dct:description "rdf prefix registration"@en;
+    vann:preferredNamespacePrefix "rdf";
+    vann:preferredNamespaceUri "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+    .
+<prefixes> rdfs:member <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+<http://purl.org/linked-data/api/vocab#> a owl:Ontology;
+    rdfs:label "api"@en;
+    dct:description "api prefix registration"@en;
+    vann:preferredNamespacePrefix "api";
+    vann:preferredNamespaceUri "http://purl.org/linked-data/api/vocab#";
+    .
+<prefixes> rdfs:member <http://purl.org/linked-data/api/vocab#> .
+
+<http://www.w3.org/2004/02/skos/core#> a owl:Ontology;
+    rdfs:label "skos"@en;
+    dct:description "skos prefix registration"@en;
+    vann:preferredNamespacePrefix "skos";
+    vann:preferredNamespaceUri "http://www.w3.org/2004/02/skos/core#";
+    .
+<prefixes> rdfs:member <http://www.w3.org/2004/02/skos/core#> .
+
+<http://www.w3.org/ns/ldp#> a owl:Ontology;
+    rdfs:label "ldp"@en;
+    dct:description "ldp prefix registration"@en;
+    vann:preferredNamespacePrefix "ldp";
+    vann:preferredNamespaceUri "http://www.w3.org/ns/ldp#";
+    .
+<prefixes> rdfs:member <http://www.w3.org/ns/ldp#> .
+
+<http://purl.org/linked-data/registry-ui#> a owl:Ontology;
+    rdfs:label "ui"@en;
+    dct:description "internal ui vocab prefix registration"@en;
+    vann:preferredNamespacePrefix "ui";
+    vann:preferredNamespaceUri "http://purl.org/linked-data/registry-ui#";
+    .
+<prefixes> rdfs:member <http://purl.org/linked-data/registry-ui#> .

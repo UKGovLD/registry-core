@@ -95,26 +95,5 @@
     reg:definition [ reg:entity reg:Register ];
     version:currentVersion <system/bulkCollectionTypes/_register>;
     .
-    
-<system/_prefixes> a reg:RegisterItem;
-    rdfs:label "prefixes"@en;
-    dct:description "Register prefix mappings use in serializations"@en;
-    reg:status reg:statusStable;
-    reg:notation "prefixes";
-    reg:register <system> ;
-    reg:definition [ reg:entity <system/prefixes> ];
-    ldp:membershipPredicate rdfs:member;
-    version:currentVersion <system/_prefixes>;
-    reg:itemClass reg:Register ;
-    .
 
-<system/prefixes> a reg:Register;
-    rdfs:label "prefixes"@en;
-    dct:description "Register prefix mappings use in serializations"@en;
-    reg:owner      <http://example.com/UKLocation> ;
-    reg:manager   <http://www.epimorphics.com/#id> ;
-    reg:containedItemClass owl:Ontology;
-    .
-    
-<system> reg:subregister <system/prefixes> .
 

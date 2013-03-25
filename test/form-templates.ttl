@@ -7,7 +7,7 @@
 @prefix version:  <http://purl.org/linked-data/version#> .
 @prefix ldp:  <http://www.w3.org/ns/ldp#> .
 @prefix reg:  <http://purl.org/linked-data/registry#> .
-@prefix ui:   <http://purl.org/linked-data/registry-ui/> .  
+@prefix ui:   <http://purl.org/linked-data/registry-ui#> .
 
 <form-templates> a reg:Register ;
     rdfs:label "form templates"@en;

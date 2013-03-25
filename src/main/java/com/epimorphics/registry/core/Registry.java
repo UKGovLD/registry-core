@@ -9,6 +9,7 @@
 
 package com.epimorphics.registry.core;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
@@ -38,8 +39,11 @@ import com.epimorphics.server.core.Service;
 import com.epimorphics.server.core.ServiceBase;
 import com.epimorphics.server.core.ServiceConfig;
 import com.epimorphics.server.templates.VelocityRender;
+import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.util.EpiException;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.util.FileManager;
 import com.sun.jersey.api.uri.UriComponent;
 
 /**
@@ -61,13 +65,14 @@ public class Registry extends ServiceBase implements Service {
 
     public static final String BASE_URI_PARAM = "baseURI";
     public static final String BOOT_FILE_PARAM = "bootSpec";
+    public static final String SYSTEM_BOOTSTRAP_DIR_PARAM = "systemBoot";
     public static final String FORWARDER_PARAM = "forwarder";
     public static final String STORE_PARAM = "store";
     public static final String CACHE_SIZE_PARAM = "cacheSize";
     public static final String PAGE_SIZE_PARAM = "pageSize";
 
     public static final boolean TEXT_INDEX_INCLUDES_HISTORY = true;
-    
+
     public static final int DEFAULT_PAGE_SIZE = 50;
 
     protected StoreAPI store;
@@ -103,6 +108,8 @@ public class Registry extends ServiceBase implements Service {
         }
 
 
+        registry = this;   // Assumes singleton registry
+
         Description root = store.getDescription(getBaseURI() + "/");
         if (root == null) {
             // Blank store, need to install a bootstrap root registers
@@ -110,10 +117,18 @@ public class Registry extends ServiceBase implements Service {
                 log.info("Loading bootstrap file " + bootSrc);
                 store.loadBootstrap( bootSrc );
             }
+            String bootdir = config.get(SYSTEM_BOOTSTRAP_DIR_PARAM);
+            if (bootdir != null) {
+                bootdir = ServiceConfig.get().expandFileLocation( bootdir );
+                File bootdirF = new File(bootdir);
+                for (String fn : bootdirF.list()) {
+                    String filename = bootdir + File.separator + fn;
+                    log.info("Loading bootstrap registration " + filename);
+                    registerSystemFile(filename);
+                }
+            }
             log.info("Installed bootstrap root register");
         }
-
-        registry = this;   // Assumes singleton registry
 
         VelocityRender velocity = ServiceConfig.get().getServiceAs(Registry.VELOCITY_SERVICE, VelocityRender.class);
         if (velocity != null) {
@@ -128,6 +143,28 @@ public class Registry extends ServiceBase implements Service {
                 forwarder.register(fr);
             }
             forwarder.updateConfig();
+        }
+    }
+
+    private void registerSystemFile(String file) {
+        Model model = ModelFactory.createDefaultModel();
+        if (file.endsWith(".ttl")) {
+            FileManager.get().readModel(model, file, getBaseURI() + "/system/", "Turtle");
+        } else {
+            FileManager.get().readModel(model, file, getBaseURI() + "/system/", "RDF/XML");
+        }
+        MultivaluedMap<String, String> parameters = UriComponent.decodeQuery("batch-managed&update&status=stable", true);
+        Command command = Registry.get().make( Operation.Register, "system", parameters);
+        command.setPayload( model );
+        try {
+            Response response = command.execute();
+            if (response.getStatus() >= 400) {
+                log.error("Bootstrap error: " + response.getEntity());
+            }
+        } catch (WebApiException e) {
+            log.error("Bootstrap error: " + e.getResponse().getEntity());
+        } catch (Exception e) {
+            log.error("Bootstrap error: " + e);
         }
     }
 

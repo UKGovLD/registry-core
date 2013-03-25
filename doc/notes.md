@@ -36,32 +36,35 @@
 
    * create void description for registers
    * creating of void:example from early registrations
-   * validation of completeness of a Register spec
-   * completion of void description
    * If RI includes status value then need to authorize status update as well
    * caching control headers
    * e-tag support
-   * Validation hooks
 
    * Validate delegations - relative to server base, legal java URI, if server code it is a valid integer and valid range
+   * Validation of delegation record needs to include testing have pair sp or po
 
    * Change registration code to include other axioms in the definition graph? Basically remove the RegisterItem (if any) from the graph and keep the rest ?
 
    * Search should include search over federated endpoints
 
-   * Validation of delegation record needs to include testing have pair sp or po
-
-   * Table view of delegated register should probably do server side paging and sorting
    * Cache management of delegated registers needs work, in fact all of cache management needs work - doesn't function through UI-
 
    * logging is seeing the nginx proxy, the requestor forwarding is getting lost
+
+   * Support for batch-registration that includes register + items (batch-referenced?)
+     Use that for system bootstrap of prefixes and bulk-types
 
 ## UI Stack
 
    * faceted filter on search results
    * inject resource labels into results models, need a label utility (caching?) which handles that and knows about prefixes and registered ontologies
    * show register at an earlier time - would be nice to have a timeline widget for this
-   * do a favicon
+
+   * Per-register sets of registration forms
+
+   * Customization register and item views (whole override or just tabbed-field override. Definable by register of templates.
+
+   * Need to set velocity into production mode for full deployment.
 
 ## Extensions
 

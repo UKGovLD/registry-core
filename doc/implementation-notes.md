@@ -12,7 +12,7 @@ So the root register itself is `http://registry/` which makes for a lot of confu
 
 RDF doesn't have a notion of relative address but we need something that smells like a relative address in the payloads so that the payload can be independent of registry and register.
 
-In principle we ought to use the target URL to which the payload is sent as the baseURL for parsing. However, we can set a payload to the parent URL (e.g. the register when registering a child item) and to the child URL itself (when doing an update). The latter is arguably a deisgn flaw in the API but one that is useful.
+In principle we ought to use the target URL to which the payload is sent as the baseURL for parsing. However, we can set a payload to the parent URL (e.g. the register when registering a child item) and to the child URL itself (when doing an update). The latter is arguably a design flaw in the API but one that is useful.
 
-Currently solution is to always parse relative to a dummy URI and then have analysis code in RegisterItem to handle the different cases. This is fragile.
+Current solution involves constructing "intended" base URL differently for POST to registers and PUT/PATCH to items
 

@@ -1,0 +1,33 @@
+## Render a RDF resource entry form
+## $spec       - the RDFWrappedNode defining the form
+## $register   - the register to which the form should be sent
+
+<form class="form-horizontal ajax-form" action="#linkhref($register)" method="post">
+  <input type="hidden" name="action" value="register-inline" />
+  <input type="hidden" name="form-type" value="$spec.uRI" />
+
+  <p>
+      $spec.getPropertyValue("ui:tooltip").lexicalForm
+  </p>
+
+  #foreach($field in $spec.getPropertyValue("ui:formFields").asList())
+    #set($notation=$field.getPropertyValue("skos:notation").lexicalForm)
+    <div class="control-group">
+      <label class="control-label popinfo" for="$notation"  data-trigger="hover" data-placement="bottom"
+                 data-content="$field.getPropertyValue("ui:tooltip").lexicalForm">$field.name</label>
+      <div class="controls">
+        #if($field.hasResourceValue("ui:fieldType", "ui:labelField"))
+          <input type="text" name="$notation" id="$notation" placeholder="$field.name"></input>
+        #elseif($field.hasResourceValue("ui:fieldType", "ui:textField"))
+          <textarea rows="2" name="$notation" id="$notation" placeholder="$field.name"></textarea>
+        #elseif($field.hasResourceValue("ui:fieldType", "ui:anyURIField"))
+          <input class="input-large popinfo" type="text" name="$notation" id="$notation" placeholder="$field.name"
+            data-trigger="hover" data-placement="bottom" data-content="URI, can use prefixes, separate multiple values with ','."></input>
+        #end
+      </div>
+    </div>
+
+  #end
+
+  <button class="btn">Create and register</button>
+</form>
