@@ -11,6 +11,7 @@ package com.epimorphics.registry.core;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +29,7 @@ import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.server.core.Service;
 import com.epimorphics.server.core.ServiceBase;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.util.FileManager;
 import com.hp.hpl.jena.util.iterator.Filter;
 import com.hp.hpl.jena.vocabulary.RDF;
 
@@ -159,7 +161,19 @@ public class ForwardingServiceImpl extends ServiceBase implements ForwardingServ
                 }
                 file.close();
                 
-                Runtime.getRuntime().exec(new String[]{ "/usr/bin/sudo", script});
+                Process process = Runtime.getRuntime().exec(new String[]{ "/usr/bin/sudo", script});
+                String errors = "";
+                InputStream errorstream = process.getErrorStream();
+                if (errorstream != null) {
+                    errors =  FileManager.get().readWholeFileAsUTF8(errorstream);
+                    errorstream.close();
+                }
+                int exitcode = process.waitFor();
+                if (exitcode != 0) {
+                    log.error("Failed to update nginx proxy config (code: " + exitcode + ") " + errors);
+                } else {
+                    log.info("Updated proxy configuration");
+                }
             } catch (Exception e) {
                 log.error("Fail to write or invoke new proxy configuration", e);
             }

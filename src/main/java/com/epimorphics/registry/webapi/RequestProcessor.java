@@ -225,10 +225,10 @@ public class RequestProcessor extends BaseEndpoint {
             target = Registry.get().getBaseURI() + (target.isEmpty() ? "/" : "/" + target + "/");
             Resource r = UiForm.create(form, target);
 
-            // TEMP debug
-            System.out.println("Form created resource:");
-            r.getModel().setNsPrefixes(Prefixes.get());
-            r.getModel().write(System.out, "Turtle");
+//            // TEMP debug
+//            System.out.println("Form created resource:");
+//            r.getModel().setNsPrefixes(Prefixes.get());
+//            r.getModel().write(System.out, "Turtle");
 
             Command command = makeCommand( Operation.Register );
             command.setPayload( r.getModel() );
