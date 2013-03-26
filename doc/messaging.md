@@ -12,9 +12,9 @@ This notification might be sent direct to an end user via email but may also nee
 
 ### Replication
 
-A complete message stream of updates could be used to enable subscribes to maintain an up to date replica of the registry contents. This might be used internally to support scaled registry access (single writer master, multiple replicas for reading), or secondary indexes (e.g. aggregated text search or a spatial index).
+A complete message stream of updates could be used to enable subscribers to maintain an up-to-date replica of the registry contents. This might be used internally to support scaled registry access (single writer master, multiple replicas for reading), or secondary indexes (e.g. aggregated text search or a spatial index).
 
-Indeed this could be used internal as an alternative way to maintain the free text index.
+Indeed this could be used internally as an alternative way to maintain the free text index.
 
 ### Asynchronous processing
 
@@ -44,6 +44,36 @@ We could address all of these by including a messaging solution such as ActiveMQ
 
 Is this sensible reuse or overkill?
 
+## Design notes if using messaging
+
+### Clients
+
+#### Logger
+
+Record all updates to file system to allow restore from time point.
+
+#### Web watcher
+
+View recent changes, subscribes to all, keeps windowed history, provides websocket based live UI.
+
+#### Notifier
+
+Notifies any watchers of the register (or register parents?)
+
+Can take specification of pattern to match (type, category, arbitrary SPARQL?)
+
+Should these be specified via a new web API or as metadata on the register?
+
+#### Process dispatcher
+
+Subscribes to all registrations, matches trigger pattern (e.g. all things of type void:Dataset) and queues event on a process queue for one or more process workers to handle.
+
+### Topic structure?
+
+Can we use the URI structure as the topic structure, does that scale?
+
+    /action/reg/subreg/.../item
+
 ## Random triggered thoughts ...
 
 ### Attachments
@@ -54,5 +84,5 @@ Simple metadata values can just be attached to the RegisterItem already. However
 
 ### Processing hooks
 
-An orthoganal form of extension that we need is to ability to attach view processors which can be trigger by mime type and query parameters. Would the plug in mechanisms for these relate to those for plugging in notifiers?
+An orthoganal form of extension that we need is the ability to attach view processors which can be trigger by mime type and query parameters. Would the plug in mechanisms for these relate to those for plugging in notifiers?
 
