@@ -108,4 +108,3 @@ kill -HUP `cat /var/run/nginx.pid`
     include /var/local/registry/proxy-*.conf ;
 ]]]
 
-

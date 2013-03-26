@@ -150,14 +150,14 @@ reg:category a owl:ObjectProperty;
 reg:notation    a owl:DatatypeProperty;
     rdfs:label "notation"@en;
     rdfs:comment "A short text string which can be used to denote the register item. Must be unique within the register. If available it should be used as the path segment, relative to the parent register, for the RegisterItem (and for the item itself, if managed). Restricted to be a syntactically legal URI segment (i.e. *pchar)."@en;
-    rdfs:domain reg:ItemRecord;
+    rdfs:domain reg:RegisterItem;
     rdfs:range  xsd:string;
     .
 
 reg:itemClass    a owl:ObjectProperty;
     rdfs:label "item class"@en;
     rdfs:comment "The type of the entity that this record is about. Note that it may be possible to register a non-RDF resource in which case this property provides a way to state the intended class of the entity even though no direct RDF assertion of type is available."@en;
-    rdfs:domain reg:ItemRecord;
+    rdfs:domain reg:RegisterItem;
     rdfs:range  rdfs:Class;
     .
 
