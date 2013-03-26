@@ -46,6 +46,12 @@ Is this sensible reuse or overkill?
 
 ## Design notes if using messaging
 
+### Topic structure
+
+It would be tempting to have a topic structure that reflected the register hierarchy. However, in JMS et all creating a topic seems to be an expensive option. The AWS SNS limits a user to 100 topics.
+
+So probably there is just one initial topic "updates" which recievs everything at is up to subscribers to do the filtering and selective notification.
+
 ### Clients
 
 #### Logger
@@ -60,19 +66,17 @@ View recent changes, subscribes to all, keeps windowed history, provides websock
 
 Notifies any watchers of the register (or register parents?)
 
-Can take specification of pattern to match (type, category, arbitrary SPARQL?)
+Can take specification of pattern to match (type, category, arbitrary SPARQL?).
 
-Should these be specified via a new web API or as metadata on the register?
+Should these be specified via a new web API or as metadata on the register? Metadata on a register is tempting but that's then a privacy issue and scalability issue. Probably needs to be a separate API and need a separate means to store user/notification information. User state needs to be stored to make that work. Sigh.
+
+Email notification can be done with Amazon SES, will need an IAM key with just the right permissions and that key mustn't go in the source, needs to be separately securely uploaded to a standard location on the instance.
+See [AWS example](http://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-using-sdk-java.html)
 
 #### Process dispatcher
 
 Subscribes to all registrations, matches trigger pattern (e.g. all things of type void:Dataset) and queues event on a process queue for one or more process workers to handle.
 
-### Topic structure?
-
-Can we use the URI structure as the topic structure, does that scale?
-
-    /action/reg/subreg/.../item
 
 ## Random triggered thoughts ...
 
