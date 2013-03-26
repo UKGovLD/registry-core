@@ -50,7 +50,7 @@
             <p>Page is loading ...</p>
           </div>
           <div class="tab-pane" id="metadata">
-             #restable($register, "table-striped table-condensed")
+             #restable($itemForReg, "table-striped table-condensed")
           </div>
           <div class="tab-pane" id="administer">
             <p>To be implemented.</p>
@@ -112,7 +112,7 @@
     #statusSet("register-status-dialog", "Set status register itself to ...", $itemForReg, $itemForReg)
 
     #parse("registration.vm")
-    
+
   </div>
 
 </div>
