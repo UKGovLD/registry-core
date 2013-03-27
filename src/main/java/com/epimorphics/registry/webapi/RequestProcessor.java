@@ -11,8 +11,8 @@
 
 package com.epimorphics.registry.webapi;
 
-import static com.epimorphics.webapi.marshalling.RDFXMLMarshaller.MIME_RDFXML;
 import static com.epimorphics.webapi.marshalling.RDFXMLMarshaller.FULL_MIME_RDFXML;
+import static com.epimorphics.webapi.marshalling.RDFXMLMarshaller.MIME_RDFXML;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -46,7 +46,6 @@ import com.epimorphics.registry.core.MatchResult;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.util.JSONLDSupport;
 import com.epimorphics.registry.util.PATCH;
-import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.util.UiForm;
 import com.epimorphics.server.core.ServiceConfig;
 import com.epimorphics.server.templates.VelocityRender;
@@ -311,9 +310,9 @@ public class RequestProcessor extends BaseEndpoint {
     public Model getBodyModel(HttpHeaders hh, InputStream body, boolean isPOST) {
         MediaType mediaType = hh.getMediaType();
         if (mediaType == null) return null;
-        String mime = mediaType.toString();
+        String mime = mediaType.getType() + "/" + mediaType.getSubtype();   // ignore parameters
 
-        if (mediaType.equals(JSONLDSupport.MT_JSONLD)) {
+        if (mime.equals(JSONLDSupport.MIME_JSONLD)) {
             return JSONLDSupport.readModel(baseURI(isPOST), body);
 
         } else {
