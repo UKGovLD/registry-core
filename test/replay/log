@@ -1,0 +1,221 @@
+HTTP/1.1 100 Continue
+
+HTTP/1.1 404 Not Found
+Server: Apache-Coyote/1.1
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Date: Wed, 27 Mar 2013 14:04:22 GMT
+
+No such registerHTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+Location: http://ukgovld-registry.dnsalias.net/_codes
+Content-Length: 0
+Date: Wed, 27 Mar 2013 14:04:22 GMT
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 403 Forbidden
+Server: Apache-Coyote/1.1
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Date: Wed, 27 Mar 2013 14:04:22 GMT
+
+Item already registered at request location: http://ukgovld-registry.dnsalias.net/codes/_commonHTTP/1.1 100 Continue
+
+HTTP/1.1 403 Forbidden
+Server: Apache-Coyote/1.1
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Date: Wed, 27 Mar 2013 14:04:22 GMT
+
+Item already registered at request location: http://ukgovld-registry.dnsalias.net/codes/_commonHTTP/1.1 400 Bad Request
+Server: Apache-Coyote/1.1
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Date: Wed, 27 Mar 2013 14:04:22 GMT
+Connection: close
+
+Request would change the URI of the registered entity, which is disallowed for items which have been acceptedHTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+Location: http://ukgovld-registry.dnsalias.net/codes/_grib2
+Content-Length: 0
+Date: Wed, 27 Mar 2013 14:04:22 GMT
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+Location: http://ukgovld-registry.dnsalias.net/codes/bufr4/_codeflag
+Content-Length: 0
+Date: Wed, 27 Mar 2013 14:04:22 GMT
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 400 Bad Request
+Server: Apache-Coyote/1.1
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Date: Wed, 27 Mar 2013 14:04:22 GMT
+Connection: close
+
+Entity does not have one of the types required by this register: http://codes.wmo.int/bufr4/structure/core#HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+Location: http://ukgovld-registry.dnsalias.net/system/prefixes/_common-core
+Content-Length: 0
+Date: Wed, 27 Mar 2013 14:04:23 GMT
+
+HTTP/1.1 400 Bad Request
+Server: Apache-Coyote/1.1
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Date: Wed, 27 Mar 2013 14:04:23 GMT
+Connection: close
+
+Missing required property (rdf:type or rdfs:label) on http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086HTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+Location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/_0-20-086
+Content-Length: 0
+Date: Wed, 27 Mar 2013 14:04:23 GMT
+
+HTTP/1.1 404 Not Found
+Server: Apache-Coyote/1.1
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Date: Wed, 27 Mar 2013 14:04:23 GMT
+
+No such registerHTTP/1.1 100 Continue
+
+HTTP/1.1 404 Not Found
+Server: Apache-Coyote/1.1
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Date: Wed, 27 Mar 2013 14:04:23 GMT
+
+No such registerHTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+Location: http://ukgovld-registry.dnsalias.net/system/prefixes/_unit
+Content-Length: 0
+Date: Wed, 27 Mar 2013 14:04:23 GMT
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 404 Not Found
+Server: Apache-Coyote/1.1
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Date: Wed, 27 Mar 2013 14:04:23 GMT
+
+No such registerHTTP/1.1 400 Bad Request
+Server: Apache-Coyote/1.1
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Date: Wed, 27 Mar 2013 14:04:23 GMT
+Connection: close
+
+Could not find unique entity root to registerHTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+Location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/_0
+Content-Length: 0
+Date: Wed, 27 Mar 2013 14:04:23 GMT
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+Location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/_1
+Content-Length: 0
+Date: Wed, 27 Mar 2013 14:04:24 GMT
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+Location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/_2
+Content-Length: 0
+Date: Wed, 27 Mar 2013 14:04:24 GMT
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+Location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/_3
+Content-Length: 0
+Date: Wed, 27 Mar 2013 14:04:24 GMT
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+Location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/_4
+Content-Length: 0
+Date: Wed, 27 Mar 2013 14:04:24 GMT
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+Location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/_5
+Content-Length: 0
+Date: Wed, 27 Mar 2013 14:04:24 GMT
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+Location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/_15
+Content-Length: 0
+Date: Wed, 27 Mar 2013 14:04:24 GMT
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 404 Not Found
+Server: Apache-Coyote/1.1
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Date: Wed, 27 Mar 2013 14:04:24 GMT
+
+No such registerHTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+Location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/_0-22-061
+Content-Length: 0
+Date: Wed, 27 Mar 2013 14:04:25 GMT
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 400 Bad Request
+Server: Apache-Coyote/1.1
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Date: Wed, 27 Mar 2013 14:04:25 GMT
+Connection: close
+
+Missing required property (rdf:type or rdfs:label) on http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/15HTTP/1.1 100 Continue
+
+HTTP/1.1 403 Forbidden
+Server: Apache-Coyote/1.1
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Date: Wed, 27 Mar 2013 14:04:25 GMT
+
+Item already registered at request location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/_3HTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+Location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/_15
+Content-Length: 0
+Date: Wed, 27 Mar 2013 14:04:25 GMT
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+Location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/_6
+Content-Length: 0
+Date: Wed, 27 Mar 2013 14:04:25 GMT
+

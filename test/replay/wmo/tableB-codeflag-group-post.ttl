@@ -1,0 +1,34 @@
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dct:     <http://purl.org/dc/terms/> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix reg:     <http://purl.org/linked-data/registry#> .
+@prefix ldp:     <http://www.w3.org/ns/ldp#> .
+
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/bufr4/b> ] ;
+    reg:itemClass reg:Register ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4> ;
+    reg:status reg:statusStable ;
+    reg:notation "b" ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/bufr4/b>
+    a reg:Register ;
+    rdfs:label "BUFR Table B"@en ;
+    dct:description "WMO No. 306 Vol I.2 FM 94 BUFR (edition 4) Table B."@en ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag> ] ;
+    reg:itemClass reg:Register ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4> ;
+    reg:status reg:statusStable ;
+    reg:notation "codeflag" ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag>
+    a reg:Register ;
+    rdfs:label "BUFR Code- and Flag-tables"@en ;
+    dct:description "WMO No. 306 Vol I.2 FM 94 BUFR (edition 4) Code- and Flag-tables."@en ;
+    .

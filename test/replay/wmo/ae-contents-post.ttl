@@ -1,0 +1,178 @@
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dct:     <http://purl.org/dc/terms/> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix reg:     <http://purl.org/linked-data/registry#> .
+@prefix ldp:     <http://www.w3.org/ns/ldp#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix qudt:	 <http://qudt.org/1.1/schema/qudt#> .
+@prefix unit:	 <http://qudt.org/1.1/vocab/unit#> .
+@prefix common-core: <http://codes.wmo.int/common/structure/core#> .
+
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/cloudDistributionForAviation> ] ;
+    reg:itemClass owl:Class ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae> ;
+    reg:status reg:statusExperimental ;
+    reg:notation "cloudDistributionForAviation" ;
+    common-core:Status common-core:statusValidation ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/cloudDistributionForAviation>
+    a owl:Class ;
+    rdfs:label "Cloud distribution for aviation"@en ;
+    rdfs:subClassOf skos:Concept ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/significantWeather> ] ;
+    reg:itemClass owl:Class ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae> ;
+    reg:status reg:statusExperimental ;
+    reg:notation "significantWeather" ;
+    common-core:Status common-core:statusValidation ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/significantWeather>
+    a owl:Class ;
+    rdfs:label "Significant present or forecast weather"@en ;
+    dct:description "Weather of significance to aeronautical operations observered at or forecast for an aerodrome."@en ;
+    rdfs:subClassOf skos:Concept ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/significantRecentWeatherPhenomenon> ] ;
+    reg:itemClass owl:Class ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae> ;
+    reg:status reg:statusExperimental ;
+    reg:notation "significantRecentWeatherPhenomenon" ;
+    common-core:Status common-core:statusValidation ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/significantRecentWeatherPhenomenon>
+    a owl:Class ;
+    rdfs:label "Significant recent weather"@en ;
+    dct:description "Weather of significance to aeronautical operations observered at an aerodrome within the previous hour."@en ;
+    rdfs:subClassOf skos:Concept ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/prevailingHorizontalVisibility> ] ;
+    reg:itemClass qudt:QuantityKind ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae> ;
+    reg:status reg:statusExperimental ;
+    reg:notation "prevailingHorizontalVisibility" ;
+    common-core:Status common-core:statusValidation ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/prevailingHorizontalVisibility>
+    a qudt:QuantityKind ;
+    rdfs:label "Prevailing horizontal visibility"@en ;
+    dct:description "The greatest visibility value observed which is reached within at least half the horizon circle or within at least half of the surface of the aerodrome. These areas could comprise contiguous or non-contiguous sectors."@en ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayVisualRangeRvr> ] ;
+    reg:itemClass qudt:QuantityKind ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae> ;
+    reg:status reg:statusExperimental ;
+    reg:notation "runwayVisualRangeRvr" ;
+    common-core:Status common-core:statusValidation ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayVisualRangeRvr>
+    a qudt:QuantityKind ;
+    rdfs:label "Runway visual range (RVR)"@en ;
+    dct:description "The range [distance] over which the pilot of an aircraft on the centre line of a runway can see the runway surface markings or the lights delineating the runway or identifying its centre line."@en ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/verticalVisibility> ] ;
+    reg:itemClass qudt:QuantityKind ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae> ;
+    reg:status reg:statusExperimental ;
+    reg:notation "verticalVisibility" ;
+    common-core:Status common-core:statusValidation ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/verticalVisibility>
+    a qudt:QuantityKind ;
+    rdfs:label "Vertical visibility"@en ;
+    dct:description "Vertical visibility is defined as the vertical visual range into an obscuring medium."@en ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/minimumHorizontalVisibility> ] ;
+    reg:itemClass qudt:QuantityKind ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae> ;
+    reg:status reg:statusExperimental ;
+    reg:notation "minimumHorizontalVisibility" ;
+    common-core:Status common-core:statusValidation ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/minimumHorizontalVisibility>
+    a qudt:QuantityKind ;
+    rdfs:label "Minimum horizontal visibility (for aeronautical purposes)"@en ;
+    dct:description "Visibility for aeronautical purposes; the greater of: (a) the greatest distance at which a black object of suitable dimensions, situated near the ground, can be seen and recognised when observed against a bright background; or (b) the greatest distance at which lights in the vicinity of 1000 candelas can be seen and identified against an unlit background."@en ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/depthOfRunwayDeposit> ] ;
+    reg:itemClass qudt:QuantityKind ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae> ;
+    reg:status reg:statusExperimental ;
+    reg:notation "depthOfRunwayDeposit" ;
+    common-core:Status common-core:statusValidation ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/depthOfRunwayDeposit>
+    a qudt:QuantityKind ;
+    rdfs:label "Depth of runway deposit"@en ;
+    dct:description "Depth of deposit on surface of runway."@en ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayFrictionCoefficient> ] ;
+    reg:itemClass qudt:QuantityKind ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae> ;
+    reg:status reg:statusExperimental ;
+    reg:notation "runwayFrictionCoefficient" ;
+    common-core:Status common-core:statusValidation ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayFrictionCoefficient>
+    a qudt:QuantityKind ;
+    rdfs:label "Runway friction coefficient"@en ;
+    dct:description "Quantitative assessment of friction coefficient of runway surface."@en ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayContamination> ] ;
+    reg:itemClass qudt:QuantityKind ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae> ;
+    reg:status reg:statusExperimental ;
+    reg:notation "runwayContamination" ;
+    common-core:Status common-core:statusValidation ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayContamination>
+    a qudt:QuantityKind ;
+    rdfs:label "Runway contamination"@en ;
+    dct:description "Proportion of runway surface that is contaminated - expressed as a percentage of the total runway area."@en ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayDeposits> ] ;
+    reg:itemClass owl:Class ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae> ;
+    reg:status reg:statusExperimental ;
+    reg:notation "runwayDeposits" ;
+    common-core:Status common-core:statusValidation ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayDeposits>
+    a owl:Class ;
+    rdfs:label "Runway deposits"@en ;
+    dct:description "Type of deposit on runway."@en ;
+    rdfs:subClassOf skos:Concept ;
+    .

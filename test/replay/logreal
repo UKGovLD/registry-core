@@ -1,0 +1,245 @@
+HTTP/1.1 100 Continue
+
+HTTP/1.1 404 Not Found
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:47 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+
+No such registerHTTP/1.1 201 Created
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:47 GMT
+Content-Length: 0
+Connection: keep-alive
+Location: http://ukgovld-registry.dnsalias.net/_codes
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 403 Forbidden
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:48 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+
+Item already registered at request location: http://ukgovld-registry.dnsalias.net/codes/_commonHTTP/1.1 100 Continue
+
+HTTP/1.1 403 Forbidden
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:48 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+
+Item already registered at request location: http://ukgovld-registry.dnsalias.net/codes/_commonHTTP/1.1 400 Bad Request
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:48 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+
+Request would change the URI of the registered entity, which is disallowed for items which have been acceptedHTTP/1.1 100 Continue
+
+HTTP/1.1 403 Forbidden
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:48 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+
+Item already registered at request location: http://ukgovld-registry.dnsalias.net/codes/_bufr4HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:49 GMT
+Content-Length: 0
+Connection: keep-alive
+Location: http://ukgovld-registry.dnsalias.net/codes/bufr4/_b
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 400 Bad Request
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:49 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+
+Entity does not have one of the types required by this register: http://codes.wmo.int/bufr4/structure/core#HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:49 GMT
+Content-Length: 0
+Connection: keep-alive
+Location: http://ukgovld-registry.dnsalias.net/system/prefixes/_bufr4-core
+
+HTTP/1.1 400 Bad Request
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:50 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+
+Missing required property (rdf:type or rdfs:label) on http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086HTTP/1.1 201 Created
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:50 GMT
+Content-Length: 0
+Connection: keep-alive
+Location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/_0-20-086
+
+HTTP/1.1 404 Not Found
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:50 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+
+No such registerHTTP/1.1 100 Continue
+
+HTTP/1.1 404 Not Found
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:50 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+
+No such registerHTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:50 GMT
+Content-Length: 0
+Connection: keep-alive
+Location: http://ukgovld-registry.dnsalias.net/system/prefixes/_qudt
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 404 Not Found
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:51 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+
+No such registerHTTP/1.1 400 Bad Request
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:51 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+
+Could not find unique entity root to registerHTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:51 GMT
+Content-Length: 0
+Connection: keep-alive
+Location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/_0
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:51 GMT
+Content-Length: 0
+Connection: keep-alive
+Location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/_1
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:52 GMT
+Content-Length: 0
+Connection: keep-alive
+Location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/_2
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:52 GMT
+Content-Length: 0
+Connection: keep-alive
+Location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/_3
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:52 GMT
+Content-Length: 0
+Connection: keep-alive
+Location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/_4
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:52 GMT
+Content-Length: 0
+Connection: keep-alive
+Location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/_5
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:53 GMT
+Content-Length: 0
+Connection: keep-alive
+Location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/_8
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 404 Not Found
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:53 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+
+No such registerHTTP/1.1 201 Created
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:53 GMT
+Content-Length: 0
+Connection: keep-alive
+Location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/_0-22-061
+
+HTTP/1.1 100 Continue
+
+HTTP/1.1 400 Bad Request
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:54 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+
+Missing required property (rdf:type or rdfs:label) on http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/15HTTP/1.1 100 Continue
+
+HTTP/1.1 403 Forbidden
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:54 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+
+Item already registered at request location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/_4HTTP/1.1 403 Forbidden
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:54 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+
+Item already registered at request location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/_15HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Server: nginx/1.2.6
+Date: Wed, 27 Mar 2013 14:30:55 GMT
+Content-Length: 0
+Connection: keep-alive
+Location: http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/_6
+

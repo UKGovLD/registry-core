@@ -1,0 +1,48 @@
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dct:     <http://purl.org/dc/terms/> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix reg:     <http://purl.org/linked-data/registry#> .
+@prefix ldp:     <http://www.w3.org/ns/ldp#> .
+
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/common> ] ;
+    reg:itemClass reg:Register ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes> ;
+    reg:status reg:statusStable ;
+    reg:notation "common" ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/common>
+    a reg:Register ;
+    rdfs:label "Common"@en ;
+    dct:description "WMO No. 306 Vol I.2 Common Features."@en ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/bufr4> ] ;
+    reg:itemClass reg:Register ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes> ;
+    reg:status reg:statusStable ;
+    reg:notation "bufr4" ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/bufr4>
+    a reg:Register ;
+    rdfs:label "BUFR4"@en ;
+    dct:description "WMO No. 306 Vol I.2 FM 94 BUFR (edition 4)."@en ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/grib2> ] ;
+    reg:itemClass reg:Register ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes> ;
+    reg:status reg:statusStable ;
+    reg:notation "grib2" ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/grib2>
+    a reg:Register ;
+    rdfs:label "GRIB2"@en ;
+    dct:description "WMO No. 306 Vol I.2 FM 92 GRIB (edition 2)."@en ;
+    .

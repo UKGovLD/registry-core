@@ -1,0 +1,273 @@
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dct:     <http://purl.org/dc/terms/> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix reg:     <http://purl.org/linked-data/registry#> .
+@prefix ldp:     <http://www.w3.org/ns/ldp#> .
+@prefix bufr4-core: <http://codes.wmo.int/bufr4/structure/core#> .
+
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/0> ] ;
+    reg:itemClass <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061> ;
+    reg:status reg:statusStable ;
+    reg:notation "0" ;
+    bufr4-core:No 3446 ;
+    bufr4-core:FXY "022061" ;
+    bufr4-core:Status bufr4-core:statusOperational ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/0>
+    a <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    rdfs:label "Calm (glassy)"@en ;
+    dct:description "Wave height in metres: 0"@en ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/1> ] ;
+    reg:itemClass <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061> ;
+    reg:status reg:statusStable ;
+    reg:notation "1" ;
+    bufr4-core:No 3447 ;
+    bufr4-core:FXY "022061" ;
+    bufr4-core:Status bufr4-core:statusOperational ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/1>
+    a <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    rdfs:label "Calm (rippled)"@en ;
+    dct:description "Wave height in metres: 0 - 0.1"@en ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/2> ] ;
+    reg:itemClass <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061> ;
+    reg:status reg:statusStable ;
+    reg:notation "2" ;
+    bufr4-core:No 3448 ;
+    bufr4-core:FXY "022061" ;
+    bufr4-core:Status bufr4-core:statusOperational ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/2>
+    a <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    rdfs:label "Smooth (wavelets)"@en ;
+    dct:description "Wave height in metres: 0.1 - 0.5"@en ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/3> ] ;
+    reg:itemClass <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061> ;
+    reg:status reg:statusStable ;
+    reg:notation "3" ;
+    bufr4-core:No 3449 ;
+    bufr4-core:FXY "022061" ;
+    bufr4-core:Status bufr4-core:statusOperational ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/3>
+    a <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    rdfs:label "Slight"@en ;
+    dct:description "Wave height in metres: 0.5 - 1.25"@en ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/4> ] ;
+    reg:itemClass <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061> ;
+    reg:status reg:statusStable ;
+    reg:notation "4" ;
+    bufr4-core:No 3450 ;
+    bufr4-core:FXY "022061" ;
+    bufr4-core:Status bufr4-core:statusOperational ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/4>
+    a <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    rdfs:label "Moderate"@en ;
+    dct:description "Wave height in metres: 1.25 - 2.5"@en ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/5> ] ;
+    reg:itemClass <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061> ;
+    reg:status reg:statusStable ;
+    reg:notation "5" ;
+    bufr4-core:No 3451 ;
+    bufr4-core:FXY "022061" ;
+    bufr4-core:Status bufr4-core:statusOperational ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/5>
+    a <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    rdfs:label "Rough"@en ;
+    dct:description "Wave height in metres: 2.5 - 4"@en ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/6> ] ;
+    reg:itemClass <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061> ;
+    reg:status reg:statusStable ;
+    reg:notation "6" ;
+    bufr4-core:No 3452 ;
+    bufr4-core:FXY "022061" ;
+    bufr4-core:Status bufr4-core:statusOperational ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/6>
+    a <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    rdfs:label "Very rough"@en ;
+    dct:description "Wave height in metres: 4 - 6"@en ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/7> ] ;
+    reg:itemClass <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061> ;
+    reg:status reg:statusStable ;
+    reg:notation "7" ;
+    bufr4-core:No 3453 ;
+    bufr4-core:FXY "022061" ;
+    bufr4-core:Status bufr4-core:statusOperational ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/7>
+    a <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    rdfs:label "High"@en ;
+    dct:description "Wave height in metres: 6 - 9"@en ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/8> ] ;
+    reg:itemClass <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061> ;
+    reg:status reg:statusStable ;
+    reg:notation "8" ;
+    bufr4-core:No 3454 ;
+    bufr4-core:FXY "022061" ;
+    bufr4-core:Status bufr4-core:statusOperational ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/8>
+    a <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    rdfs:label "Very high"@en ;
+    dct:description "Wave height in metres: 9 - 14"@en ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/9> ] ;
+    reg:itemClass <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061> ;
+    reg:status reg:statusStable ;
+    reg:notation "9" ;
+    bufr4-core:No 3455 ;
+    bufr4-core:FXY "022061" ;
+    bufr4-core:Status bufr4-core:statusOperational ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/9>
+    a <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    rdfs:label "Phenomenal"@en ;
+    dct:description "Wave height in metres: Over 14"@en ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition [
+        reg:entity [
+            a <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+            rdfs:label "Reserved"@en ;
+            dct:description "Reserved for future use."@en ;
+        ] ;
+    ] ;
+    reg:itemClass <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061> ;
+    reg:notation "10" ;
+    bufr4-core:No 3456 ;
+    bufr4-core:FXY "022061" ;
+    bufr4-core:Status bufr4-core:statusOperational ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition [
+        reg:entity [
+            a <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+            rdfs:label "Reserved"@en ;
+            dct:description "Reserved for future use."@en ;
+        ] ;
+    ] ;
+    reg:itemClass <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061> ;
+    reg:notation "11" ;
+    bufr4-core:No 3456 ;
+    bufr4-core:FXY "022061" ;
+    bufr4-core:Status bufr4-core:statusOperational ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition [
+        reg:entity [
+            a <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+            rdfs:label "Reserved"@en ;
+            dct:description "Reserved for future use."@en ;
+        ] ;
+    ] ;
+    reg:itemClass <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061> ;
+    reg:notation "12" ;
+    bufr4-core:No 3456 ;
+    bufr4-core:FXY "022061" ;
+    bufr4-core:Status bufr4-core:statusOperational ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition [
+        reg:entity [
+            a <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+            rdfs:label "Reserved"@en ;
+            dct:description "Reserved for future use."@en ;
+        ] ;
+    ] ;
+    reg:itemClass <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061> ;
+    reg:notation "13" ;
+    bufr4-core:No 3456 ;
+    bufr4-core:FXY "022061" ;
+    bufr4-core:Status bufr4-core:statusOperational ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition [
+        reg:entity [
+            a <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+            rdfs:label "Reserved"@en ;
+            dct:description "Reserved for future use."@en ;
+        ] ;
+    ] ;
+    reg:itemClass <http://ukgovld-registry.dnsalias.net/codes/common/c-15/oc/seaState> ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061> ;
+    reg:notation "14" ;
+    bufr4-core:No 3456 ;
+    bufr4-core:FXY "022061" ;
+    bufr4-core:Status bufr4-core:statusOperational ;
+    .
+[]
+    a reg:RegisterItem ;
+    reg:definition
+        [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/15> ] ;
+    reg:itemClass skos:Concept ;
+    reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061> ;
+    reg:status reg:statusStable ;
+    reg:notation "15" ;
+    bufr4-core:No 3457 ;
+    bufr4-core:FXY "022061" ;
+    bufr4-core:Status bufr4-core:statusOperational ;
+    .
+<http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-22-061/15>
+    a skos:Concept ;
+    rdfs:label "Missing value"@en ;
+    .
