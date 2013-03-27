@@ -237,6 +237,17 @@ public class RegisterItem extends Description {
     }
 
     /**
+     * If the entity is a bNode then skolemize it
+     */
+    public void skolemize() {
+        if (entity != null && entity.isAnon()) {
+            String skolemURI = Registry.get().baseURI + "/.well-known/skolem/" + entity.getId();
+            ResourceUtils.renameResource(entity, skolemURI);
+            entity = entity.getModel().createResource( skolemURI );
+        }
+    }
+
+    /**
      * Flatten versioning information for the register item and, if present, the entity
      */
     public RegisterItem flatten() {

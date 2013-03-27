@@ -152,7 +152,7 @@ public class TestAPI extends TomcatTestBase {
 
         // Check validation of entries in a register with validation constraints
         doValidationChecks();
-        
+
 
 //        System.out.println("Store dump");
 //        ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel().write(System.out, "Turtle");
@@ -565,6 +565,9 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(201, postFileStatus("test/jmt/number-six-reserved-post.ttl", REG1));
         Model m = getModelResponse(REG1+"?status=any&_view=with_metadata");
         validateReservedEntry(m, null, "reserved");
+
+        getModelResponse(REG1+"?status=any&firstPage");   // Fails if bNodes not skolemized
+        getModelResponse(REG1+"?status=any");  // Fails if bNodes not skolemized
 
         assertEquals(204, invoke("PUT", "test/jmt/number-six-update.ttl", REG1+"/_six").getStatus());
         m = getModelResponse(REG1+"?status=any&_view=with_metadata");

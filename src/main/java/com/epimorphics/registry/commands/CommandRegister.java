@@ -269,6 +269,7 @@ public class CommandRegister extends Command {
         }
 
         validateEntity(parent, ri.getEntity());
+        ri.skolemize();
 
         if (statusOverride != null) {
             ri.getRoot().removeAll(RegistryVocab.status);
@@ -324,7 +325,6 @@ public class CommandRegister extends Command {
         if (!foundLegalType) {
             throw new WebApiException(BAD_REQUEST, "Entity does not have one of the types required by this register: " + entity);
         }
-
     }
 
 }
