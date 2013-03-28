@@ -1,0 +1,145 @@
+@prefix bufr4-core:  <http://codes.wmo.int/bufr4/structure/core#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dct:     <http://purl.org/dc/terms/> .
+@prefix reg:     <http://purl.org/linked-data/registry#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix ldp:     <http://www.w3.org/ns/ldp#> .
+
+[]    a       reg:RegisterItem ;
+      bufr4-core:FXY "020086" ;
+      bufr4-core:No 3050 ;
+      bufr4-core:Status bufr4-core:statusOperational ;
+      reg:definition
+              [ reg:entity
+                        [ a       <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayDeposits> ;
+                          rdfs:label "Reserved"@en ;
+                          dct:description "Reserved for future use."@en
+                        ]
+              ] ;
+      reg:itemClass <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayDeposits> ;
+      reg:notation 12 ;
+      reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086> .
+
+<http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/8>
+      a       <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayDeposits> ;
+      rdfs:label "Compact or rolled snow"@en .
+
+[]    a       reg:RegisterItem ;
+      bufr4-core:FXY "020086" ;
+      bufr4-core:No 3050 ;
+      bufr4-core:Status bufr4-core:statusOperational ;
+      reg:definition
+              [ reg:entity
+                        [ a       <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayDeposits> ;
+                          rdfs:label "Reserved"@en ;
+                          dct:description "Reserved for future use."@en
+                        ]
+              ] ;
+      reg:itemClass <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayDeposits> ;
+      reg:notation 13 ;
+      reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086> .
+
+[]    a       reg:RegisterItem ;
+      bufr4-core:FXY "020086" ;
+      bufr4-core:No 3050 ;
+      bufr4-core:Status bufr4-core:statusOperational ;
+      reg:definition
+              [ reg:entity
+                        [ a       <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayDeposits> ;
+                          rdfs:label "Reserved"@en ;
+                          dct:description "Reserved for future use."@en
+                        ]
+              ] ;
+      reg:itemClass <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayDeposits> ;
+      reg:notation 10 ;
+      reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086> .
+
+[]    a       reg:RegisterItem ;
+      bufr4-core:FXY "020086" ;
+      bufr4-core:No 3049 ;
+      bufr4-core:Status bufr4-core:statusOperational ;
+      reg:definition
+              [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/9>
+              ] ;
+      reg:itemClass <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayDeposits> ;
+      reg:notation 9 ;
+      reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086> ;
+      reg:status reg:statusStable .
+
+<http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/7>
+      a       <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayDeposits> ;
+      rdfs:label "Ice"@en .
+
+<http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/9>
+      a       <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayDeposits> ;
+      rdfs:label "Frozen ruts or ridges"@en .
+
+[]    a       reg:RegisterItem ;
+      bufr4-core:FXY "020086" ;
+      bufr4-core:No 3050 ;
+      bufr4-core:Status bufr4-core:statusOperational ;
+      reg:definition
+              [ reg:entity
+                        [ a       <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayDeposits> ;
+                          rdfs:label "Reserved"@en ;
+                          dct:description "Reserved for future use."@en
+                        ]
+              ] ;
+      reg:itemClass <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayDeposits> ;
+      reg:notation 11 ;
+      reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086> .
+
+[]    a       reg:RegisterItem ;
+      bufr4-core:FXY "020086" ;
+      bufr4-core:No 3051 ;
+      bufr4-core:Status bufr4-core:statusOperational ;
+      reg:definition
+              [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/15>
+              ] ;
+      reg:itemClass skos:Concept ;
+      reg:notation 15 ;
+      reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086> ;
+      reg:status reg:statusStable .
+
+[]    a       reg:RegisterItem ;
+      bufr4-core:FXY "020086" ;
+      bufr4-core:No 3047 ;
+      bufr4-core:Status bufr4-core:statusOperational ;
+      reg:definition
+              [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/7>
+              ] ;
+      reg:itemClass <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayDeposits> ;
+      reg:notation 7 ;
+      reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086> ;
+      reg:status reg:statusStable .
+
+[]    a       reg:RegisterItem ;
+      bufr4-core:FXY "020086" ;
+      bufr4-core:No 3050 ;
+      bufr4-core:Status bufr4-core:statusOperational ;
+      reg:definition
+              [ reg:entity
+                        [ a       <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayDeposits> ;
+                          rdfs:label "Reserved"@en ;
+                          dct:description "Reserved for future use."@en
+                        ]
+              ] ;
+      reg:itemClass <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayDeposits> ;
+      reg:notation 14 ;
+      reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086> .
+
+<http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/15>
+      a       <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayDeposits> ;
+      rdfs:label "Missing or not reported (e.g. due to runway clearance in progress)"@en .
+
+[]    a       reg:RegisterItem ;
+      bufr4-core:FXY "020086" ;
+      bufr4-core:No 3048 ;
+      bufr4-core:Status bufr4-core:statusOperational ;
+      reg:definition
+              [ reg:entity <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086/8>
+              ] ;
+      reg:itemClass <http://ukgovld-registry.dnsalias.net/codes/common/c-15/ae/runwayDeposits> ;
+      reg:notation 8 ;
+      reg:register <http://ukgovld-registry.dnsalias.net/codes/bufr4/codeflag/0-20-086> ;
+      reg:status reg:statusStable .

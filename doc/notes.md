@@ -51,8 +51,10 @@
 
    * logging is seeing the nginx proxy, the requestor forwarding is getting lost
 
-   * Support for batch-registration that includes register + items (batch-referenced?)
+   * Support for batch-registration that includes register + items (batch-complex)
      Use that for system bootstrap of prefixes and bulk-types
+
+   * Improve logging so can replay update actions. Currently have mix of full log including read and logging of actions with payloads.
 
 ## UI Stack
 
@@ -74,4 +76,17 @@
 ## Trial deployment notes
 
    * Set baseURI in web.xml and @base in root-register.ttl and system-registers.ttl
+
+
+## Open ID
+
+   * Sample code for Openid4java   https://gist.github.com/jdkanani/4303883
+   * Built in code examples, use comments on the page https://code.google.com/p/openid4java/wiki/SampleConsumer
+   * Standard URILs: Novell=http://novell.com/openid Google=https://www.google.com/accounts/o8/id Yahoo=http://yahoo.com/
+   * Useful google summary page: https://developers.google.com/accounts/docs/OpenID
+
+   * DER ID if login using generic google:   https://www.google.com/accounts/o8/id?id=AItOawnQBYnsRksvzmoKfzHW3NX5_EVBQ7DkbhI
+   * DER ID if login using profile page:  https://profiles.google.com/114719444327647609228
+     Unclear how id in first form relates to ID in second!
+
 
