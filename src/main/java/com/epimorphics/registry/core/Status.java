@@ -23,6 +23,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 public enum Status {
     NotAccepted(RegistryVocab.statusNotAccepted),
     Submitted(RegistryVocab.statusSubmitted),
+    Reserved(RegistryVocab.statusReserved),
     Invalid(RegistryVocab.statusInvalid),
     Accepted(RegistryVocab.statusAccepted),
     Valid(RegistryVocab.statusValid),
@@ -61,7 +62,7 @@ public enum Status {
     }
 
     public boolean isNotAccepted() {
-        return this == Submitted || this == Invalid || this == NotAccepted;
+        return this == Submitted || this == Invalid || this == NotAccepted || this == Reserved ;
     }
 
     public boolean isAccepted() {
@@ -79,7 +80,7 @@ public enum Status {
         if (target == null || target == this) return true;
         switch (target) {
         case NotAccepted:
-            return this == Submitted || this == Invalid;
+            return this == Submitted || this == Invalid || this == Reserved;
         case Accepted:
             return isA(Valid) || isA(Deprecated);
         case Valid:
@@ -95,7 +96,7 @@ public enum Status {
 
     /**
      * Return true of the target status is a legal next state after this status.
-     * The target should be a concrete (leaf) status, other wise will return false.
+     * The target should be a concrete (leaf) status, otherwise will return false.
      */
     public boolean legalNextState(Status target) {
         if (target == null) return false;
@@ -110,6 +111,8 @@ public enum Status {
             return this == Experimental || this == Stable || this == Accepted || this == Valid;
         case Invalid:
             return true;
+        case Submitted:
+            return this == Reserved;
         default:
             return false;
         }

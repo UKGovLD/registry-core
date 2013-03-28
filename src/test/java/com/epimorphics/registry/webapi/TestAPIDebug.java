@@ -63,24 +63,6 @@ public class TestAPIDebug extends TomcatTestBase {
         // Set up some base data
         assertEquals(201, postFileStatus("test/reg1.ttl", BASE_URL));
         
-        assertEquals(201, postFileStatus("test/codes.ttl", BASE_URL));
-        assertEquals(201, postFileStatus("test/jmt/runway-numeric.ttl", BASE_URL + "codes"));
-        Model m = getModelResponse(BASE_URL + "codes?_view=with_metadata&firstPage");
-        
-        Resource page = m.getResource(ROOT_REGISTER + "codes?_view=with_metadata&firstPage=");
-        Resource items = page.getPropertyResourceValue(API.items);
-        assertNotNull(items);
-        List<RDFNode> itemList = items.as(RDFList.class).asJavaList();
-        int[] expected = new int[]{7, 8, 9, 15};
-        for (int i = 0; i < expected.length; i++) {
-            int e = expected[i];
-            Resource item = itemList.get(i).asResource();
-            assertTrue(item.getURI().endsWith("/" + e));
-            Resource meta = m.getResource(ROOT_REGISTER + "codes/_" + e);
-            Object value = meta.getProperty(RegistryVocab.notation).getObject().asLiteral().getValue();
-            assert(value instanceof Number);
-            assertEquals(e, ((Number)value).intValue());
-        }
     }
 
 

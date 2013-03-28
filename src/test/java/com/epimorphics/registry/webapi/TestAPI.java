@@ -409,7 +409,7 @@ public class TestAPI extends TomcatTestBase {
         assertTrue( m.contains(m.getResource(ROOT_REGISTER + "reg1/_red"), Version.currentVersion, m.getResource(ROOT_REGISTER + "reg1/_red:4")) );
     }
 
-    // Asumes reg1/blue exists, leaves it in "invalid" status
+    // Assumes reg1/blue exists, leaves it in "invalid" status
     private void doStatusTransitionsTest() {
         assertEquals(403, post(REG1 + "/_blue?update&status=retired").getStatus());
         assertEquals(403, post(REG1 + "/_blue?update&status=superseded").getStatus());
@@ -565,6 +565,8 @@ public class TestAPI extends TomcatTestBase {
 
     // Test reservation of entries using bNode entity addresses
     private void doReservationTest() {
+        List<String> before = getRegisterList(getModelResponse(REG1), SKOS.member, REG1_URI);
+
         assertEquals(201, postFileStatus("test/jmt/number-six-reserved-post.ttl", REG1));
         Model m = getModelResponse(REG1+"?status=any&_view=with_metadata");
         validateReservedEntry(m, null, "reserved");
@@ -575,8 +577,16 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(204, invoke("PUT", "test/jmt/number-six-update.ttl", REG1+"/_six").getStatus());
         m = getModelResponse(REG1+"?status=any&_view=with_metadata");
         validateReservedEntry(m, "http://example.com/six", "six");
+        
+        // Check that reserved item does not appear in normal listing
+        List<String> after = getRegisterList(getModelResponse(REG1), SKOS.member, REG1_URI);
+        assertTrue(after.containsAll(before) && before.containsAll(after));
+
+        // Check can't transition straight from reserved to stable
+        assertEquals(403, post(REG1 + "/_six?update&status=stable").getStatus());
 
         // Check that once accepted can no longer change the entity URI
+        assertEquals(204, post(REG1 + "/_six?update&status=submitted").getStatus());
         assertEquals(204, post(REG1 + "/_six?update&status=stable").getStatus());
         assertEquals(400, invoke("PUT", "test/jmt/number-six-update2.ttl", REG1+"/_six").getStatus());
     }

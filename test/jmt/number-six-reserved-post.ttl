@@ -12,4 +12,5 @@
               ] ;
       reg:itemClass skos:Concept ;
       reg:notation "six" ;
+      reg:status reg:statusReserved;
       .
