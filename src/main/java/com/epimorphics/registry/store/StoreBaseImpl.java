@@ -490,7 +490,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
                     "?itemVer reg:status ?status; " +
                     "         reg:definition [reg:entity ?entity]; " +
                     "         rdfs:label ?label . " +
-            "} ORDER BY ?item";
+            "} ORDER BY ?notation";
 
 
     @Override

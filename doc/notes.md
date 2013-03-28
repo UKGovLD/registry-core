@@ -53,9 +53,13 @@
 
    * Support for batch-registration that includes register + items (batch-complex)
      Use that for system bootstrap of prefixes and bulk-types
+     Bootstrap dir to use lexical ordering to sequence to bootstraps
 
    * Improve logging so can replay update actions. Currently have mix of full log including read and logging of actions with payloads.
 
+   * Template config should allow external UI root so css etc can be supplied without a war rebuild
+   
+   
 ## UI Stack
 
    * faceted filter on search results

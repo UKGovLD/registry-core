@@ -154,6 +154,9 @@ public class TestAPI extends TomcatTestBase {
         doValidationChecks();
 
 
+        // Check use of numeric literals as notation values
+        doCheckNumericNotations();
+
 //        System.out.println("Store dump");
 //        ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel().write(System.out, "Turtle");
     }
@@ -609,6 +612,32 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(400, postFileStatus("test/reg2-entry-bad4.ttl", BASE_URL+"reg2"));
     }
 
+    /**
+     * Check use of numeric literals as notation values, both that
+     * they survive processing and that register page listing orders
+     * numerically instead of lexically in that case.
+     */
+    private void doCheckNumericNotations() {
+        assertEquals(201, postFileStatus("test/codes.ttl", BASE_URL));
+        assertEquals(201, postFileStatus("test/jmt/runway-numeric.ttl", BASE_URL + "codes"));
+        Model m = getModelResponse(BASE_URL + "codes?_view=with_metadata&firstPage");
+        
+        Resource page = m.getResource(ROOT_REGISTER + "codes?_view=with_metadata&firstPage=");
+        Resource items = page.getPropertyResourceValue(API.items);
+        assertNotNull(items);
+        List<RDFNode> itemList = items.as(RDFList.class).asJavaList();
+        int[] expected = new int[]{7, 8, 9, 15};
+        for (int i = 0; i < expected.length; i++) {
+            int e = expected[i];
+            Resource item = itemList.get(i).asResource();
+            assertTrue(item.getURI().endsWith("/" + e));
+            Resource meta = m.getResource(ROOT_REGISTER + "codes/_" + e);
+            Object value = meta.getProperty(RegistryVocab.notation).getObject().asLiteral().getValue();
+            assert(value instanceof Number);
+            assertEquals(e, ((Number)value).intValue());
+        }
+    }
+    
     private void checkPageResponse(Model m, String nextpage, int length) {
         ResIterator ri = m.listSubjectsWithProperty(RDF.type, Ldbp.Page);
         assertTrue(ri.hasNext());

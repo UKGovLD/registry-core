@@ -24,12 +24,15 @@ import com.epimorphics.registry.vocab.Version;
 import com.epimorphics.server.core.ServiceConfig;
 import com.epimorphics.server.core.Store;
 import com.epimorphics.util.TestUtil;
+import com.epimorphics.vocabs.API;
 import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.RDFList;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.sparql.util.Closure;
@@ -59,40 +62,26 @@ public class TestAPIDebug extends TomcatTestBase {
     public void testDebug() throws IOException {
         // Set up some base data
         assertEquals(201, postFileStatus("test/reg1.ttl", BASE_URL));
-
-        doReservationTest();
-    }
-
-
-    // Test reservation of entries using bNode entity addresses
-    private void doReservationTest() {
-        assertEquals(201, postFileStatus("test/jmt/number-six-reserved-post.ttl", REG1));
-        Model m = getModelResponse(REG1+"?status=any&_view=with_metadata");
-        validateReservedEntry(m, null, "reserved");
-
-        getModelResponse(REG1+"?status=any&firstPage");   // Fails if bNodes not skolemized
-        getModelResponse(REG1+"?status=any");  // Fails if bNodes not skolemized
-
-        assertEquals(204, invoke("PUT", "test/jmt/number-six-update.ttl", REG1+"/_six").getStatus());
-        m = getModelResponse(REG1+"?status=any&_view=with_metadata");
-        validateReservedEntry(m, "http://example.com/six", "six");
-
-        // Check that once accepted can no longer change the entity URI
-        assertEquals(204, post(REG1 + "/_six?update&status=stable").getStatus());
-        assertEquals(400, invoke("PUT", "test/jmt/number-six-update2.ttl", REG1+"/_six").getStatus());
-    }
-
-    private void validateReservedEntry(Model m, String entityURI, String label) {
-        Resource reg1 = m.getResource(REG1_URI);
-        Resource _six = m.getResource(REG1_URI + "/_six");
-        assertTrue(m.contains(_six, RegistryVocab.register, reg1));
-        Resource entity = _six.getPropertyResourceValue(RegistryVocab.definition).getPropertyResourceValue(RegistryVocab.entity);
-        if (entityURI != null) {
-            assertEquals(entityURI, entity.getURI());
+        
+        assertEquals(201, postFileStatus("test/codes.ttl", BASE_URL));
+        assertEquals(201, postFileStatus("test/jmt/runway-numeric.ttl", BASE_URL + "codes"));
+        Model m = getModelResponse(BASE_URL + "codes?_view=with_metadata&firstPage");
+        
+        Resource page = m.getResource(ROOT_REGISTER + "codes?_view=with_metadata&firstPage=");
+        Resource items = page.getPropertyResourceValue(API.items);
+        assertNotNull(items);
+        List<RDFNode> itemList = items.as(RDFList.class).asJavaList();
+        int[] expected = new int[]{7, 8, 9, 15};
+        for (int i = 0; i < expected.length; i++) {
+            int e = expected[i];
+            Resource item = itemList.get(i).asResource();
+            assertTrue(item.getURI().endsWith("/" + e));
+            Resource meta = m.getResource(ROOT_REGISTER + "codes/_" + e);
+            Object value = meta.getProperty(RegistryVocab.notation).getObject().asLiteral().getValue();
+            assert(value instanceof Number);
+            assertEquals(e, ((Number)value).intValue());
         }
-        assertEquals(label, RDFUtil.getStringValue(entity, RDFS.label));
     }
-
 
 
     // Debugging utility only, should not be used while transactions are live
