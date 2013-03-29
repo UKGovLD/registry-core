@@ -107,7 +107,7 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
         return new ReservationList();
     }
 
-    static class ReservationList {
+    public static class ReservationList {
         StringBuffer reservations = new StringBuffer();
         int last;
         int rangeStart;
@@ -163,7 +163,7 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
         }
         
         public boolean isEmpty() {
-            return reservations.length() == 0;
+            return reservations.length() == 0 && !pendingNumeric;
         }
         
         @Override
