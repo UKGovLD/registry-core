@@ -1,0 +1,23 @@
+## $model and $node should be bound to the register
+## $members to the list of member entities
+
+      #set($reserved=$lib.reg.startReservationList())
+      #foreach($member in $members)
+        #set($itemL=$member.connectedNodes("^reg:entity/^reg:definition"))
+        #if(!$itemL.isEmpty())
+          #set($item = $itemL[0])
+          #if($item.hasResourceValue("reg:status", "reg:statusReserved"))
+            #set($reserved=$lib.reg.addReserved($reserved, $item.getPropertyValue("reg:notation").asRDFNode()))
+          #end
+        #end
+      #end
+      
+      #if(!$reserved.isEmpty())
+        <h3>Reserved items</h3>
+        <div class="result-blob">
+          <div class="blob-inner">
+            <p>The following items are reserved for future use: $reserved</p> 
+          </div>
+        </div>
+      #end
+      

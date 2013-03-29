@@ -1,0 +1,36 @@
+## $model and $node should be bound to the register
+## $members to the list of member entities
+
+      #set($started=false)
+      #foreach($member in $members)
+        #if($member.hasResourceValue("rdf:type", "reg:NamespaceForward"))
+          #set($itemL=$member.connectedNodes("^reg:entity/^reg:definition"))
+          #if(!$itemL.isEmpty())
+            #set($item = $itemL[0])
+          #end
+          #if(!$started)
+            #set($started=true)
+            <h3>Delegations</h3>
+          #end
+
+          <div class="result-blob">
+            <div class="row">
+              <div class="span6">
+                <div class="blob-inner">
+                  <strong>Item:</strong> <a href="#linkhref($item)" title="$item.uRI">$item.getPropertyValue("reg:notation").lexicalForm</a>
+                   -> #link($member.getPropertyValue("reg:delegationTarget"))
+                  <p><strong>Type:</strong> #foreach($ty in $member.listPropertyValues("rdf:type"))#linkfor($ty)#if( $foreach.hasNext ), #end#end </p>
+                  <strong>$member.name</strong>
+                  #description($member, "")
+                </div>
+              </div>
+              #if(!$itemL.isEmpty())
+                <div class="pull-right">
+                  #showstatus($item.getPropertyValue("reg:status"))
+                </div>
+              #end
+            </div>
+          </div>
+
+        #end
+      #end

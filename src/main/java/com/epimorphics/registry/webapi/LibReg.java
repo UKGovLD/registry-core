@@ -24,7 +24,9 @@ import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.server.core.Service;
 import com.epimorphics.server.core.ServiceBase;
 import com.epimorphics.server.templates.LibPlugin;
+import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
@@ -90,6 +92,84 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
         List<Status> next = current.nextStates();
         next.remove(current);
         return next;
+    }
+    
+    /**
+     * Utility for incrementally building up compacted range notation 
+     * for reserved entries
+     */
+    public ReservationList addReserved(ReservationList reservations, RDFNode notation) {
+        reservations.add(notation);
+        return reservations;
+    }
+    
+    public ReservationList startReservationList() {
+        return new ReservationList();
+    }
+
+    static class ReservationList {
+        StringBuffer reservations = new StringBuffer();
+        int last;
+        int rangeStart;
+        boolean pendingNumeric = false;
+        boolean inRange = false;
+        
+        public void add(RDFNode notation) {
+            Literal l = notation.asLiteral();
+            Object value = l.getValue();
+            if (value instanceof Integer) {
+                int n = ((Integer) value).intValue();
+                if (pendingNumeric) {
+                    if (n == last + 1) {
+                        if (!inRange) {
+                            rangeStart = last;
+                            inRange = true;
+                        } 
+                    } else {
+                        finishNumeric();
+                    }
+                }
+                last = n;
+                pendingNumeric = true;
+            } else {
+                finishNumeric();
+                if (reservations.length() != 0) {
+                    reservations.append(", ");
+                }
+                reservations.append(l.getLexicalForm());
+            }
+        }
+    
+        private void finishNumeric() {
+            if (pendingNumeric) {
+                if (reservations.length() != 0) {
+                    reservations.append(", ");
+                }
+                if (inRange) {
+                    reservations.append(rangeStart);
+                    reservations.append("-");
+                }
+                reservations.append(last);
+                inRange = false;
+                pendingNumeric = false;
+            }
+        }
+        
+        public String getReservations() {
+            if (pendingNumeric) {
+                finishNumeric();
+            }
+            return reservations.toString();
+        }
+        
+        public boolean isEmpty() {
+            return reservations.length() == 0;
+        }
+        
+        @Override
+        public String toString() {
+            return getReservations();
+        }
     }
 
 }
