@@ -1,0 +1,37 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix version:  <http://purl.org/linked-data/version#> .
+@prefix ldp:  <http://www.w3.org/ns/ldp#> .
+@prefix reg:  <http://purl.org/linked-data/registry#> .
+@prefix ui:   <http://purl.org/linked-data/registry-ui#> .
+
+
+<concept> a ui:FormTemplate;
+    rdfs:label "Concept"@en;
+    ui:tooltip "Define a single skos:Concept, useful as a way to register generic information"@en;
+    ui:prototype [a skos:Concept];
+    ui:formFields (
+      [a ui:FormField; rdfs:label "id"; skos:notation "id";
+            ui:tooltip "ID ('notation') for concept in register"@en;
+            ui:property reg:notation;
+            ui:required true ;
+            ui:fieldType ui:labelField]
+      [a ui:FormField; rdfs:label "label"; skos:notation "label";
+            ui:tooltip "Label for the concept"@en;
+            ui:property rdfs:label;
+            ui:required true ;
+            ui:fieldType ui:labelField]
+      [a ui:FormField; rdfs:label "notation"; skos:notation "notation";
+            ui:tooltip "Optional skos:notation"@en;
+            ui:property skos:notation;
+            ui:fieldType ui:labelField]
+      [a ui:FormField; rdfs:label "value"; skos:notation "value";
+            ui:tooltip "Optional associated value"@en;
+            ui:property rdf:value;
+            ui:fieldType ui:labelField]
+    );
+    .

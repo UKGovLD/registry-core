@@ -1,0 +1,51 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix version:  <http://purl.org/linked-data/version#> .
+@prefix ldp:  <http://www.w3.org/ns/ldp#> .
+@prefix reg:  <http://purl.org/linked-data/registry#> .
+@prefix ui:   <http://purl.org/linked-data/registry-ui#> .
+
+<register> a ui:FormTemplate;
+    rdfs:label "Subregister"@en;
+    ui:tooltip "Define a sub-register."@en;
+    ui:prototype [a reg:Register];
+    ui:formFields (
+      [a ui:FormField; rdfs:label "id"; skos:notation "id";
+            ui:tooltip "ID ('notation') for the sub-register"@en;
+            ui:property reg:notation;
+            ui:required true ;
+            ui:fieldType ui:labelField]
+      [a ui:FormField; rdfs:label "label"; skos:notation "label";
+            ui:tooltip "Label (name) for the register"@en;
+            ui:property rdfs:label;
+            ui:required true ;
+            ui:fieldType ui:labelField]
+      [a ui:FormField; rdfs:label "description"; skos:notation "description";
+            ui:tooltip "Longer description of the register"@en;
+            ui:property dct:description;
+            ui:required true ;
+            ui:fieldType ui:textField]
+      [a ui:FormField; rdfs:label "membership predicate"; skos:notation "membership";
+            ui:tooltip "Optional membership predicate for the register."@en;
+            ui:property ldp:membershipPredicate;
+            ui:fieldType ui:anyURIField]
+      [a ui:FormField; rdfs:label "inv membership"; skos:notation "inv-membership";
+            ui:tooltip "Optional inverse membership predicate for the register."@en;
+            ui:property reg:inverseMembershipPredicate;
+            ui:fieldType ui:anyURIField]
+      [a ui:FormField; rdfs:label "contained types"; skos:notation "containedIC";
+            ui:tooltip "Option set of types which will be allowed in this register."@en;
+            ui:property reg:containedItemClass;
+            ui:multivalued true;
+            ui:fieldType ui:anyURIField]
+      [a ui:FormField; rdfs:label "register type"; skos:notation "type";
+            ui:tooltip "Additional rdf:type values for the register (will already be a reg:Register)."@en;
+            ui:property rdf:type;
+            ui:multivalued true;
+            ui:fieldType ui:anyURIField]
+    );
+    .

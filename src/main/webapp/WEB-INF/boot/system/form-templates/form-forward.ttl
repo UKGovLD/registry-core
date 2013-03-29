@@ -1,0 +1,42 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix version:  <http://purl.org/linked-data/version#> .
+@prefix ldp:  <http://www.w3.org/ns/ldp#> .
+@prefix reg:  <http://purl.org/linked-data/registry#> .
+@prefix ui:   <http://purl.org/linked-data/registry-ui#> .
+
+<forward> a ui:FormTemplate;
+    rdfs:label "Forward"@en;
+    ui:tooltip "Forward part of this namespace"@en;
+    ui:prototype [a reg:NamespaceForward];
+    ui:formFields (
+      [a ui:FormField; rdfs:label "id"; skos:notation "id";
+            ui:tooltip "ID ('notation') for child namespace to forward"@en;
+            ui:property reg:notation;
+            ui:required true ;
+            ui:fieldType ui:labelField]
+      [a ui:FormField; rdfs:label "label"; skos:notation "label";
+            ui:tooltip "Label (name) for the forwarding instruction"@en;
+            ui:property rdfs:label;
+            ui:required true ;
+            ui:fieldType ui:labelField]
+      [a ui:FormField; rdfs:label "description"; skos:notation "description";
+            ui:tooltip "Description of the forwarding instruction."@en;
+            ui:property dct:description;
+            ui:required true ;
+            ui:fieldType ui:textField]
+      [a ui:FormField; rdfs:label "code"; skos:notation "code";
+            ui:tooltip "The redirection code to use (e.g. use 200 to proxy, 303 to redirect)"@en;
+            ui:property reg:forwardingCode;
+            ui:fieldType ui:labelField]
+      [a ui:FormField; rdfs:label "target"; skos:notation "target";
+            ui:tooltip "The URL to forward to."@en;
+            ui:property reg:delegationTarget;
+            ui:required true ;
+            ui:fieldType ui:anyURIField]
+    );
+    .

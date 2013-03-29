@@ -335,7 +335,7 @@ public class RegisterItem extends Description {
         if (notation == null) {
             notation = UUID.randomUUID().toString();
         } else if ( ! LEGAL_NOTATION.matcher(notation).matches() ) {
-            throw new WebApiException(Response.Status.BAD_REQUEST, "Proposed notation for item is not a legal pchar or starts with '_'");
+            throw new WebApiException(Response.Status.BAD_REQUEST, "Proposed notation for item is not a legal pchar or starts with '_' - " + notation);
         }
     }
 
@@ -372,7 +372,7 @@ public class RegisterItem extends Description {
             notation = UUID.randomUUID().toString();
         }
         if ( ! LEGAL_NOTATION.matcher(notation).matches() ) {
-            throw new WebApiException(Response.Status.BAD_REQUEST, "Proposed notation for item is not a legal pchar or starts with '_'");
+            throw new WebApiException(Response.Status.BAD_REQUEST, "Proposed notation for item is not a legal pchar or starts with '_' - " + notation);
         }
         return notation;
     }

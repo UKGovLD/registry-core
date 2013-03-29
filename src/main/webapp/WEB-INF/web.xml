@@ -53,8 +53,8 @@
     pageSize=25,
     forwarder=forwarder,
     log=/var/local/registry/logstore,
-    bootSpec=${webapp}/WEB-INF/root-register.ttl|${webapp}/WEB-INF/registry.ttl|${webapp}/WEB-INF/system-registers.ttl|${webapp}/WEB-INF/prefixes-register.ttl,
-    systemBoot=${webapp}/WEB-INF/systemboot</param-value>
+    bootSpec=${webapp}/WEB-INF/root-register.ttl|${webapp}/WEB-INF/registry.ttl,
+    systemBoot=${webapp}/WEB-INF/boot</param-value>
   </context-param>
 
   <filter>

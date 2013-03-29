@@ -9,7 +9,9 @@
 
 package com.epimorphics.registry.core;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
@@ -35,6 +37,7 @@ import com.epimorphics.registry.core.ForwardingRecord.Type;
 import com.epimorphics.registry.store.CachingStore;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.util.Prefixes;
+import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.server.core.Service;
 import com.epimorphics.server.core.ServiceBase;
 import com.epimorphics.server.core.ServiceConfig;
@@ -44,7 +47,8 @@ import com.epimorphics.util.EpiException;
 import com.epimorphics.util.FileUtil;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.util.FileManager;
+import com.hp.hpl.jena.util.FileUtils;
+import com.hp.hpl.jena.vocabulary.RDF;
 import com.sun.jersey.api.uri.UriComponent;
 
 /**
@@ -123,12 +127,7 @@ public class Registry extends ServiceBase implements Service {
             String bootdir = config.get(SYSTEM_BOOTSTRAP_DIR_PARAM);
             if (bootdir != null) {
                 bootdir = ServiceConfig.get().expandFileLocation( bootdir );
-                File bootdirF = new File(bootdir);
-                for (String fn : bootdirF.list()) {
-                    String filename = bootdir + File.separator + fn;
-                    log.info("Loading bootstrap registration " + filename);
-                    registerSystemFile(filename);
-                }
+                loadInitialRegisterTree(bootdir);
             }
             log.info("Installed bootstrap root register");
         }
@@ -155,28 +154,76 @@ public class Registry extends ServiceBase implements Service {
         }
     }
 
-    private void registerSystemFile(String file) {
-        Model model = ModelFactory.createDefaultModel();
-        if (file.endsWith(".ttl")) {
-            FileManager.get().readModel(model, file, getBaseURI() + "/system/", "Turtle");
-        } else {
-            FileManager.get().readModel(model, file, getBaseURI() + "/system/", "RDF/XML");
-        }
-        MultivaluedMap<String, String> parameters = UriComponent.decodeQuery("batch-managed&update&status=stable", true);
-        Command command = Registry.get().make( Operation.Register, "system", parameters);
-        command.setPayload( model );
+    /**
+     * Load a set of initial registers and contents defined by sources files in a
+     * directory tree. Each source is assumed to be in ttl format. Each directory
+     * represents a register and should contain a metadata.ttl file to define RegisterItem 
+     * metadata for the register itself. The root register should not have metadata. 
+     * All other files in the register are plain content files which can either be in
+     * simple or complex (with RegisterItems) format. Simple entries are assumed to be stable.
+     */
+    private void loadInitialRegisterTree(String bootdir) {
+        File dir = new File(bootdir);
         try {
-            Response response = command.execute();
-            if (response.getStatus() >= 400) {
-                log.error("Bootstrap error: " + response.getEntity());
-            }
-        } catch (WebApiException e) {
-            log.error("Bootstrap error: " + e.getResponse().getEntity());
+            loadRegisterTree(null, dir);
         } catch (Exception e) {
-            log.error("Bootstrap error: " + e);
+            log.error("Failed to load initialization tree", e);
         }
     }
+    
+    private void loadRegisterTree(String parent, File dir) {
+        File metadata = new File(dir, METADATA_FILE);
+        if (metadata.exists()) {
+            if (parent != null) {
+                registerFile(parent, metadata);
+            }
+        }
+        String register = parent == null ? "" : ((parent.isEmpty() ? "" : parent + "/") + dir.getName());
+        String[] filenames = dir.list();
+        if (filenames == null) {
+            log.warn("Bootstrap directory " + dir.getPath() + " is empty");
+        }
+        for (String filename : filenames) { 
+            if (filename.equals(METADATA_FILE)) continue;
+            File file = new File(dir, filename);
+            if (file.isDirectory()) {
+                loadRegisterTree(register, file);
+            } else {
+                registerFile(register, file);
+            }
+        }
+    }
+    private final static String METADATA_FILE = "metadata.ttl";
+    
+    private void registerFile(String register, File file)  {
+        String baseURI = getBaseURI() + "/" + (register.isEmpty() ? "" : register + "/");
+        try {
+            Model model = ModelFactory.createDefaultModel();
+            BufferedInputStream in = new BufferedInputStream( new FileInputStream(file) );
+            model.read(in, baseURI, FileUtils.langTurtle);
+            in.close();
+            
+            String parameters = "";
+            if ( ! model.contains(null, RDF.type, RegistryVocab.RegisterItem)) {
+                // Simple content so force status update to stable
+                parameters = "update&status=stable";
+            }
+            Command command = Registry.get().make( Operation.Register, register, parameters);
+            command.setPayload( model );
+            Response response = command.execute();
+            if (response.getStatus() >= 400) {
+                throw new EpiException("Bootstrap error: " + response.getEntity());
+            }
+            log.info("Loaded bootstrap file " + file.getPath());
+        } catch (WebApiException e) {
+            throw new EpiException("Bootstrap error: " + e.getResponse().getEntity());
+        } catch (Exception e) {
+            throw new EpiException("Bootstrap error on file " + file.getPath(), e);
+        }
+        
+    }
 
+    
     public String getBaseURI() {
         return baseURI;
     }
@@ -211,6 +258,10 @@ public class Registry extends ServiceBase implements Service {
         case Search:       return new CommandSearch(operation, target, parameters, this);
         }
         return null;    // Should never get here but the compiler doesn't seem to know that
+    }
+
+    public Command make(Operation operation, String target,  String parameters) {
+        return make(operation, target, UriComponent.decodeQuery(parameters, true));
     }
 
     /**
