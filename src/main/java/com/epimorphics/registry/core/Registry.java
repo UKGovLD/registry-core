@@ -124,10 +124,12 @@ public class Registry extends ServiceBase implements Service {
                 log.info("Loading bootstrap file " + bootSrc);
                 store.loadBootstrap( bootSrc );
             }
-            String bootdir = config.get(SYSTEM_BOOTSTRAP_DIR_PARAM);
-            if (bootdir != null) {
-                bootdir = ServiceConfig.get().expandFileLocation( bootdir );
-                loadInitialRegisterTree(bootdir);
+            String bootdirs = config.get(SYSTEM_BOOTSTRAP_DIR_PARAM);
+            if (bootdirs != null) {
+                for (String bootdir : bootdirs.split("\\|")) {
+                    bootdir = ServiceConfig.get().expandFileLocation( bootdir );
+                    loadInitialRegisterTree(bootdir);
+                }
             }
             log.info("Installed bootstrap root register");
         }
@@ -164,10 +166,12 @@ public class Registry extends ServiceBase implements Service {
      */
     private void loadInitialRegisterTree(String bootdir) {
         File dir = new File(bootdir);
-        try {
-            loadRegisterTree(null, dir);
-        } catch (Exception e) {
-            log.error("Failed to load initialization tree", e);
+        if (dir.exists()) {
+            try {
+                loadRegisterTree(null, dir);
+            } catch (Exception e) {
+                log.error("Failed to load initialization tree", e);
+            }
         }
     }
     
