@@ -72,8 +72,22 @@ table tr td table {
     /* margin-right: 5px; */
 }
 
+.blob {
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+}
+
 .blob-inner {
     padding: 5px;
+}
+
+.pale-blue {
+    background-color:  #d9f0f9;
+}
+
+.pale-orange {
+    background-color:  #f9dfc2;
 }
 
 .formats {

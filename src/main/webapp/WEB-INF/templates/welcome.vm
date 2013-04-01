@@ -1,0 +1,13 @@
+#set($pageTitle="Registry welcome")
+
+#parse("header.vm")
+  #if($uri.isEmpty())
+    #set($nav="root")
+  #end
+#parse("navbar.vm")
+
+<h2>Welcome $request.session.getAttribute("user_name")</h2>
+
+identity = $identity
+
+#parse("footer.vm")

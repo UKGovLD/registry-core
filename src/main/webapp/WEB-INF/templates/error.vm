@@ -1,0 +1,13 @@
+#set($pageTitle="Registry error")
+
+#parse("header.vm")
+  #if($uri.isEmpty())
+    #set($nav="root")
+  #end
+#parse("navbar.vm")
+
+<h2>Sorry</h2>
+
+<p>$message</p>
+
+#parse("footer.vm")

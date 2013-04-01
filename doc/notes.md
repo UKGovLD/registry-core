@@ -86,6 +86,8 @@
    * Useful google summary page: https://developers.google.com/accounts/docs/OpenID
 
    * DER ID if login using generic google:   https://www.google.com/accounts/o8/id?id=AItOawnQBYnsRksvzmoKfzHW3NX5_EVBQ7DkbhI
+                                                                                      AItOawnuFU9lYCFB60lMIO8lRLYRkWGCk3pT4Cs
+   
    * DER ID if login using profile page:  https://profiles.google.com/114719444327647609228
      Unclear how id in first form relates to ID in second!
 

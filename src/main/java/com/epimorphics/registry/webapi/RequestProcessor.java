@@ -19,6 +19,9 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -32,6 +35,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,17 +95,49 @@ public class RequestProcessor extends BaseEndpoint {
             }
             return Response.ok().type(mime).entity(response.getEntity()).build();
         } else {
-            String language = request.getLocale().getLanguage();
-            if (language.isEmpty()) {
-                language = "en";
-            }
-            VelocityRender velocity = ServiceConfig.get().getServiceAs(Registry.VELOCITY_SERVICE, VelocityRender.class);
-            StreamingOutput out = velocity.render("main.vm", uriInfo.getPath(), context, parameters,
-                        "registry", Registry.get(),
-                        "requestor", getRequestor(),
-                        "language", language);
-            return Response.ok().type("text/html").entity(out).build();
+            return render("main.vm", uriInfo, context, request);
         }
+    }
+    
+    public static Response render(String template, UriInfo uriInfo, ServletContext context, HttpServletRequest request, Object...params) {
+        String language = request.getLocale().getLanguage();
+        if (language.isEmpty()) {
+            language = "en";
+        }
+        Object[] fullParams = new Object[params.length + 8];
+        int i = 0;
+        while (i < params.length) {
+            fullParams[i] = params[i];
+            i++;
+        }
+        fullParams[i++] = "registry";
+        fullParams[i++] = Registry.get();
+        fullParams[i++] = "requestor";
+        fullParams[i++] = getRequestor(request);
+        fullParams[i++] = "request";
+        fullParams[i++] = request;
+        fullParams[i++] = "language";
+        fullParams[i++] = language;
+
+        VelocityRender velocity = ServiceConfig.get().getServiceAs(Registry.VELOCITY_SERVICE, VelocityRender.class);
+        StreamingOutput out = velocity.render(template, uriInfo.getPath(), context, uriInfo.getQueryParameters(), fullParams);
+        return Response.ok().type("text/html").entity(out).build();
+    }
+    
+    public static String getRequestor(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            Object user = session.getAttribute(SESSION_USER_KEY);
+            if (user != null) {
+                return (String)user;
+            }
+        }
+
+        if (request.getHeader(FORWARDED_FOR_HEADER) != null) {
+            return request.getHeader(FORWARDED_FOR_HEADER);
+        }
+
+        return request.getRemoteAddr();
     }
 
     @GET
