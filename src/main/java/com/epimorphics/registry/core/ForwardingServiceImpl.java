@@ -52,7 +52,7 @@ public class ForwardingServiceImpl extends ServiceBase implements ForwardingServ
 
     public static final String PROXY_CONF_DIR_PARAM = "proxyConfDir";
     public static final String PROXY_RESTART_SCRIPT_PARAM = "proxyRestartScript";
-    
+
     static final String PROXY_FILE = "proxy-registry.conf";
 
     protected String confDir;
@@ -127,6 +127,12 @@ public class ForwardingServiceImpl extends ServiceBase implements ForwardingServ
         if (record.getForwardingCode() == 200) {
             proxyForwards.put(loc, record);
             configUpdateNeeded = true;
+        } else {
+            if (proxyForwards.containsKey(loc)) {
+                // Switch from a 200 to a non-200 forward
+                proxyForwards.remove(loc);
+                configUpdateNeeded = true;
+            }
         }
         trie.register(loc, record);
     }
@@ -160,7 +166,7 @@ public class ForwardingServiceImpl extends ServiceBase implements ForwardingServ
                     file.write( String.format("location %s {\n    proxy_pass %s ;\n}\n", path, proxyForwards.get(path).getTarget()));
                 }
                 file.close();
-                
+
                 Process process = Runtime.getRuntime().exec(new String[]{ "/usr/bin/sudo", script});
                 String errors = "";
                 InputStream errorstream = process.getErrorStream();

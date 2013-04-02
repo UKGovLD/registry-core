@@ -165,6 +165,7 @@ public class CommandUpdate extends Command {
                 }
             }
             String versionURI = store.update(currentItem, withEntity);
+            checkDelegation(currentItem);
             return Response.noContent().location(new URI(versionURI)).build();
         } catch (URISyntaxException e) {
             throw new WebApplicationException(e);

@@ -36,6 +36,7 @@ import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.sparql.util.Closure;
+import com.hp.hpl.jena.util.FileManager;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDFS;
@@ -62,7 +63,27 @@ public class TestAPIDebug extends TomcatTestBase {
     public void testDebug() throws IOException {
         // Set up some base data
         assertEquals(201, postFileStatus("test/reg1.ttl", BASE_URL));
-        
+
+
+        assertEquals(201, postFileStatus("test/bw-forward.ttl", REG1));
+        assertEquals(404, getResponse(REG1 + "/eabw/ukc2102-03600").getStatus());
+        assertEquals(204, post(REG1 + "/_eabw?update&status=stable").getStatus());
+        assertEquals(200, getResponse(REG1 + "/eabw/ukc2102-03600").getStatus());
+        Model m = getModelResponse(REG1 + "/eabw/ukc2102-03600");
+        Resource bw = m.getResource("http://environment.data.gov.uk/id/bathing-water/ukc2102-03600");
+        assertEquals("Spittal", RDFUtil.getStringValue(bw, SKOS.prefLabel));
+
+        // convert forwarding to proxying, will only actually function if nginx is up and test doesn't require that
+        assertEquals(204, invoke("PATCH", "test/bw-proxy-patch.ttl", REG1 + "/eabw").getStatus());
+        String proxyConfig = FileManager.get().readWholeFileAsUTF8("/var/local/registry/proxy-registry.conf");
+        assertTrue(proxyConfig.contains("location /reg1/eabw"));
+        assertTrue(proxyConfig.contains("proxy_pass http://environment.data.gov.uk/doc/bathing-water/"));
+
+        // Switch batch to forwarding mode to check switching off proxy works
+        assertEquals(204, invoke("PATCH", "test/bw-forward-patch.ttl", REG1 + "/eabw").getStatus());
+        proxyConfig = FileManager.get().readWholeFileAsUTF8("/var/local/registry/proxy-registry.conf");
+        assertFalse(proxyConfig.contains("location /reg1/eabw"));
+        assertEquals(200, getResponse(REG1 + "/eabw/ukc2102-03600").getStatus());
     }
 
 

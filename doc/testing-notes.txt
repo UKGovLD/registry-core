@@ -47,6 +47,7 @@ curl -i -H "Content-Type: text/turtle" -X POST --data "@test/bw-proxy.ttl" http:
 curl -i -X POST "http://localhost:8080/def/_eabw?update&status=stable"
 curl -i -H "Accept:text/turtle" http://localhost:8080/def/eabw/ukc2102-03600
 
+
 # OR
 curl -i -H "Content-Type: text/turtle" -X POST --data "@test/bw-delegated.ttl" http://localhost:8080/def
 curl -i -X POST "http://localhost:8080/def/_bathingWaters?update&status=stable"
@@ -79,7 +80,15 @@ curl -i -H "Content-Type:text/turtle" -X POST --data "@test/jmt/numbers-one-two-
 curl -i -H "Content-Type:text/turtle" -X POST --data "@test/jmt/number-seven-reserved.ttl" "http://localhost:8080/numbers"
 curl -i -H "Content-Type:text/turtle" -X POST --data "@test/jmt/number-thirteen-reserved.ttl" "http://localhost:8080/numbers"
 
+// Debug forwarding with def/fw setup
+curl -i -H "Content-Type: text/turtle" -X POST --data "@test/bw-proxy.ttl" http://localhost:8080/def/fw
+curl -i -X POST "http://localhost:8080/def/fw/_eabw?update&status=stable"
+curl -i -H "Content-Type: text/turtle" -X PATCH --data "@test/bw-forward-patch.ttl" http://localhost:8080/def/fw/eabw
+curl -i -H "Content-Type: text/turtle" -X PATCH --data "@test/bw-proxy-patch.ttl" http://localhost:8080/def/fw/eabw
 
+curl -i -H "Content-Type: text/turtle" -X POST --data "@test/reg1.ttl" http://localhost:8080/
+curl -i -H "Content-Type: text/turtle" -X POST --data "@test/jmt/core-proxy.ttl" http://localhost:8080/reg1
+curl -i -X POST "http://localhost:8080/reg1?update&status=stable"
 
 # Configure proxy update permissions
 

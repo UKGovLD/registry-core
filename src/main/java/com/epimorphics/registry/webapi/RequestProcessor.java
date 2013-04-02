@@ -98,7 +98,7 @@ public class RequestProcessor extends BaseEndpoint {
             return render("main.vm", uriInfo, context, request);
         }
     }
-    
+
     public static Response render(String template, UriInfo uriInfo, ServletContext context, HttpServletRequest request, Object...params) {
         String language = request.getLocale().getLanguage();
         if (language.isEmpty()) {
@@ -123,7 +123,7 @@ public class RequestProcessor extends BaseEndpoint {
         StreamingOutput out = velocity.render(template, uriInfo.getPath(), context, uriInfo.getQueryParameters(), fullParams);
         return Response.ok().type("text/html").entity(out).build();
     }
-    
+
     public static String getRequestor(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session != null) {
@@ -182,10 +182,13 @@ public class RequestProcessor extends BaseEndpoint {
                     return result;
                 }
                 String forwardTo = fr.getTarget();
-                if (!forwardTo.endsWith("/")) {
-                    forwardTo += "/";
+                String remainder = match.getPathRemainder();
+                if (!remainder.isEmpty()) {
+                    if (!forwardTo.endsWith("/")) {
+                        forwardTo += "/";
+                    }
+                    forwardTo += remainder;
                 }
-                forwardTo += match.getPathRemainder();
                 URI location = null;
                 try {
                     location = new URI(forwardTo);
