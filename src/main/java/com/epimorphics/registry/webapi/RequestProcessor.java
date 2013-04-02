@@ -48,6 +48,7 @@ import com.epimorphics.registry.core.ForwardingRecord.Type;
 import com.epimorphics.registry.core.ForwardingService;
 import com.epimorphics.registry.core.MatchResult;
 import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.util.JSONLDSupport;
 import com.epimorphics.registry.util.PATCH;
 import com.epimorphics.registry.util.UiForm;
@@ -127,9 +128,9 @@ public class RequestProcessor extends BaseEndpoint {
     public static String getRequestor(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session != null) {
-            Object user = session.getAttribute(SESSION_USER_KEY);
+            Object user = session.getAttribute(Login.SA_USERINFO);
             if (user != null) {
-                return (String)user;
+                return ((UserInfo)user).getName();
             }
         }
 

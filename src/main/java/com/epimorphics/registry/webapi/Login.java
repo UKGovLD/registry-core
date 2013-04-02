@@ -9,6 +9,7 @@
 
 package com.epimorphics.registry.webapi;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -49,12 +50,10 @@ import com.epimorphics.registry.security.UserStore;
 public class Login {
     static final Logger log = LoggerFactory.getLogger( Login.class );
 
-    // Request parameter flags
-    public static final String RP_REGISTRATION = "isRegistration";
-
     // Session attribute names
     public static final String SA_OPENID_DISC = "openid_disc";
     public static final String SA_USERINFO = "userinfo";
+    public static final String SA_REGISTRATION = "isRegistration";
 
     // Attribute parameter names
     public static final String AP_EMAIL = "email";
@@ -90,13 +89,36 @@ public class Login {
         return Response.ok().build();
     }
 
+    @Path("/logout")
+    @POST
+    public void logout(@Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException {
+        // TODO set session attribute as part of Shiro realm
+        request.getSession().removeAttribute(SA_USERINFO);
+        SecurityUtils.getSubject().logout();
+        response.sendRedirect("/");
+    }
+
+    @Path("/response")
+    @GET
+    public Response openIDResponse(@Context HttpServletRequest request) {
+        UserInfo user = verifyResponse(request);
+        if (user != null) {
+            // TODO set session attribute as part of Shiro realm
+            request.getSession().setAttribute(SA_USERINFO, user);
+            UsernamePasswordToken token = new UsernamePasswordToken("dave", "dummy");
+            Subject subject = SecurityUtils.getSubject();
+            subject.login(token);
+            return RequestProcessor.render("welcome.vm", uriInfo, servletContext, request, SA_USERINFO, user, "subject", subject);
+        } else {
+            return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "Could not find a registration for you.");
+        }
+    }
+
     @SuppressWarnings("rawtypes")
     protected void processOpenID(HttpServletRequest request, HttpServletResponse response, String provider, boolean isRegister) {
         log.info("Authentication request for " + provider + (isRegister ? " (registration)" : ""));
         String responseURL = uriInfo.getBaseUri().toString() + "system/action/response";
-        if (isRegister) {
-            responseURL += "?" + RP_REGISTRATION + "=true";
-        }
+        request.getSession().setAttribute(SA_REGISTRATION, isRegister);
 
         try
         {
@@ -140,23 +162,6 @@ public class Login {
         {
             throw new WebApplicationException(e);
         }
-    }
-
-    @Path("response")
-    @GET
-    public Response openIDResponse(@Context HttpServletRequest request) {
-        UserInfo user = verifyResponse(request);
-        if (user != null) {
-            request.getSession().setAttribute(SA_USERINFO, user);
-            UsernamePasswordToken token = new UsernamePasswordToken("dave", "dummy");
-            Subject subject = SecurityUtils.getSubject();
-            subject.login(token);
-            return RequestProcessor.render("welcome.vm", uriInfo, servletContext, request, SA_USERINFO, user, "subject", subject);
-        } else {
-            return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "Could not find a registration for you.");
-        }
-
-
     }
 
     @SuppressWarnings({ "unchecked" })
@@ -203,7 +208,8 @@ public class Login {
                 log.info(String.format("Verified identity %s = %s", verified.getIdentifier(), name));
                 UserStore userstore = Registry.get().getUserStore();
                 UserInfo userinfo = null;
-                if (request.getParameter(RP_REGISTRATION) != null) {
+                boolean isRegistration = ((Boolean)session.getAttribute(SA_REGISTRATION)).booleanValue();
+                if (isRegistration) {
                     userinfo = new UserInfo(verified.getIdentifier(), name);
                     userstore.register( userinfo );
                 } else {
