@@ -52,6 +52,7 @@ public class Login {
 
     // Session attribute names
     public static final String SA_OPENID_DISC = "openid_disc";
+//    public static final String SA_OPENID_PROVIDER = "openid_provider";
     public static final String SA_USERINFO = "userinfo";
     public static final String SA_REGISTRATION = "isRegistration";
 
@@ -117,6 +118,7 @@ public class Login {
     @SuppressWarnings("rawtypes")
     protected void processOpenID(HttpServletRequest request, HttpServletResponse response, String provider, boolean isRegister) {
         log.info("Authentication request for " + provider + (isRegister ? " (registration)" : ""));
+        
         String responseURL = uriInfo.getBaseUri().toString() + "system/action/response";
         request.getSession().setAttribute(SA_REGISTRATION, isRegister);
 

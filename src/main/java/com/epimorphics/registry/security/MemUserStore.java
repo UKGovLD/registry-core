@@ -9,7 +9,6 @@
 
 package com.epimorphics.registry.security;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,7 +27,6 @@ public class MemUserStore extends ServiceBase implements UserStore, Service {
 
     Map<String, UserInfo> users = new HashMap<String, UserInfo>();
     Map<String, SimpleAuthorizationInfo> permissions = new HashMap<String, SimpleAuthorizationInfo>();
-    Map<String, Collection<Permission>> globals = new HashMap<String, Collection<Permission>>();
 
     @Override
     public void register(UserInfo user) {
@@ -59,15 +57,5 @@ public class MemUserStore extends ServiceBase implements UserStore, Service {
         // Assumes permissions are singletons
     }
 
-    @Override
-    public Collection<Permission> getGlobalPermissions(String path) {
-        return globals.get(path);
-    }
-
-    @Override
-    public void setGlobalPermissions(String path,
-            Collection<Permission> permissions) {
-        globals.put(path, permissions);
-    }
 
 }

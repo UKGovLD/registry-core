@@ -9,8 +9,6 @@
 
 package com.epimorphics.registry.security;
 
-import java.util.Collection;
-
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.Permission;
 
@@ -22,6 +20,9 @@ import org.apache.shiro.authz.Permission;
  */
 public interface UserStore {
 
+    /** ID of a pseudo user which stores the global permissions available to anyone logged in */
+    public static final String AUTH_USER_ID = "___auth";
+    
     /**
      * Register a new user
      */
@@ -51,13 +52,4 @@ public interface UserStore {
      */
     public void removePermission(String id, Permission permission);
 
-    /**
-     * Global permissions for a given path which apply to any authenticated user
-     */
-    public Collection<Permission> getGlobalPermissions(String path);
-
-    /**
-     * Set global permissions for a given path which apply to any authenticated user
-     */
-    public void setGlobalPermissions(String path, Collection<Permission> permissions);
 }
