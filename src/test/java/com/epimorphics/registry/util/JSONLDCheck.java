@@ -2,7 +2,7 @@
  * File:        JSONLDCheck.java
  * Created by:  Dave Reynolds
  * Created on:  25 Feb 2013
- * 
+ *
  * (c) Copyright 2013, Epimorphics Limited
  *
  *****************************************************************/
@@ -10,7 +10,6 @@
 package com.epimorphics.registry.util;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 

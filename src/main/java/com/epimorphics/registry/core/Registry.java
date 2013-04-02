@@ -34,6 +34,7 @@ import com.epimorphics.registry.commands.CommandUpdate;
 import com.epimorphics.registry.commands.CommandValidate;
 import com.epimorphics.registry.core.Command.Operation;
 import com.epimorphics.registry.core.ForwardingRecord.Type;
+import com.epimorphics.registry.security.UserStore;
 import com.epimorphics.registry.store.CachingStore;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.util.Prefixes;
@@ -73,6 +74,7 @@ public class Registry extends ServiceBase implements Service {
     public static final String SYSTEM_BOOTSTRAP_DIR_PARAM = "systemBoot";
     public static final String LOG_DIR_PARAM = "log";
     public static final String FORWARDER_PARAM = "forwarder";
+    public static final String USERSTORE_PARAM = "userStore";
     public static final String STORE_PARAM = "store";
     public static final String CACHE_SIZE_PARAM = "cacheSize";
     public static final String PAGE_SIZE_PARAM = "pageSize";
@@ -86,6 +88,7 @@ public class Registry extends ServiceBase implements Service {
     protected int pageSize;
     protected ForwardingService forwarder;
     protected String logDir;
+    protected UserStore userStore;
 
     @Override
     public void init(Map<String, String> config, ServletContext context) {
@@ -154,13 +157,18 @@ public class Registry extends ServiceBase implements Service {
             FileUtil.ensureDir(logDir);
             logDir = ServiceConfig.get().expandFileLocation( logDir );
         }
+
+        String usName = config.get(USERSTORE_PARAM);
+        if (usName != null) {
+            userStore = getNamedService(usName, UserStore.class);
+        }
     }
 
     /**
      * Load a set of initial registers and contents defined by sources files in a
      * directory tree. Each source is assumed to be in ttl format. Each directory
-     * represents a register and should contain a metadata.ttl file to define RegisterItem 
-     * metadata for the register itself. The root register should not have metadata. 
+     * represents a register and should contain a metadata.ttl file to define RegisterItem
+     * metadata for the register itself. The root register should not have metadata.
      * All other files in the register are plain content files which can either be in
      * simple or complex (with RegisterItems) format. Simple entries are assumed to be stable.
      */
@@ -174,7 +182,7 @@ public class Registry extends ServiceBase implements Service {
             }
         }
     }
-    
+
     private void loadRegisterTree(String parent, File dir) {
         File metadata = new File(dir, METADATA_FILE);
         if (metadata.exists()) {
@@ -187,7 +195,7 @@ public class Registry extends ServiceBase implements Service {
         if (filenames == null) {
             log.warn("Bootstrap directory " + dir.getPath() + " is empty");
         }
-        for (String filename : filenames) { 
+        for (String filename : filenames) {
             if (filename.equals(METADATA_FILE)) continue;
             File file = new File(dir, filename);
             if (file.isDirectory()) {
@@ -198,7 +206,7 @@ public class Registry extends ServiceBase implements Service {
         }
     }
     private final static String METADATA_FILE = "metadata.ttl";
-    
+
     private void registerFile(String register, File file)  {
         String baseURI = getBaseURI() + "/" + (register.isEmpty() ? "" : register + "/");
         try {
@@ -206,7 +214,7 @@ public class Registry extends ServiceBase implements Service {
             BufferedInputStream in = new BufferedInputStream( new FileInputStream(file) );
             model.read(in, baseURI, FileUtils.langTurtle);
             in.close();
-            
+
             String parameters = "";
             if ( ! model.contains(null, RDF.type, RegistryVocab.RegisterItem)) {
                 // Simple content so force status update to stable
@@ -224,10 +232,10 @@ public class Registry extends ServiceBase implements Service {
         } catch (Exception e) {
             throw new EpiException("Bootstrap error on file " + file.getPath(), e);
         }
-        
+
     }
 
-    
+
     public String getBaseURI() {
         return baseURI;
     }
@@ -246,6 +254,10 @@ public class Registry extends ServiceBase implements Service {
 
     public String getLogDir() {
         return logDir;
+    }
+
+    public UserStore getUserStore() {
+        return userStore;
     }
 
     /**

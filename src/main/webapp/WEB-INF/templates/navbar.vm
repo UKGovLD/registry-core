@@ -34,7 +34,13 @@
       <ul class="nav pull-right">
         <li class="popinfo" data-trigger="hover" data-placement="bottom"
             data-content="Login to allow access to administration functions.">
-          <a href="$uiroot/login"><span class="muted">Not logged in</span>
+          #set($user=false)
+          #set($user=$request.session.getAttribute("userinfo"))
+          #if($user)
+            <a href="$uiroot/logout"><span>$user.name</span>
+          #else
+            <a href="$uiroot/login"><span class="muted">Not logged in</span>
+          #end
           <i class="icon-user icon-white"></i></a>
         </li>
       </ul>

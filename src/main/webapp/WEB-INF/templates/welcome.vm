@@ -6,8 +6,10 @@
   #end
 #parse("navbar.vm")
 
-<h2>Welcome $request.session.getAttribute("user_name")</h2>
+<h2>Welcome $userinfo.name</h2>
 
-identity = $identity
+<p>identity = $userinfo.openid</p>
+
+<p>subject is authenticated = $subject.isAuthenticated()</p>
 
 #parse("footer.vm")

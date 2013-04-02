@@ -1,9 +1,59 @@
-<!DOCTYPE web-app PUBLIC
- "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
- "http://java.sun.com/dtd/web-app_2_3.dtd" >
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
 
-<web-app>
   <display-name>UKL Registry POC</display-name>
+
+  <filter>
+    <filter-name>Jersey Web Application</filter-name>
+    <filter-class>com.sun.jersey.spi.container.servlet.ServletContainer</filter-class>
+    <init-param>
+      <param-name>com.sun.jersey.config.property.packages</param-name>
+      <param-value>com.epimorphics.registry.webapi, com.epimorphics.webapi</param-value>
+    </init-param>
+    <init-param>
+      <param-name>com.sun.jersey.config.feature.FilterForwardOn404</param-name>
+      <param-value>true</param-value>
+    </init-param>
+    <init-param>
+         <param-name>com.sun.jersey.spi.container.ContainerRequestFilters</param-name>
+         <param-value>com.sun.jersey.api.container.filter.PostReplaceFilter</param-value>
+     </init-param>
+  </filter>
+
+  <filter>
+    <filter-name>ShiroFilter</filter-name>
+    <filter-class>org.apache.shiro.web.servlet.ShiroFilter</filter-class>
+  </filter>
+
+  <!-- Most security is done at the Jersey resource level not here -->
+  <filter-mapping>
+    <filter-name>ShiroFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+    <dispatcher>REQUEST</dispatcher>
+    <dispatcher>FORWARD</dispatcher>
+    <dispatcher>INCLUDE</dispatcher>
+    <dispatcher>ERROR</dispatcher>
+  </filter-mapping>
+
+  <filter-mapping>
+    <filter-name>Jersey Web Application</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <listener>
+    <listener-class>com.epimorphics.server.core.ServiceConfig</listener-class>
+  </listener>
+
+  <listener>
+      <listener-class>org.apache.shiro.web.env.EnvironmentLoaderListener</listener-class>
+  </listener>
+
+  <session-config>
+    <!-- web.xml expects the session timeout in minutes: -->
+    <session-timeout>30</session-timeout>
+  </session-config>
 
   <context-param>
     <param-name>config.basestore</param-name>
@@ -45,6 +95,11 @@
   </context-param>
 
   <context-param>
+    <param-name>config.userstore</param-name>
+    <param-value>com.epimorphics.registry.security.MemUserStore</param-value>
+  </context-param>
+
+  <context-param>
     <param-name>config.registry</param-name>
     <param-value>com.epimorphics.registry.core.Registry,
     baseURI=http://ukgovld-registry.dnsalias.net/,
@@ -52,37 +107,11 @@
     cacheSize=100,
     pageSize=25,
     forwarder=forwarder,
+    userStore=userstore,
     log=/var/local/registry/logstore,
     bootSpec=${webapp}/WEB-INF/root-register.ttl|${webapp}/WEB-INF/registry.ttl,
     systemBoot=${webapp}/WEB-INF/boot|/var/local/registry/boot</param-value>
   </context-param>
-
-  <filter>
-    <filter-name>Jersey Web Application</filter-name>
-    <filter-class>com.sun.jersey.spi.container.servlet.ServletContainer</filter-class>
-    <init-param>
-      <param-name>com.sun.jersey.config.property.packages</param-name>
-      <param-value>com.epimorphics.registry.webapi, com.epimorphics.webapi</param-value>
-    </init-param>
-    <init-param>
-      <param-name>com.sun.jersey.config.feature.FilterForwardOn404</param-name>
-      <param-value>true</param-value>
-    </init-param>
-    <init-param>
-         <param-name>com.sun.jersey.spi.container.ContainerRequestFilters</param-name>
-         <param-value>com.sun.jersey.api.container.filter.PostReplaceFilter</param-value>
-     </init-param>
-  </filter>
-
-  <filter-mapping>
-    <filter-name>Jersey Web Application</filter-name>
-    <url-pattern>/*</url-pattern>
-  </filter-mapping>
-
-
-  <listener>
-    <listener-class>com.epimorphics.server.core.ServiceConfig</listener-class>
-  </listener>
 
     <servlet>
         <servlet-name>sparql</servlet-name>
