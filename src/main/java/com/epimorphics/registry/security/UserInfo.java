@@ -11,11 +11,11 @@ package com.epimorphics.registry.security;
 
 /**
  * Represents the primary information we know about a registered user.
+ * Used as the "principal" for Shiro identity tracking.
  *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public class UserInfo {
-
     protected String openid;
     protected String name;
 

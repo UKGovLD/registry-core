@@ -21,7 +21,6 @@ import java.util.List;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -37,6 +36,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.shiro.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,7 +105,7 @@ public class RequestProcessor extends BaseEndpoint {
         if (language.isEmpty()) {
             language = "en";
         }
-        Object[] fullParams = new Object[params.length + 8];
+        Object[] fullParams = new Object[params.length + 10];
         int i = 0;
         while (i < params.length) {
             fullParams[i] = params[i];
@@ -113,8 +113,15 @@ public class RequestProcessor extends BaseEndpoint {
         }
         fullParams[i++] = "registry";
         fullParams[i++] = Registry.get();
+        fullParams[i++] = "subject";
+        fullParams[i++] = SecurityUtils.getSubject();
         fullParams[i++] = "requestor";
-        fullParams[i++] = getRequestor(request);
+        UserInfo user = (UserInfo) SecurityUtils.getSubject().getPrincipal();
+        if (user != null) {
+            fullParams[i++] = user.getName();
+        } else {
+            fullParams[i++] = getRequestor(request);
+        }
         fullParams[i++] = "request";
         fullParams[i++] = request;
         fullParams[i++] = "language";
@@ -126,14 +133,6 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     public static String getRequestor(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            Object user = session.getAttribute(Login.SA_USERINFO);
-            if (user != null) {
-                return ((UserInfo)user).getName();
-            }
-        }
-
         if (request.getHeader(FORWARDED_FOR_HEADER) != null) {
             return request.getHeader(FORWARDED_FOR_HEADER);
         }

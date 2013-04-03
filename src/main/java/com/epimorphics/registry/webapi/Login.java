@@ -53,7 +53,7 @@ public class Login {
     // Session attribute names
     public static final String SA_OPENID_DISC = "openid_disc";
 //    public static final String SA_OPENID_PROVIDER = "openid_provider";
-    public static final String SA_USERINFO = "userinfo";
+    public static final String SA_SUBJECT = "subject";
     public static final String SA_REGISTRATION = "isRegistration";
 
     // Attribute parameter names
@@ -94,7 +94,7 @@ public class Login {
     @POST
     public void logout(@Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException {
         // TODO set session attribute as part of Shiro realm
-        request.getSession().removeAttribute(SA_USERINFO);
+        request.getSession().removeAttribute(SA_SUBJECT);
         SecurityUtils.getSubject().logout();
         response.sendRedirect("/");
     }
@@ -102,14 +102,12 @@ public class Login {
     @Path("/response")
     @GET
     public Response openIDResponse(@Context HttpServletRequest request) {
-        UserInfo user = verifyResponse(request);
-        if (user != null) {
-            // TODO set session attribute as part of Shiro realm
-            request.getSession().setAttribute(SA_USERINFO, user);
-            UsernamePasswordToken token = new UsernamePasswordToken("dave", "dummy");
+        String id = verifyResponse(request);
+        if (id != null) {
+            UsernamePasswordToken token = new UsernamePasswordToken(id, "");
             Subject subject = SecurityUtils.getSubject();
             subject.login(token);
-            return RequestProcessor.render("welcome.vm", uriInfo, servletContext, request, SA_USERINFO, user, "subject", subject);
+            return RequestProcessor.render("welcome.vm", uriInfo, servletContext, request, SA_SUBJECT, subject);
         } else {
             return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "Could not find a registration for you.");
         }
@@ -118,7 +116,7 @@ public class Login {
     @SuppressWarnings("rawtypes")
     protected void processOpenID(HttpServletRequest request, HttpServletResponse response, String provider, boolean isRegister) {
         log.info("Authentication request for " + provider + (isRegister ? " (registration)" : ""));
-        
+
         String responseURL = uriInfo.getBaseUri().toString() + "system/action/response";
         request.getSession().setAttribute(SA_REGISTRATION, isRegister);
 
@@ -167,7 +165,7 @@ public class Login {
     }
 
     @SuppressWarnings({ "unchecked" })
-    public UserInfo verifyResponse(HttpServletRequest request) {
+    public String verifyResponse(HttpServletRequest request) {
         try {
             HttpSession session = request.getSession();
 
@@ -214,10 +212,8 @@ public class Login {
                 if (isRegistration) {
                     userinfo = new UserInfo(verified.getIdentifier(), name);
                     userstore.register( userinfo );
-                } else {
-                    userinfo = userstore.checkUser(verified.getIdentifier());
                 }
-                return userinfo;
+                return verified.getIdentifier();
             }
         } catch (Exception e) {
             throw new WebApplicationException(e);
