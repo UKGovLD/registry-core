@@ -9,8 +9,7 @@
 
 package com.epimorphics.registry.security;
 
-import org.apache.shiro.authz.AuthorizationInfo;
-import org.apache.shiro.authz.Permission;
+import java.util.Set;
 
 /**
  * Interface abstraction for the store of registered users. The actual
@@ -22,7 +21,7 @@ public interface UserStore {
 
     /** ID of a pseudo user which stores the global permissions available to anyone logged in */
     public static final String AUTH_USER_ID = "___auth";
-    
+
     /**
      * Register a new user
      */
@@ -38,18 +37,17 @@ public interface UserStore {
     /**
      * Return all the permissions for this user
      */
-    public AuthorizationInfo getPermissions(String id);
+    public Set<RegPermission> getPermissions(String id);
 
     /**
      * Record a new permission for this user.
-     * Implementations may restrict the Permission implementation supported.
      */
-    public void addPermision(String id, Permission permission);
+    public void addPermision(String id, RegPermission permission);
 
     /**
-     * Remove a permission from this user.
-     * Implementations may restrict the Permission implementation supported.
+     * Remove permissions from this user. If the permission has a path then all
+     * permissions for that path will be removed.
      */
-    public void removePermission(String id, Permission permission);
+    public void removePermission(String id, RegPermission permission);
 
 }

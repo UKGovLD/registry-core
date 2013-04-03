@@ -2,7 +2,7 @@
  * File:        Trie.java
  * Created by:  Dave Reynolds
  * Created on:  17 Feb 2013
- * 
+ *
  * (c) Copyright 2013, Epimorphics Limited
  *
  *****************************************************************/
@@ -19,31 +19,31 @@ import com.hp.hpl.jena.util.iterator.Filter;
 /**
  * Trie structure for matching URI prefixes. The trie is based on matching URI segments
  * rather then individual characters (unlike arq lib Trie) and does not support
- * path parameter patters (unlike Modal TrieMatcher). Terminals can only appear on ends of paths.
- * 
+ * path parameter patterns (unlike Modal TrieMatcher). Terminals can only appear on ends of paths.
+ *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public class Trie<T> {
     protected TrieNode<T> root = new TrieBranch<T>();
-    
+
     public void register(String path, T match) {
         root.register(split(path), 0, match);
     }
-    
+
     public void unregister(String path) {
         root.unregister(split(path), 0);
     }
-    
+
     public MatchResult<T> match(String uri) {
         return root.match(split(uri), 0);
     }
-    
+
     public List<T> findAll(String path, Filter<T> filter) {
         List<T> results = new ArrayList<T>();
         root.findAll(split(path), 0, filter, results);
         return results;
     }
-    
+
     private String[] split(String path) {
         if (path.startsWith("/")) {
             path = path.substring(1);
@@ -51,7 +51,7 @@ public class Trie<T> {
         if (path.isEmpty()) return new String[0];
         return path.split("/");
     }
-    
+
     public static class MatchResult<T> {
         protected T match;
         protected String remainder;
@@ -63,32 +63,32 @@ public class Trie<T> {
                 remainder += path[i];
             }
         }
-        
-        public T getMatch() { 
+
+        public T getMatch() {
             return match;
         }
-        
+
         public String getPathRemainder() {
             return remainder;
-        }        
+        }
     }
-    
+
     static interface TrieNode<T> {
         public MatchResult<T> match(String[] path, int index);
-        
+
         public void register(String[] path, int index, T match);
-        
+
         public void unregister(String[] path, int index);
-        
+
         public void findAll(String[] path, int index, Filter<T> filter, List<T> results);
     }
-    
+
     static class TrieTerminal<T> implements TrieNode<T> {
         protected T match;
         protected TrieTerminal(T match) {
             this.match = match;
         }
-        
+
         public MatchResult<T> match(String[] path, int index) {
             return new MatchResult<T>(match, path, index);
         }
@@ -110,12 +110,12 @@ public class Trie<T> {
             }
         }
     }
-    
+
     static class TrieBranch<T> implements TrieNode<T> {
         protected Map<String, TrieNode<T>> branches = new HashMap<String, TrieNode<T>>();
-        
+
         public MatchResult<T> match(String[] path, int index) {
-            if (index >= path.length) return null;   // can "never" happen? 
+            if (index >= path.length) return null;   // can "never" happen?
             TrieNode<T> next = branches.get(path[index]);
             if (next == null) {
                 return null;
@@ -123,7 +123,7 @@ public class Trie<T> {
                 return next.match(path, index + 1);
             }
         }
-        
+
         public void register(String[] path, int index, T match) {
             String segment = path[index];
             if (index >= path.length-1) {
@@ -167,6 +167,6 @@ public class Trie<T> {
                     branches.get(key).findAll(path, index, filter, results);
                 }
             }
-        }        
+        }
     }
 }

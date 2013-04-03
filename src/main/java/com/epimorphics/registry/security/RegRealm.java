@@ -23,6 +23,7 @@ import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 
 import com.epimorphics.registry.core.Registry;
+import com.epimorphics.util.EpiException;
 
 /**
  * A Shiro Realm designed to support the sort of authentication and
@@ -31,13 +32,13 @@ import com.epimorphics.registry.core.Registry;
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public class RegRealm extends AuthorizingRealm {
-    public static final String REALM_NAME = "regrealm";
-
     protected UserStore userstore;
 
     public RegRealm() {
-        setName(REALM_NAME);
-        // Does this get replaced by shiro.ini processing?
+        // Do we need to set a default name?
+
+        // Force permission resolver here since implemention depends on it
+        setPermissionResolver( new RegPermissionResolver() );
     }
 
     protected UserStore getUserStore() {
@@ -61,14 +62,13 @@ public class RegRealm extends AuthorizingRealm {
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(
             PrincipalCollection principals) {
-        // TODO Auto-generated method stub
-        // Fetch user and global default Auth and merge them
-        // ? create index as well - custom AuthorizationInfo
-        // Need role component so can test for administrator role
-        return null;
-    }
 
-    // TODO set userstore from registry
+        UserInfo user = (UserInfo)principals.getPrimaryPrincipal();
+        RegAuthorizationInfo auth = new RegAuthorizationInfo();
+        auth.addAllPermissions( getUserStore().getPermissions(user.getOpenid()) );
+        auth.addAllPermissions( getUserStore().getPermissions( UserStore.AUTH_USER_ID ) );
+        return auth;
+    }
 
     // TODO add methods to update permissions, add here so can clear authorization cache then pass on to user store
 
@@ -77,13 +77,13 @@ public class RegRealm extends AuthorizingRealm {
      * of permissions down the URI tree
      */
     protected boolean isPermitted(Permission permission, AuthorizationInfo info) {
-        // TODO implement
-        // Special case when administrator role
-        // split path part of permission
-        // for path and each shortened path check for AuthorizationInfo
-        // check action set part, AI can have wild cards
-        // continue until all actions have been granted or run out of path
-        return false;
+        try {
+            RegPermission rp = (RegPermission)permission;
+            RegAuthorizationInfo auth = (RegAuthorizationInfo) info;
+            return auth.permits(rp);
+        } catch (Throwable t) {
+            throw new EpiException("Internal typing error", t);
+        }
     }
 
     // ----------- Replicated from parent class to over *private* visibility of base isPermitted operation --------------

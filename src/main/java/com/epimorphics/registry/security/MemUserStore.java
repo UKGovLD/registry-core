@@ -9,12 +9,12 @@
 
 package com.epimorphics.registry.security;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-
-import org.apache.shiro.authz.AuthorizationInfo;
-import org.apache.shiro.authz.Permission;
-import org.apache.shiro.authz.SimpleAuthorizationInfo;
+import java.util.Set;
 
 import com.epimorphics.server.core.Service;
 import com.epimorphics.server.core.ServiceBase;
@@ -26,12 +26,12 @@ import com.epimorphics.server.core.ServiceBase;
 public class MemUserStore extends ServiceBase implements UserStore, Service {
 
     Map<String, UserInfo> users = new HashMap<String, UserInfo>();
-    Map<String, SimpleAuthorizationInfo> permissions = new HashMap<String, SimpleAuthorizationInfo>();
+    Map<String, Set<RegPermission>> permissions = new HashMap<String, Set<RegPermission>>();
 
     @Override
     public void register(UserInfo user) {
         users.put(user.getOpenid(), user);
-        permissions.put(user.getOpenid(), new SimpleAuthorizationInfo());
+        permissions.put(user.getOpenid(), new HashSet<RegPermission>());
     }
 
     @Override
@@ -40,21 +40,26 @@ public class MemUserStore extends ServiceBase implements UserStore, Service {
     }
 
     @Override
-    public AuthorizationInfo getPermissions(String id) {
+    public Set<RegPermission> getPermissions(String id) {
         return permissions.get(id);
     }
 
     @Override
-    public void addPermision(String id, Permission permission) {
-        SimpleAuthorizationInfo auth = permissions.get(id);
-        auth.addObjectPermission(permission);
+    public void addPermision(String id, RegPermission permission) {
+        Set<RegPermission> auth = permissions.get(id);
+        auth.add(permission);
     }
 
     @Override
-    public void removePermission(String id, Permission permission) {
-        SimpleAuthorizationInfo auth = permissions.get(id);
-        auth.getObjectPermissions().remove(permission);
-        // Assumes permissions are singletons
+    public void removePermission(String id, RegPermission permission) {
+        Set<RegPermission> perms = permissions.get(id);
+        List<RegPermission> toRemove = new ArrayList<RegPermission>();
+        for (RegPermission p : perms) {
+            if ( p.getPath().equals(permission.getPath()) ) {
+                toRemove.add(p);
+            }
+        }
+        perms.removeAll(toRemove);
     }
 
 
