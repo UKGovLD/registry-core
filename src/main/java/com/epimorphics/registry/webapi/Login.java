@@ -99,6 +99,22 @@ public class Login {
         response.sendRedirect("/");
     }
 
+    @Path("/apilogin")
+    @POST
+    public Response apilogin(@FormParam("userid") String userid, @FormParam("password") String password,
+        @Context HttpServletRequest request, @Context HttpServletResponse response) {
+        try {
+            RegToken token = new RegToken(userid, password);
+            Subject subject = SecurityUtils.getSubject();
+            subject.login(token);
+            log.info("API Login for userid " + userid);
+            return Response.ok().build();
+        } catch (Exception e) {
+            log.warn(String.format("API Login failure for userid %s [%s]: %s", userid, e.getClass().toString(), e.getMessage()));
+        }
+        return Response.status(Response.Status.UNAUTHORIZED).build();
+    }
+
     @Path("/response")
     @GET
     public Response openIDResponse(@Context HttpServletRequest request) {

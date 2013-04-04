@@ -24,6 +24,7 @@ import org.apache.shiro.crypto.hash.DefaultHashService;
 import org.apache.shiro.crypto.hash.HashService;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.subject.SimplePrincipalCollection;
 
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.util.EpiException;
@@ -47,13 +48,12 @@ public class RegRealm extends AuthorizingRealm {
         hashing.setHashAlgorithmName( RegCredentialsMatcher.DEFAULT_ALGORITHM );
         hashing.setHashIterations( RegCredentialsMatcher.DEFAULT_ITERATIONS );
         hashService = hashing;
+
+        userstore = Registry.get().getUserStore();
+        userstore.setRealm(this);
     }
 
-    protected UserStore getUserStore() {
-        if (userstore == null) {
-            userstore = Registry.get().getUserStore();
-            userstore.setRealm(this);
-        }
+    public UserStore getUserStore() {
         return userstore;
     }
 
@@ -80,8 +80,6 @@ public class RegRealm extends AuthorizingRealm {
         return getUserStore().getPermissions(user.getOpenid());
     }
 
-    // TODO add methods to update permissions, add here so can clear authorization cache then pass on to user store
-
     /**
      * Custom implementation of permission checking to handle inheritance
      * of permissions down the URI tree
@@ -94,6 +92,24 @@ public class RegRealm extends AuthorizingRealm {
         } catch (Throwable t) {
             throw new EpiException("Internal typing error", t);
         }
+    }
+
+    /**
+     * Clear cached authentication and authorization information
+     * for an individual. Should be called from UserStore implementation
+     * whenever a change is made.
+     */
+    protected void clearCacheFor(String id) {
+        UserInfo principal = new UserInfo(id, null);
+        PrincipalCollection pc = new SimplePrincipalCollection(principal, getName());
+        clearCache(pc);
+    }
+
+    // Override implementation so that key used for tokens (openid URI) is also
+    // used for princpals (UserInfo)
+    @Override
+    protected Object getAuthenticationCacheKey(PrincipalCollection pc) {
+        return ((UserInfo)pc.getPrimaryPrincipal()).getOpenid();
     }
 
     // ----------- Replicated from parent class to over *private* visibility of base isPermitted operation --------------

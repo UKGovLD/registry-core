@@ -46,9 +46,9 @@ public class RegPermission implements Permission {
 
     protected static Map<String, RegAction[]> roleAliases = new HashMap<String, RegAction[]>();
     static {
-        roleAliases.put("manager", new RegAction[]{Register, Update, StatusUpdate, Grant});
-        roleAliases.put("maintainer", new RegAction[]{Update, Grant});
-        roleAliases.put("authorized", new RegAction[]{Register, Update, StatusUpdate});
+        roleAliases.put("Manager", new RegAction[]{Register, Update, StatusUpdate, Grant});
+        roleAliases.put("Maintainer", new RegAction[]{Update, Grant});
+        roleAliases.put("Authorized", new RegAction[]{Register, Update, StatusUpdate});
     }
 
     public RegPermission(String permission) {

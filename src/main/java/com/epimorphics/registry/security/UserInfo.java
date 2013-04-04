@@ -42,4 +42,17 @@ public class UserInfo {
         this.name = name;
     }
 
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof UserInfo) {
+            return openid.equals( ((UserInfo)other).openid );
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return openid.hashCode();
+    }
+
 }

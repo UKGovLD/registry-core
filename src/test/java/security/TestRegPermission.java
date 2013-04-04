@@ -80,10 +80,10 @@ public class TestRegPermission {
         ai.addRole( "administrator" );
         assertTrue( ai.permits( new RegPermission("Update,Register,Force:/root/reg/item")) );
     }
-    
+
     @Test
     public void testRoleAliases() {
-        RegPermission granted = new RegPermission("manager:/root/reg1");
+        RegPermission granted = new RegPermission("Manager:/root/reg1");
         Set<RegAction> actions = granted.getActions();
         assertEquals(4, actions.size());
         assertTrue(actions.contains(RegAction.StatusUpdate));

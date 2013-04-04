@@ -9,11 +9,18 @@
 
 package com.epimorphics.registry.security;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.servlet.ServletContext;
 
 import org.apache.shiro.authc.SaltedAuthenticationInfo;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
@@ -22,25 +29,104 @@ import org.apache.shiro.crypto.SecureRandomNumberGenerator;
 import org.apache.shiro.crypto.hash.Hash;
 import org.apache.shiro.crypto.hash.HashRequest;
 import org.apache.shiro.util.ByteSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.epimorphics.server.core.Service;
 import com.epimorphics.server.core.ServiceBase;
+import com.epimorphics.server.core.ServiceConfig;
+import com.epimorphics.util.EpiException;
 
 /**
- * Non-persistent memory implementation of a UserSore.
+ * Non-persistent memory implementation of a UserSore for testing use.
+ * Can initialize this from a file with syntax:
+ * <pre>
+ * user http://id/user1 "name1"  password1
+ * user http://id/user2 "name2"  password2
+ *
+ * http://id/user1 Manager:/reg1
+ * http://id/user2 GrantAdmin
+ *
+ * </pre>
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public class MemUserStore extends ServiceBase implements UserStore, Service {
+    static final Logger log = LoggerFactory.getLogger( MemUserStore.class );
+
+    public static final String INITFILE_PARAM = "initfile";
+
     protected SecureRandomNumberGenerator rand = new SecureRandomNumberGenerator();
     protected RegRealm realm;
 
     protected Map<String, UserRecord> users = new HashMap<String, UserRecord>();
     protected Map<String, Set<RegPermission>> permissions = new HashMap<String, Set<RegPermission>>();
 
+    protected String initfile = null;
+
+    @Override
+    public void init(Map<String, String> config, ServletContext context) {
+        super.init(config, context);
+
+        // Load a bootstrap initialization file, used for test purposes only
+        initfile = config.get(INITFILE_PARAM);
+        if (initfile != null) {
+            initfile = ServiceConfig.get().expandFileLocation( initfile) ;
+        }
+    }
+
     @Override
     public void setRealm(RegRealm realm) {
         this.realm = realm;
+        // Can only initialize the store once we know the realm
+        initStore();
     }
+
+    private void initStore() {
+        if (initfile == null) return;
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(initfile));
+            String line = null;
+            while ((line = in.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty() || line.startsWith("#")) continue;
+                if (line.startsWith("user")) {
+                    Matcher patternMatch = USER_LINE_PATTERN.matcher(line);
+                    if (patternMatch.matches()) {
+                        String id = patternMatch.group(1);
+                        UserRecord record = new UserRecord(id, patternMatch.group(2));
+                        record.initSalt();
+                        record.setPassword( ByteSource.Util.bytes( patternMatch.group(3) ), 60);
+                        users.put(id, record);
+                    } else {
+                        throw new EpiException("Could not parse user declaration: " + line);
+                    }
+                } else {
+                    String[] parts = line.split("\\s+");
+                    if (parts.length != 2) {
+                        throw new EpiException("Permissions line had wrong number of components: " + line);
+                    }
+                    String id = parts[0];
+                    String perm = parts[1];
+                    RegPermission permission = new RegPermission(perm);
+                    if (permission.getActions().contains(RegAction.GrantAdmin)) {
+                        // Make this user an administrator
+                        users.get(id).role = RegAuthorizationInfo.ADMINSTRATOR_ROLE;
+                    } else {
+                        Set<RegPermission> current = permissions.get(id);
+                        if (current == null) {
+                            current = new HashSet<RegPermission>();
+                            permissions.put(id, current);
+                        }
+                        current.add( permission );
+                    }
+                }
+            }
+            log.info("Load user store from " + initfile);
+        } catch (Exception e) {
+            log.error("Failed to load UserStore initialization file: " + initfile + " ", e);
+        }
+    }
+    static final Pattern USER_LINE_PATTERN = Pattern.compile("user\\s+([^\\s]+)\\s+\"([^\"]+)\"\\s+([^\\s]+)");
 
     @Override
     public void register(UserInfo user) {
@@ -82,6 +168,7 @@ public class MemUserStore extends ServiceBase implements UserStore, Service {
     public void addPermision(String id, RegPermission permission) {
         Set<RegPermission> auth = permissions.get(id);
         auth.add(permission);
+        realm.clearCacheFor(id);
     }
 
     @Override
@@ -94,26 +181,31 @@ public class MemUserStore extends ServiceBase implements UserStore, Service {
             }
         }
         perms.removeAll(toRemove);
+        realm.clearCacheFor(id);
     }
 
     @Override
     public void unregister(String id) {
         users.remove(id);
+        realm.clearCacheFor(id);
     }
 
     @Override
     public void setCredentials(String id, ByteSource credentials, int minstolive) {
         users.get(id).setPassword(credentials, minstolive);
+        realm.clearCacheFor(id);
     }
 
     @Override
     public void removeCredentials(String id) {
         users.get(id).clearPassword();
+        realm.clearCacheFor(id);
     }
 
     @Override
     public void setRole(String id, String role) {
         users.get(id).role = role;
+        realm.clearCacheFor(id);
     }
 
 
