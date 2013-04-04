@@ -9,6 +9,8 @@
 
 package security;
 
+import java.util.Set;
+
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -77,5 +79,16 @@ public class TestRegPermission {
 
         ai.addRole( "administrator" );
         assertTrue( ai.permits( new RegPermission("Update,Register,Force:/root/reg/item")) );
+    }
+    
+    @Test
+    public void testRoleAliases() {
+        RegPermission granted = new RegPermission("manager:/root/reg1");
+        Set<RegAction> actions = granted.getActions();
+        assertEquals(4, actions.size());
+        assertTrue(actions.contains(RegAction.StatusUpdate));
+        assertTrue(actions.contains(RegAction.Update));
+        assertTrue(actions.contains(RegAction.Register));
+        assertTrue(actions.contains(RegAction.Grant));
     }
 }

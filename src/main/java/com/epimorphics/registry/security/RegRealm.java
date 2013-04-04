@@ -15,10 +15,13 @@ import java.util.List;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authc.SimpleAuthenticationInfo;
+import org.apache.shiro.authc.IncorrectCredentialsException;
+import org.apache.shiro.authc.SaltedAuthenticationInfo;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.Permission;
 import org.apache.shiro.authz.UnauthorizedException;
+import org.apache.shiro.crypto.hash.DefaultHashService;
+import org.apache.shiro.crypto.hash.HashService;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 
@@ -33,41 +36,48 @@ import com.epimorphics.util.EpiException;
  */
 public class RegRealm extends AuthorizingRealm {
     protected UserStore userstore;
+    protected HashService hashService;
 
     public RegRealm() {
         // Do we need to set a default name?
 
-        // Force permission resolver here since implemention depends on it
         setPermissionResolver( new RegPermissionResolver() );
+        setCredentialsMatcher( new RegCredentialsMatcher() );
+        DefaultHashService hashing = new DefaultHashService();
+        hashing.setHashAlgorithmName( RegCredentialsMatcher.DEFAULT_ALGORITHM );
+        hashing.setHashIterations( RegCredentialsMatcher.DEFAULT_ITERATIONS );
+        hashService = hashing;
     }
 
     protected UserStore getUserStore() {
         if (userstore == null) {
             userstore = Registry.get().getUserStore();
+            userstore.setRealm(this);
         }
         return userstore;
+    }
+
+    public HashService getHashService() {
+        return hashService;
     }
 
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(
             AuthenticationToken token) throws AuthenticationException {
-        String id = (String)token.getPrincipal();
-        UserInfo userinfo = getUserStore().checkUser(id);
-        if (userinfo != null) {
-            return new SimpleAuthenticationInfo(userinfo, "", getName());
+        if (!(token instanceof RegToken)) {
+            throw new IncorrectCredentialsException();
         }
-        return null;
+        RegToken rtoken = (RegToken)token;
+        String id = (String)rtoken.getPrincipal();
+        SaltedAuthenticationInfo info = getUserStore().checkUser(id);
+        return info;
     }
 
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(
             PrincipalCollection principals) {
-
         UserInfo user = (UserInfo)principals.getPrimaryPrincipal();
-        RegAuthorizationInfo auth = new RegAuthorizationInfo();
-        auth.addAllPermissions( getUserStore().getPermissions(user.getOpenid()) );
-        auth.addAllPermissions( getUserStore().getPermissions( UserStore.AUTH_USER_ID ) );
-        return auth;
+        return getUserStore().getPermissions(user.getOpenid());
     }
 
     // TODO add methods to update permissions, add here so can clear authorization cache then pass on to user store

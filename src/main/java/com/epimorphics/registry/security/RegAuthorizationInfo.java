@@ -66,7 +66,7 @@ public class RegAuthorizationInfo extends SimpleAuthorizationInfo implements Aut
         return residual == null;
     }
 
-    public RegPermission residualFromPath(String path, RegPermission request) {
+    protected RegPermission residualFromPath(String path, RegPermission request) {
         RegPermission residual = request;
         Iterator<RegPermission> i = getIndex().getAll(path);
         while (i.hasNext()) {

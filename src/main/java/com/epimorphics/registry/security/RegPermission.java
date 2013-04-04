@@ -9,12 +9,15 @@
 
 package com.epimorphics.registry.security;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.shiro.authz.Permission;
 
 import com.epimorphics.util.EpiException;
+import static com.epimorphics.registry.security.RegAction.*;
 
 /**
  * Represents registry permission structure. The basic string form is:
@@ -40,6 +43,13 @@ public class RegPermission implements Permission {
 
     protected Set<RegAction> actions;
     protected String path = "";
+
+    protected static Map<String, RegAction[]> roleAliases = new HashMap<String, RegAction[]>();
+    static {
+        roleAliases.put("manager", new RegAction[]{Register, Update, StatusUpdate, Grant});
+        roleAliases.put("maintainer", new RegAction[]{Update, Grant});
+        roleAliases.put("authorized", new RegAction[]{Register, Update, StatusUpdate});
+    }
 
     public RegPermission(String permission) {
         int split = permission.indexOf(':');
@@ -76,11 +86,17 @@ public class RegPermission implements Permission {
         }
         Set<RegAction> actions = new HashSet<RegAction>(5);
         for (String actionStr : actionsStr.split(",")) {
-            RegAction action = RegAction.forString(actionStr.trim());
-            if (action != null) {
-                actions.add(action);
+            if (roleAliases.containsKey(actionStr)) {
+                for (RegAction action : roleAliases.get(actionStr)) {
+                    actions.add(action);
+                }
             } else {
-                throw new EpiException("Illegal action in permissions string: " + actionStr);
+                RegAction action = RegAction.forString(actionStr.trim());
+                if (action != null) {
+                    actions.add(action);
+                } else {
+                    throw new EpiException("Illegal action in permissions string: " + actionStr);
+                }
             }
         }
         return actions;

@@ -27,7 +27,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
 import org.openid4java.consumer.ConsumerManager;
 import org.openid4java.consumer.VerificationResult;
@@ -43,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.security.RegToken;
 import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.security.UserStore;
 
@@ -104,13 +104,16 @@ public class Login {
     public Response openIDResponse(@Context HttpServletRequest request) {
         String id = verifyResponse(request);
         if (id != null) {
-            UsernamePasswordToken token = new UsernamePasswordToken(id, "");
+            RegToken token = new RegToken(id, true);
             Subject subject = SecurityUtils.getSubject();
-            subject.login(token);
-            return RequestProcessor.render("welcome.vm", uriInfo, servletContext, request, SA_SUBJECT, subject);
-        } else {
-            return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "Could not find a registration for you.");
+            try {
+                subject.login(token);
+                return RequestProcessor.render("welcome.vm", uriInfo, servletContext, request, SA_SUBJECT, subject);
+            } catch (Exception e) {
+                log.error("Authentiation failure: " + e);
+            }
         }
+        return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "Could not find a registration for you.");
     }
 
     @SuppressWarnings("rawtypes")
@@ -207,10 +210,9 @@ public class Login {
                 }
                 log.info(String.format("Verified identity %s = %s", verified.getIdentifier(), name));
                 UserStore userstore = Registry.get().getUserStore();
-                UserInfo userinfo = null;
                 boolean isRegistration = ((Boolean)session.getAttribute(SA_REGISTRATION)).booleanValue();
                 if (isRegistration) {
-                    userinfo = new UserInfo(verified.getIdentifier(), name);
+                    UserInfo userinfo = new UserInfo(verified.getIdentifier(), name);
                     userstore.register( userinfo );
                 }
                 return verified.getIdentifier();

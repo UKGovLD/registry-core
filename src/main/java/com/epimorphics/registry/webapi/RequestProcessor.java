@@ -76,6 +76,7 @@ public class RequestProcessor extends BaseEndpoint {
     static final Logger log = LoggerFactory.getLogger( RequestProcessor.class );
 
     public static final String FULL_MIME_TURTLE = "text/turtle; charset=UTF-8";
+    public static final String FORWARDED_FOR_HEADER = "X-Forwarded-For";
 
     @GET
     @Produces("text/html")
@@ -204,7 +205,7 @@ public class RequestProcessor extends BaseEndpoint {
 
     private Command makeCommand(Operation op) {
         Command c = Registry.get().make(op, uriInfo.getPath(), uriInfo.getQueryParameters());
-        c.setRequestor(getRequestor());
+        c.setRequestor(getRequestor(request));
         return c;
     }
 

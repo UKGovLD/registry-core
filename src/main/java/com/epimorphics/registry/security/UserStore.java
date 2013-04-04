@@ -9,7 +9,8 @@
 
 package com.epimorphics.registry.security;
 
-import java.util.Set;
+import org.apache.shiro.authc.SaltedAuthenticationInfo;
+import org.apache.shiro.util.ByteSource;
 
 /**
  * Interface abstraction for the store of registered users. The actual
@@ -23,21 +24,50 @@ public interface UserStore {
     public static final String AUTH_USER_ID = "___auth";
 
     /**
+     * Link this store to a specific authorization realm
+     */
+    public void setRealm(RegRealm realm);
+
+    /**
      * Register a new user
      */
     public void register(UserInfo user);
 
     /**
-     * Test if a user is registered. Returns their user information
-     * if they are or null if not registered.
+     * Test if a user is registered. Returns their user information and credentials
+     * if they are or null if not registered. Stored and returned credentials are salt-hashed
+     * to make it easy to allow user defined passwords in the future, redundant for
+     * generated passwords. If the user has no credentials or they have timed out then
+     * the credentials will be null.
+     *
      * @param id the openid identifier string authenticated by the user
      */
-    public UserInfo checkUser(String id);
+    public SaltedAuthenticationInfo checkUser(String id);
 
     /**
-     * Return all the permissions for this user
+     * Unregister a user, removing them and any permissions from the store
      */
-    public Set<RegPermission> getPermissions(String id);
+    public void unregister(String id);
+
+    /**
+     * Store new credentials for the user
+     *
+     * @param id the openid identifier string authenticated by the user
+     * @param credentials the password to store
+     * @param minstolive the time-to-livefor the credentials in minutes
+     */
+    public void setCredentials(String id, ByteSource credentials, int minstolive);
+
+    /**
+     * Remove the credentials for the user
+     */
+    public void removeCredentials(String id);
+
+
+    /**
+     * Return all the permissions and rolefor this user
+     */
+    public RegAuthorizationInfo getPermissions(String id);
 
     /**
      * Record a new permission for this user.
@@ -49,5 +79,11 @@ public interface UserStore {
      * permissions for that path will be removed.
      */
     public void removePermission(String id, RegPermission permission);
+
+    /**
+     * Set a role for the user.
+     */
+    public void setRole(String id, String role);
+
 
 }
