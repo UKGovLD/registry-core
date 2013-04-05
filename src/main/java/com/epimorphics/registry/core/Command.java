@@ -30,10 +30,14 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.epimorphics.rdfutil.RDFUtil;
+import com.epimorphics.registry.security.RegAction;
+import com.epimorphics.registry.security.RegPermission;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.Ldbp;
@@ -54,9 +58,30 @@ import com.hp.hpl.jena.vocabulary.RDF;
 public abstract class Command {
     static final Logger log = LoggerFactory.getLogger( Command.class );
 
-    public enum Operation { Read, Register, Delete, Update, StatusUpdate, Validate, Search };
+    public enum Operation {
+        Read,
+        Register(RegAction.Register),
+        Delete(RegAction.StatusUpdate),
+        Update(RegAction.Update),
+        StatusUpdate(RegAction.StatusUpdate),
+        Validate,
+        Search;
+
+        protected RegAction action;
+        private Operation(RegAction action) {
+            this.action = action;
+        }
+        private Operation() {
+            this.action = null;
+        }
+
+        public RegAction getAuthorizationAction() {
+            return action;
+        }
+    };
 
     protected Operation operation;
+
     protected String target;
     protected String path;
     protected MultivaluedMap<String, String> parameters;
@@ -172,7 +197,9 @@ public abstract class Command {
             throw new WebApiException(validity.getStatus(), validity.getMessage());
         }
 
-        // TODO - authorization
+        if (!isAuthorized()) {
+            throw new WebApiException(Response.Status.UNAUTHORIZED, "Either not logged in or not authorized for this action");
+        }
 
         Response response = null;
         try {
@@ -212,6 +239,37 @@ public abstract class Command {
         }
 
         return response;
+    }
+
+    /**
+     * Returns the permissions that will be required to authorize this
+     * operation or null if no permissions are needed.
+     */
+    public RegPermission permissionRequried() {
+        RegAction action = operation.getAuthorizationAction();
+        if (action == null) {
+            return null;
+        } else {
+            return new RegPermission(action, target);
+        }
+    }
+
+    /**
+     * Test if the user of authorized to execute this command
+     */
+    public boolean isAuthorized() {
+        RegPermission required = permissionRequried();
+        if (required != null) {
+            Subject subject = SecurityUtils.getSubject();
+            if (subject.isPermitted(required)) {
+                return true;
+            } else {
+                log.error("Authorization failure for " + subject.getPrincipal() + ", requested permission " + required);
+                return false;
+            }
+        } else {
+            return true;
+        }
     }
 
     protected boolean hasParamValue(String param, String value) {

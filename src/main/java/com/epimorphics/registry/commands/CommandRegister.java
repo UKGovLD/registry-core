@@ -35,6 +35,8 @@ import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.core.ValidationResponse;
+import com.epimorphics.registry.security.RegAction;
+import com.epimorphics.registry.security.RegPermission;
 import com.epimorphics.registry.store.EntityInfo;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.Ldbp;
@@ -49,6 +51,7 @@ import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
@@ -69,6 +72,7 @@ public class CommandRegister extends Command {
     static final String BULK_TYPES_REGISTER = "/system/bulkCollectionTypes";
 
     Status statusOverride = null;
+    boolean needStatusPermission = false;
 
     Register parent;
 
@@ -107,13 +111,38 @@ public class CommandRegister extends Command {
             }
         }
 
+        statusOverride = Status.forString(parameters.getFirst(Parameters.STATUS), null);
+
+        needStatusPermission = statusOverride != null;
+
+        for (ResIterator ri = payload.listSubjectsWithProperty(RDF.type, RegistryVocab.RegisterItem); ri.hasNext();) {
+            Resource itemSpec = ri.next();
+            StmtIterator i = itemSpec.listProperties(RegistryVocab.status);
+            while (i.hasNext()) {
+                RDFNode status = i.next().getObject();
+                if (status != RegistryVocab.statusSubmitted) {
+                    needStatusPermission = true;
+                }
+                if (!status.isResource()) {
+                    return new ValidationResponse(BAD_REQUEST, "reg:status value which is not a resource " + status);
+                }
+            }
+        }
+
         return ValidationResponse.OK;
     }
 
     @Override
-    public Response doExecute() {
+    public RegPermission permissionRequried() {
+        RegPermission required = super.permissionRequried();
+        if (needStatusPermission) {
+            required.addAction(RegAction.StatusUpdate);
+        }
+        return required;
+    }
 
-        statusOverride = Status.forString(parameters.getFirst(Parameters.STATUS), null);
+    @Override
+    public Response doExecute() {
 
         store.lock(target);
         try {

@@ -17,13 +17,16 @@ import java.util.List;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.core.ValidationResponse;
+import com.epimorphics.registry.security.RegAction;
+import com.epimorphics.registry.security.RegPermission;
 import com.epimorphics.registry.util.PatchUtil;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.Parameters;
@@ -38,6 +41,8 @@ public class CommandUpdate extends Command {
     protected boolean isEntityUpdate = true;
     protected RegisterItem newitem;
     protected RegisterItem currentItem;
+    boolean needStatusPermission = false;
+    boolean needStatusForce = false;
 
     public CommandUpdate(Operation operation, String target,
             MultivaluedMap<String, String> parameters, Registry registry) {
@@ -54,13 +59,13 @@ public class CommandUpdate extends Command {
         Resource item = payload.getResource( target );
         if ( ! item.listProperties().hasNext() ){
             // No properties, probably a URI mismatch
-            return new ValidationResponse(Response.Status.BAD_REQUEST, "Payload URI does not match target");
+            return new ValidationResponse(BAD_REQUEST, "Payload URI does not match target");
         }
 
         // Only update one item this way, if there are multiple roots then reject
         List<Resource> roots = RDFUtil.findRoots(payload);
         if (roots.size() != 1 || !roots.get(0).getURI().equals(target)) {
-            return new ValidationResponse(Response.Status.BAD_REQUEST, "Payload had multiple roots or root does not match target");
+            return new ValidationResponse(BAD_REQUEST, "Payload had multiple roots or root does not match target");
         }
         Resource root = roots.get(0);
 
@@ -94,20 +99,35 @@ public class CommandUpdate extends Command {
             typeOK = false;
         }
         if (!typeOK) {
-            return new ValidationResponse(Response.Status.BAD_REQUEST, "The rdf:type of an entity cannot be changed once registered and accepted");
+            return new ValidationResponse(BAD_REQUEST, "The rdf:type of an entity cannot be changed once registered and accepted");
         }
 
         if (!isEntityUpdate && currentItem.getStatus().isAccepted()) {
             if (!currentItem.getEntitySpec().equals( newitem.getEntitySpec() )) {
-                return new ValidationResponse(Status.BAD_REQUEST, "Request would change the URI of the registered entity, which is disallowed for items which have been accepted");
+                return new ValidationResponse(BAD_REQUEST, "Request would change the URI of the registered entity, which is disallowed for items which have been accepted");
             }
         }
 
         // For registers can only update non-member properties this way
         if (isRegister && isEntityUpdate) {
             if (!parameters.containsKey(Parameters.COLLECTION_METADATA_ONLY)) {
-                return new ValidationResponse(Status.BAD_REQUEST, "Can only PUT/PATCH register metadadata, use non-member-properties to signal this");
+                return new ValidationResponse(BAD_REQUEST, "Can only PUT/PATCH register metadadata, use non-member-properties to signal this");
             }
+        }
+
+        // Will this change the status?
+        if (!isEntityUpdate) {
+            if (newitem.getRoot().hasProperty(RegistryVocab.status)) {
+                Status oldstatus = currentItem.getStatus();
+                Status newstatus = newitem.getStatus();
+                if (newstatus.equals(oldstatus)) {
+                    needStatusPermission = true;
+                    if (!oldstatus.legalNextState(newstatus)) {
+                        needStatusForce = true;
+                    }
+                }
+            }
+
         }
 
         // Santization
@@ -116,6 +136,18 @@ public class CommandUpdate extends Command {
         }
 
         return ValidationResponse.OK;
+    }
+
+    @Override
+    public RegPermission permissionRequried() {
+        RegPermission required = super.permissionRequried();
+        if (needStatusPermission) {
+            required.addAction(RegAction.StatusUpdate);
+            if (needStatusForce) {
+                required.addAction( RegAction.Force );
+            }
+        }
+        return required;
     }
 
     /**

@@ -111,6 +111,10 @@ public class RegPermission implements Permission {
         this.actions = actions;
     }
 
+    public void addAction(RegAction action) {
+        this.actions.add(action);
+    }
+
     public String getPath() {
         return path;
     }

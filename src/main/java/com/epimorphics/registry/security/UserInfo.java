@@ -55,4 +55,9 @@ public class UserInfo {
         return openid.hashCode();
     }
 
+    @Override
+    public String toString() {
+        return "User[" + (name == null ? openid : name) + "]";
+    }
+
 }

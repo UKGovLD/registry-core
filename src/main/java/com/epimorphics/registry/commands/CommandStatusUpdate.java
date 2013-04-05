@@ -19,6 +19,9 @@ import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.core.ValidationResponse;
+import com.epimorphics.registry.security.RegAction;
+import com.epimorphics.registry.security.RegPermission;
 import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.Parameters;
@@ -31,9 +34,26 @@ import com.sun.jersey.api.NotFoundException;
 public class CommandStatusUpdate extends Command {
     public static final String STATUS_PARAM = "status";
 
+    protected boolean isForce = false;
+
     public CommandStatusUpdate(Operation operation, String target,
             MultivaluedMap<String, String> parameters, Registry registry) {
         super(operation, target, parameters, registry);
+    }
+
+    @Override
+    public ValidationResponse validate() {
+        isForce = parameters.containsKey(Parameters.FORCE);
+        return ValidationResponse.OK;
+    }
+
+    @Override
+    public RegPermission permissionRequried() {
+        RegPermission required = super.permissionRequried();
+        if (isForce) {
+            required.addAction(RegAction.Force);
+        }
+        return required;
     }
 
     @Override
