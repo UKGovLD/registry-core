@@ -21,8 +21,10 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
@@ -45,8 +47,9 @@ import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.security.RegToken;
 import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.security.UserStore;
+import com.epimorphics.server.webapi.WebApiException;
 
-@Path("/system/action")
+@Path("/system/security")
 public class Login {
     static final Logger log = LoggerFactory.getLogger( Login.class );
 
@@ -132,11 +135,24 @@ public class Login {
         return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "Could not find a registration for you.");
     }
 
+    // Return the name of the loggedin user on this session, for test purposes
+    @Path("/username")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String getUsername() {
+        Subject subject = SecurityUtils.getSubject();
+        if (subject.isAuthenticated()) {
+            return ((UserInfo)subject.getPrincipal()).getName();
+        } else {
+            throw new WebApiException(Response.Status.UNAUTHORIZED, "No logged in user in this session");
+        }
+    }
+
     @SuppressWarnings("rawtypes")
     protected void processOpenID(HttpServletRequest request, HttpServletResponse response, String provider, boolean isRegister) {
         log.info("Authentication request for " + provider + (isRegister ? " (registration)" : ""));
 
-        String responseURL = uriInfo.getBaseUri().toString() + "system/action/response";
+        String responseURL = uriInfo.getBaseUri().toString() + "system/security/response";
         request.getSession().setAttribute(SA_REGISTRATION, isRegister);
 
         try

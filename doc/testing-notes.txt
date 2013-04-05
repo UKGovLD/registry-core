@@ -91,7 +91,7 @@ curl -i -H "Content-Type: text/turtle" -X POST --data "@test/jmt/core-proxy.ttl"
 curl -i -X POST "http://localhost:8080/reg1?update&status=stable"
 
 // API security session testing
-curl -i --data "userid=http://example.com/alice&password=testing" http://localhost:8080/system/action/apilogin
+curl -i --data "userid=http://example.com/alice&password=testing" http://localhost:8080/system/security/apilogin
 
 # Configure proxy update permissions
 

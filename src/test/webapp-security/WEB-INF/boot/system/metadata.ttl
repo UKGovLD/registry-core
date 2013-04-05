@@ -1,0 +1,25 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix dc:   <http://purl.org/dc/elements/1.1/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix version:  <http://purl.org/linked-data/version#> .
+@prefix ldp:  <http://www.w3.org/ns/ldp#> .
+@prefix ssd:  <http://www.w3.org/ns/sparql-service-description#> .
+@prefix vs:   <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+@prefix void: <http://rdfs.org/ns/void#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix reg:  <http://purl.org/linked-data/registry#> .
+
+
+<system> a reg:Register;
+    rdfs:label "system register"@en;
+    dct:description "Registers which control system operation"@en;
+    reg:owner      <http://example.com/UKLocation> ;
+    reg:manager   <http://www.epimorphics.com/#id> ;
+    reg:containedItemClass reg:Register;
+    reg:subregister <system/bulkCollectionTypes> ;
+    .

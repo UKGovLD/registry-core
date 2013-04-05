@@ -1,0 +1,48 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix void: <http://rdfs.org/ns/void#> .
+@prefix ldp:  <http://www.w3.org/ns/ldp#> .
+@prefix reg:  <http://purl.org/linked-data/registry#> .
+
+<_skos-collection> a reg:RegisterItem;
+    rdfs:label "SKOS collection"@en;
+    dct:description "Registration of SKOS collections as a batch upload type"@en;
+    reg:itemClass owl:Class;
+    reg:status reg:statusStable;
+    reg:definition [ reg:entity skos:Collection ];
+    ldp:membershipPredicate skos:member;
+    .
+
+skos:Collection a owl:Class;
+    rdfs:label "SKOS collection"@en;
+    .
+    
+<_skos-scheme> a reg:RegisterItem;
+    rdfs:label "SKOS Concept Scheme"@en;
+    dct:description "Registration of SKOS concept schemes a batch upload type"@en;
+    reg:itemClass owl:Class;
+    reg:status reg:statusStable;
+    reg:definition [ reg:entity skos:ConceptScheme ];
+    reg:inverseMembershipPredicate skos:inScheme;
+    .
+
+skos:ConceptScheme a owl:Class;
+    rdfs:label "SKOS Concept Scheme"@en;
+    .
+    
+<_register> a reg:RegisterItem;
+    rdfs:label "Register"@en;
+    dct:description "Registration of reg:Register as a legal batch upload type"@en;
+    reg:itemClass owl:Class;
+    reg:status reg:statusStable;
+    reg:definition [ reg:entity reg:Register ];
+    .
+
+reg:Register a owl:Class;
+    rdfs:label "Register"@en;
+    .
+    

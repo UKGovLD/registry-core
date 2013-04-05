@@ -18,15 +18,15 @@
       </div>
       <div class="row">
         <div class="span3">
-          <form class="form-horizontal" action="/system/action/login" method="post">
-            <input type="hidden" name="provider" value="https://www.google.com/accounts/o8/id" /> 
+          <form class="form-horizontal" action="/system/security/login" method="post">
+            <input type="hidden" name="provider" value="https://www.google.com/accounts/o8/id" />
             <input type="submit" value="Login with google account" class="btn btn-block btn-primary" />
           </form>
         </div>
       </div>
       <div class="row space-above">
         <div class="span5">
-          <form class="form-horizontal" action="/system/action/login" method="post">
+          <form class="form-horizontal" action="/system/security/login" method="post">
             <p>Or enter an OpenID provider such as Google+ profile page.</p>
             <div class="input-append">
               <input class="span4" type="text" name="provider">
@@ -35,24 +35,24 @@
           </form>
         </div>
       </div>
-    </div> 
+    </div>
   </div>
-  
+
   <div class="offset span6 blob pale-orange">
     <div class="blob-inner">
       <h2>Register as a new user</h2>
       <p>A registered login is required before you can be granted administration privileges.</p>
       <div class="row">
         <div class="span3">
-          <form class="form-horizontal" action="/system/action/register" method="post">
-            <input type="hidden" name="provider" value="https://www.google.com/accounts/o8/id" /> 
+          <form class="form-horizontal" action="/system/security/register" method="post">
+            <input type="hidden" name="provider" value="https://www.google.com/accounts/o8/id" />
             <input type="submit" value="Register using google account" class="btn btn-block btn-primary" />
           </form>
         </div>
       </div>
       <div class="row space-above">
         <div class="span5">
-          <form class="form-horizontal" action="/system/action/register" method="post">
+          <form class="form-horizontal" action="/system/security/register" method="post">
             <p>Or enter an OpenID provider such as Google+ profile page.</p>
             <div class="input-append">
               <input class="span4" type="text" name="provider">
@@ -61,16 +61,16 @@
           </form>
         </div>
       </div>
-    </div> 
+    </div>
   </div>
-  
+
 </div>
 
 <div class="row space-above">
   <div class="offset1 span10">
     <p>If you register or login this site will use cookies to record your
      preferred OpenID provider and to record the ID you are logged in with for this session.</p>
-  </div> 
+  </div>
 </div>
 
 #parse("footer.vm")
