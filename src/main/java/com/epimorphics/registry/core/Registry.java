@@ -90,6 +90,7 @@ public class Registry extends ServiceBase implements Service {
     protected String logDir;
     protected UserStore userStore;
 
+
     @Override
     public void init(Map<String, String> config, ServletContext context) {
         this.config = config;
@@ -222,7 +223,7 @@ public class Registry extends ServiceBase implements Service {
             }
             Command command = Registry.get().make( Operation.Register, register, parameters);
             command.setPayload( model );
-            Response response = command.execute();
+            Response response = command.authorizedExecute();
             if (response.getStatus() >= 400) {
                 throw new EpiException("Bootstrap error: " + response.getEntity());
             }

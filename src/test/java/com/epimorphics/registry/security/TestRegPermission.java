@@ -7,7 +7,7 @@
  *
  *****************************************************************/
 
-package security;
+package com.epimorphics.registry.security;
 
 import java.util.Set;
 

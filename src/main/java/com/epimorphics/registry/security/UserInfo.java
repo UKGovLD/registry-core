@@ -9,13 +9,17 @@
 
 package com.epimorphics.registry.security;
 
+import java.io.Serializable;
+
 /**
  * Represents the primary information we know about a registered user.
  * Used as the "principal" for Shiro identity tracking.
  *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
-public class UserInfo {
+public class UserInfo implements Serializable {
+    private static final long serialVersionUID = -4661235310974850596L;
+    
     protected String openid;
     protected String name;
 

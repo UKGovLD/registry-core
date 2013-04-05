@@ -43,6 +43,7 @@ public class RegAuthorizationInfo extends SimpleAuthorizationInfo implements Aut
     }
 
     public void addAllPermissions(Collection<RegPermission> perms) {
+        if (perms == null) return;
         for (RegPermission p : perms) {
             addObjectPermission(p);
         }

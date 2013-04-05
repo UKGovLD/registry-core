@@ -11,6 +11,7 @@ package com.epimorphics.registry.webapi;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.io.InputStream;
 
 import javax.ws.rs.core.MediaType;
@@ -24,6 +25,7 @@ import com.hp.hpl.jena.vocabulary.RDFS;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.WebResource.Builder;
 import com.sun.jersey.api.representation.Form;
 import com.sun.jersey.client.apache.ApacheHttpClient;
 import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
@@ -70,16 +72,11 @@ public class TestSecurity extends TomcatTestBase {
      * Check the ability to register in various places
      */
     protected void checkRegistration() {
+        testFor("alice").source("test/absolute-black.ttl").post(BASE_URL + "secure/reg1/colours").checkAccepted();
+        testFor("bob").source("test/absolute-black.ttl").post(BASE_URL + "secure/reg2/colours").checkRejected();
         // TODO
     }
 
-    protected void shoudReject(ClientResponse response) {
-        assertTrue(response.getStatus() == 401);
-    }
-
-    protected void shoudAccept(ClientResponse response) {
-        assertTrue(response.getStatus() < 400);
-    }
 
     protected static ApacheHttpClient makeClient() {
         ApacheHttpClient c = ApacheHttpClient.create();
@@ -126,26 +123,67 @@ public class TestSecurity extends TomcatTestBase {
 
         public TestBuilder source(String filename) {
             assertNull(response);
-            TestBuilder t = new TestBuilder(c);
-            t.sourceFile = filename;
-            return t;
+            sourceFile = filename;
+            return this;
         }
 
         public TestBuilder mime(String mime) {
             assertNull(response);
-            TestBuilder t = new TestBuilder(c);
-            t.mime = mime;
-            return t;
+            this.mime = mime;
+            return this;
         }
 
-        // get
-        // post
-        // invoke(method)
-        // getResponse
-        // getStatus
-        // getModel
-        // checkRejected
-        // checkAccepted
+        public TestBuilder get(String url) {
+            response = c.resource(url).type(mime).get(ClientResponse.class);
+            return this;
+        }
+
+        public TestBuilder post(String url) {
+            Builder b = c.resource(url).type(mime);
+            if (sourceFile != null) {
+                File file = new File(sourceFile);
+                response = b.post(ClientResponse.class, file);
+            } else {
+                response = b.post(ClientResponse.class);
+            }
+            return this;
+        }
+
+        public TestBuilder invoke(String method, String url) {
+            Builder b = c.resource(url).type(mime);
+            if (sourceFile != null) {
+                File file = new File(sourceFile);
+                response = b.header("X-HTTP-Method-Override", method).post(ClientResponse.class, file);
+            } else {
+                response = b.header("X-HTTP-Method-Override", method).post(ClientResponse.class);
+            }
+            return this;
+        }
+
+        public ClientResponse getResponse() {
+            assertNotNull(response);
+            return response;
+        }
+        
+        public int getStatus() {
+            return getResponse().getStatus();
+        }
+        
+        public Model getModel() {
+            assertNotNull(response);
+            InputStream stream = response.getEntity(InputStream.class);
+            Model result = ModelFactory.createDefaultModel();
+            result.read(stream, uri, "Turtle");
+            return result;
+        }
+
+        public void checkRejected() {
+            assertTrue(getStatus() == 401);
+        }
+        
+        public void checkAccepted() {
+            assertTrue(getStatus() < 400);
+        }
 
     }
 }

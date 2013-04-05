@@ -190,15 +190,11 @@ public abstract class Command {
     public ValidationResponse validate() {
         return ValidationResponse.OK;
     }
-
-    public Response execute()  {
+    
+    public Response authorizedExecute() {
         ValidationResponse validity = validate();
         if (!validity.isOk()) {
             throw new WebApiException(validity.getStatus(), validity.getMessage());
-        }
-
-        if (!isAuthorized()) {
-            throw new WebApiException(Response.Status.UNAUTHORIZED, "Either not logged in or not authorized for this action");
         }
 
         Response response = null;
@@ -241,6 +237,13 @@ public abstract class Command {
         return response;
     }
 
+    public Response execute()  {
+        if (!isAuthorized()) {
+            throw new WebApiException(Response.Status.UNAUTHORIZED, "Either not logged in or not authorized for this action");
+        }
+        return authorizedExecute();
+    }
+
     /**
      * Returns the permissions that will be required to authorize this
      * operation or null if no permissions are needed.
@@ -250,7 +253,7 @@ public abstract class Command {
         if (action == null) {
             return null;
         } else {
-            return new RegPermission(action, target);
+            return new RegPermission(action, "/" + path);
         }
     }
 
