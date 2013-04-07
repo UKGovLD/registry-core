@@ -21,6 +21,7 @@
       a       reg:RegisterItem ;
       rdfs:label "register 1"@en ;
       dct:dateSubmitted [] ;
+      reg:submitter [];
       dct:description "Example register 1"@en ;
       reg:definition
               [ reg:entity <http://location.data.gov.uk/reg1> ;

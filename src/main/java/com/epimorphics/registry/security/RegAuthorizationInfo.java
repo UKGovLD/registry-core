@@ -37,6 +37,9 @@ public class RegAuthorizationInfo extends SimpleAuthorizationInfo implements Aut
             for (Permission p : getObjectPermissions()) {
                 RegPermission rp = (RegPermission)p;
                 index.put(rp.getPath(), rp);
+                if (rp.getImpliedPath() != null) {
+                    index.put(rp.getImpliedPath(), rp);
+                }
             }
         }
         return index;

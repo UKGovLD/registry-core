@@ -81,7 +81,7 @@ public class TestAPI extends TomcatTestBase {
         // Updates red to be called red1
         String versionSuffix = doUpdateTest();
 
-        // Patches reg to be called red1b
+        // Patches red to be called red1b
         Calendar checkpoint = Calendar.getInstance();
         doPatchTest();
 

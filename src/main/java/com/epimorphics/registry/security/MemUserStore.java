@@ -11,6 +11,7 @@ package com.epimorphics.registry.security;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -83,8 +84,9 @@ public class MemUserStore extends ServiceBase implements UserStore, Service {
 
     private void initStore() {
         if (initfile == null) return;
+        BufferedReader in = null;
         try {
-            BufferedReader in = new BufferedReader(new FileReader(initfile));
+            in = new BufferedReader(new FileReader(initfile));
             String line = null;
             while ((line = in.readLine()) != null) {
                 line = line.trim();
@@ -124,6 +126,12 @@ public class MemUserStore extends ServiceBase implements UserStore, Service {
             log.info("Load user store from " + initfile);
         } catch (Exception e) {
             log.error("Failed to load UserStore initialization file: " + initfile + " ", e);
+        } finally {
+            try {
+                in.close();
+            } catch (IOException e) {
+                // Ignore
+            }
         }
     }
     static final Pattern USER_LINE_PATTERN = Pattern.compile("user\\s+([^\\s]+)\\s+\"([^\"]+)\"\\s+([^\\s]+)");

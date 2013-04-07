@@ -23,6 +23,8 @@ import java.util.Set;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.UnavailableSecurityManagerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +39,7 @@ import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.core.ValidationResponse;
 import com.epimorphics.registry.security.RegAction;
 import com.epimorphics.registry.security.RegPermission;
+import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.store.EntityInfo;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.Ldbp;
@@ -57,6 +60,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.sparql.util.Closure;
+import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
@@ -309,6 +313,20 @@ public class CommandRegister extends Command {
         for (Property p : RegisterItem.INTERNAL_PROPS) {
             ri.getRoot().removeAll(p);
         }
+        
+        // Submitter
+        Model m = ri.getRoot().getModel();
+        Resource submitter = m.createResource();
+        try {
+            UserInfo userinfo = (UserInfo) SecurityUtils.getSubject().getPrincipal();
+            submitter
+            .addProperty(FOAF.name, userinfo.getName())
+            .addProperty(FOAF.openid, m.createResource( userinfo.getOpenid()) );
+        } catch (UnavailableSecurityManagerException e) {
+            // Occurs during bootstrap
+            submitter.addProperty(FOAF.name, "bootstrap");
+        }
+        ri.getRoot().addProperty(RegistryVocab.submitter, submitter);
 
         Resource entity = ri.getEntity();
         // Normalization closures

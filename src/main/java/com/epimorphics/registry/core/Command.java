@@ -31,6 +31,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -191,12 +192,29 @@ public abstract class Command {
         return ValidationResponse.OK;
     }
     
+    
     public Response authorizedExecute() {
+        performValidate();
+        return performExecute();
+    }
+
+    public Response execute()  {
+        performValidate();
+        if (!isAuthorized()) {
+            throw new WebApiException(Response.Status.UNAUTHORIZED, "Either not logged in or not authorized for this action");
+        }
+        return authorizedExecute();
+    }
+    
+    protected void performValidate() {
         ValidationResponse validity = validate();
         if (!validity.isOk()) {
             throw new WebApiException(validity.getStatus(), validity.getMessage());
         }
-
+    }
+    
+    // Called after validation and authorization
+    protected Response performExecute() {
         Response response = null;
         try {
             response = doExecute();
@@ -237,13 +255,6 @@ public abstract class Command {
         return response;
     }
 
-    public Response execute()  {
-        if (!isAuthorized()) {
-            throw new WebApiException(Response.Status.UNAUTHORIZED, "Either not logged in or not authorized for this action");
-        }
-        return authorizedExecute();
-    }
-
     /**
      * Returns the permissions that will be required to authorize this
      * operation or null if no permissions are needed.
@@ -263,12 +274,17 @@ public abstract class Command {
     public boolean isAuthorized() {
         RegPermission required = permissionRequried();
         if (required != null) {
-            Subject subject = SecurityUtils.getSubject();
-            if (subject.isPermitted(required)) {
+            try {
+                Subject subject = SecurityUtils.getSubject();
+                if (subject.isPermitted(required)) {
+                    return true;
+                } else {
+                    log.warn("Authorization failure for " + subject.getPrincipal() + ", requested permission " + required);
+                    return false;
+                }
+            } catch (UnavailableSecurityManagerException e) {
+                log.warn("Security is not configured, assuming test mode");
                 return true;
-            } else {
-                log.error("Authorization failure for " + subject.getPrincipal() + ", requested permission " + required);
-                return false;
             }
         } else {
             return true;

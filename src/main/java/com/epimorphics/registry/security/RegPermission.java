@@ -9,6 +9,11 @@
 
 package com.epimorphics.registry.security;
 
+import static com.epimorphics.registry.security.RegAction.Grant;
+import static com.epimorphics.registry.security.RegAction.Register;
+import static com.epimorphics.registry.security.RegAction.StatusUpdate;
+import static com.epimorphics.registry.security.RegAction.Update;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -17,7 +22,6 @@ import java.util.Set;
 import org.apache.shiro.authz.Permission;
 
 import com.epimorphics.util.EpiException;
-import static com.epimorphics.registry.security.RegAction.*;
 
 /**
  * Represents registry permission structure. The basic string form is:
@@ -43,6 +47,7 @@ public class RegPermission implements Permission {
 
     protected Set<RegAction> actions;
     protected String path = "";
+    protected String impliedPath;
 
     protected static Map<String, RegAction[]> roleAliases = new HashMap<String, RegAction[]>();
     static {
@@ -56,6 +61,7 @@ public class RegPermission implements Permission {
         if (split != -1) {
             actions = parseActions( permission.substring(0, split) );
             path = permission.substring(split+1).trim();
+            checkImpliedPath();
         } else {
             actions = parseActions(permission);
         }
@@ -72,6 +78,13 @@ public class RegPermission implements Permission {
     public RegPermission(Set<RegAction> actions, String path) {
         this.actions = actions;
         this.path = path.trim();
+        checkImpliedPath();
+    }
+    
+    private void checkImpliedPath() {
+        if (path.contains("/_")) {
+            impliedPath = path.replace("/_", "/");
+        }
     }
 
     private static Set<RegAction> singleAction(RegAction action) {
@@ -121,12 +134,13 @@ public class RegPermission implements Permission {
 
     public void setPath(String path) {
         this.path = path;
+        checkImpliedPath();
     }
 
-    public boolean samePath(RegPermission other) {
-        return path.equals(other.getPath());
+    protected String getImpliedPath() {
+        return impliedPath;
     }
-
+    
     /**
      * Returns the part of p which is not covered by this permission.
      * If there is no match then this is simply p itself.
@@ -135,7 +149,7 @@ public class RegPermission implements Permission {
      * but a reduced set of actions
      */
     public RegPermission residual(RegPermission p) {
-        if ( ! p.path.startsWith(path) ) return p;
+        if ( ! pathCovered(p) ) return p;
 
         if (actions.contains(RegAction.WildCard) || actions.containsAll(p.actions)) {
             return null;
@@ -152,7 +166,18 @@ public class RegPermission implements Permission {
         RegPermission other = (RegPermission)p;
 
         if (actions.contains(RegAction.WildCard) || actions.containsAll(other.actions)) {
-            if (other.path.startsWith(path)) {
+            if (pathCovered(other)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private boolean pathCovered(RegPermission p) {
+        if  (p.path.startsWith(path)) {
+            return true;
+        } else {
+            if (impliedPath != null && p.path.startsWith(impliedPath)) {
                 return true;
             }
         }

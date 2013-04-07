@@ -4,6 +4,7 @@
       <http://purl.org/dc/terms/dateSubmitted> [] ;
       <http://purl.org/dc/terms/description>
               "A concept for the colour red" ;
+      <http://purl.org/linked-data/registry#submitter> [];
       <http://purl.org/dc/terms/isVersionOf>
               <http://location.data.gov.uk/reg1/_red> ;
       <http://purl.org/linked-data/registry#definition>

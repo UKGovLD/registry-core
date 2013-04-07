@@ -18,6 +18,7 @@
               "black" ;
       <http://purl.org/dc/terms/dateAccepted> [];
       <http://purl.org/dc/terms/dateSubmitted> [];
+      <http://purl.org/linked-data/registry#submitter> [];
       <http://purl.org/dc/terms/description>
               "An external concept for the colour black" ;
       <http://purl.org/linked-data/registry#definition> [];
@@ -38,6 +39,7 @@
               "red1b" ;
       <http://purl.org/dc/terms/dateAccepted> [];
       <http://purl.org/dc/terms/dateSubmitted> [];
+      <http://purl.org/linked-data/registry#submitter> [];
       <http://purl.org/dc/terms/description>
               "A concept for the colour red1" ;
       <http://purl.org/dc/terms/modified> [];

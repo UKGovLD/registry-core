@@ -103,7 +103,9 @@ public class CommandUpdate extends Command {
         }
 
         if (!isEntityUpdate && currentItem.getStatus().isAccepted()) {
-            if (!currentItem.getEntitySpec().equals( newitem.getEntitySpec() )) {
+            boolean changesEntity = !currentItem.getEntitySpec().equals( newitem.getEntitySpec() );
+            if (isPatch && newitem.getEntitySpec() == null) changesEntity = false;
+            if (changesEntity) {
                 return new ValidationResponse(BAD_REQUEST, "Request would change the URI of the registered entity, which is disallowed for items which have been accepted");
             }
         }
@@ -120,7 +122,7 @@ public class CommandUpdate extends Command {
             if (newitem.getRoot().hasProperty(RegistryVocab.status)) {
                 Status oldstatus = currentItem.getStatus();
                 Status newstatus = newitem.getStatus();
-                if (newstatus.equals(oldstatus)) {
+                if (!newstatus.equals(oldstatus)) {
                     needStatusPermission = true;
                     if (!oldstatus.legalNextState(newstatus)) {
                         needStatusForce = true;

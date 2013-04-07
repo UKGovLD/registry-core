@@ -17,6 +17,7 @@
       <http://www.w3.org/2000/01/rdf-schema#label>
               "black" ;
       <http://purl.org/dc/terms/dateSubmitted> [];
+      <http://purl.org/linked-data/registry#submitter> [];
       <http://purl.org/dc/terms/description>
               "An external concept for the colour black" ;
       <http://purl.org/linked-data/registry#definition>

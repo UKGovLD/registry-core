@@ -5,6 +5,7 @@
       <http://purl.org/dc/terms/dateSubmitted> [] ;
       <http://purl.org/dc/terms/description>
               "A concept for the colour red" ;
+      <http://purl.org/linked-data/registry#submitter> [];
       <http://purl.org/linked-data/registry#definition> [];
       <http://purl.org/linked-data/registry#itemClass>
               <http://www.w3.org/2004/02/skos/core#Concept> ;

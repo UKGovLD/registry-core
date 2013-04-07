@@ -21,7 +21,7 @@ import org.apache.shiro.util.ByteSource;
 public interface UserStore {
 
     /** ID of a pseudo user which stores the global permissions available to anyone logged in */
-    public static final String AUTH_USER_ID = "___auth";
+    public static final String AUTH_USER_ID = "http://localhost/anon";
 
     /**
      * Link this store to a specific authorization realm

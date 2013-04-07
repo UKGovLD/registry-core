@@ -21,6 +21,7 @@
       <http://www.w3.org/2000/01/rdf-schema#label>
               "blue" ;
       <http://purl.org/dc/terms/dateSubmitted> [];
+      <http://purl.org/linked-data/registry#submitter> [];
       <http://purl.org/dc/terms/description>
               "A concept for the colour blue" ;
       <http://purl.org/linked-data/registry#definition> [];

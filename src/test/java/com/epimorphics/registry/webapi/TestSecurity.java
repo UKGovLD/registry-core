@@ -18,9 +18,12 @@ import javax.ws.rs.core.MediaType;
 
 import org.junit.Test;
 
+import com.epimorphics.rdfutil.RDFUtil;
+import com.epimorphics.registry.vocab.RegistryVocab;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.vocabulary.RDFS;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -41,6 +44,9 @@ public class TestSecurity extends TomcatTestBase {
         checkLoginLogout();
         checkBootstrappedRegisters();
         checkRegistration();
+        checkUpdate();
+        checkStatusUpdate();
+        checkOpen();
     }
 
     /**
@@ -72,11 +78,77 @@ public class TestSecurity extends TomcatTestBase {
      * Check the ability to register in various places
      */
     protected void checkRegistration() {
-        testFor("alice").source("test/absolute-black.ttl").post(BASE_URL + "secure/reg1/colours").checkAccepted();
         testFor("bob").source("test/absolute-black.ttl").post(BASE_URL + "secure/reg2/colours").checkRejected();
-        // TODO
+        testFor("bob").source("test/reg1.ttl").post(BASE_URL + "secure/reg2").checkRejected();
+        testFor("bob").source("test/absolute-black.ttl").post(BASE_URL + "secure/reg1/colours").checkAccepted();
+        Model m = testFor("bob").get(BASE_URL + "secure/reg1/colours/_black").checkAccepted().getModel();
+        Resource item = m.getResource(ROOT_REGISTER + "secure/reg1/colours/_black");
+        Resource submitter = item.getPropertyResourceValue(RegistryVocab.submitter);
+        assertNotNull(submitter);
+        assertEquals("Bob", RDFUtil.getStringValue(submitter, FOAF.name));
+        
+        testFor("bob").source("test/reg1.ttl").post(BASE_URL + "secure").checkRejected();
+        testFor("bob").source("test/reg1.ttl").post(BASE_URL + "secure/reg1").checkAccepted();
+        
+        testFor("alice").source("test/reg1.ttl").post(BASE_URL).checkRejected();
+        testFor("alice").source("test/reg1.ttl").post(BASE_URL + "secure/reg2").checkAccepted();
+        
+        
+        testFor("admin").source("test/reg1.ttl").post(BASE_URL).checkAccepted();
+    }
+    
+    /**
+     * Check the ability to update items and entities
+     */
+    protected void checkUpdate() {
+        testFor("colin").source("test/red1.ttl").invoke("PUT", BASE_URL + "secure/reg2/colours/red").checkRejected();
+        testFor("alice").source("test/red1.ttl").invoke("PUT", BASE_URL + "secure/reg2/colours/red").checkAccepted();
+
+        testFor("david").source("test/red1.ttl").invoke("PUT", BASE_URL + "secure/reg1/colours/red").checkRejected();
+        testFor("colin").source("test/red1.ttl").invoke("PUT", BASE_URL + "secure/reg1/colours/red").checkAccepted();
+        
+        testFor("colin").source("test/green-item-update.ttl").invoke("PATCH", BASE_URL + "secure/reg1/colours/_green").checkRejected();
+        testFor("david").source("test/green-item-update.ttl").invoke("PATCH", BASE_URL + "secure/reg1/colours/_green").checkAccepted();
+        testFor("alice").source("test/green-item-update.ttl").invoke("PATCH", BASE_URL + "secure/reg2/colours/_green").checkAccepted();
     }
 
+    /**
+     * Check direct and indirect ability to update status information
+     */
+    protected void checkStatusUpdate() {
+        // Explicit status change, lifecycle compliant
+        testFor("bob").post(BASE_URL + "secure/reg2/colours/_red?update&status=retired").checkRejected();
+        testFor("colin").post(BASE_URL + "secure/reg1/colours/_red?update&status=retired").checkRejected();
+        testFor("bob").post(BASE_URL + "secure/reg1/colours/_red?update&status=retired").checkAccepted();
+        
+        // Explicit status, breaks lifecycle
+        testFor("bob").post(BASE_URL + "secure/reg1/colours/_red?update&force&status=submitted").checkRejected();
+        testFor("admin").post(BASE_URL + "secure/reg1/colours/_red?update&force&status=submitted").checkAccepted();
+        
+        // Implicit status, lifecycle compliant
+        testFor("david").source("test/green-item-update-withstatus.ttl").invoke("PATCH", BASE_URL + "secure/reg1/colours/_green").checkRejected();
+        testFor("bob").source("test/green-item-update-withstatus.ttl").invoke("PATCH", BASE_URL + "secure/reg1/colours/_green").checkAccepted();
+
+        // Implicit status, lifecycle violated
+        testFor("alice").source("test/green-item-update-withbadstatus.ttl").invoke("PATCH", BASE_URL + "secure/reg2/colours/_green").checkRejected();
+        testFor("admin").source("test/green-item-update-withbadstatus.ttl").invoke("PATCH", BASE_URL + "secure/reg2/colours/_green").checkAccepted();
+
+    }
+    
+    /**
+     * Check the ability to set some areas as open to anyone
+     */
+    protected void checkOpen() {
+        // register
+        testFor("david").source("test/absolute-black.ttl").post(BASE_URL + "open/colours").checkAccepted();
+        testFor("david").source("test/reg1.ttl").post(BASE_URL + "open").checkAccepted();
+        // Update
+        testFor("david").source("test/red1.ttl").invoke("PUT", BASE_URL + "open/colours/red").checkAccepted();
+        // Status update
+        testFor("david").post(BASE_URL + "open/colours/_red?update&status=retired").checkAccepted();
+        // But not force
+        testFor("david").source("test/green-item-update-withbadstatus.ttl").invoke("PATCH", BASE_URL + "open/colours/_green").checkRejected();
+    }
 
     protected static ApacheHttpClient makeClient() {
         ApacheHttpClient c = ApacheHttpClient.create();
@@ -134,7 +206,7 @@ public class TestSecurity extends TomcatTestBase {
         }
 
         public TestBuilder get(String url) {
-            response = c.resource(url).type(mime).get(ClientResponse.class);
+            response = c.resource(url).accept("text/turtle").get(ClientResponse.class);
             return this;
         }
 
@@ -177,12 +249,17 @@ public class TestSecurity extends TomcatTestBase {
             return result;
         }
 
-        public void checkRejected() {
-            assertTrue(getStatus() == 401);
+        public TestBuilder checkRejected() {
+            assertEquals(401, getStatus());
+            return this;
         }
         
-        public void checkAccepted() {
-            assertTrue(getStatus() < 400);
+        public TestBuilder checkAccepted() {
+            if (getStatus() >= 400) {
+                System.out.println("Failure response: " + response.getEntity(String.class) );
+            }
+            assertTrue("Status was: " + getStatus(), getStatus() < 400);
+            return this;
         }
 
     }
