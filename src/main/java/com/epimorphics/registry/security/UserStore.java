@@ -26,7 +26,7 @@ public interface UserStore {
     /**
      * Link this store to a specific authorization realm
      */
-    public void setRealm(RegRealm realm);
+    public void setRealm(BaseRegRealm realm);
 
     /**
      * Register a new user

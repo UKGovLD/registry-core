@@ -9,34 +9,18 @@
 
 package com.epimorphics.registry.security;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.servlet.ServletContext;
 
 import org.apache.shiro.authc.SaltedAuthenticationInfo;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
-import org.apache.shiro.codec.Hex;
-import org.apache.shiro.crypto.SecureRandomNumberGenerator;
-import org.apache.shiro.crypto.hash.Hash;
-import org.apache.shiro.crypto.hash.HashRequest;
 import org.apache.shiro.util.ByteSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.epimorphics.server.core.Service;
-import com.epimorphics.server.core.ServiceBase;
-import com.epimorphics.server.core.ServiceConfig;
-import com.epimorphics.util.EpiException;
 
 /**
  * Non-persistent memory implementation of a UserSore for testing use.
@@ -51,90 +35,16 @@ import com.epimorphics.util.EpiException;
  * </pre>
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
-public class MemUserStore extends ServiceBase implements UserStore, Service {
-    static final Logger log = LoggerFactory.getLogger( MemUserStore.class );
-
-    public static final String INITFILE_PARAM = "initfile";
-
-    protected SecureRandomNumberGenerator rand = new SecureRandomNumberGenerator();
-    protected RegRealm realm;
-
+public class MemUserStore extends BaseUserStore implements UserStore, Service {
     protected Map<String, UserRecord> users = new HashMap<String, UserRecord>();
     protected Map<String, Set<RegPermission>> permissions = new HashMap<String, Set<RegPermission>>();
 
-    protected String initfile = null;
-
-    @Override
-    public void init(Map<String, String> config, ServletContext context) {
-        super.init(config, context);
-
-        // Load a bootstrap initialization file, used for test purposes only
-        initfile = config.get(INITFILE_PARAM);
-        if (initfile != null) {
-            initfile = ServiceConfig.get().expandFileLocation( initfile) ;
-        }
+    protected boolean initstore() {
+        return true;
     }
-
-    @Override
-    public void setRealm(RegRealm realm) {
-        this.realm = realm;
-        // Can only initialize the store once we know the realm
-        initStore();
-    }
-
-    private void initStore() {
-        if (initfile == null) return;
-        BufferedReader in = null;
-        try {
-            in = new BufferedReader(new FileReader(initfile));
-            String line = null;
-            while ((line = in.readLine()) != null) {
-                line = line.trim();
-                if (line.isEmpty() || line.startsWith("#")) continue;
-                if (line.startsWith("user")) {
-                    Matcher patternMatch = USER_LINE_PATTERN.matcher(line);
-                    if (patternMatch.matches()) {
-                        String id = patternMatch.group(1);
-                        UserRecord record = new UserRecord(id, patternMatch.group(2));
-                        record.initSalt();
-                        record.setPassword( ByteSource.Util.bytes( patternMatch.group(3) ), 60);
-                        users.put(id, record);
-                    } else {
-                        throw new EpiException("Could not parse user declaration: " + line);
-                    }
-                } else {
-                    String[] parts = line.split("\\s+");
-                    if (parts.length != 2) {
-                        throw new EpiException("Permissions line had wrong number of components: " + line);
-                    }
-                    String id = parts[0];
-                    String perm = parts[1];
-                    RegPermission permission = new RegPermission(perm);
-                    if (permission.getActions().contains(RegAction.GrantAdmin)) {
-                        // Make this user an administrator
-                        users.get(id).role = RegAuthorizationInfo.ADMINSTRATOR_ROLE;
-                    } else {
-                        Set<RegPermission> current = permissions.get(id);
-                        if (current == null) {
-                            current = new HashSet<RegPermission>();
-                            permissions.put(id, current);
-                        }
-                        current.add( permission );
-                    }
-                }
-            }
-            log.info("Load user store from " + initfile);
-        } catch (Exception e) {
-            log.error("Failed to load UserStore initialization file: " + initfile + " ", e);
-        } finally {
-            try {
-                in.close();
-            } catch (IOException e) {
-                // Ignore
-            }
-        }
-    }
-    static final Pattern USER_LINE_PATTERN = Pattern.compile("user\\s+([^\\s]+)\\s+\"([^\"]+)\"\\s+([^\\s]+)");
+    
+    protected void startTransaction() {}
+    protected void commit() {}
 
     @Override
     public void register(UserInfo user) {
@@ -175,6 +85,10 @@ public class MemUserStore extends ServiceBase implements UserStore, Service {
     @Override
     public void addPermision(String id, RegPermission permission) {
         Set<RegPermission> auth = permissions.get(id);
+        if (auth == null) {
+            auth = new HashSet<RegPermission>();
+            permissions.put(id, auth);
+        }
         auth.add(permission);
         realm.clearCacheFor(id);
     }
@@ -214,51 +128,5 @@ public class MemUserStore extends ServiceBase implements UserStore, Service {
     public void setRole(String id, String role) {
         users.get(id).role = role;
         realm.clearCacheFor(id);
-    }
-
-
-    class UserRecord {
-        protected String id;
-        protected String name;
-        protected String salt;
-        protected String password;
-        protected long timeout;
-        protected String role;
-
-        public UserRecord(String id, String name) {
-            this.id = id;
-            this.name = name;
-        }
-
-        public void initSalt() {
-            salt = rand.nextBytes().toHex();
-        }
-
-        public ByteSource getPasword() {
-            if (password != null) {
-                return ByteSource.Util.bytes( Hex.decode(password) );
-            } else {
-                return null;
-            }
-        }
-
-        public ByteSource getSalt() {
-            return ByteSource.Util.bytes( Hex.decode(salt) );
-        }
-
-        public void setPassword(ByteSource password, long minstolive) {
-            timeout = System.currentTimeMillis() + minstolive * 60 * 1000;
-            HashRequest request = new HashRequest.Builder()
-                .setSource(password)
-                .setSalt( getSalt() )
-                .build();
-            Hash hash = realm.getHashService().computeHash(request);
-            this.password = hash.toHex();
-        }
-
-        public void clearPassword() {
-            password = null;
-            timeout = 0;
-        }
     }
 }

@@ -183,9 +183,8 @@ public class RegPermission implements Permission {
         }
         return false;
     }
-
-    @Override
-    public String toString() {
+    
+    public String getActionString() {
         StringBuffer buff = new StringBuffer();
         boolean started = false;
         for (RegAction action : actions) {
@@ -196,8 +195,11 @@ public class RegPermission implements Permission {
             }
             buff.append(action.name());
         }
-        buff.append(":");
-        buff.append(path);
         return buff.toString();
+    }
+
+    @Override
+    public String toString() {
+        return getActionString() + ":" + path;
     }
 }
