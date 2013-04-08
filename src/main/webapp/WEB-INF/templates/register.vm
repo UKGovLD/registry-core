@@ -154,18 +154,16 @@
          });
        });
 
-      $(".ajax-form").ajaxForm({
-        success:
-              function(data, status, xhr){
-                $("#status-dialog").modal("hide");
-                location.reload();
-              },
-
-        error:
-            function(xhr, status, error){
-               $(".ajax-error").html("<div class='alert'> <button type='button' class='close' data-dismiss='alert'>&times;</button>Action failed: " + error + " - " + xhr.responseText + "</div>");
-            }
-      });
+        $(".query-form").each(function() {
+            var target = $(this).attr('data-target');
+            var queryField = $(this).attr('data-query');
+            var resultField = $(this).attr('data-result');
+            $(this).submit( function(){
+                var url = target + $(queryField).val();
+                $(resultField).load(url);
+                return false;
+            });
+        });
 
     });
 

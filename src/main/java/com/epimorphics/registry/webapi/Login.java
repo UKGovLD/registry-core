@@ -10,6 +10,8 @@
 package com.epimorphics.registry.webapi;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.security.RegPermission;
 import com.epimorphics.registry.security.RegToken;
 import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.security.UserStore;
@@ -148,11 +151,55 @@ public class Login {
     public Response listusers(@QueryParam("query") String query, @QueryParam("grant") String action, @QueryParam("uri") String uri) {
         if (SecurityUtils.getSubject().isPermitted("Grant:"+uri)) {
             List<UserInfo> users = Registry.get().getUserStore().listUsers(query);
-            System.out.println("URI = " + uri + " - does this look encoded to you?");
-            // TODO check if need to re-encode
             return RequestProcessor.render("user-list.vm", uriInfo, servletContext, request, "grant", action, "uri", uri, "users", users);
         } else {
             return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "You do not have sufficient privileges to grant further access");
+        }
+    }
+    
+    @Path("/grant")
+    @POST
+    public Response grant(@FormParam("user") String id, @FormParam("grant") String action, @FormParam("path") String path,
+            @Context HttpServletResponse response) {
+        if (SecurityUtils.getSubject().isPermitted("Grant:" + path)) {
+            UserStore userstore = Registry.get().getUserStore();
+            try {
+                userstore.addPermision(id, new RegPermission(action, path));
+                return redirectTo(path);
+            } catch (Exception e) {
+                return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "Permission grant failed: " + e.getMessage());
+            }
+        } else {
+            return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "You do not have sufficient privileges to grant further access");
+        }
+    }
+    
+    @Path("/ungrant")
+    @POST
+    public Response ungrant(@FormParam("user") String id, @FormParam("path") String path,
+            @Context HttpServletResponse response) {
+        if (SecurityUtils.getSubject().isPermitted("Grant:" + path)) {
+            UserStore userstore = Registry.get().getUserStore();
+            try {
+                userstore.removePermission(id, path);
+                return redirectTo(path);
+            } catch (Exception e) {
+                return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "Permission grant failed: " + e.getMessage());
+            }
+        } else {
+            return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "You do not have sufficient privileges to grant further access");
+        }
+    }
+    
+    private Response redirectTo(String path) {
+        URI uri;
+        try {
+            uri = new URI(path);
+            return Response.seeOther(uri).build();
+        } catch (URISyntaxException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return null;
         }
     }
 

@@ -20,8 +20,34 @@
              $(contentID).load('$uiroot/' + action +'?uri=$lib.pathEncode($uri)&requestor=$requestor', function(){
                 $('.action-tab').tab(); //reinitialize tabs
                 $('.datatable').dataTable();
+                // enable an embedded query forms (used in admin pages)
+                $(".query-form").each(function() {
+                    var target = $(this).attr('data-target');
+                    var queryField = $(this).attr('data-query');
+                    var resultField = $(this).attr('data-result');
+                    $(this).submit( function(){
+                        var url = target + $(queryField).val();
+                        $(resultField).load(url);
+                        return false;
+                    });
+                });
+                
               });
            };
+        });
+        
+        // General ajax forms which reload the page when actioned
+        $(".ajax-form").ajaxForm({
+          success:
+              function(data, status, xhr){
+                $("#status-dialog").modal("hide");
+                location.reload();
+              },
+
+          error:
+            function(xhr, status, error){
+               $(".ajax-error").html("<div class='alert'> <button type='button' class='close' data-dismiss='alert'>&times;</button>Action failed: " + error + " - " + xhr.responseText + "</div>");
+            }
         });
 
     });

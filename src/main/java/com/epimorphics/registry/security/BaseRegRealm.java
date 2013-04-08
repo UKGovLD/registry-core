@@ -13,6 +13,7 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authz.AuthorizationInfo;
+import org.apache.shiro.cache.Cache;
 import org.apache.shiro.crypto.hash.DefaultHashService;
 import org.apache.shiro.crypto.hash.HashService;
 import org.apache.shiro.realm.AuthorizingRealm;
@@ -50,6 +51,13 @@ public class BaseRegRealm extends AuthorizingRealm {
         UserInfo principal = new UserInfo(id, null);
         PrincipalCollection pc = new SimplePrincipalCollection(principal, getName());
         clearCache(pc);
+        if (id.equals(UserStore.AUTH_USER_ID)) {
+            // For the anonymous user have to lose whole cache because this affects every user
+            Cache<Object, AuthenticationInfo> cache = getAuthenticationCache();
+            if (cache != null) {
+                cache.clear();
+            }
+        }
     }
 
     @Override

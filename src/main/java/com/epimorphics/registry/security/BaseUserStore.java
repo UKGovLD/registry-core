@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
 
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.SaltedAuthenticationInfo;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.codec.Hex;
@@ -39,7 +40,7 @@ import com.epimorphics.util.EpiException;
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public abstract class BaseUserStore extends ServiceBase implements UserStore, Service {
-    static final Logger log = LoggerFactory.getLogger( MemUserStore.class );
+    static final Logger log = LoggerFactory.getLogger( BaseUserStore.class );
 
     public static final String INITFILE_PARAM = "initfile";
 
@@ -91,6 +92,7 @@ public abstract class BaseUserStore extends ServiceBase implements UserStore, Se
      */
     protected abstract UserRecord getRecord(String id);
 
+    @Override
     public SaltedAuthenticationInfo checkUser(String id) {
         UserRecord record = getRecord(id);
         if (record == null) {
@@ -109,6 +111,80 @@ public abstract class BaseUserStore extends ServiceBase implements UserStore, Se
                     realm.getName());
         }
     }
+    
+    private void log(String message) {
+        try {
+            String user = ((UserInfo)SecurityUtils.getSubject().getPrincipal()).getName();
+            log.info(user + " " + message);
+        } catch (Exception e) {
+            log.info("Bootstrap " + message);
+        }
+    }
+        
+    private void clearCache(String id) {
+        realm.clearCacheFor(id);
+    }
+    
+    @Override
+    public boolean register(UserInfo user) {
+        boolean success = doRegister(user);
+        if (success) {
+            log("Registered user " + user.getOpenid() + " (" + user.getName() + ")");
+        }
+        clearCache(user.getOpenid());
+        return success;
+    }
+    public abstract boolean doRegister(UserInfo user);
+    
+    @Override
+    public void unregister(String id) {
+        doUnregister(id);
+        clearCache(id);
+        log("Removed registration for " + id);
+    }
+    public abstract void doUnregister(String id);
+
+    @Override
+    public void setCredentials(String id, ByteSource credentials, int minstolive) {
+        doSetCredentials(id, credentials, minstolive);
+        clearCache(id);
+        log("Create a password for user " + id);
+    }
+    public abstract void doSetCredentials(String id, ByteSource credentials, int minstolive);
+    
+    @Override
+    public void removeCredentials(String id) {
+        doRemoveCredentials(id);
+        clearCache(id);
+        log("Cleared password for user " + id);
+    }
+    public abstract void doRemoveCredentials(String id);
+
+    @Override
+    public void addPermision(String id, RegPermission permission) {
+        doAddPermision(id, permission);
+        clearCache(id);
+        log("Added permission " + permission + " for user " + id);
+    }
+    public abstract void doAddPermision(String id, RegPermission permission);
+
+    @Override
+    public void removePermission(String id, String path) {
+        doRemovePermission(id, path);
+        clearCache(id);
+        log("Removed permissions for user " + id + " on path " + path);
+    }
+    public abstract void doRemovePermission(String id, String path);
+
+    @Override
+    public void setRole(String id, String role) {
+        doSetRole(id, role);
+        clearCache(id);
+        log("Set role " + role + " for user " + id);
+    }
+    
+    public abstract void doSetRole(String id, String role);
+
 
     private void loadStore() {
         startTransaction();

@@ -1,15 +1,39 @@
 <h3>Managers for this register</h3>
 
-<p>To do</p>
+#set($path="/" + $uri)
+#set($managers=$registry.userStore.authorizedOn($path))
+#if($managers.isEmpty())
+   <p>No local authorizations found</p>
+#else
+   <table class="table">
+     <tbody>
+  #foreach($user in $managers)
+    <tr>
+      <td>
+        <span title="$user.openid">$user.name</span>
+      </td>
+      <td>
+        <form class="form-inline" action="/system/security/ungrant" method="post">
+          <input type="hidden" name="user" value="$user.openid" />
+          <input type="hidden" name="path" value="$path" />
+          <input type="submit" value="remove" class="btn btn-inverse" />
+        </form>
+      </td>
+    </tr>
+  #end
+     
+     </tbody>
+   </table>
+#end
 
-<div class="row">
-  <div class="span">
+<div class="row space-above">
+  <div class="span2">
     <a href="#grant-user-dialog" role="button" class="btn btn-primary" data-toggle="modal">Add manager</a>
   </div>
   <div class="span2">
     <a href="#make-open-dialog" role="button" class="btn" data-toggle="modal">Allow any</a>
   </div>
-<div>
+</div>
 
 
 <div id="grant-user-dialog" class="modal hide" tabindex="-1" role="dialog" aria-hidden="true">
@@ -18,8 +42,14 @@
     <h3>Locate a registered user to grant rights to</h3>
   </div>
   <div class="modal-body">
-    to do
+    <form id="user-form"  class="form-search query-form" 
+        data-target="/system/security/listusers?uri=/$uri&grant=Manager&query=" data-query="#user-query" data-result="#user-list">
+      <input id="user-query" type="text" class="input-medium">
+      <button id="user-search" type="submit" class="btn">Search</button>
+    </form>
+    <div id="user-list"></div>
   </div>
+
   <div class="modal-footer">
     <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
   </div>

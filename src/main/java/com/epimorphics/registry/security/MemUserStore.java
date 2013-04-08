@@ -45,7 +45,7 @@ public class MemUserStore extends BaseUserStore implements UserStore, Service {
     protected void commit() {}
 
     @Override
-    public boolean register(UserInfo user) {
+    public boolean doRegister(UserInfo user) {
         if (users.containsKey(user.getOpenid())) {
             return false;
         }
@@ -73,18 +73,17 @@ public class MemUserStore extends BaseUserStore implements UserStore, Service {
     }
 
     @Override
-    public void addPermision(String id, RegPermission permission) {
+    public void doAddPermision(String id, RegPermission permission) {
         Set<RegPermission> auth = permissions.get(id);
         if (auth == null) {
             auth = new HashSet<RegPermission>();
             permissions.put(id, auth);
         }
         auth.add(permission);
-        realm.clearCacheFor(id);
     }
 
     @Override
-    public void removePermission(String id, String path) {
+    public void doRemovePermission(String id, String path) {
         Set<RegPermission> perms = permissions.get(id);
         List<RegPermission> toRemove = new ArrayList<RegPermission>();
         for (RegPermission p : perms) {
@@ -93,31 +92,26 @@ public class MemUserStore extends BaseUserStore implements UserStore, Service {
             }
         }
         perms.removeAll(toRemove);
-        realm.clearCacheFor(id);
     }
 
     @Override
-    public void unregister(String id) {
+    public void doUnregister(String id) {
         users.remove(id);
-        realm.clearCacheFor(id);
     }
 
     @Override
-    public void setCredentials(String id, ByteSource credentials, int minstolive) {
+    public void doSetCredentials(String id, ByteSource credentials, int minstolive) {
         users.get(id).setPassword(credentials, minstolive);
-        realm.clearCacheFor(id);
     }
 
     @Override
-    public void removeCredentials(String id) {
+    public void doRemoveCredentials(String id) {
         users.get(id).clearPassword();
-        realm.clearCacheFor(id);
     }
 
     @Override
-    public void setRole(String id, String role) {
+    public void doSetRole(String id, String role) {
         users.get(id).role = role;
-        realm.clearCacheFor(id);
     }
 
     @Override
@@ -144,5 +138,6 @@ public class MemUserStore extends BaseUserStore implements UserStore, Service {
         }
         return matches;
     }
+
 
 }

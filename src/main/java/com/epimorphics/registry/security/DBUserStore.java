@@ -101,7 +101,7 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
     }
 
     @Override
-    public boolean register(UserInfo user) {
+    public boolean doRegister(UserInfo user) {
         if (getRecord(user.getOpenid()) != null) {
             return false;
         }
@@ -176,7 +176,7 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
     }
 
     @Override
-    public void addPermision(String id, RegPermission permission) {
+    public void doAddPermision(String id, RegPermission permission) {
         try {
             PreparedStatement s = conn.prepareStatement("INSERT INTO PERMISSIONS VALUES (?, ?, ?)");
             s.setString(1, id);
@@ -184,7 +184,6 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
             s.setString(3, permission.getPath());
             s.executeUpdate();
             commit();
-            realm.clearCacheFor(id);
         } catch (Exception e) {
             log.error("Failed to access security database", e);
             throw new EpiException(e);
@@ -192,14 +191,13 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
     }
 
     @Override
-    public void removePermission(String id, String path) {
+    public void doRemovePermission(String id, String path) {
         try {
             PreparedStatement s = conn.prepareStatement("DELETE FROM PERMISSIONS WHERE ID=? AND PATH=?");
             s.setString(1, id);
             s.setString(2, path);
             s.executeUpdate();
             commit();
-            realm.clearCacheFor(id);
         } catch (Exception e) {
             log.error("Failed to access security database", e);
             throw new EpiException(e);
@@ -207,7 +205,7 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
     }
 
     @Override
-    public void unregister(String id) {
+    public void doUnregister(String id) {
         try {
             PreparedStatement s = conn.prepareStatement("DELETE FROM USERS WHERE ID=?");
             s.setString(1, id);
@@ -217,11 +215,10 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
             log.error("Failed to access security database", e);
             throw new EpiException(e);
         }
-        realm.clearCacheFor(id);
     }
 
     @Override
-    public void setCredentials(String id, ByteSource credentials, int minstolive) {
+    public void doSetCredentials(String id, ByteSource credentials, int minstolive) {
         try {
             UserRecord record = getRecord(id);
             record.setPassword(credentials, minstolive);
@@ -236,11 +233,10 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
             log.error("Failed to access security database", e);
             throw new EpiException(e);
         }
-        realm.clearCacheFor(id);
     }
 
     @Override
-    public void removeCredentials(String id) {
+    public void doRemoveCredentials(String id) {
         try {
             PreparedStatement s = conn.prepareStatement("UPDATE USERS SET PASSWORD=? WHERE ID=?");
             s.setString(2, id);
@@ -251,11 +247,10 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
             log.error("Failed to access security database", e);
             throw new EpiException(e);
         }
-        realm.clearCacheFor(id);
     }
 
     @Override
-    public void setRole(String id, String role) {
+    public void doSetRole(String id, String role) {
         try {
             PreparedStatement s = conn.prepareStatement("UPDATE USERS SET ROLE=? WHERE ID=?");
             s.setString(2, id);
@@ -270,7 +265,6 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
             log.error("Failed to access security database", e);
             throw new EpiException(e);
         }
-        realm.clearCacheFor(id);
     }
 
     @Override

@@ -94,7 +94,7 @@
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
             <h3>$dialogCaption</h3>
           </div>
-          <div id="$dialogID-status-body" class="modal-body">
+          <div id="${dialogID}-status-body" class="modal-body">
             #foreach($status in $lib.reg.nextStates($item.getPropertyValue("reg:status")))
                 <button class="set-status btn btn-#statuslabel($status.name())" data-status="$status" data-target="#linkhref($target)">$status</button>
             #end
