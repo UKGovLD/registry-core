@@ -2,7 +2,7 @@
  * File:        DBUserStore.java
  * Created by:  Dave Reynolds
  * Created on:  7 Apr 2013
- * 
+ *
  * (c) Copyright 2013, Epimorphics Limited
  *
  *****************************************************************/
@@ -22,27 +22,24 @@ import java.util.Set;
 
 import javax.servlet.ServletContext;
 
-import org.apache.shiro.authc.SaltedAuthenticationInfo;
-import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.util.ByteSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.epimorphics.server.core.Service;
-import com.epimorphics.server.core.ServiceConfig;
 import com.hp.hpl.jena.util.FileManager;
 
 public class DBUserStore extends BaseUserStore implements UserStore, Service {
     static final Logger log = LoggerFactory.getLogger( DBUserStore.class );
 
     public static final String DATABASE_PARAM = "dbfile";
-    public static final String DATABASE_SCHEMA = "${webapp}/WEB-INF/sys/userdbinit.sql";
-    
+    public static final String DATABASE_SCHEMA = "userdbinit.sql";
+
     protected static final String driver = "org.apache.derby.jdbc.EmbeddedDriver";
     protected static final String protocol = "jdbc:derby:";
-    
+
     protected Connection conn;
-    
+
     @Override
     public void init(Map<String, String> config, ServletContext context) {
         super.init(config, context);
@@ -54,22 +51,17 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
             log.error("*** Security configuration error ***", e);
         }
     }
-    
+
     protected boolean initstore() {
         if (conn != null) {
             try {
                 ResultSet tables = conn.getMetaData().getTables(null, null, null, new String[]{"TABLE"});
                 boolean exists = tables.next();
                 tables.close();
-                
+
                 if (!exists) {
                     startTransaction();
-                    String schemaFile = ServiceConfig.get().expandFileLocation( DATABASE_SCHEMA );
-                    if (schemaFile.contains(ServiceConfig.WEBAPP_MACRO)) {
-                        // Support testing outside web app
-                        schemaFile = schemaFile.replace(ServiceConfig.WEBAPP_MACRO, "src/main/webapp");
-                    }
-                    String schema  = FileManager.get().readWholeFileAsUTF8(schemaFile);
+                    String schema  = FileManager.get().readWholeFileAsUTF8(DATABASE_SCHEMA);
                     Statement s = conn.createStatement();
                     for (String statement : schema.split(";")) {
                         String sql = statement.trim();
@@ -86,7 +78,7 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
         }
         return false;
     }
-    
+
     protected void startTransaction() {
         try {
             conn.setAutoCommit(false);
@@ -94,7 +86,7 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
             log.error("Failed to access security database", e);
         }
     }
-    
+
     protected void commit() {
         try {
             conn.commit();
@@ -121,7 +113,7 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
             log.error("Failed to access security database", e);
         }
     }
-    
+
     protected UserRecord getRecord(String id) {
         try {
             PreparedStatement s = conn.prepareStatement("SELECT NAME, SALT, PASSWORD, TIMEOUT, ROLE FROM USERS WHERE ID=?");
@@ -141,26 +133,6 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
         return null;
     }
 
-    @Override
-    public SaltedAuthenticationInfo checkUser(String id) {
-        UserRecord record = getRecord(id);
-        if (record == null) {
-            return null;
-        }
-        if (System.currentTimeMillis() < record.timeout) {
-            return new SimpleAuthenticationInfo(
-                    new UserInfo(record.id, record.name),
-                    record.getPasword(),
-                    record.getSalt(),
-                    realm.getName());
-        } else {
-            return new SimpleAuthenticationInfo(
-                    new UserInfo(record.id, record.name),
-                    "",
-                    realm.getName());
-        }
-    }
-    
     protected Set<RegPermission> permissionsFor(String id) {
         try {
             PreparedStatement s = conn.prepareStatement("SELECT ACTION, PATH FROM PERMISSIONS WHERE ID=?");
@@ -182,7 +154,10 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
         RegAuthorizationInfo auth = new RegAuthorizationInfo();
         auth.addAllPermissions( permissionsFor(id) );
         auth.addAllPermissions( permissionsFor(AUTH_USER_ID) );
-        auth.addRole( getRecord(id).role );
+        String role = getRecord(id).role;
+        if (role != null) {
+            auth.addRole( role );
+        }
         return auth;
     }
 
@@ -192,7 +167,7 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
             PreparedStatement s = conn.prepareStatement("INSERT INTO PERMISSIONS VALUES (?, ?, ?)");
             s.setString(1, id);
             s.setString(2, permission.getActionString());
-            s.setString(3, permission.getPath()); 
+            s.setString(3, permission.getPath());
             s.executeUpdate();
             commit();
             realm.clearCacheFor(id);
@@ -202,10 +177,11 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
     }
 
     @Override
-    public void removePermission(String id, RegPermission permission) {
+    public void removePermission(String id, String path) {
         try {
-            PreparedStatement s = conn.prepareStatement("DELETE FROM PERMISSIONS WHERE ID=?");
+            PreparedStatement s = conn.prepareStatement("DELETE FROM PERMISSIONS WHERE ID=? AND PATH=?");
             s.setString(1, id);
+            s.setString(2, path);
             s.executeUpdate();
             commit();
             realm.clearCacheFor(id);
@@ -232,7 +208,7 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
         try {
             UserRecord record = getRecord(id);
             record.setPassword(credentials, minstolive);
-            
+
             PreparedStatement s = conn.prepareStatement("UPDATE USERS SET PASSWORD=?, TIMEOUT=? WHERE ID=?");
             s.setString(3, id);
             s.setString(1, record.password);
@@ -264,7 +240,11 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
         try {
             PreparedStatement s = conn.prepareStatement("UPDATE USERS SET ROLE=? WHERE ID=?");
             s.setString(2, id);
-            s.setString(1, role);
+            if (role == null) {
+                s.setNull(1, Types.VARCHAR);
+            } else {
+                s.setString(1, role);
+            }
             s.executeUpdate();
             commit();
         } catch (Exception e) {
@@ -272,5 +252,5 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
         }
         realm.clearCacheFor(id);
     }
-    
+
 }

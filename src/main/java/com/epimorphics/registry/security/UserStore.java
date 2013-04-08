@@ -75,13 +75,13 @@ public interface UserStore {
     public void addPermision(String id, RegPermission permission);
 
     /**
-     * Remove permissions from this user. If the permission has a path then all
-     * permissions for that path will be removed.
+     * Remove permissions from this user for the given path.
      */
-    public void removePermission(String id, RegPermission permission);
+    public void removePermission(String id, String path);
 
     /**
-     * Set a role for the user.
+     * Set a role for the user. There is only one supported global role (administrator).
+     * Set to null to remove the role.
      */
     public void setRole(String id, String role);
 

@@ -2,7 +2,7 @@
  * File:        BaseUserStore.java
  * Created by:  Dave Reynolds
  * Created on:  7 Apr 2013
- * 
+ *
  * (c) Copyright 2013, Epimorphics Limited
  *
  *****************************************************************/
@@ -18,6 +18,8 @@ import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
 
+import org.apache.shiro.authc.SaltedAuthenticationInfo;
+import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.codec.Hex;
 import org.apache.shiro.crypto.SecureRandomNumberGenerator;
 import org.apache.shiro.crypto.hash.Hash;
@@ -33,7 +35,7 @@ import com.epimorphics.util.EpiException;
 
 /**
  * Support for loading a new store from a boostrap file.
- * 
+ *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public abstract class BaseUserStore extends ServiceBase implements UserStore, Service {
@@ -44,7 +46,7 @@ public abstract class BaseUserStore extends ServiceBase implements UserStore, Se
     protected SecureRandomNumberGenerator rand = new SecureRandomNumberGenerator();
     protected BaseRegRealm realm;
     protected String initfile = null;
-    
+
     @Override
     public void init(Map<String, String> config, ServletContext context) {
         super.init(config, context);
@@ -62,27 +64,53 @@ public abstract class BaseUserStore extends ServiceBase implements UserStore, Se
         checkStore();
     }
 
+    private void checkStore() {
+        if ( !initstore() ) return;
+        if (initfile == null) return;
+        loadStore();
+    }
+
     /**
      * Test if store is available, if not create a new empty
      * store and return true.
      */
     protected abstract boolean initstore();
-    
+
     /**
      * Start a transaction if the store supports transactions
      */
     protected abstract void startTransaction();
-    
+
     /**
      * Commit the transaction if the store supports transactions
      */
     protected abstract void commit();
-    
-    
-    private void checkStore() {
-        if ( !initstore() ) return;
-        if (initfile == null) return;
-        
+
+    /**
+     * Return the record for the identified user.
+     */
+    protected abstract UserRecord getRecord(String id);
+
+    public SaltedAuthenticationInfo checkUser(String id) {
+        UserRecord record = getRecord(id);
+        if (record == null) {
+            return null;
+        }
+        if (System.currentTimeMillis() < record.timeout) {
+            return new SimpleAuthenticationInfo(
+                    new UserInfo(record.id, record.name),
+                    record.getPasword(),
+                    record.getSalt(),
+                    realm.getName());
+        } else {
+            return new SimpleAuthenticationInfo(
+                    new UserInfo(record.id, record.name),
+                    null,
+                    realm.getName());
+        }
+    }
+
+    private void loadStore() {
         startTransaction();
         BufferedReader in = null;
         try {
@@ -179,5 +207,5 @@ class UserRecord {
         timeout = 0;
     }
 }
-    
+
 }

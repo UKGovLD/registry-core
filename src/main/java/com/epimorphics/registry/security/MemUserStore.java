@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.shiro.authc.SaltedAuthenticationInfo;
-import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.util.ByteSource;
 
 import com.epimorphics.server.core.Service;
@@ -42,7 +40,7 @@ public class MemUserStore extends BaseUserStore implements UserStore, Service {
     protected boolean initstore() {
         return true;
     }
-    
+
     protected void startTransaction() {}
     protected void commit() {}
 
@@ -54,23 +52,8 @@ public class MemUserStore extends BaseUserStore implements UserStore, Service {
     }
 
     @Override
-    public SaltedAuthenticationInfo checkUser(String id) {
-        UserRecord record = users.get(id);
-        if (record == null) {
-            return null;
-        }
-        if (System.currentTimeMillis() < record.timeout) {
-            return new SimpleAuthenticationInfo(
-                    new UserInfo(record.id, record.name),
-                    record.getPasword(),
-                    record.getSalt(),
-                    realm.getName());
-        } else {
-            return new SimpleAuthenticationInfo(
-                    new UserInfo(record.id, record.name),
-                    "",
-                    realm.getName());
-        }
+    protected UserRecord getRecord(String id) {
+        return users.get(id);
     }
 
     @Override
@@ -78,7 +61,10 @@ public class MemUserStore extends BaseUserStore implements UserStore, Service {
         RegAuthorizationInfo auth = new RegAuthorizationInfo();
         auth.addAllPermissions( permissions.get(id) );
         auth.addAllPermissions( permissions.get(AUTH_USER_ID) );
-        auth.addRole( users.get(id).role );
+        String role = getRecord(id).role;
+        if (role != null) {
+            auth.addRole( role );
+        }
         return auth;
     }
 
@@ -94,11 +80,11 @@ public class MemUserStore extends BaseUserStore implements UserStore, Service {
     }
 
     @Override
-    public void removePermission(String id, RegPermission permission) {
+    public void removePermission(String id, String path) {
         Set<RegPermission> perms = permissions.get(id);
         List<RegPermission> toRemove = new ArrayList<RegPermission>();
         for (RegPermission p : perms) {
-            if ( p.getPath().equals(permission.getPath()) ) {
+            if ( p.getPath().equals(path) ) {
                 toRemove.add(p);
             }
         }
