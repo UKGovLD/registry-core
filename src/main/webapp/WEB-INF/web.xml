@@ -96,7 +96,7 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
 
   <context-param>
     <param-name>config.userstore</param-name>
-    <param-value>com.epimorphics.registry.security.MemUserStore, initfile=${webapp}/WEB-INF/usertest.ini</param-value>
+    <param-value>com.epimorphics.registry.security.DBUserStore, initfile=${webapp}/WEB-INF/user.ini, dbfile=/var/local/registry/userstore</param-value>
   </context-param>
 
   <context-param>

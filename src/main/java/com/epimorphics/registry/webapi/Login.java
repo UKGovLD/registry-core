@@ -56,7 +56,6 @@ public class Login {
     // Session attribute names
     public static final String SA_OPENID_DISC = "openid_disc";
 //    public static final String SA_OPENID_PROVIDER = "openid_provider";
-    public static final String SA_SUBJECT = "subject";
     public static final String SA_REGISTRATION = "isRegistration";
 
     // Attribute parameter names
@@ -64,6 +63,13 @@ public class Login {
     public static final String AP_FIRST_NAME = "firstName";
     public static final String AP_LAST_NAME = "lastName";
     public static final String AP_FULL_NAME = "fullname";
+
+    // Velocity binding names
+    public static final String VN_SUBJECT = "subject";
+    public static final String VN_REGISTRATION_STATUS = "registrationStatus";
+    public static final String RS_NEW = "new";
+    public static final String RS_ALREADY_REGISTERED = "already";
+    public static final String RS_LOGIN = "login";
 
     private static ConsumerManager manager = null;
     static {
@@ -97,7 +103,7 @@ public class Login {
     @POST
     public void logout(@Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException {
         // TODO set session attribute as part of Shiro realm
-        request.getSession().removeAttribute(SA_SUBJECT);
+        request.getSession().removeAttribute(VN_SUBJECT);
         SecurityUtils.getSubject().logout();
         response.sendRedirect("/");
     }
@@ -121,18 +127,7 @@ public class Login {
     @Path("/response")
     @GET
     public Response openIDResponse(@Context HttpServletRequest request) {
-        String id = verifyResponse(request);
-        if (id != null) {
-            RegToken token = new RegToken(id, true);
-            Subject subject = SecurityUtils.getSubject();
-            try {
-                subject.login(token);
-                return RequestProcessor.render("welcome.vm", uriInfo, servletContext, request, SA_SUBJECT, subject);
-            } catch (Exception e) {
-                log.error("Authentiation failure: " + e);
-            }
-        }
-        return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "Could not find a registration for you.");
+        return verifyResponse(request);
     }
 
     // Return the name of the loggedin user on this session, for test purposes
@@ -200,7 +195,7 @@ public class Login {
     }
 
     @SuppressWarnings({ "unchecked" })
-    public String verifyResponse(HttpServletRequest request) {
+    public Response verifyResponse(HttpServletRequest request) {
         try {
             HttpSession session = request.getSession();
 
@@ -243,15 +238,29 @@ public class Login {
                 log.info(String.format("Verified identity %s = %s", verified.getIdentifier(), name));
                 UserStore userstore = Registry.get().getUserStore();
                 boolean isRegistration = ((Boolean)session.getAttribute(SA_REGISTRATION)).booleanValue();
+                String registrationStatus = RS_LOGIN;
                 if (isRegistration) {
                     UserInfo userinfo = new UserInfo(verified.getIdentifier(), name);
-                    userstore.register( userinfo );
+                    if (userstore.register( userinfo )) {
+                        registrationStatus = RS_NEW;
+                    } else {
+                        registrationStatus = RS_ALREADY_REGISTERED;
+                    }
                 }
-                return verified.getIdentifier();
+
+                RegToken token = new RegToken(verified.getIdentifier(), true);
+                Subject subject = SecurityUtils.getSubject();
+                try {
+                    subject.login(token);
+                    return RequestProcessor.render("welcome.vm", uriInfo, servletContext, request, VN_SUBJECT, subject, VN_REGISTRATION_STATUS, registrationStatus);
+                } catch (Exception e) {
+                    log.error("Authentication failure: " + e);
+                    return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "Could not find a registration for you.");
+                }
             }
         } catch (Exception e) {
             throw new WebApplicationException(e);
         }
-        return null;
+        return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "OpenID login failed");
     }
 }

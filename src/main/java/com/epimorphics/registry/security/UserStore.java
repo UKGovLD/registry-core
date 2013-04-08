@@ -29,9 +29,10 @@ public interface UserStore {
     public void setRealm(BaseRegRealm realm);
 
     /**
-     * Register a new user
+     * Register a new user.
+     * True true if the new registration failed, false if the user is already registered.
      */
-    public void register(UserInfo user);
+    public boolean register(UserInfo user);
 
     /**
      * Test if a user is registered. Returns their user information and credentials

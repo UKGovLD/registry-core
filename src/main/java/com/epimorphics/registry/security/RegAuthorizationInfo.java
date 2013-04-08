@@ -11,6 +11,7 @@ package com.epimorphics.registry.security;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.Permission;
@@ -34,11 +35,14 @@ public class RegAuthorizationInfo extends SimpleAuthorizationInfo implements Aut
     protected OneToManyMap<String, RegPermission> getIndex() {
         if (index == null) {
             index = new OneToManyMap<String, RegPermission>();
-            for (Permission p : getObjectPermissions()) {
-                RegPermission rp = (RegPermission)p;
-                index.put(rp.getPath(), rp);
-                if (rp.getImpliedPath() != null) {
-                    index.put(rp.getImpliedPath(), rp);
+            Set<Permission> perms = getObjectPermissions();
+            if (perms != null) {
+                for (Permission p : perms) {
+                    RegPermission rp = (RegPermission)p;
+                    index.put(rp.getPath(), rp);
+                    if (rp.getImpliedPath() != null) {
+                        index.put(rp.getImpliedPath(), rp);
+                    }
                 }
             }
         }

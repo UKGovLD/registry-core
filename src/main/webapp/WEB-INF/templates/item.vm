@@ -22,11 +22,15 @@
       #end
     </div>
 
+    #set($isAdministrator=$lib.reg.isPermitted("Grant", $uri))
+
     <ul class="nav nav-tabs nav-compact action-tab">
       <li class="active"><a href="#properties" data-toggle="tab">Properties</a></li>
       <li><a href="#metadata" data-toggle="tab">Metadata</a></li>
       <li><a href="#history" data-toggle="tab">History</a></li>
-      <li><a href="#administer" data-toggle="tab">Administer</a></li>
+      #if($isAdministrator)
+        <li><a href="#administer" data-toggle="tab">Administer</a></li>
+      #end
     </ul>
 
     <div class="tab-content">
@@ -42,9 +46,11 @@
         <p>Loading ...</p>
       </div>
 
-      <div class="tab-pane" id="administer">
-        <p>To be implemented.</p>
-      </div>
+      #if($isAdministrator)
+        <div class="tab-pane" id="administer">
+          <p>To be implemented.</p>
+        </div>
+      #end
     </div>
 
   </div>
@@ -66,12 +72,14 @@
        </div>
      </div>
 
-     <div>
-       <h3 class="text-center">Actions</h3>
-       <a href="#status-dialog" role="button" class="btn" data-toggle="modal">Set status</a>
-     </div>
+    #if($lib.reg.isPermitted("StatusUpdate", $uri))
+        <div>
+          <h3 class="text-center">Actions</h3>
+          <a href="#status-dialog" role="button" class="btn" data-toggle="modal">Set status</a>
+        </div>
 
-    #statusSet("status-dialog", "Set status of $entity.name to ...", $item, $item)
+        #statusSet("status-dialog", "Set status of $entity.name to ...", $item, $item)
+    #end
 
   </div>
 </div>

@@ -6,7 +6,14 @@
   #end
 #parse("navbar.vm")
 
-<h2>Welcome $subject.principal.name</h2>
+<h2>Welcome #if($registrationStatus == "login")back#end $subject.principal.name</h2>
+
+#if($registrationStatus == "new")
+  <p>You have successfully registered.</p>
+#end
+#if($registrationStatus == "already")
+  <p>You were already registered, so have simply been logged in.</p>
+#end
 
 <p>identity = $subject.principal.openid</p>
 

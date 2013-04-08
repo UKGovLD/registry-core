@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.epimorphics.server.core.Service;
+import com.epimorphics.util.EpiException;
 import com.hp.hpl.jena.util.FileManager;
 
 public class DBUserStore extends BaseUserStore implements UserStore, Service {
@@ -84,6 +85,7 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
             conn.setAutoCommit(false);
         } catch (SQLException e) {
             log.error("Failed to access security database", e);
+            throw new EpiException(e);
         }
     }
 
@@ -92,11 +94,15 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
             conn.commit();
         } catch (SQLException e) {
             log.error("Failed to access security database", e);
+            throw new EpiException(e);
         }
     }
 
     @Override
-    public void register(UserInfo user) {
+    public boolean register(UserInfo user) {
+        if (getRecord(user.getOpenid()) != null) {
+            return false;
+        }
         try {
             UserRecord record = new UserRecord(user.getOpenid(), user.getName());
             record.initSalt();
@@ -109,8 +115,10 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
             ps.setNull(6, Types.VARCHAR);
             ps.executeUpdate();
             commit();
+            return true;
         } catch (Exception e) {
             log.error("Failed to access security database", e);
+            throw new EpiException(e);
         }
     }
 
@@ -129,6 +137,7 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
             }
         } catch (Exception e) {
             log.error("Failed to access security database", e);
+            throw new EpiException(e);
         }
         return null;
     }
@@ -145,7 +154,7 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
             return permissions;
         } catch (Exception e) {
             log.error("Failed to access security database", e);
-            return null;
+            throw new EpiException(e);
         }
     }
 
@@ -173,6 +182,7 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
             realm.clearCacheFor(id);
         } catch (Exception e) {
             log.error("Failed to access security database", e);
+            throw new EpiException(e);
         }
     }
 
@@ -187,6 +197,7 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
             realm.clearCacheFor(id);
         } catch (Exception e) {
             log.error("Failed to access security database", e);
+            throw new EpiException(e);
         }
     }
 
@@ -199,6 +210,7 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
             commit();
         } catch (Exception e) {
             log.error("Failed to access security database", e);
+            throw new EpiException(e);
         }
         realm.clearCacheFor(id);
     }
@@ -217,6 +229,7 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
             commit();
         } catch (Exception e) {
             log.error("Failed to access security database", e);
+            throw new EpiException(e);
         }
         realm.clearCacheFor(id);
     }
@@ -231,6 +244,7 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
             commit();
         } catch (Exception e) {
             log.error("Failed to access security database", e);
+            throw new EpiException(e);
         }
         realm.clearCacheFor(id);
     }
@@ -249,6 +263,7 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
             commit();
         } catch (Exception e) {
             log.error("Failed to access security database", e);
+            throw new EpiException(e);
         }
         realm.clearCacheFor(id);
     }

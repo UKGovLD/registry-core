@@ -33,13 +33,17 @@
     </div>
 
     ## Listing members
+    #set($isAdministrator=$lib.reg.isPermitted("Grant", $uri))
+
     <div class="row">
       <div class="span8">
         <ul class="nav nav-tabs nav-compact action-tab">
           <li class="active"><a href="#list" data-toggle="tab">List</a></li>
           <li><a href="#table" data-toggle="tab">Table</a></li>
           <li><a href="#metadata" data-toggle="tab">Metadata</a></li>
-          <li><a href="#administer" data-toggle="tab">Administer</a></li>
+          #if($isAdministrator)
+            <li><a href="#administer" data-toggle="tab">Administer</a></li>
+          #end
         </ul>
 
         <div class="tab-content">
@@ -52,9 +56,11 @@
           <div class="tab-pane" id="metadata">
              #restable($itemForReg, "table-striped table-condensed")
           </div>
-          <div class="tab-pane" id="administer">
-            <p>To be implemented.</p>
-          </div>
+          #if($isAdministrator)
+            <div class="tab-pane" id="administer">
+              <p>To be implemented.</p>
+            </div>
+          #end
         </div>
       </div>
     </div>
@@ -91,20 +97,32 @@
     #end
 
     <div>
-       <h3 class="text-center">Actions</h3>
-       #if($sample)
-         <div class="span3">
-           <a href="#status-dialog" role="button" class="btn" data-toggle="modal">Set contents status</a>
-         </div>
-       #end
-       <div class="span3 space-above">
-         <a href="#register-status-dialog" role="button" class="btn" data-toggle="modal">Set register status</a>
-       </div>
-       <div class="span3 space-above">
-         <a href="#registration-dialog" role="button" class="btn btn-success" data-toggle="modal">Add registration</a>
-       </div>
-    </div>
+        #set($foundAction=false)
 
+        #if($lib.reg.isPermitted("StatusUpdate", $uri))
+          #set($foundAction=true)
+          <h3 class="text-center">Actions</h3>
+          #if($sample)
+            <div class="span3">
+              <a href="#status-dialog" role="button" class="btn" data-toggle="modal">Set contents status</a>
+            </div>
+          #end
+          <div class="span3 space-above">
+            <a href="#register-status-dialog" role="button" class="btn" data-toggle="modal">Set register status</a>
+          </div>
+        #end
+
+        #if($lib.reg.isPermitted("Register", $uri))
+          #if(!$foundAction)
+           <h3 class="text-center">Actions</h3>
+          #end
+          #set($foundAction=true)
+          <div class="span3 space-above">
+            <a href="#registration-dialog" role="button" class="btn btn-success" data-toggle="modal">Add registration</a>
+          </div>
+        #end
+
+    </div>
 
     #if($sample)
         #statusSet("status-dialog", "Set status of register contents to ...", $sample, $register)

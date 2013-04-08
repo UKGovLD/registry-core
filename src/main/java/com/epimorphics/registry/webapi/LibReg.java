@@ -12,6 +12,9 @@ package com.epimorphics.registry.webapi;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
+
 import com.epimorphics.rdfutil.ModelWrapper;
 import com.epimorphics.rdfutil.RDFNodeWrapper;
 import com.epimorphics.registry.core.Description;
@@ -93,16 +96,24 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
         next.remove(current);
         return next;
     }
-    
+
+    public boolean isPermitted(String action, String uri) {
+        Subject subject = SecurityUtils.getSubject();
+        if (!subject.isAuthenticated()) {
+            return false;
+        }
+        return subject.isPermitted(action + ":/" + uri);
+    }
+
     /**
-     * Utility for incrementally building up compacted range notation 
+     * Utility for incrementally building up compacted range notation
      * for reserved entries
      */
     public ReservationList addReserved(ReservationList reservations, RDFNode notation) {
         reservations.add(notation);
         return reservations;
     }
-    
+
     public ReservationList startReservationList() {
         return new ReservationList();
     }
@@ -113,7 +124,7 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
         int rangeStart;
         boolean pendingNumeric = false;
         boolean inRange = false;
-        
+
         public void add(RDFNode notation) {
             Literal l = notation.asLiteral();
             Object value = l.getValue();
@@ -124,7 +135,7 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
                         if (!inRange) {
                             rangeStart = last;
                             inRange = true;
-                        } 
+                        }
                     } else {
                         finishNumeric();
                     }
@@ -139,7 +150,7 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
                 reservations.append(l.getLexicalForm());
             }
         }
-    
+
         private void finishNumeric() {
             if (pendingNumeric) {
                 if (reservations.length() != 0) {
@@ -154,18 +165,18 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
                 pendingNumeric = false;
             }
         }
-        
+
         public String getReservations() {
             if (pendingNumeric) {
                 finishNumeric();
             }
             return reservations.toString();
         }
-        
+
         public boolean isEmpty() {
             return reservations.length() == 0 && !pendingNumeric;
         }
-        
+
         @Override
         public String toString() {
             return getReservations();

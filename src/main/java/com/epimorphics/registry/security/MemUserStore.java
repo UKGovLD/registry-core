@@ -45,10 +45,14 @@ public class MemUserStore extends BaseUserStore implements UserStore, Service {
     protected void commit() {}
 
     @Override
-    public void register(UserInfo user) {
+    public boolean register(UserInfo user) {
+        if (users.containsKey(user.getOpenid())) {
+            return false;
+        }
         UserRecord record = new UserRecord(user.getOpenid(), user.getName());
         record.initSalt();
         users.put(record.id, record);
+        return true;
     }
 
     @Override
