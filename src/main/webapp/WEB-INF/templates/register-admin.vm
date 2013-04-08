@@ -1,0 +1,26 @@
+<h3>Managers for this register</h3>
+
+<p>To do</p>
+
+<div class="row">
+  <div class="span">
+    <a href="#grant-user-dialog" role="button" class="btn btn-primary" data-toggle="modal">Add manager</a>
+  </div>
+  <div class="span2">
+    <a href="#make-open-dialog" role="button" class="btn" data-toggle="modal">Allow any</a>
+  </div>
+<div>
+
+
+<div id="grant-user-dialog" class="modal hide" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3>Locate a registered user to grant rights to</h3>
+  </div>
+  <div class="modal-body">
+    to do
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+  </div>
+</div>

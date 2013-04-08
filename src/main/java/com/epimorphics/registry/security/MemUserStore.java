@@ -119,4 +119,30 @@ public class MemUserStore extends BaseUserStore implements UserStore, Service {
         users.get(id).role = role;
         realm.clearCacheFor(id);
     }
+
+    @Override
+    public List<UserInfo> authorizedOn(String path) {
+        List<UserInfo> matches = new ArrayList<UserInfo>();
+        for (String id : permissions.keySet()) {
+            Set<RegPermission> perms = permissions.get(id);
+            for (RegPermission p : perms) {
+                if (p.getPath().equals(path) || p.getImpliedPath().equals(path)) {
+                    matches.add( new UserInfo(id, users.get(id).name) );
+                }
+            }
+        }
+        return matches;
+    }
+
+    @Override
+    public List<UserInfo> listUsers(String match) {
+        List<UserInfo> matches = new ArrayList<UserInfo>();
+        for (UserRecord record : users.values()) {
+            if (record.name.contains(match)) {
+                matches.add( new UserInfo(record.id, record.name) );
+            }
+        }
+        return matches;
+    }
+
 }

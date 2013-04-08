@@ -22,6 +22,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -82,26 +83,25 @@ public class Login {
 
     protected @Context UriInfo uriInfo;
     protected @Context ServletContext servletContext;
+    protected @Context HttpServletRequest request;
 
     @Path("/login")
     @POST
-    public Response login(@FormParam("provider") String provider,
-            @Context HttpServletRequest request, @Context HttpServletResponse response) {
+    public Response login(@FormParam("provider") String provider, @Context HttpServletResponse response) {
         processOpenID(request, response, provider, false);
         return Response.ok().build();
     }
 
     @Path("/register")
     @POST
-    public Response register(@FormParam("provider") String provider,
-            @Context HttpServletRequest request, @Context HttpServletResponse response) {
+    public Response register(@FormParam("provider") String provider, @Context HttpServletResponse response) {
         processOpenID(request, response, provider, true);
         return Response.ok().build();
     }
 
     @Path("/logout")
     @POST
-    public void logout(@Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException {
+    public void logout(@Context HttpServletResponse response) throws IOException {
         // TODO set session attribute as part of Shiro realm
         request.getSession().removeAttribute(VN_SUBJECT);
         SecurityUtils.getSubject().logout();
@@ -110,8 +110,7 @@ public class Login {
 
     @Path("/apilogin")
     @POST
-    public Response apilogin(@FormParam("userid") String userid, @FormParam("password") String password,
-        @Context HttpServletRequest request, @Context HttpServletResponse response) {
+    public Response apilogin(@FormParam("userid") String userid, @FormParam("password") String password) {
         try {
             RegToken token = new RegToken(userid, password);
             Subject subject = SecurityUtils.getSubject();
@@ -126,7 +125,7 @@ public class Login {
 
     @Path("/response")
     @GET
-    public Response openIDResponse(@Context HttpServletRequest request) {
+    public Response openIDResponse() {
         return verifyResponse(request);
     }
 
@@ -140,6 +139,20 @@ public class Login {
             return ((UserInfo)subject.getPrincipal()).getName();
         } else {
             throw new WebApiException(Response.Status.UNAUTHORIZED, "No logged in user in this session");
+        }
+    }
+
+    @Path("/listusers")
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    public Response listusers(@QueryParam("query") String query, @QueryParam("grant") String action, @QueryParam("uri") String uri) {
+        if (SecurityUtils.getSubject().isPermitted("Grant:"+uri)) {
+            List<UserInfo> users = Registry.get().getUserStore().listUsers(query);
+            System.out.println("URI = " + uri + " - does this look encoded to you?");
+            // TODO check if need to re-encode
+            return RequestProcessor.render("user-list.vm", uriInfo, servletContext, request, "grant", action, "uri", uri, "users", users);
+        } else {
+            return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "You do not have sufficient privileges to grant further access");
         }
     }
 

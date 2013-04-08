@@ -86,17 +86,17 @@ public class TestSecurity extends TomcatTestBase {
         Resource submitter = item.getPropertyResourceValue(RegistryVocab.submitter);
         assertNotNull(submitter);
         assertEquals("Bob", RDFUtil.getStringValue(submitter, FOAF.name));
-        
+
         testFor("bob").source("test/reg1.ttl").post(BASE_URL + "secure").checkRejected();
         testFor("bob").source("test/reg1.ttl").post(BASE_URL + "secure/reg1").checkAccepted();
-        
+
         testFor("alice").source("test/reg1.ttl").post(BASE_URL).checkRejected();
         testFor("alice").source("test/reg1.ttl").post(BASE_URL + "secure/reg2").checkAccepted();
-        
-        
+
+
         testFor("admin").source("test/reg1.ttl").post(BASE_URL).checkAccepted();
     }
-    
+
     /**
      * Check the ability to update items and entities
      */
@@ -106,10 +106,13 @@ public class TestSecurity extends TomcatTestBase {
 
         testFor("david").source("test/red1.ttl").invoke("PUT", BASE_URL + "secure/reg1/colours/red").checkRejected();
         testFor("colin").source("test/red1.ttl").invoke("PUT", BASE_URL + "secure/reg1/colours/red").checkAccepted();
-        
+
         testFor("colin").source("test/green-item-update.ttl").invoke("PATCH", BASE_URL + "secure/reg1/colours/_green").checkRejected();
         testFor("david").source("test/green-item-update.ttl").invoke("PATCH", BASE_URL + "secure/reg1/colours/_green").checkAccepted();
         testFor("alice").source("test/green-item-update.ttl").invoke("PATCH", BASE_URL + "secure/reg2/colours/_green").checkAccepted();
+
+        testFor("colin").source("test/reg1-patch.ttl").invoke("PATCH", BASE_URL + "secure/reg1?non-member-properties").checkRejected();
+        testFor("bob").source("test/reg1-patch.ttl").invoke("PATCH", BASE_URL + "secure/reg1?non-member-properties").checkAccepted();
     }
 
     /**
@@ -120,11 +123,11 @@ public class TestSecurity extends TomcatTestBase {
         testFor("bob").post(BASE_URL + "secure/reg2/colours/_red?update&status=retired").checkRejected();
         testFor("colin").post(BASE_URL + "secure/reg1/colours/_red?update&status=retired").checkRejected();
         testFor("bob").post(BASE_URL + "secure/reg1/colours/_red?update&status=retired").checkAccepted();
-        
+
         // Explicit status, breaks lifecycle
         testFor("bob").post(BASE_URL + "secure/reg1/colours/_red?update&force&status=submitted").checkRejected();
         testFor("admin").post(BASE_URL + "secure/reg1/colours/_red?update&force&status=submitted").checkAccepted();
-        
+
         // Implicit status, lifecycle compliant
         testFor("david").source("test/green-item-update-withstatus.ttl").invoke("PATCH", BASE_URL + "secure/reg1/colours/_green").checkRejected();
         testFor("bob").source("test/green-item-update-withstatus.ttl").invoke("PATCH", BASE_URL + "secure/reg1/colours/_green").checkAccepted();
@@ -134,7 +137,7 @@ public class TestSecurity extends TomcatTestBase {
         testFor("admin").source("test/green-item-update-withbadstatus.ttl").invoke("PATCH", BASE_URL + "secure/reg2/colours/_green").checkAccepted();
 
     }
-    
+
     /**
      * Check the ability to set some areas as open to anyone
      */
@@ -236,11 +239,11 @@ public class TestSecurity extends TomcatTestBase {
             assertNotNull(response);
             return response;
         }
-        
+
         public int getStatus() {
             return getResponse().getStatus();
         }
-        
+
         public Model getModel() {
             assertNotNull(response);
             InputStream stream = response.getEntity(InputStream.class);
@@ -250,10 +253,13 @@ public class TestSecurity extends TomcatTestBase {
         }
 
         public TestBuilder checkRejected() {
+            if (getStatus() != 401) {
+                System.out.println("Response was: " + response.getEntity(String.class) );
+            }
             assertEquals(401, getStatus());
             return this;
         }
-        
+
         public TestBuilder checkAccepted() {
             if (getStatus() >= 400) {
                 System.out.println("Failure response: " + response.getEntity(String.class) );

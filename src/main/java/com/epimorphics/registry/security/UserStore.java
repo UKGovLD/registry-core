@@ -9,6 +9,8 @@
 
 package com.epimorphics.registry.security;
 
+import java.util.List;
+
 import org.apache.shiro.authc.SaltedAuthenticationInfo;
 import org.apache.shiro.util.ByteSource;
 
@@ -86,5 +88,14 @@ public interface UserStore {
      */
     public void setRole(String id, String role);
 
+    /**
+     * Return the set of users who have some explicit permission over the given path
+     */
+    public List<UserInfo> authorizedOn(String path);
+
+    /**
+     * Return the set of users whose name includes the given string
+     */
+    public List<UserInfo> listUsers(String match);
 
 }

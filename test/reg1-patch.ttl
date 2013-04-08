@@ -15,7 +15,7 @@
 
 @prefix reg:  <http://purl.org/linked-data/registry#> .
 
-<reg1> a reg:Register ;
+<reg1>
     dct:description "Example register 1 - patch update"@en;
 .
 

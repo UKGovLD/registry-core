@@ -16,7 +16,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -133,8 +135,10 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
                 record.password = rs.getString(3);
                 record.timeout = rs.getLong(4);
                 record.role = rs.getString(5);
+                rs.close();
                 return record;
             }
+            rs.close();
         } catch (Exception e) {
             log.error("Failed to access security database", e);
             throw new EpiException(e);
@@ -151,6 +155,7 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
             while (rs.next()) {
                 permissions.add( new RegPermission(rs.getString(1), rs.getString(2)) );
             }
+            rs.close();
             return permissions;
         } catch (Exception e) {
             log.error("Failed to access security database", e);
@@ -266,6 +271,51 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
             throw new EpiException(e);
         }
         realm.clearCacheFor(id);
+    }
+
+    @Override
+    public List<UserInfo> authorizedOn(String path) {
+        List<UserInfo> matches = new ArrayList<UserInfo>();
+        try {
+            scanForAuthorizations(path, matches);
+            // Might also need to scan for case where path is an item rather than entity
+            if(path.matches(".*/[^_][^/]+$")) {
+                String itemPath = path.replaceAll("/([^_][^/]+)$", "/_$1");
+                scanForAuthorizations(itemPath, matches);
+            }
+        } catch (Exception e) {
+            log.error("Failed to access security database", e);
+            throw new EpiException(e);
+        }
+        return matches;
+    }
+
+    private void scanForAuthorizations(String path, List<UserInfo> matches) throws SQLException {
+        PreparedStatement s = conn.prepareStatement("SELECT DISTINCT USERS.ID, USERS.NAME FROM PERMISSIONS JOIN USERS ON PERMISSIONS.ID = USERS.ID WHERE PATH = ?");
+        s.setString(1, path);
+        ResultSet rs = s.executeQuery();
+        while (rs.next()) {
+            matches.add( new UserInfo(rs.getString(1), rs.getString(2)) );
+        }
+        rs.close();
+    }
+
+    @Override
+    public List<UserInfo> listUsers(String match) {
+        try {
+            PreparedStatement s = conn.prepareStatement("SELECT ID, NAME FROM USERS WHERE NAME LIKE ? ORDER BY NAME");
+            s.setString(1, "%" + match + "%");
+            List<UserInfo> matches = new ArrayList<UserInfo>();
+            ResultSet rs = s.executeQuery();
+            while (rs.next()) {
+                matches.add( new UserInfo(rs.getString(1), rs.getString(2)) );
+            }
+            rs.close();
+            return matches;
+        } catch (Exception e) {
+            log.error("Failed to access security database", e);
+            throw new EpiException(e);
+        }
     }
 
 }

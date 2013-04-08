@@ -13,7 +13,10 @@ import static org.junit.Assert.*;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -54,7 +57,7 @@ public class TestDBUserStore {
         assertEquals(ALICE_NAME, record.name);
         assertNotNull(record.salt);
         assertNull(record.getPasword());
-        
+
         record = store.getRecord(BOB_ID);
         assertEquals(BOB_NAME, record.name);
 
@@ -69,33 +72,49 @@ public class TestDBUserStore {
         record = store.getRecord(ALICE_ID);
         assertNotNull(record.getPasword());
         assertEquals(expectedPassword, record.password);
-        
+
         store.removeCredentials(ALICE_ID);
         record = store.getRecord(ALICE_ID);
         assertNull(record.getPasword());
-        
+
         store.setCredentials(ALICE_ID, ByteSource.Util.bytes("my password"), 0);
         Thread.sleep(10);
         info = store.checkUser(ALICE_ID);
         String password = (String) info.getCredentials();
         assertTrue(password == null || password.isEmpty());
-        
+
         // Check permissions management
         store.addPermision(ALICE_ID, new RegPermission("Update", "/reg2"));
         Set<Permission> permissions = store.getPermissions(ALICE_ID).getObjectPermissions();
         assertEquals(1, permissions.size());
         assertEquals("Update:/reg2", permissions.iterator().next().toString());
-        
+
         store.addPermision(ALICE_ID, new RegPermission("Register", "/reg1"));
         store.addPermision(ALICE_ID, new RegPermission("Register,StatusUpdate", "/reg2"));
+        store.addPermision(BOB_ID, new RegPermission("StatusUpdate", "/reg2"));
         permissions = store.getPermissions(ALICE_ID).getObjectPermissions();
         assertEquals(3, permissions.size());
-        
+
+        List<UserInfo> authusers = store.authorizedOn("/reg2");
+        assertEquals(2, authusers.size());
+        Collections.sort(authusers, new Comparator<UserInfo>() {
+            @Override
+            public int compare(UserInfo o1, UserInfo o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        assertTrue (authusers.get(0).getName().equals(ALICE_NAME));
+        assertTrue (authusers.get(1).getName().equals(BOB_NAME));
+
         store.removePermission(ALICE_ID, "/reg2");
         permissions = store.getPermissions(ALICE_ID).getObjectPermissions();
         assertEquals(1, permissions.size());
         assertEquals("Register:/reg1", permissions.iterator().next().toString());
-        
+
+        store.addPermision(ALICE_ID, new RegPermission("Update", "/reg3/_item"));
+        assertEquals(1, store.authorizedOn("/reg3/_item").size());
+        assertEquals(1, store.authorizedOn("/reg3/item").size());
+
         RegAuthorizationInfo auth = store.getPermissions(ALICE_ID);
         Set<String> roles = auth.getRoles();
         assertTrue(roles == null || roles.isEmpty());
@@ -103,7 +122,15 @@ public class TestDBUserStore {
         roles = store.getPermissions(ALICE_ID).getRoles();
         assertFalse(roles.isEmpty());
         assertEquals(RegAuthorizationInfo.ADMINSTRATOR_ROLE, roles.iterator().next());
-        
+
+        // Check listing users
+        store.register( new UserInfo("http://example.com/bob2", "Sponge Bob") );
+        store.register( new UserInfo("http://example.com/bob3", "Bob Le Ponge") );
+        List<UserInfo> bobs = store.listUsers("Bob");
+        assertTrue(bobs.size() == 3);
+        assertEquals(BOB_NAME, bobs.get(0).getName());
+        assertEquals("Sponge Bob", bobs.get(2).getName());
+
         // Check removal
         store.unregister(ALICE_ID);
         assertNull( store.checkUser(ALICE_ID) );

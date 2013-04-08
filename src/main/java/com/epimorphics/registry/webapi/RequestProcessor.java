@@ -119,7 +119,7 @@ public class RequestProcessor extends BaseEndpoint {
         fullParams[i++] = "requestor";
         UserInfo user = (UserInfo) SecurityUtils.getSubject().getPrincipal();
         if (user != null) {
-            fullParams[i++] = user.getName();
+            fullParams[i++] = NameUtils.encodeSafeName(user.getName());
         } else {
             fullParams[i++] = getRequestor(request);
         }

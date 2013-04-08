@@ -1,0 +1,7 @@
+I've been asked about granting '$grant' on '$uri' here are the users
+
+<ul>
+#foreach($user in $users)
+  <li>$user.name $user.openid</li>
+#end
+</ul>

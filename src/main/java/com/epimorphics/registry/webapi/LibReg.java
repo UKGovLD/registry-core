@@ -39,10 +39,16 @@ import com.hp.hpl.jena.rdf.model.Resource;
  */
 public class LibReg extends ServiceBase implements LibPlugin, Service {
 
+    /**
+     * Raw access to the registry store
+     */
     public StoreAPI getStore() {
         return Registry.get().getStore();
     }
 
+    /**
+     * Return a resource known to the store, wrapped for scripting
+     */
     public RDFNodeWrapper getResource(String uri) {
         if ( ! uri.startsWith("http") ) {
             uri = Registry.get().getBaseURI() + uri;
@@ -63,6 +69,9 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
         return wrapModel( root.getModel() ).getNode(root);
     }
 
+    /**
+     * Helper to list members of a register
+     */
     public List<RegisterEntryInfo> listMembers(Object arg) {
         Register reg = null;;
         if (arg instanceof String) {
@@ -77,6 +86,9 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
         return getStore().listMembers(reg);
     }
 
+    /**
+     * Convert a resource, maybe wrapped, to a status code
+     */
     public Status asStatus(Object state) {
         if (state instanceof Status) {
             return (Status)state;
@@ -89,6 +101,9 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
         }
     }
 
+    /**
+     * List the legal next states after this state.
+     */
     public List<Status> nextStates(RDFNodeWrapper state) {
         Status current = asStatus(state);
         if (current == null) return new ArrayList<Status>();
@@ -97,6 +112,9 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
         return next;
     }
 
+    /**
+     * Check if the given action(s) are permitted on the given URI for the current subject
+     */
     public boolean isPermitted(String action, String uri) {
         Subject subject = SecurityUtils.getSubject();
         if (!subject.isAuthenticated()) {
