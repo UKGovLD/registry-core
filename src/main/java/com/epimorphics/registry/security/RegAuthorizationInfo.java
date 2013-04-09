@@ -65,7 +65,12 @@ public class RegAuthorizationInfo extends SimpleAuthorizationInfo implements Aut
         while (true) {
             split = path.indexOf('/', split+1);
             if (split == -1) break;
-            residual = residualFromPath(path.substring(0, split), residual);
+            if (split == 0) {
+                // Special case start of path is "/" instead of ""
+                residual = residualFromPath("/", residual);
+            } else {
+                residual = residualFromPath(path.substring(0, split), residual);
+            }
             if (residual == null) {
                 return true;
             }

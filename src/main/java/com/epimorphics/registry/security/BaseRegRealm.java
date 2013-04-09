@@ -2,7 +2,7 @@
  * File:        BaseRegRealm.java
  * Created by:  Dave Reynolds
  * Created on:  7 Apr 2013
- * 
+ *
  * (c) Copyright 2013, Epimorphics Limited
  *
  *****************************************************************/
@@ -23,7 +23,7 @@ import org.apache.shiro.subject.SimplePrincipalCollection;
 /**
  * A realm that provides access to a hash service compatible with the
  * RegCredentialsMatcher and which can clear the caches for a user id.
- * 
+ *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public class BaseRegRealm extends AuthorizingRealm {
@@ -41,7 +41,7 @@ public class BaseRegRealm extends AuthorizingRealm {
     public HashService getHashService() {
         return hashService;
     }
-    
+
     /**
      * Clear cached authentication and authorization information
      * for an individual. Should be called from UserStore implementation
@@ -53,7 +53,7 @@ public class BaseRegRealm extends AuthorizingRealm {
         clearCache(pc);
         if (id.equals(UserStore.AUTH_USER_ID)) {
             // For the anonymous user have to lose whole cache because this affects every user
-            Cache<Object, AuthenticationInfo> cache = getAuthenticationCache();
+            Cache<Object, AuthorizationInfo> cache = getAuthorizationCache();
             if (cache != null) {
                 cache.clear();
             }

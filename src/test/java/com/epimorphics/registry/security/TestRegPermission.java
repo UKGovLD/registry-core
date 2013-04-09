@@ -33,6 +33,10 @@ public class TestRegPermission {
         assertTrue( granted.implies( new RegPermission("Update:/root/reg1/sub/_item") ) );
         assertFalse( granted.implies( new RegPermission("Update:/root/reg") ) );
         assertFalse( granted.implies( new RegPermission("Force:/root/reg1") ) );
+
+        // Special case root is "/" not ""
+        granted = new RegPermission("Register:/");
+        assertTrue( granted.implies( new RegPermission("Register:/root") ) );
     }
 
     @Test
@@ -62,6 +66,11 @@ public class TestRegPermission {
         RegPermission r1 = grant1.residual(target);
         assertEquals("Update:/root/reg1", r1.toString());
         assertNull( grant2.residual(r1) );
+
+        // Special case root is "/" not ""
+        RegPermission grant3 = new RegPermission("Register,Update:/");
+        assertNull( grant3.residual(new RegPermission("Register,Update:/")) );
+        assertNull( grant3.residual(new RegPermission("Register,Update:/reg")) );
     }
 
     @Test
@@ -79,6 +88,11 @@ public class TestRegPermission {
 
         ai.addRole( "administrator" );
         assertTrue( ai.permits( new RegPermission("Update,Register,Force:/root/reg/item")) );
+
+        // Special case root is "/" not ""
+        ai = new RegAuthorizationInfo();
+        ai.addObjectPermission( new RegPermission("Register:/") );
+        assertTrue( ai.permits( new RegPermission("Register:/root")) );
     }
 
     @Test
