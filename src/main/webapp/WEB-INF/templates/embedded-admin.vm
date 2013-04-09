@@ -6,7 +6,7 @@
 #if($managers.isEmpty())
    <p>No local authorizations found</p>
 #else
-   <table class="table">
+   <table class="table table-condensed">
      <tbody>
   #foreach($user in $managers)
     <tr>
@@ -17,7 +17,8 @@
         <form class="form-inline" action="/system/security/ungrant" method="post">
           <input type="hidden" name="user" value="$user.openid" />
           <input type="hidden" name="path" value="$path" />
-          <input type="submit" value="remove" class="btn btn-inverse" />
+          ## <input type="submit" value="remove" class="btn btn-inverse"></input>
+          <button type="submit" value="remove" class="btn btn-small" title="Remove admin rights for $user.name at this location"><i class="icon-remove"></i></button>
         </form>
       </td>
     </tr>

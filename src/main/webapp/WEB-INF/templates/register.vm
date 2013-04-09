@@ -82,6 +82,9 @@
            #metadatarow("managed by", $register.listPropertyValues("reg:manager"))
            #metadatarow("license", $register.listPropertyValues("dct:license"))
            #metadatarow("last changed on", $register.listPropertyValues("dct:modified"))
+           #metadatarow("submitted on", $item.listPropertyValues("dct:dateSubmitted"))
+           #metadatasubmitter($item)
+           #metadatarow("accepted  on", $item.listPropertyValues("dct:dateAccepted"))
          </table>
       </div>
     </div>

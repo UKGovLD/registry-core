@@ -9,7 +9,8 @@
         <form class="form-inline" action="/system/security/setrole" method="post">
           <input type="hidden" name="role" value="" />
           <input type="hidden" name="id" value="$user.openid" />
-          <input type="submit" value="remove" class="btn btn-inverse" />
+##          <input type="submit" value="remove" class="btn btn-inverse" />
+          <button type="submit" value="remove" class="btn btn-small" title="Remove administrator rights for $user.name"><i class="icon-remove"></i></button>
         </form>
       </td>
     </tr>

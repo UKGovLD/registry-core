@@ -64,10 +64,10 @@
        </div>
        <div class="panel-body">
          <table class="table table-striped table-condensed">
-           #metadatarow("submitted on", $item.listPropertyValues("dct:dateSubmitted"))
-           #metadatarow("accepted  on", $item.listPropertyValues("dct:dateAccepted"))
-           #metadatarow("submitted by", $item.listPropertyValues("reg:submitter"))
            #metadatarow("category", $item.listPropertyValues("reg:category"))
+           #metadatarow("accepted  on", $item.listPropertyValues("dct:dateAccepted"))
+           #metadatarow("submitted on", $item.listPropertyValues("dct:dateSubmitted"))
+           #metadatasubmitter($item)
          </table>
        </div>
      </div>

@@ -16,6 +16,7 @@
 
    * Switch to a message-oriented design for connecting the registry core logic to the store, indexers and other possible data consumers - but what message structure BSON encoding?
      support pub/sub for e.g. watcher API
+   * Include userstore events on message bus and update logger
    * plugin architecture for validators, use ServiceLoader machinery for that?
 
    * shake down StoreAPI - simplify version/flatten/item stuff - too many slightly variant methods
@@ -55,6 +56,7 @@
 
    * Template config should allow external UI root so css etc can be supplied without a war rebuild
 
+   * 
 
 ## UI Stack
 
