@@ -62,6 +62,15 @@ public interface UserStore {
     public void setCredentials(String id, ByteSource credentials, int minstolive);
 
     /**
+     * Create a new random password, set it and return it.
+     * <p>
+     * Yes, the return outght to be a char[] to allow for reseting but the
+     * use case will be creating string serializations of the key in any case
+     * to send it out so the added security of using char[] is zero.</p>
+     */
+    public String createCredentials(String id, int minstolive);
+
+    /**
      * Remove the credentials for the user
      */
     public void removeCredentials(String id);
@@ -97,5 +106,10 @@ public interface UserStore {
      * Return the set of users whose name includes the given string
      */
     public List<UserInfo> listUsers(String match);
+
+    /**
+     * Return the set of users with admin permissions
+     */
+    public List<UserInfo> listAdminUsers();
 
 }

@@ -1,0 +1,18 @@
+<table class="table table-bordered table-condensed">
+  <tbody>
+  #foreach($user in $admins)
+    <tr>
+      <td>
+        <span title="$user.openid">$user.name</span>
+      </td>
+      <td>
+        <form class="form-inline" action="/system/security/setrole" method="post">
+          <input type="hidden" name="role" value="" />
+          <input type="hidden" name="id" value="$user.openid" />
+          <input type="submit" value="remove" class="btn btn-inverse" />
+        </form>
+      </td>
+    </tr>
+  #end
+  </tbody>
+</table>

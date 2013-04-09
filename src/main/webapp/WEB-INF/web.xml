@@ -6,6 +6,11 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
   <display-name>UKL Registry POC</display-name>
 
   <filter>
+    <filter-name>ShiroFilter</filter-name>
+    <filter-class>org.apache.shiro.web.servlet.ShiroFilter</filter-class>
+  </filter>
+
+  <filter>
     <filter-name>Jersey Web Application</filter-name>
     <filter-class>com.sun.jersey.spi.container.servlet.ServletContainer</filter-class>
     <init-param>
@@ -23,8 +28,12 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
   </filter>
 
   <filter>
-    <filter-name>ShiroFilter</filter-name>
-    <filter-class>org.apache.shiro.web.servlet.ShiroFilter</filter-class>
+    <filter-name>VelocityFilter</filter-name>
+    <filter-class>com.epimorphics.server.templates.VelocityFilter</filter-class>
+    <init-param>
+      <param-name>renderService</param-name>
+      <param-value>velocity</param-value>
+    </init-param>
   </filter>
 
   <!-- Most security is done at the Jersey resource level not here -->
@@ -35,6 +44,11 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
     <dispatcher>FORWARD</dispatcher>
     <dispatcher>INCLUDE</dispatcher>
     <dispatcher>ERROR</dispatcher>
+  </filter-mapping>
+
+  <filter-mapping>
+    <filter-name>VelocityFilter</filter-name>
+    <url-pattern>/*</url-pattern>
   </filter-mapping>
 
   <filter-mapping>
@@ -79,7 +93,7 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
   <context-param>
     <param-name>config.velocity</param-name>
     <param-value>com.epimorphics.server.templates.VelocityRender, templates=${webapp}/WEB-INF/templates, root=/ui,
-    plugins=reg</param-value>
+    plugins=reg, manualConfig=true</param-value>
   </context-param>
 
   <context-param>

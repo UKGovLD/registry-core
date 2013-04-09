@@ -8,6 +8,19 @@
    <script type="text/javascript" src="$uiroot/js/jquery.dataTables.min.js"></script>
    <script type="text/javascript">
     $(function() {
+        var processQueryForms = function() {
+            $(".query-form").each(function() {
+                var target = $(this).attr('data-target');
+                var queryField = $(this).attr('data-query');
+                var resultField = $(this).attr('data-result');
+                $(this).submit( function(){
+                    var url = target + $(queryField).val();
+                    $(resultField).load(url);
+                    return false;
+                });
+            });
+        };
+
         // enable popups
         $(".popinfo").popover();
 
@@ -25,21 +38,12 @@
              $(contentID).load(url, function(){
                 $('.action-tab').tab(); //reinitialize tabs
                 $('.datatable').dataTable();
-                // enable an embedded query forms (used in admin pages)
-                $(".query-form").each(function() {
-                    var target = $(this).attr('data-target');
-                    var queryField = $(this).attr('data-query');
-                    var resultField = $(this).attr('data-result');
-                    $(this).submit( function(){
-                        var url = target + $(queryField).val();
-                        $(resultField).load(url);
-                        return false;
-                    });
-                });
-
+                processQueryForms();
               });
            };
         });
+
+        processQueryForms();
 
         // General ajax forms which reload the page when actioned
         $(".ajax-form").ajaxForm({

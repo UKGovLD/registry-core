@@ -139,5 +139,16 @@ public class MemUserStore extends BaseUserStore implements UserStore, Service {
         return matches;
     }
 
+    @Override
+    public List<UserInfo> listAdminUsers() {
+        List<UserInfo> matches = new ArrayList<UserInfo>();
+        for (UserRecord record : users.values()) {
+            if (RegAuthorizationInfo.ADMINSTRATOR_ROLE.equals(record.role)) {
+                matches.add( new UserInfo(record.id, record.name) );
+            }
+        }
+        return matches;
+    }
+
 
 }

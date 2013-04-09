@@ -1,0 +1,8 @@
+<div class="alert">
+  <button type="button" class="close" data-dismiss="alert">&times;</button>
+   <p>Your temporary API password is: <strong>$password</strong></p>
+   <p>Example login command</p>
+   <pre>
+curl -i -b cookie-jar -c cookie-jar --data "userid=$id&password=$password" ${registry.baseURI}/system/security/apilogin
+   </pre>
+</div>

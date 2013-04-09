@@ -1,5 +1,5 @@
 /******************************************************************
- * File:        Login.java
+* File:        Login.java
  * Created by:  Dave Reynolds
  * Created on:  1 Apr 2013
  *
@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.security.RegAuthorizationInfo;
 import com.epimorphics.registry.security.RegPermission;
 import com.epimorphics.registry.security.RegToken;
 import com.epimorphics.registry.security.UserInfo;
@@ -153,31 +154,38 @@ public class Login {
             List<UserInfo> users = Registry.get().getUserStore().listUsers(query);
             return RequestProcessor.render("user-list.vm", uriInfo, servletContext, request, "grant", action, "uri", uri, "users", users);
         } else {
-            return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "You do not have sufficient privileges to grant further access");
+            return error("You do not have sufficient privileges to grant further access");
         }
     }
-    
+
     @Path("/grant")
     @POST
-    public Response grant(@FormParam("user") String id, @FormParam("grant") String action, @FormParam("path") String path,
-            @Context HttpServletResponse response) {
+    public Response grant(@FormParam("user") String id, @FormParam("grant") String action, @FormParam("path") String inpath) {
+        String path = inpath;
+        if (path == null || path.isEmpty()) {
+            // Occurrs when setting global admin permissions
+            path = "/ui/admin";
+        }
         if (SecurityUtils.getSubject().isPermitted("Grant:" + path)) {
             UserStore userstore = Registry.get().getUserStore();
             try {
-                userstore.addPermision(id, new RegPermission(action, path));
+                if (action.equals("administrator")) {
+                    userstore.setRole(id, RegAuthorizationInfo.ADMINSTRATOR_ROLE);
+                } else {
+                    userstore.addPermision(id, new RegPermission(action, path));
+                }
                 return redirectTo(path);
             } catch (Exception e) {
                 return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "Permission grant failed: " + e.getMessage());
             }
         } else {
-            return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "You do not have sufficient privileges to grant further access");
+            return error("You do not have sufficient privileges to grant further access");
         }
     }
-    
+
     @Path("/ungrant")
     @POST
-    public Response ungrant(@FormParam("user") String id, @FormParam("path") String path,
-            @Context HttpServletResponse response) {
+    public Response ungrant(@FormParam("user") String id, @FormParam("path") String path) {
         if (SecurityUtils.getSubject().isPermitted("Grant:" + path)) {
             UserStore userstore = Registry.get().getUserStore();
             try {
@@ -187,10 +195,64 @@ public class Login {
                 return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "Permission grant failed: " + e.getMessage());
             }
         } else {
-            return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "You do not have sufficient privileges to grant further access");
+            return error("You do not have sufficient privileges to grant further access");
         }
     }
-    
+
+
+    @Path("/createpassword")
+    @POST
+    public Response ungrant(@FormParam("minstolive") String minstolive) {
+        int mins = 0;
+        try {
+            mins = Integer.parseInt(minstolive);
+        } catch (Exception e) {
+            return error("You must be logged in to do this");
+        }
+        Subject subject = SecurityUtils.getSubject();
+        if (subject.isAuthenticated()) {
+            UserStore userstore = Registry.get().getUserStore();
+            try {
+                String id = ((UserInfo)subject.getPrincipal()).getOpenid();
+                String pwd = userstore.createCredentials(id, mins);
+                return RequestProcessor.render("api-key-result.vm", uriInfo, servletContext, request, "password", pwd, "id", id);
+            } catch (Exception e) {
+                return error("Permission grant failed: " + e.getMessage());
+            }
+        } else {
+            return error("You must be logged in to do this");
+        }
+    }
+
+    @Path("/listadmins")
+    @GET
+    public Response listadmins() {
+        Subject subject = SecurityUtils.getSubject();
+        if (subject.isAuthenticated() && subject.hasRole(RegAuthorizationInfo.ADMINSTRATOR_ROLE)) {
+            UserStore userstore = Registry.get().getUserStore();
+            return RequestProcessor.render("admin-list.vm", uriInfo, servletContext, request, "admins", userstore.listAdminUsers());
+        } else {
+            return error("You must be logged in as an administrator to do this");
+        }
+    }
+
+    @Path("/setrole")
+    @POST
+    public Response setrole(@FormParam("id") String id, @FormParam("role") String role) {
+        Subject subject = SecurityUtils.getSubject();
+        if (subject.isAuthenticated() && subject.hasRole(RegAuthorizationInfo.ADMINSTRATOR_ROLE)) {
+            UserStore userstore = Registry.get().getUserStore();
+            userstore.setRole(id, role.isEmpty() ? null : role);
+            return redirectTo("/ui/admin");
+        } else {
+            return error("You must be logged in as an administrator to do this");
+        }
+    }
+
+    private Response error(String message) {
+        return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", message);
+    }
+
     private Response redirectTo(String path) {
         URI uri;
         try {
@@ -312,7 +374,9 @@ public class Login {
                 Subject subject = SecurityUtils.getSubject();
                 try {
                     subject.login(token);
-                    return RequestProcessor.render("welcome.vm", uriInfo, servletContext, request, VN_SUBJECT, subject, VN_REGISTRATION_STATUS, registrationStatus);
+                    session.setAttribute(VN_REGISTRATION_STATUS, registrationStatus);
+                    return redirectTo("/ui/admin");
+//                    return RequestProcessor.render("admin.vm", uriInfo, servletContext, request, VN_SUBJECT, subject, VN_REGISTRATION_STATUS, registrationStatus);
                 } catch (Exception e) {
                     log.error("Authentication failure: " + e);
                     return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "Could not find a registration for you.");

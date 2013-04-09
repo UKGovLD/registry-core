@@ -1,0 +1,62 @@
+## Assumes call passed query variables 'uri' and 'grant'
+<h3>${grant}s for this register</h3>
+
+#set($path="/" + $uri)
+#set($managers=$registry.userStore.authorizedOn($path))
+#if($managers.isEmpty())
+   <p>No local authorizations found</p>
+#else
+   <table class="table">
+     <tbody>
+  #foreach($user in $managers)
+    <tr>
+      <td>
+        <span title="$user.openid">$user.name</span>
+      </td>
+      <td>
+        <form class="form-inline" action="/system/security/ungrant" method="post">
+          <input type="hidden" name="user" value="$user.openid" />
+          <input type="hidden" name="path" value="$path" />
+          <input type="submit" value="remove" class="btn btn-inverse" />
+        </form>
+      </td>
+    </tr>
+  #end
+
+     </tbody>
+   </table>
+#end
+
+<div class="row space-above">
+  <div class="span2">
+    <a href="#grant-user-dialog" role="button" class="btn btn-primary" data-toggle="modal">Add $grant</a>
+  </div>
+  <div class="span2">
+    <form class="form-inline" action="/system/security/grant" method="post">
+      <input type="hidden" name="grant" value="Authorized" />
+      <input type="hidden" name="user" value="http://localhost/anon" />
+      <input type="hidden" name="path" value="$path" />
+      <input type="submit" value="Allow any" class="btn" />
+    </form>
+  </div>
+</div>
+
+
+<div id="grant-user-dialog" class="modal hide" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3>Locate a registered user to grant rights to</h3>
+  </div>
+  <div class="modal-body">
+    <form id="user-form"  class="form-search query-form"
+        data-target="/system/security/listusers?uri=/$uri&grant=$grant&query=" data-query="#user-query" data-result="#user-list">
+      <input id="user-query" type="text" class="input-medium">
+      <button id="user-search" type="submit" class="btn">Search</button>
+    </form>
+    <div id="user-list"></div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+  </div>
+</div>

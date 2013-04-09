@@ -16,8 +16,8 @@
         <li><a href="#" class="popinfo" data-trigger="hover" data-placement="bottom"
             data-content="View and approve/reject any pending submissions (tbd).">
             Approvals</a></li>
-        <li><a href="#" class="popinfo" data-trigger="hover" data-placement="bottom"
-            data-content="General administration of the registry (tbd).">
+        <li #if($nav=="admin")class="active"#end><a href="$uiroot/admin" class="popinfo" data-trigger="hover" data-placement="bottom"
+            data-content="General administration of the registry.">
             Admin</a></li>
         <li #if($nav=="sparql")class="active"#end><a href="$uiroot/sparql-form" class="popinfo" data-trigger="hover" data-placement="bottom"
             data-content="Run raw sparql queries.">

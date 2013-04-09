@@ -118,10 +118,14 @@ public class TestDBUserStore {
         RegAuthorizationInfo auth = store.getPermissions(ALICE_ID);
         Set<String> roles = auth.getRoles();
         assertTrue(roles == null || roles.isEmpty());
+        assertEquals(0, store.listAdminUsers().size());
         store.setRole(ALICE_ID, RegAuthorizationInfo.ADMINSTRATOR_ROLE);
         roles = store.getPermissions(ALICE_ID).getRoles();
         assertFalse(roles.isEmpty());
         assertEquals(RegAuthorizationInfo.ADMINSTRATOR_ROLE, roles.iterator().next());
+        List<UserInfo> admins = store.listAdminUsers();
+        assertEquals(1, admins.size());
+        assertEquals(ALICE_ID, admins.get(0).getOpenid());
 
         // Check listing users
         store.register( new UserInfo("http://example.com/bob2", "Sponge Bob") );

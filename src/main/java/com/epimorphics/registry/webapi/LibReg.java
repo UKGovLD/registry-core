@@ -10,9 +10,12 @@
 package com.epimorphics.registry.webapi;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.Permission;
 import org.apache.shiro.subject.Subject;
 
 import com.epimorphics.rdfutil.ModelWrapper;
@@ -21,6 +24,9 @@ import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
+import com.epimorphics.registry.security.RegAuthorizationInfo;
+import com.epimorphics.registry.security.RegPermission;
+import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.util.Prefixes;
@@ -121,6 +127,42 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
             return false;
         }
         return subject.isPermitted(action + ":/" + uri);
+    }
+
+    /**
+     * Return the subjected (logged in user if any).
+     * Needed for simple UI pages that aren't rendered as part of visiting the registry body
+     */
+    public Subject getSubject() {
+        try {
+            return SecurityUtils.getSubject();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * List permissions for current authenticted user (if any), ordered by path
+     */
+    public List<RegPermission> getPermissions() {
+        Subject subject = getSubject();
+        if (subject.isAuthenticated()) {
+            String id = ((UserInfo)subject.getPrincipal()).getOpenid();
+            RegAuthorizationInfo auth = Registry.get().getUserStore().getPermissions(id);
+            List<RegPermission> perms = new ArrayList<RegPermission>( );
+            for (Permission p : auth.getObjectPermissions()) {
+                perms.add( (RegPermission) p);
+            }
+            Collections.sort(perms, new Comparator<RegPermission>(){
+                @Override
+                public int compare(RegPermission arg0, RegPermission arg1) {
+                    return arg0.getPath().compareTo(arg1.getPath());
+                }
+            });
+            return perms;
+        } else {
+            return new ArrayList<RegPermission>();
+        }
     }
 
     /**

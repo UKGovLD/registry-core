@@ -1,55 +1,89 @@
-## Assumes call passed query variables 'uri' and 'grant'
-<h3>${grant}s for this register</h3>
+#set($pageTitle="Registry welcome")
 
-#set($path="/" + $uri)
-#set($managers=$registry.userStore.authorizedOn($path))
-#if($managers.isEmpty())
-   <p>No local authorizations found</p>
-#else
-   <table class="table">
-     <tbody>
-  #foreach($user in $managers)
-    <tr>
-      <td>
-        <span title="$user.openid">$user.name</span>
-      </td>
-      <td>
-        <form class="form-inline" action="/system/security/ungrant" method="post">
-          <input type="hidden" name="user" value="$user.openid" />
-          <input type="hidden" name="path" value="$path" />
-          <input type="submit" value="remove" class="btn btn-inverse" />
-        </form>
-      </td>
-    </tr>
+#set($nav="admin")
+
+#set($subject=$lib.reg.subject)
+
+#parse("header.vm")
+#parse("navbar.vm")
+
+#if($subject.isAuthenticated())
+
+  #set($registrationStatus = $request.session.getAttribute("registrationStatus"))
+  #set($void = $request.session.setAttribute("registrationStatus", "continued"))
+
+  <h2>Welcome #if($registrationStatus == "login")back#end $subject.principal.name</h2>
+
+  #if($registrationStatus == "new")
+    <p>You have successfully registered.</p>
+  #elseif($registrationStatus == "already")
+    <p>You were already registered, so have simply been logged in.</p>
   #end
 
-     </tbody>
-   </table>
-#end
+  #set($id=$subject.principal.openid)
+  <p>Your openid identifier is: <a href="$id">$id</a></p>
 
-<div class="row space-above">
-  <div class="span2">
-    <a href="#grant-user-dialog" role="button" class="btn btn-primary" data-toggle="modal">Add $grant</a>
-  </div>
-  <div class="span2">
-    <form class="form-inline" action="/system/security/grant" method="post">
-      <input type="hidden" name="grant" value="Authorized" />
-      <input type="hidden" name="user" value="http://localhost/anon" />
-      <input type="hidden" name="path" value="$path" />
-      <input type="submit" value="Allow any" class="btn" />
-    </form>
-  </div>
-</div>
+    <div class="row">
+      <div class="span8">
+        <ul class="nav nav-tabs nav-compact action-tab">
+          <li class="active"><a href="#permissions" data-toggle="tab">Permissions</a></li>
+          <li><a href="#api" data-toggle="tab">API Key</a></li>
+          #if($subject.hasRole("administrator"))
+            <li><a href="#administrators" data-toggle="tab">Administrators</a></li>
+          #end
+        </ul>
 
+        <div class="tab-content">
+          <div class="tab-pane active" id="permissions">
+            #if($subject.hasRole("administrator"))
+             <p>You are an administrator and so have full permissions, the following list is superfluous.</p>
+            #end
+            <h3>Explicitly granted permissions (inherit down the tree)</h3>
+            <table class="table">
+              <tbody>
+                #foreach($permission in $lib.reg.permissions)
+                  <tr>
+                    <td>$permission.path</td>
+                    <td>$permission.actionString</td>
+                  </tr>
+                #end
+              </tbody>
+            </table>
+          </div>
+          <div class="tab-pane" id="api">
+            <h3>API Key</h3>
+            <p>For non-interactive use of the API you need a password which can used with the login API method to start an API session.</p>
+            <form class="form-inline ajax-inline-form" action="/system/security/createpassword" method="post">
+              <input type="submit" value="Create password" class="btn" />
+              <label class="text">
+                  <input type="text" name="minstolive" value="60" class="input-mini"/>
+                  Minutes to live
+              </label>
+            </form>
+            <div id="form-result"></div>
+          </div>
+          #if($subject.hasRole("administrator"))
+            <div class="tab-pane" id="administrators">
+              <h3>Current administrators</h3>
+              #set($admins=$registry.userStore.listAdminUsers())
+              #parse("admin-list.vm")
+                <div class="space-above">
+                    <a href="#grant-user-dialog" role="button" class="btn btn-primary" data-toggle="modal">Add administrator</a>
+                </div>
+            </div>
+          #end
+        </div>
+      </div>
+    </div>
 
 <div id="grant-user-dialog" class="modal hide" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3>Locate a registered user to grant rights to</h3>
+    <h3>Locate a registered user to grant administration rights to</h3>
   </div>
   <div class="modal-body">
     <form id="user-form"  class="form-search query-form"
-        data-target="/system/security/listusers?uri=/$uri&grant=$grant&query=" data-query="#user-query" data-result="#user-list">
+        data-target="/system/security/listusers?grant=administrator&query=" data-query="#user-query" data-result="#user-list">
       <input id="user-query" type="text" class="input-medium">
       <button id="user-search" type="submit" class="btn">Search</button>
     </form>
@@ -60,3 +94,32 @@
     <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
   </div>
 </div>
+
+
+
+#else
+  <h3>Sorry you must be logged in to access this page</h3>
+#end
+
+   <script type="text/javascript">
+    $(function() {
+
+        // General ajax forms which reload the page when actioned
+        $(".ajax-inline-form").ajaxForm({
+          success:
+              function(data, status, xhr){
+                 $("#form-result").html(data);
+              },
+
+          error:
+            function(xhr, status, error){
+               $("#form-result").html("<div class='alert'> <button type='button' class='close' data-dismiss='alert'>&times;</button>Action failed: " + error + " - " + xhr.responseText + "</div>");
+            }
+        });
+
+    });
+
+   </script>
+
+
+#parse("footer.vm")

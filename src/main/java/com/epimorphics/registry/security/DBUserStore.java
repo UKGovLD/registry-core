@@ -296,9 +296,18 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
 
     @Override
     public List<UserInfo> listUsers(String match) {
+        return userlist("NAME LIKE ?", "%" + match + "%");
+    }
+
+    @Override
+    public List<UserInfo> listAdminUsers() {
+        return userlist("ROLE=?", RegAuthorizationInfo.ADMINSTRATOR_ROLE);
+    }
+
+    private List<UserInfo> userlist(String query, String arg) {
         try {
-            PreparedStatement s = conn.prepareStatement("SELECT ID, NAME FROM USERS WHERE NAME LIKE ? ORDER BY NAME");
-            s.setString(1, "%" + match + "%");
+            PreparedStatement s = conn.prepareStatement("SELECT ID, NAME FROM USERS WHERE " + query + " ORDER BY NAME");
+            s.setString(1, arg);
             List<UserInfo> matches = new ArrayList<UserInfo>();
             ResultSet rs = s.executeQuery();
             while (rs.next()) {

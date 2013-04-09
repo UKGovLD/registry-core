@@ -19,12 +19,14 @@ import java.util.regex.Pattern;
 import javax.servlet.ServletContext;
 
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.ShiroException;
 import org.apache.shiro.authc.SaltedAuthenticationInfo;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.codec.Hex;
 import org.apache.shiro.crypto.SecureRandomNumberGenerator;
 import org.apache.shiro.crypto.hash.Hash;
 import org.apache.shiro.crypto.hash.HashRequest;
+import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ByteSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,7 +113,30 @@ public abstract class BaseUserStore extends ServiceBase implements UserStore, Se
                     realm.getName());
         }
     }
-    
+
+    @Override
+    public String createCredentials(String id, int minstolive) {
+        checkSubject(id);
+        String password = rand.nextBytes().toHex();
+        setCredentials(id, ByteSource.Util.bytes(password), minstolive);
+        log.info("Created a new password for user " + id);
+        return password;
+    }
+
+    private void checkSubject(String id) {
+        try {
+            Subject subject = SecurityUtils.getSubject();
+            if (subject.isAuthenticated()) {
+                if (id.equals( ((UserInfo)subject.getPrincipal()).getOpenid() )) {
+                    return;
+                }
+            }
+            throw new EpiException("UserStore request rejected, not loggedin or not correct user");
+        } catch (ShiroException e) {
+            // Allow to proceed if no security system is configured
+        }
+    }
+
     private void log(String message) {
         try {
             String user = ((UserInfo)SecurityUtils.getSubject().getPrincipal()).getName();
@@ -120,11 +145,11 @@ public abstract class BaseUserStore extends ServiceBase implements UserStore, Se
             log.info("Bootstrap " + message);
         }
     }
-        
+
     private void clearCache(String id) {
         realm.clearCacheFor(id);
     }
-    
+
     @Override
     public boolean register(UserInfo user) {
         boolean success = doRegister(user);
@@ -135,7 +160,7 @@ public abstract class BaseUserStore extends ServiceBase implements UserStore, Se
         return success;
     }
     public abstract boolean doRegister(UserInfo user);
-    
+
     @Override
     public void unregister(String id) {
         doUnregister(id);
@@ -146,12 +171,13 @@ public abstract class BaseUserStore extends ServiceBase implements UserStore, Se
 
     @Override
     public void setCredentials(String id, ByteSource credentials, int minstolive) {
+        checkSubject(id);
         doSetCredentials(id, credentials, minstolive);
         clearCache(id);
-        log("Create a password for user " + id);
+        log("Registered a password for user " + id);
     }
     public abstract void doSetCredentials(String id, ByteSource credentials, int minstolive);
-    
+
     @Override
     public void removeCredentials(String id) {
         doRemoveCredentials(id);
@@ -182,7 +208,7 @@ public abstract class BaseUserStore extends ServiceBase implements UserStore, Se
         clearCache(id);
         log("Set role " + role + " for user " + id);
     }
-    
+
     public abstract void doSetRole(String id, String role);
 
 
