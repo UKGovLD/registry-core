@@ -121,6 +121,9 @@ public class TestAPI extends TomcatTestBase {
 
         // Test deletions using the /collection register
         doDeletionTest();
+        
+        // Test validation operation
+        doValidationTest();
 
         // List a register - was a bug here
         Model m = getModelResponse(BASE_URL + "?status=any");
@@ -393,13 +396,21 @@ public class TestAPI extends TomcatTestBase {
         assertFalse( getModelResponse(BASE_URL + "collection?status=stable").contains(collection, SKOS.member, collectionCollection));
         checkRegisterList(
                 getModelResponse(BASE_URL + "collection/collection?status=stable"), ROOT_REGISTER + "collection/collection");
-
+    }
+    
+    private void doValidationTest() {
         assertEquals(400, postFileStatus("test/validation-request1.txt", BASE_URL + "?validate" ));
         assertEquals(204, post(BASE_URL + "collection?update&status=stable&force").getStatus());
         assertEquals(200, postFileStatus("test/validation-request1.txt", BASE_URL + "?validate" ));
         assertEquals(400, postFileStatus("test/validation-request2.txt", BASE_URL + "?validate" ));
         assertEquals(200, post(BASE_URL + "?validate=http://location.data.gov.uk/collection/item1").getStatus());
+        assertEquals(404, post(BASE_URL + "foo?validate=http://location.data.gov.uk/collection/item1").getStatus());
         assertEquals(400, post(BASE_URL + "?validate=http://location.data.gov.uk/collection/item1&validate=http://location.data.gov.uk/collection/item8").getStatus());
+        
+        ClientResponse response = post(BASE_URL + "?validate=http://location.data.gov.uk/collection/item1");
+        assertEquals(200, response.getStatus());
+        assertEquals("http://location.data.gov.uk/collection/item1 in http://location.data.gov.uk/collection", response.getEntity(String.class).trim());
+
     }
 
     // Assumes reg1/red exists and has go through update (to red1) and patch (to red1b) and status change

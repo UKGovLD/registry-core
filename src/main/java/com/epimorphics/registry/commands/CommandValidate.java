@@ -12,13 +12,17 @@ package com.epimorphics.registry.commands;
 import java.util.List;
 
 
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
 import com.epimorphics.registry.core.Command;
+import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
+import com.epimorphics.registry.core.ValidationResponse;
 import com.epimorphics.registry.store.EntityInfo;
 import com.epimorphics.registry.webapi.Parameters;
 import com.epimorphics.server.webapi.WebApiException;
@@ -29,6 +33,15 @@ public class CommandValidate extends Command {
     public CommandValidate(Operation operation, String target,
             MultivaluedMap<String, String> parameters, Registry registry) {
         super(operation, target, parameters, registry);
+    }
+    
+    @Override
+    public ValidationResponse validate() {
+        Description d = store.getCurrentVersion(target);
+        if (d == null) {
+            return new ValidationResponse(NOT_FOUND, "No such register");
+        }
+        return ValidationResponse.OK;
     }
 
     @Override
@@ -43,6 +56,7 @@ public class CommandValidate extends Command {
             for (EntityInfo info : infos) {
                 if (info.getRegisterURI().startsWith(target) && info.getStatus().isA(Status.Valid)) {
                     thisValid = true;
+                    msg.append(uri + " in " + info.getRegisterURI() + "\n");
                     break;
                 }
             }
@@ -58,7 +72,7 @@ public class CommandValidate extends Command {
             }
         }
         if (valid) {
-            return Response.ok().build();
+            return Response.ok().type(MediaType.TEXT_PLAIN).entity(msg.toString()).build();
         } else {
             throw new WebApiException(BAD_REQUEST, msg.toString());
         }
