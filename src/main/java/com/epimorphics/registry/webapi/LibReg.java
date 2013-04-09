@@ -150,15 +150,17 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
             String id = ((UserInfo)subject.getPrincipal()).getOpenid();
             RegAuthorizationInfo auth = Registry.get().getUserStore().getPermissions(id);
             List<RegPermission> perms = new ArrayList<RegPermission>( );
-            for (Permission p : auth.getObjectPermissions()) {
-                perms.add( (RegPermission) p);
-            }
-            Collections.sort(perms, new Comparator<RegPermission>(){
-                @Override
-                public int compare(RegPermission arg0, RegPermission arg1) {
-                    return arg0.getPath().compareTo(arg1.getPath());
+            if (auth.getObjectPermissions() != null) {
+                for (Permission p : auth.getObjectPermissions()) {
+                    perms.add( (RegPermission) p);
                 }
-            });
+                Collections.sort(perms, new Comparator<RegPermission>(){
+                    @Override
+                    public int compare(RegPermission arg0, RegPermission arg1) {
+                        return arg0.getPath().compareTo(arg1.getPath());
+                    }
+                });
+            }
             return perms;
         } else {
             return new ArrayList<RegPermission>();

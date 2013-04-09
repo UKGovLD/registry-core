@@ -6,6 +6,13 @@
   #end
 #parse("navbar.vm")
 
+#set($provider=false)
+#foreach($cookie in $request.cookies)
+  #if($cookie.name == "ukgovld-login-provider")
+    #set($provider=$cookie.value)
+  #end
+#end
+
 <div class="row space-above">
 
   <div class="span5 blob pale-blue">
@@ -19,7 +26,6 @@
       <div class="row">
         <div class="span3">
           <form class="form-horizontal" action="/system/security/login" method="post">
-            <input type="hidden" name="provider" value="https://www.google.com/accounts/o8/id" />
             <input type="submit" value="Login with google account" class="btn btn-block btn-primary" />
           </form>
         </div>
@@ -29,7 +35,7 @@
           <form class="form-horizontal" action="/system/security/login" method="post">
             <p>Or enter an OpenID provider such as Google+ profile page.</p>
             <div class="input-append">
-              <input class="span4" type="text" name="provider">
+              <input class="span4" type="text" name="provider"  #if($provider)value="$provider"#end    />
               <input type="submit" value="login" class="btn btn-primary" type="button" />
             </div>
           </form>

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -57,10 +58,13 @@ import com.epimorphics.server.webapi.WebApiException;
 @Path("/system/security")
 public class Login {
     static final Logger log = LoggerFactory.getLogger( Login.class );
+    
+    public static final String DEFAULT_PROVIDER = "https://www.google.com/accounts/o8/id";
+    public static final String PROVIDER_COOKIE = "ukgovld-login-provider";
 
     // Session attribute names
     public static final String SA_OPENID_DISC = "openid_disc";
-//    public static final String SA_OPENID_PROVIDER = "openid_provider";
+    public static final String SA_OPENID_PROVIDER = "openid_provider";
     public static final String SA_REGISTRATION = "isRegistration";
 
     // Attribute parameter names
@@ -129,8 +133,8 @@ public class Login {
 
     @Path("/response")
     @GET
-    public Response openIDResponse() {
-        return verifyResponse(request);
+    public Response openIDResponse(@Context HttpServletResponse response) {
+        return verifyResponse(request, response);
     }
 
     // Return the name of the loggedin user on this session, for test purposes
@@ -267,11 +271,16 @@ public class Login {
 
     @SuppressWarnings("rawtypes")
     protected void processOpenID(HttpServletRequest request, HttpServletResponse response, String provider, boolean isRegister) {
+        HttpSession session = request.getSession();
+        session.setAttribute(SA_REGISTRATION, isRegister);
+        session.setAttribute(SA_OPENID_PROVIDER, provider);
+
+        if (provider == null || provider.isEmpty()) {
+            provider = DEFAULT_PROVIDER;
+        }
         log.info("Authentication request for " + provider + (isRegister ? " (registration)" : ""));
 
         String responseURL = uriInfo.getBaseUri().toString() + "system/security/response";
-        request.getSession().setAttribute(SA_REGISTRATION, isRegister);
-
         try
         {
             // perform discovery on the user-supplied identifier
@@ -317,7 +326,7 @@ public class Login {
     }
 
     @SuppressWarnings({ "unchecked" })
-    public Response verifyResponse(HttpServletRequest request) {
+    public Response verifyResponse(HttpServletRequest request, HttpServletResponse httpresponse) {
         try {
             HttpSession session = request.getSession();
 
@@ -375,6 +384,15 @@ public class Login {
                 try {
                     subject.login(token);
                     session.setAttribute(VN_REGISTRATION_STATUS, registrationStatus);
+                    String provider = (String)session.getAttribute(SA_OPENID_PROVIDER);
+                    if (provider != null && !provider.isEmpty()) {
+                        Cookie cookie = new Cookie(PROVIDER_COOKIE, provider);
+                        cookie.setComment("Records the openid provider you last used to log in to a UKGovLD registry");
+                        cookie.setMaxAge(60 * 60 * 24 * 30);
+                        cookie.setHttpOnly(true);
+                        cookie.setPath("/");
+                        httpresponse.addCookie(cookie);
+                    }
                     return redirectTo("/ui/admin");
 //                    return RequestProcessor.render("admin.vm", uriInfo, servletContext, request, VN_SUBJECT, subject, VN_REGISTRATION_STATUS, registrationStatus);
                 } catch (Exception e) {

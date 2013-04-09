@@ -38,17 +38,20 @@
             #if($subject.hasRole("administrator"))
              <p>You are an administrator and so have full permissions, the following list is superfluous.</p>
             #end
-            <h3>Explicitly granted permissions (inherit down the tree)</h3>
-            <table class="table">
-              <tbody>
-                #foreach($permission in $lib.reg.permissions)
-                  <tr>
-                    <td>$permission.path</td>
-                    <td>$permission.actionString</td>
-                  </tr>
-                #end
-              </tbody>
-            </table>
+            #set($permissions = $lib.reg.permissions)
+            #if(!$permissions.isEmpty())
+                <h3>Explicitly granted permissions (inherit down the tree)</h3>
+                <table class="table">
+                  <tbody>
+                    #foreach($permission in $lib.reg.permissions)
+                      <tr>
+                        <td>$permission.path</td>
+                        <td>$permission.actionString</td>
+                      </tr>
+                    #end
+                  </tbody>
+                </table>
+            #end
           </div>
           <div class="tab-pane" id="api">
             <h3>API Key</h3>
