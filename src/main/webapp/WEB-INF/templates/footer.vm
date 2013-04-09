@@ -15,9 +15,14 @@
         $('.action-tab').bind('show', function(e) {
            var pattern=/#.+/gi
            var contentID = e.target.toString().match(pattern)[0];
-           var action = $(contentID).attr('data-action')
+           var action = $(contentID).attr('data-action');
            if (action) {
-             $(contentID).load('$uiroot/' + action +'?uri=$lib.pathEncode($uri)&requestor=$requestor', function(){
+             var url = '$uiroot/' + action +'?uri=$lib.pathEncode($uri)&requestor=$requestor';
+             var args = $(contentID).attr('data-args');
+             if (args) {
+                url = url + "&" + args;
+             }
+             $(contentID).load(url, function(){
                 $('.action-tab').tab(); //reinitialize tabs
                 $('.datatable').dataTable();
                 // enable an embedded query forms (used in admin pages)
@@ -31,11 +36,11 @@
                         return false;
                     });
                 });
-                
+
               });
            };
         });
-        
+
         // General ajax forms which reload the page when actioned
         $(".ajax-form").ajaxForm({
           success:

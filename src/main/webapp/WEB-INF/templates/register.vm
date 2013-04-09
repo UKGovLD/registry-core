@@ -57,7 +57,7 @@
              #restable($itemForReg, "table-striped table-condensed")
           </div>
           #if($isAdministrator)
-            <div class="tab-pane" id="administer" data-action="register-admin">
+            <div class="tab-pane" id="administer" data-action="admin" data-args="grant=Manager">
               <p>Page is loading ...</p>
             </div>
           #end

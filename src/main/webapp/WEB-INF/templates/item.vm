@@ -47,8 +47,8 @@
       </div>
 
       #if($isAdministrator)
-        <div class="tab-pane" id="administer">
-          <p>To be implemented.</p>
+        <div class="tab-pane" id="administer" data-action="admin" data-args="grant=Maintainer">
+          <p>Page is loading ...</p>
         </div>
       #end
     </div>
