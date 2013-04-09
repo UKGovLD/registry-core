@@ -29,10 +29,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.epimorphics.server.core.Service;
+import com.epimorphics.server.core.Shutdown;
 import com.epimorphics.util.EpiException;
 import com.hp.hpl.jena.util.FileManager;
 
-public class DBUserStore extends BaseUserStore implements UserStore, Service {
+public class DBUserStore extends BaseUserStore implements UserStore, Service, Shutdown {
     static final Logger log = LoggerFactory.getLogger( DBUserStore.class );
 
     public static final String DATABASE_PARAM = "dbfile";
@@ -318,6 +319,15 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service {
         } catch (Exception e) {
             log.error("Failed to access security database", e);
             throw new EpiException(e);
+        }
+    }
+
+    @Override
+    public void shutdown() {
+        try {
+            DriverManager.getConnection("jdbc:derby:;shutdown=true");
+        } catch (SQLException e) {
+            log.error("Problem shutting down", e);
         }
     }
 
