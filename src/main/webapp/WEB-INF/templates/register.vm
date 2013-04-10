@@ -78,13 +78,13 @@
       </div>
       <div class="panel-body">
          <table class="table table-striped table-condensed">
-           #metadatarow("owned by", $register.listPropertyValues("reg:owner"))
-           #metadatarow("managed by", $register.listPropertyValues("reg:manager"))
-           #metadatarow("license", $register.listPropertyValues("dct:license"))
-           #metadatarow("last changed on", $register.listPropertyValues("dct:modified"))
-           #metadatarow("submitted on", $item.listPropertyValues("dct:dateSubmitted"))
-           #metadatasubmitter($item)
-           #metadatarow("accepted  on", $item.listPropertyValues("dct:dateAccepted"))
+           #metadatarow("owned by", $itemForReg.listPropertyValues("reg:owner"))
+           #metadatarow("managed by", $itemForReg.listPropertyValues("reg:manager"))
+           #metadatarow("license", $itemForReg.listPropertyValues("dct:license"))
+           #metadatarow("last changed on", $itemForReg.listPropertyValues("dct:modified"))
+           #metadatarow("submitted on", $itemForReg.listPropertyValues("dct:dateSubmitted"))
+           #metadatasubmitter($itemForReg)
+           #metadatarow("accepted  on", $itemForReg.listPropertyValues("dct:dateAccepted"))
          </table>
       </div>
     </div>

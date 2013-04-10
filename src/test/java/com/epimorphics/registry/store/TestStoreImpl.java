@@ -41,8 +41,10 @@ import com.epimorphics.util.TestUtil;
 import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
+import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.util.FileUtils;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.OWL;
@@ -210,6 +212,35 @@ public class TestStoreImpl {
         assertEquals(3, RDFUtil.getIntValue(ri.getRoot(), OWL.versionInfo, -1));
 
         assertNotNull( store.getDescription(ROOT_REGISTER + "reg1/red") );
+    }
+
+    @Test
+    public void testBNodeSubmitter() {
+        addEntry("file:test/reg1.ttl", ROOT_REGISTER);
+
+        Register parent = store.getCurrentVersion(REG1).asRegister();
+        String base = NameUtils.ensureLastSlash(REG1);
+        Model m = ModelFactory.createDefaultModel();
+        m.read("file:test/red-submitter-test.ttl", base, FileUtils.langTurtle);
+
+        Calendar now = Calendar.getInstance();
+        for (ResIterator i = m.listResourcesWithProperty(RDF.type, RegistryVocab.RegisterItem); i.hasNext();) {
+            RegisterItem item = RegisterItem.fromRIRequest(i.next(), REG1, true, now);
+            store.addToRegister(parent, item);
+        }
+
+
+        RegisterItem ri = store.getItem(REG1 + "/_red", true);
+        List<Statement> submitters = ri.getRoot().listProperties(RegistryVocab.submitter).toList();
+        assertEquals(1, submitters.size());
+
+        ri.getEntity().addProperty(RDFS.comment, "Updated");
+        store.update(ri, true);
+
+        ri = store.getItem(REG1 + "/_red", true);
+        submitters = ri.getRoot().listProperties(RegistryVocab.submitter).toList();
+        assertEquals(1, submitters.size());
+
     }
 
     private List<RegisterItem> members(Register reg, boolean withEntity) {

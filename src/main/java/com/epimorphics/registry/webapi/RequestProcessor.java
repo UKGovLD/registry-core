@@ -37,7 +37,6 @@ import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +53,6 @@ import com.epimorphics.registry.util.JSONLDSupport;
 import com.epimorphics.registry.util.PATCH;
 import com.epimorphics.registry.util.UiForm;
 import com.epimorphics.server.core.ServiceConfig;
-import com.epimorphics.server.templates.Lib;
 import com.epimorphics.server.templates.VelocityRender;
 import com.epimorphics.server.webapi.BaseEndpoint;
 import com.epimorphics.server.webapi.WebApiException;

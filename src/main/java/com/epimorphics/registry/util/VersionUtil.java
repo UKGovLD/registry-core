@@ -86,9 +86,11 @@ public class VersionUtil {
         for (StmtIterator si = root.listProperties(); si.hasNext();) {
             Statement s = si.next();
             Property p = s.getPredicate();
+            boolean isRigid = rigids.contains(p);
             RDFNode value = s.getObject();
-            if (value.isAnon()) {
+            if (value.isAnon() && (!isRigid || currentVersion == null)) {
                 // Copy one level of bnodes across to handle entity references
+                // but don't do that for rigid properties of roots which already exist, otherwise get duplicates
                 Resource newValue = vModel.createResource();
                 for (StmtIterator vi = value.asResource().listProperties(); vi.hasNext();) {
                     Statement vs = vi.next();
