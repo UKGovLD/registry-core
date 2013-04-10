@@ -19,9 +19,12 @@ import java.util.regex.Pattern;
 import javax.servlet.ServletContext;
 
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.ShiroException;
+import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.authc.SaltedAuthenticationInfo;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
+import org.apache.shiro.authz.AuthorizationException;
+import org.apache.shiro.authz.UnauthenticatedException;
+import org.apache.shiro.authz.UnauthorizedException;
 import org.apache.shiro.codec.Hex;
 import org.apache.shiro.crypto.SecureRandomNumberGenerator;
 import org.apache.shiro.crypto.hash.Hash;
@@ -116,23 +119,55 @@ public abstract class BaseUserStore extends ServiceBase implements UserStore, Se
 
     @Override
     public String createCredentials(String id, int minstolive) {
-        checkSubject(id);
+        checkSubjectIs(id);
         String password = rand.nextBytes().toHex();
         setCredentials(id, ByteSource.Util.bytes(password), minstolive);
         log.info("Created a new password for user " + id);
         return password;
     }
 
-    private void checkSubject(String id) {
+    // Check that current subject is the given id
+    private void checkSubjectIs(String id) {
         try {
             Subject subject = SecurityUtils.getSubject();
             if (subject.isAuthenticated()) {
                 if (id.equals( ((UserInfo)subject.getPrincipal()).getOpenid() )) {
                     return;
+                } else {
+                    throw new AuthorizationException("Cannot change credenitials for another user");
                 }
+            } else {
+                throw new UnauthenticatedException();
             }
-            throw new EpiException("UserStore request rejected, not loggedin or not correct user");
-        } catch (ShiroException e) {
+        } catch (UnavailableSecurityManagerException e) {
+            // Allow to proceed if no security system is configured
+        }
+    }
+
+    // Check that current subject has permission to grant permissions on the given path
+    private void checkSubjectControls(String path) {
+        try {
+            Subject subject = SecurityUtils.getSubject();
+            if (!subject.isAuthenticated()) {
+                throw new UnauthenticatedException();
+            }
+            subject.checkPermission("Grant:"+path);
+        } catch (UnavailableSecurityManagerException e) {
+            // Allow to proceed if no security system is configured
+        }
+    }
+
+    // Check that the current subject is an administrator
+    private void checkIsAdministrator() {
+        try {
+            Subject subject = SecurityUtils.getSubject();
+            if (!subject.isAuthenticated()) {
+                throw new UnauthenticatedException();
+            }
+            if (!subject.hasRole(RegAuthorizationInfo.ADMINSTRATOR_ROLE)) {
+                throw new UnauthorizedException("You must be an administrator to do this");
+            }
+        } catch (UnavailableSecurityManagerException e) {
             // Allow to proceed if no security system is configured
         }
     }
@@ -171,7 +206,7 @@ public abstract class BaseUserStore extends ServiceBase implements UserStore, Se
 
     @Override
     public void setCredentials(String id, ByteSource credentials, int minstolive) {
-        checkSubject(id);
+        checkSubjectIs(id);
         doSetCredentials(id, credentials, minstolive);
         clearCache(id);
         log("Registered a password for user " + id);
@@ -180,6 +215,7 @@ public abstract class BaseUserStore extends ServiceBase implements UserStore, Se
 
     @Override
     public void removeCredentials(String id) {
+        checkSubjectIs(id);
         doRemoveCredentials(id);
         clearCache(id);
         log("Cleared password for user " + id);
@@ -188,6 +224,7 @@ public abstract class BaseUserStore extends ServiceBase implements UserStore, Se
 
     @Override
     public void addPermision(String id, RegPermission permission) {
+        checkSubjectControls(permission.getPath());
         doAddPermision(id, permission);
         clearCache(id);
         log("Added permission " + permission + " for user " + id);
@@ -196,6 +233,7 @@ public abstract class BaseUserStore extends ServiceBase implements UserStore, Se
 
     @Override
     public void removePermission(String id, String path) {
+        checkSubjectControls(path);
         doRemovePermission(id, path);
         clearCache(id);
         log("Removed permissions for user " + id + " on path " + path);
@@ -204,6 +242,7 @@ public abstract class BaseUserStore extends ServiceBase implements UserStore, Se
 
     @Override
     public void setRole(String id, String role) {
+        checkIsAdministrator();
         doSetRole(id, role);
         clearCache(id);
         log("Set role " + role + " for user " + id);

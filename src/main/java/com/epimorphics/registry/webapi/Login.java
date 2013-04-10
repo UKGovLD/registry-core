@@ -58,7 +58,7 @@ import com.epimorphics.server.webapi.WebApiException;
 @Path("/system/security")
 public class Login {
     static final Logger log = LoggerFactory.getLogger( Login.class );
-    
+
     public static final String DEFAULT_PROVIDER = "https://www.google.com/accounts/o8/id";
     public static final String PROVIDER_COOKIE = "ukgovld-login-provider";
 
@@ -170,36 +170,28 @@ public class Login {
             // Occurrs when setting global admin permissions
             path = "/ui/admin";
         }
-        if (SecurityUtils.getSubject().isPermitted("Grant:" + path)) {
-            UserStore userstore = Registry.get().getUserStore();
-            try {
-                if (action.equals("administrator")) {
-                    userstore.setRole(id, RegAuthorizationInfo.ADMINSTRATOR_ROLE);
-                } else {
-                    userstore.addPermision(id, new RegPermission(action, path));
-                }
-                return redirectTo(path);
-            } catch (Exception e) {
-                return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "Permission grant failed: " + e.getMessage());
+        UserStore userstore = Registry.get().getUserStore();
+        try {
+            if (action.equals("administrator")) {
+                userstore.setRole(id, RegAuthorizationInfo.ADMINSTRATOR_ROLE);
+            } else {
+                userstore.addPermision(id, new RegPermission(action, path));
             }
-        } else {
-            return error("You do not have sufficient privileges to grant further access");
+            return redirectTo(path);
+        } catch (Exception e) {
+            return error("Permission grant failed: " + e);
         }
     }
 
     @Path("/ungrant")
     @POST
     public Response ungrant(@FormParam("user") String id, @FormParam("path") String path) {
-        if (SecurityUtils.getSubject().isPermitted("Grant:" + path)) {
-            UserStore userstore = Registry.get().getUserStore();
-            try {
-                userstore.removePermission(id, path);
-                return redirectTo(path);
-            } catch (Exception e) {
-                return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "Permission grant failed: " + e.getMessage());
-            }
-        } else {
-            return error("You do not have sufficient privileges to grant further access");
+        UserStore userstore = Registry.get().getUserStore();
+        try {
+            userstore.removePermission(id, path);
+            return redirectTo(path);
+        } catch (Exception e) {
+            return error("Permission grant failed: " + e);
         }
     }
 
@@ -211,7 +203,7 @@ public class Login {
         try {
             mins = Integer.parseInt(minstolive);
         } catch (Exception e) {
-            return error("You must be logged in to do this");
+            return error("Minutes to live must be an integer");
         }
         Subject subject = SecurityUtils.getSubject();
         if (subject.isAuthenticated()) {
@@ -221,7 +213,7 @@ public class Login {
                 String pwd = userstore.createCredentials(id, mins);
                 return RequestProcessor.render("api-key-result.vm", uriInfo, servletContext, request, "password", pwd, "id", id);
             } catch (Exception e) {
-                return error("Permission grant failed: " + e.getMessage());
+                return error("Permission grant failed: " + e);
             }
         } else {
             return error("You must be logged in to do this");
@@ -246,8 +238,12 @@ public class Login {
         Subject subject = SecurityUtils.getSubject();
         if (subject.isAuthenticated() && subject.hasRole(RegAuthorizationInfo.ADMINSTRATOR_ROLE)) {
             UserStore userstore = Registry.get().getUserStore();
-            userstore.setRole(id, role.isEmpty() ? null : role);
-            return redirectTo("/ui/admin");
+            try {
+                userstore.setRole(id, role.isEmpty() ? null : role);
+                return redirectTo("/ui/admin");
+            } catch (Exception e) {
+                return error("Role assignment failed: " + e);
+            }
         } else {
             return error("You must be logged in as an administrator to do this");
         }
