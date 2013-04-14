@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.Permission;
@@ -33,10 +34,12 @@ import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.server.core.Service;
 import com.epimorphics.server.core.ServiceBase;
 import com.epimorphics.server.templates.LibPlugin;
+import com.epimorphics.util.EpiException;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.shared.PrefixMapping;
 
 /**
  * Some supporting methods to help Velocity UI access the registry store.
@@ -165,6 +168,27 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
         } else {
             return new ArrayList<RegPermission>();
         }
+    }
+    
+    /**
+     * Return string giving the Turtle prefixes header for a model/node
+     */
+    public String turtlePrefixes(Object obj) {
+        PrefixMapping prefixes;
+        if (obj instanceof ModelWrapper) {
+            prefixes = ((ModelWrapper)obj).getPrefixes();
+        } else if (obj instanceof RDFNodeWrapper) {
+            prefixes = ((RDFNodeWrapper)obj).getModelW().getPrefixes();
+        } else if (obj instanceof Model) {
+            prefixes = (Model)obj;
+        } else {
+            throw new EpiException("Not a type with prefixes: " + obj);
+        }
+        StringBuffer result = new StringBuffer();
+        for (Map.Entry<String, String> mapping : prefixes.getNsPrefixMap().entrySet()) {
+            result.append(String.format("@prefix %s: <%s>. \n", mapping.getKey(), mapping.getValue()));
+        }
+        return result.toString();
     }
 
     /**

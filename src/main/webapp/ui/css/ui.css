@@ -132,6 +132,15 @@ table tr td table {
 
 #registration-body {
    min-height: 500px;
-   min-width: 400px;
+   min-width: 600px;
 }
 
+#update-dialog {
+    width: 800px;
+}
+    
+#update-dialog-body {
+    max-height: 1000px;
+}
+    
+    

@@ -1,0 +1,44 @@
+## Supplies the body of an entity/item edit dialog
+## $entity should be bound to the RDFNodeWrapper for the target
+
+<p>Editing $entity</p>
+
+<div class="tabbable">
+
+  <ul class="nav nav-tabs nav-compact">
+    <li class="active"><a href="#tabPT" data-toggle="tab">Property table</a></li>
+    <li><a href="#tabTTL" data-toggle="tab">Turtle</a></li>
+    <li><a href="#tabPrefixes" data-toggle="tab">Prefixes</a></li>
+  </ul>
+  
+  <div class="tab-content">
+    <div class="tab-pane active" id="tabPT">
+      <p>Click on values to edit them. </p>
+      <table id="edit-table" class="table table-bordered table-striped ui-edit-table" data-root="$entity.uRI" data-target="/$uri">
+        <tbody>
+        #foreach($pv in $entity.listProperties())
+          <tr id="edit-${foreach.count}">
+            <td>$pv.prop.shortURI</td>
+            <td><a href="#" class="ui-editable" data-type="text" data-inputclass="input-large" data-name="$pv.prop.shortURI">$pv.values[0].asTurtle().replaceAll("<","&lt;")</a></td>
+            <td><a class="edit-remove-row"><i data-target="#edit-${foreach.count}"  class="icon-remove"></i></a></td>
+          </tr>
+        #end 
+        </tbody>
+      </table>
+      <button class="btn btn-primary space-above" id="update-save">Save changes</button>
+    </div>
+    
+    <div class="tab-pane" id="tabTTL">
+      <p>$entity.asTurtle()</p>
+      <button class="btn btn-primary space-above" id="update-save">Save changes</button>
+    </div>
+    
+    <div class="tab-pane" id="tabPrefixes">
+      <a href="#" id="edit-prefixes" data-type="textarea" class="ui-editable" data-inputclass="input-xxlarge" data-rows="12">
+      $lib.reg.turtlePrefixes($entity).replaceAll("<","&lt;").replaceAll("\n","<br/>")
+      </a>
+    </div>
+    
+  </div>
+</div>
+

@@ -5,7 +5,7 @@
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
         <h3>Chose type of thing to register ...</h3>
       </div>
-      <div id="registration-body" class="modal-body">
+      <div id="registration-body" class="modal-body body-large">
         <ul class="nav nav-pills">
           <li><a href="#item-upload" data-toggle="pill" class="popinfo" data-trigger="hover" data-placement="right"
                  data-content="Register an entry by uploading an RDF file">Upload</a></li>

@@ -6,25 +6,11 @@
 
    <script type="text/javascript" src="$uiroot/js/bootstrap.min.js"></script>
    <script type="text/javascript" src="$uiroot/js/jquery.dataTables.min.js"></script>
+   <script type="text/javascript" src="$uiroot/js/bootstrap-editable.min.js"></script>
+   <script type="text/javascript" src="$uiroot/js/ui.js"></script>
    <script type="text/javascript">
     $(function() {
-        var processQueryForms = function() {
-            $(".query-form").each(function() {
-                var target = $(this).attr('data-target');
-                var queryField = $(this).attr('data-query');
-                var resultField = $(this).attr('data-result');
-                $(this).submit( function(){
-                    var url = target + $(queryField).val();
-                    $(resultField).load(url);
-                    return false;
-                });
-            });
-        };
-
-        // enable popups
-        $(".popinfo").popover();
-
-        // Set up ajax tabs
+        // Set up ajax tabs (done here not in ui.js because it reference velocity bindings
         $('.action-tab').bind('show', function(e) {
            var pattern=/#.+/gi
            var contentID = e.target.toString().match(pattern)[0];
@@ -41,22 +27,6 @@
                 processQueryForms();
               });
            };
-        });
-
-        processQueryForms();
-
-        // General ajax forms which reload the page when actioned
-        $(".ajax-form").ajaxForm({
-          success:
-              function(data, status, xhr){
-                $("#status-dialog").modal("hide");
-                location.reload();
-              },
-
-          error:
-            function(xhr, status, error){
-               $(".ajax-error").html("<div class='alert'> <button type='button' class='close' data-dismiss='alert'>&times;</button>Action failed: " + error + " - " + xhr.responseText + "</div>");
-            }
         });
 
     });

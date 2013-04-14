@@ -11,7 +11,7 @@
 
     <div class="row">
       <div class="span6">
-        <p><strong>URI:</strong>  <a href="#linkhref($entity)" title="$res.uRI">$entity.uRI</a> </p>
+        <p><strong>URI:</strong>  <a href="#linkhref($entity)" title="$entity.uRI">$entity.uRI</a> </p>
         <p><strong>Type:</strong> #foreach($ty in $entity.listPropertyValues("rdf:type"))#linkfor($ty)#if( $foreach.hasNext ), #end#end </p>
         #description($entity, "<p><em>no description supplied</em></p>")
       </div>
@@ -71,14 +71,43 @@
          </table>
        </div>
      </div>
+     
+    #set($foundAction=false) 
 
     #if($lib.reg.isPermitted("StatusUpdate", $uri))
-        <div>
-          <h3 class="text-center">Actions</h3>
-          <a href="#status-dialog" role="button" class="btn" data-toggle="modal">Set status</a>
-        </div>
+      <div>
+        #set($foundAction=true)
+        <h3 class="text-center">Actions</h3>
+        <a href="#status-dialog" role="button" class="btn" data-toggle="modal">Set status</a>
 
         #statusSet("status-dialog", "Set status of $entity.name to ...", $item, $item)
+      </div>
+    #end
+
+    #if($lib.reg.isPermitted("Update", $uri))
+      <div>
+        #if(!$foundAction)
+          <h3 class="text-center">Actions</h3>
+          #set($foundAction=true)
+        #end
+        <a role="button" class="btn btn-success space-above" data-toggle="modal" data-target="#update-dialog" >Update entity</a>
+      </div>
+      
+      <div id="update-dialog" class="modal hide" tabindex="-1" role="dialog" aria-hidden="true">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3>Update entity definition</h3>
+          </div>
+          <div id="update-dialog-body" class="modal-body body-large">
+            #parse("edit-form.vm")
+          </div>
+          <div id="msg-alert" class="alert hide">
+            <div id="msg"></div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+          </div>
+      </div>
     #end
 
   </div>
