@@ -46,6 +46,9 @@
                 #end
                 </tbody>
               </table>
+              <div>
+                 <a class="edit-add-newrow"><i data-target="#${id}-edit-table" class="icon-plus-sign"></i></a></td>
+              </div>
               <button class="btn btn-primary space-above edit-table-save" id="${id}-update-save" data-id="${id}">Save changes</button>
             </div>
 

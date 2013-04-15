@@ -39,6 +39,11 @@ $(function() {
     // Set up editable fields
     $.fn.editable.defaults.mode = 'inline';
 
+    var editRemoveAction = function(e){
+        var rowid = $(e.target).attr("data-target");
+        $(rowid).remove();
+    };
+
     // Machinery to run edit-form interactions
     var makeEditCell = function(name, value) {
         return '<td><a href="#" class="ui-editable" data-type="text" data-inputclass="input-large" data-name="' + name + '">' + value + '</a></td>';
@@ -52,19 +57,9 @@ $(function() {
         return row;
     };
 
-    var editRemoveAction = function(e){
-        var rowid = $(e.target).attr("data-target");
-        $(rowid).remove();
-    };
-
-    var idcount = 1;
-
-    var editAddAction = function(e){
-        var row = $($(e.target).attr("data-target"));
-        var newid = row.attr("id") + idcount++;
-        var prop = row.find("td:first").text();
-        row.after( makeEditRow(newid, prop, '""') );
-        $("#" + newid).each(function(){
+    var installEditRow = function(position, id, prop, value) {
+        position.after( makeEditRow(id, prop, '""') );
+        $("#" + id).each(function(){
             $(this).find(".ui-editable").editable();
             $(this).find(".edit-remove-row").click( editRemoveAction );
             $(this).find(".edit-add-row").click( editAddAction );
@@ -75,12 +70,30 @@ $(function() {
                 }, 200);
             });
         });
+    };
+    
+    var idcount = 1;
+
+    var editAddAction = function(e){
+        var row = $($(e.target).attr("data-target"));
+        var newid = row.attr("id") + idcount++;
+        var prop = row.find("td:first").text();
+        installEditRow(row, newid, prop, '""');
+        return false;
+    }
+    
+    var editAddNewAction = function(e) {
+        var tableid = $(e.target).attr("data-target");
+        var lastrow = $(tableid).find("tbody tr:last");
+        var newid =  (tableid.replace(/^#/,'')) + "-newrow-"+ idcount++;
+        installEditRow(lastrow, newid, '', '""');
         return false;
     }
 
     $(".ui-editable").editable();
     $(".edit-remove-row").click( editRemoveAction );
     $(".edit-add-row").click( editAddAction );
+    $(".edit-add-newrow").click( editAddNewAction );
 
     var emitResource = function(val) {
         if (val.match(/https?:/)) {

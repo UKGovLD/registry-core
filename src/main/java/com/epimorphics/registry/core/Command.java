@@ -229,7 +229,7 @@ public abstract class Command {
 
         Date now = new Date(System.currentTimeMillis());
         log.info(String.format("%s [%s] %s \"%s?%s\"%s %d",
-                NameUtils.decodeSafeName(requestor),
+                requestor == null ? null : NameUtils.decodeSafeName(requestor),
                 new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z").format(now),
                 operation.toString(),
                 target,
