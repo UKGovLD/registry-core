@@ -191,8 +191,8 @@ public abstract class Command {
     public ValidationResponse validate() {
         return ValidationResponse.OK;
     }
-    
-    
+
+
     public Response authorizedExecute() {
         performValidate();
         return performExecute();
@@ -205,14 +205,14 @@ public abstract class Command {
         }
         return authorizedExecute();
     }
-    
+
     protected void performValidate() {
         ValidationResponse validity = validate();
         if (!validity.isOk()) {
             throw new WebApiException(validity.getStatus(), validity.getMessage());
         }
     }
-    
+
     // Called after validation and authorization
     protected Response performExecute() {
         Response response = null;
@@ -229,7 +229,7 @@ public abstract class Command {
 
         Date now = new Date(System.currentTimeMillis());
         log.info(String.format("%s [%s] %s \"%s?%s\"%s %d",
-                requestor,
+                NameUtils.decodeSafeName(requestor),
                 new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z").format(now),
                 operation.toString(),
                 target,

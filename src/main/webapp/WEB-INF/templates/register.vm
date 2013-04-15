@@ -106,13 +106,9 @@
           #set($foundAction=true)
           <h3 class="text-center">Actions</h3>
           #if($sample)
-            <div class="span3">
-              <a href="#status-dialog" role="button" class="btn" data-toggle="modal">Set contents status</a>
-            </div>
+              <a href="#status-dialog" role="button" class="btn btn-primary" data-toggle="modal">Set contents status</a>
           #end
-          <div class="span3 space-above">
             <a href="#register-status-dialog" role="button" class="btn" data-toggle="modal">Set register status</a>
-          </div>
         #end
 
         #if($lib.reg.isPermitted("Register", $uri))
@@ -120,8 +116,8 @@
            <h3 class="text-center">Actions</h3>
           #end
           #set($foundAction=true)
-          <div class="span3 space-above">
-            <a href="#registration-dialog" role="button" class="btn btn-success" data-toggle="modal">Add registration</a>
+          <div class="space-above">
+            <a href="#registration-dialog" role="button" class="btn btn-primary" data-toggle="modal">Add registration <i class="icon-plus-sign icon-white"></i></a>
           </div>
         #end
 

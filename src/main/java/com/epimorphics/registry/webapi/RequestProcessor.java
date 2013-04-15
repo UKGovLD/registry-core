@@ -37,6 +37,7 @@ import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.UnavailableSecurityManagerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,12 +118,7 @@ public class RequestProcessor extends BaseEndpoint {
         fullParams[i++] = "subject";
         fullParams[i++] = SecurityUtils.getSubject();
         fullParams[i++] = "requestor";
-        UserInfo user = (UserInfo) SecurityUtils.getSubject().getPrincipal();
-        if (user != null) {
-            fullParams[i++] = NameUtils.encodeSafeName(user.getName());
-        } else {
-            fullParams[i++] = getRequestor(request);
-        }
+        fullParams[i++] = getRequestor(request);
         fullParams[i++] = "request";
         fullParams[i++] = request;
         fullParams[i++] = "language";
@@ -134,6 +130,15 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     public static String getRequestor(HttpServletRequest request) {
+        try {
+            UserInfo user = (UserInfo) SecurityUtils.getSubject().getPrincipal();
+            if (user != null) {
+                return NameUtils.encodeSafeName(user.toString());
+            }
+        } catch (UnavailableSecurityManagerException e) {
+            // shiro not running, presumably test mode, fall through to default requestor based on IP
+        }
+
         if (request.getHeader(FORWARDED_FOR_HEADER) != null) {
             return request.getHeader(FORWARDED_FOR_HEADER);
         }

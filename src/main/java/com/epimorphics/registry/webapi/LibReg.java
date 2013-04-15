@@ -169,7 +169,7 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
             return new ArrayList<RegPermission>();
         }
     }
-    
+
     /**
      * Return string giving the Turtle prefixes header for a model/node
      */

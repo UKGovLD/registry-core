@@ -19,7 +19,7 @@ import java.io.Serializable;
  */
 public class UserInfo implements Serializable {
     private static final long serialVersionUID = -4661235310974850596L;
-    
+
     protected String openid;
     protected String name;
 
@@ -61,7 +61,7 @@ public class UserInfo implements Serializable {
 
     @Override
     public String toString() {
-        return "User[" + (name == null ? openid : name) + "]";
+        return String.format("User[%s,%s]", name, openid);
     }
 
 }

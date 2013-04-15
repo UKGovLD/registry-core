@@ -135,12 +135,13 @@ table tr td table {
    min-width: 600px;
 }
 
-#update-dialog {
+.modal.update {
     width: 800px;
+    top: 5%;
+    left: 30%;
 }
-    
-#update-dialog-body {
-    max-height: 1000px;
+
+.modal-body.update {
+    max-height: 650px;
 }
-    
-    
+

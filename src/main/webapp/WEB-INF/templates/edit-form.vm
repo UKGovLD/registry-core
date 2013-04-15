@@ -1,44 +1,70 @@
 ## Supplies the body of an entity/item edit dialog
-## $entity should be bound to the RDFNodeWrapper for the target
+## $editTarget should be bound to the RDFNodeWrapper for the target
+## $id should be bound to a based ID pattern for naming the dialog components
 
-<p>Editing $entity</p>
+<div id="$id" class="modal hide update" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3>Update entity definition</h3>
+  </div>
+  <div id="${id}-body" class="modal-body update">
 
-<div class="tabbable">
+    #if(!$editTarget.uRI.startsWith($registry.baseURI))
+       <div class="alert">Sorry, can only update managed entities, this looks like an external reference</div>
 
-  <ul class="nav nav-tabs nav-compact">
-    <li class="active"><a href="#tabPT" data-toggle="tab">Property table</a></li>
-    <li><a href="#tabTTL" data-toggle="tab">Turtle</a></li>
-    <li><a href="#tabPrefixes" data-toggle="tab">Prefixes</a></li>
-  </ul>
-  
-  <div class="tab-content">
-    <div class="tab-pane active" id="tabPT">
-      <p>Click on values to edit them. </p>
-      <table id="edit-table" class="table table-bordered table-striped ui-edit-table" data-root="$entity.uRI" data-target="/$uri">
-        <tbody>
-        #foreach($pv in $entity.listProperties())
-          <tr id="edit-${foreach.count}">
-            <td>$pv.prop.shortURI</td>
-            <td><a href="#" class="ui-editable" data-type="text" data-inputclass="input-large" data-name="$pv.prop.shortURI">$pv.values[0].asTurtle().replaceAll("<","&lt;")</a></td>
-            <td><a class="edit-remove-row"><i data-target="#edit-${foreach.count}"  class="icon-remove"></i></a></td>
-          </tr>
-        #end 
-        </tbody>
-      </table>
-      <button class="btn btn-primary space-above" id="update-save">Save changes</button>
-    </div>
-    
-    <div class="tab-pane" id="tabTTL">
-      <p>$entity.asTurtle()</p>
-      <button class="btn btn-primary space-above" id="update-save">Save changes</button>
-    </div>
-    
-    <div class="tab-pane" id="tabPrefixes">
-      <a href="#" id="edit-prefixes" data-type="textarea" class="ui-editable" data-inputclass="input-xxlarge" data-rows="12">
-      $lib.reg.turtlePrefixes($entity).replaceAll("<","&lt;").replaceAll("\n","<br/>")
-      </a>
-    </div>
-    
+    #else
+       #set($posturl = $editTarget.uRI.replaceAll("^https?://[^/]*/","/"))
+        <p>Editing $editTarget</p>
+        <p>The entries in the table should be valid Turtle, string literal should be enclosed in quotes and
+        raw URLs should be enclosed in &lt;...&gt;. The set of prefixes available for prefixes names is in the prefixes tab, which
+        can be edited.</p>
+
+        <div class="tabbable">
+
+          <ul class="nav nav-tabs nav-compact">
+            <li class="active"><a href="#${id}-tabPT" data-toggle="tab">Property table</a></li>
+            <li><a href="#${id}-tabPrefixes" data-toggle="tab">Prefixes</a></li>
+          </ul>
+
+          <div class="tab-content">
+            <div class="tab-pane active" id="${id}-tabPT">
+              <p>Click on values to edit them. </p>
+              <table id="${id}-edit-table" class="table table-bordered table-striped ui-edit-table" data-root="$editTarget.uRI" data-target="$posturl" >
+                <tbody>
+                #set($count = 0)
+                #foreach($pv in $editTarget.listProperties())
+                  #foreach($v in $pv.values)
+                    #set($newid = $id + "-edit-" + $count)
+                    #set($count = $count + 1)
+                    <tr id="$newid">
+                      <td>$pv.prop.shortURI</td>
+                      <td><a href="#" class="ui-editable" data-type="text" data-inputclass="input-large" data-name="$pv.prop.shortURI">$v.asTurtle().replaceAll("<","&lt;")</a></td>
+                      <td><a class="edit-remove-row"><i data-target="#$newid"  class="icon-minus-sign"></i></a>
+                          <a class="edit-add-row"><i data-target="#$newid"  class="icon-plus-sign"></i></a></td>
+                    </tr>
+                  #end
+                #end
+                </tbody>
+              </table>
+              <button class="btn btn-primary space-above edit-table-save" id="${id}-update-save" data-id="${id}">Save changes</button>
+            </div>
+
+            <div class="tab-pane" id="${id}-tabPrefixes">
+              <a href="#" id="${id}-edit-prefixes" data-type="textarea" class="ui-editable" data-inputclass="input-xxlarge" data-rows="12">
+              $lib.reg.turtlePrefixes($editTarget).replaceAll("<","&lt;").replaceAll("\n","<br/>")
+              </a>
+            </div>
+
+          </div>
+        </div>
+
+    #end
+
+  </div>
+  <div id="${id}-msg-alert" class="alert hide">
+    <div id="${id}-msg"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
   </div>
 </div>
-
