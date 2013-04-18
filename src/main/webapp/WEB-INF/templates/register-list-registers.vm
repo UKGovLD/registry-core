@@ -3,24 +3,27 @@
 
       #set($started=false)
       #foreach($member in $members)
-        #set($item=$member.connectedNodes("^reg:entity/^reg:definition").get(0))
-        #if($item.hasResourceValue("reg:itemClass", "reg:Register"))
-          #if(!$started)
-            #set($started=true)
-            <h3>Sub-registers</h3>
-          #end
-          <div class="result-blob">
-            <div class="row">
-              <div class="span6">
-                <div class="blob-inner">
-                    <strong>Register:</strong> #linkfor($member)
-                    #description($member, "")
+        #set($iteml=$member.connectedNodes("^reg:entity/^reg:definition"))
+        #if(!$iteml.isEmpty())
+          #set($item=$iteml.get(0))
+          #if($item.hasResourceValue("reg:itemClass", "reg:Register"))
+            #if(!$started)
+              #set($started=true)
+              <h3>Sub-registers</h3>
+            #end
+            <div class="result-blob">
+              <div class="row">
+                <div class="span6">
+                  <div class="blob-inner">
+                      <strong>Register:</strong> #linkfor($member)
+                      #description($member, "")
+                  </div>
+                </div>
+                <div class="pull-right">
+                  #showstatus($item.getPropertyValue("reg:status"))
                 </div>
               </div>
-              <div class="pull-right">
-                #showstatus($item.getPropertyValue("reg:status"))
-              </div>
             </div>
-          </div>
+          #end
         #end
       #end

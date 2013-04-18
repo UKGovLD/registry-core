@@ -8,8 +8,11 @@
 ## Determine the suffix of the label- css class to use to colour a status blob
 #macro(statuslabel $statusname)#if($statusname.equals("Stable"))success#elseif($statusname.equals("Experimental"))warning#elseif($statusname.equals("Invalid"))important#elseif($statusname.equals("Superseded"))inverse#elseif($statusname.equals("Retired"))inverse#elseif($statusname.equals("Reserved"))inverse#else #end#end
 
-## Determine the href value to use in a link to the given resource, caters for managed/reference URIs
+## Determine the href value to use in a link to the given resource, reference URIs go external
 #macro(linkhref $res)#if($res.uRI.startsWith($registry.baseURI))$res.uRI.substring($registry.baseURI.length())#else$res.uRI#end#end
+
+## Determine the href value to use in a link to the given resource, reference URIs go internal
+#macro(linkhrefInt $res)#if($res.uRI.startsWith($registry.baseURI))$res.uRI.substring($registry.baseURI.length())#else${root}/?entity=$lib.pathEncode($res.getURI())#end#end
 
 ## Inject a link to the given resource
 #macro(linkfor $res)

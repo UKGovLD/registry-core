@@ -23,7 +23,8 @@
               <div class="row">
                 <div class="span2">
                   #if($itemL.isEmpty())
-                    <strong>Item:</strong> #linkfor($member)
+                    <strong>Item:</strong> 
+                         <a href="#linkhrefInt($member)" title="$member.uRI">$member.name</a>
                   #else
                     <strong>Item:</strong>
                       #foreach($item in $itemL)

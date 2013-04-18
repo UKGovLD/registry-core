@@ -130,6 +130,12 @@ table tr td table {
     margin-bottom: 0px;
 }
 
+#registration-dialog {
+    width: 700px;
+    top: 5%;
+    left: 40%;
+}
+
 #registration-body {
    min-height: 500px;
    min-width: 600px;
