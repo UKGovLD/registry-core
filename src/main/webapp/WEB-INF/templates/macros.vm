@@ -9,7 +9,7 @@
 #macro(statuslabel $statusname)#if($statusname.equals("Stable"))success#elseif($statusname.equals("Experimental"))warning#elseif($statusname.equals("Invalid"))important#elseif($statusname.equals("Superseded"))inverse#elseif($statusname.equals("Retired"))inverse#elseif($statusname.equals("Reserved"))inverse#else #end#end
 
 ## Determine the href value to use in a link to the given resource, caters for managed/reference URIs
-#macro(linkhref $res)#if($res.uRI.startsWith($registry.baseURI))$res.uRI.substring($registry.baseURI.length())#else${root}/?entity=$lib.pathEncode($res.getURI())#end#end
+#macro(linkhref $res)#if($res.uRI.startsWith($registry.baseURI))$res.uRI.substring($registry.baseURI.length())#else$res.uRI#end#end
 
 ## Inject a link to the given resource
 #macro(linkfor $res)
