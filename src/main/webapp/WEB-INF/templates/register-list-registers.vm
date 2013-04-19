@@ -12,15 +12,24 @@
               <h3>Sub-registers</h3>
             #end
             <div class="result-blob">
-              <div class="row">
-                <div class="span6">
-                  <div class="blob-inner">
-                      <strong>Register:</strong> #linkfor($member)
-                      #description($member, "")
+              <div class="blob-inner">
+                <div class="row">
+                  <div class="span3">
+                      <strong>Register:</strong>
+                       ## #linkfor($member)
+                       <a href="#linkhref($member)" title="$member.uRI">/$item.getPropertyValue("reg:notation").lexicalForm</a>
+                  </div>
+                  <div class="span3">
+                       <strong>$member.name</strong>
+                  </div>
+                  <div class="pull-right">
+                    #showstatus($item.getPropertyValue("reg:status"))
                   </div>
                 </div>
-                <div class="pull-right">
-                  #showstatus($item.getPropertyValue("reg:status"))
+                <div class="row">
+                  <div class="span6">
+                      #description($member, "")
+                  </div>
                 </div>
               </div>
             </div>
