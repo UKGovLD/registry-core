@@ -86,12 +86,10 @@
           <h3 class="text-center">Actions</h3>
           #set($foundAction=true)
         #end
-        <a role="button" class="btn btn-primary" data-toggle="modal" data-target="#update-entity" >Edit <i class="icon-edit icon-white"></i></a>
-        #set($editTarget=$entity) #set($id="update-entity")  #parse("edit-form.vm")
-
+        <a href="$uiroot/edit-form?target=$lib.pathEncode($entity.uRI)&return=/$uri" role="button" class="btn btn-primary" >Edit <i class="icon-edit icon-white"></i></a>
+        
         ## Disabled because update breaks the description reference.
-        ## <a role="button" class="btn btn-danger" data-toggle="modal" data-target="#update-item" >Edit metadata <i class="icon-edit icon-white"></i></a>
-        ## #set($editTarget=$item) #set($id="update-item")  #parse("edit-form.vm")
+        <a href="$uiroot/edit-form?target=$lib.pathEncode($item.uRI)&return=/$uri" role="button" class="btn btn-danger" >Edit metadata<i class="icon-edit icon-white"></i></a>
       #end
 
       #if($lib.reg.isPermitted("StatusUpdate", $uri))

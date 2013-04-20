@@ -145,7 +145,7 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
     }
 
     /**
-     * List permissions for current authenticted user (if any), ordered by path
+     * List permissions for current authenticated user (if any), ordered by path
      */
     public List<RegPermission> getPermissions() {
         Subject subject = getSubject();
@@ -190,7 +190,18 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
         }
         return result.toString();
     }
-
+    
+    /**
+     * Convert the URI for a managed entity or an item to a path relative to the registry base
+     */
+    public String pathFor(String uri) {
+        String base = Registry.get().getBaseURI();
+        if (uri.startsWith(base)) {
+            return uri.substring(base.length() + 1);
+        }
+        return uri;
+    }
+    
     /**
      * Utility for incrementally building up compacted range notation
      * for reserved entries

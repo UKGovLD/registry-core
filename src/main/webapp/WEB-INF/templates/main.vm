@@ -13,11 +13,11 @@
 #end
 
 #if($entity)
-  #set($response=$registry.perform("Read","$uri?entity=$entity&_view=with_metadata&status=any&$paging", $requestor))
+  #set($response=$registry.perform("Read","$uri?entity=$entity&_view=with_metadata&status=any&$paging"))
   #set($target=$entity)
   #set($uri=$entity)
 #else
-  #set($response=$registry.perform("Read","$uri?_view=with_metadata&status=any&$paging", $requestor))
+  #set($response=$registry.perform("Read","$uri?_view=with_metadata&status=any&$paging"))
   #set($versionNumber=$lib.regex($uri,".*:(\d+)$"))
   #if($versionNumber)
     #set($versionNumber=$versionNumber[0])

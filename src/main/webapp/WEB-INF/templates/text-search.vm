@@ -11,7 +11,7 @@
   #set($paging="firstPage")
 #end
 
-#set($response=$registry.perform("Search","?query=$lib.pathEncode($query)&_view=with_metadata&$paging",$requestor))
+#set($response=$registry.perform("Search","?query=$lib.pathEncode($query)&_view=with_metadata&$paging"))
 
 #if($response.status == 200)
   #set($model=$response.entity)

@@ -1,4 +1,4 @@
-#set($response=$registry.perform("Read","$uri?_view=version_list", $requestor))
+#set($response=$registry.perform("Read","$uri?_view=version_list"))
 #set($target="$registry.baseURI/$uri")
 
 #if($response.status == 404)

@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.security.RegAction;
 import com.epimorphics.registry.security.RegPermission;
+import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.Ldbp;
@@ -162,6 +163,9 @@ public abstract class Command {
     }
 
     public String getRequestor() {
+        if (requestor == null) {
+            requestor = ((UserInfo) SecurityUtils.getSubject().getPrincipal()).toString();
+        }
         return requestor;
     }
 

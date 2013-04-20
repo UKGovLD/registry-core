@@ -23,7 +23,7 @@
 
 #if($validate)
   <div class="row space-above">
-  #set($response=$registry.perform("Read","?entity=$lib.pathEncode($validate)&_view=with_metadata", $requestor))
+  #set($response=$registry.perform("Read","?entity=$lib.pathEncode($validate)&_view=with_metadata"))
   #set($model=$response.entity)
 
   #set($occurs=$model.querySelectW("SELECT ?register ?status WHERE {?item reg:definition [reg:entity <$validate>]; reg:register ?register . OPTIONAL {?item reg:status ?status}}"))

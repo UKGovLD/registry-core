@@ -284,7 +284,7 @@ public class Registry extends ServiceBase implements Service {
     /**
      * Instantiate and invoke commands, used from the ui
      */
-    public Response perform(String operation, String uriTarget, String requestor) {
+    public Response perform(String operation, String uriTarget) {
         Operation op = Operation.valueOf(operation);
         URI uri;
         try {
@@ -301,7 +301,6 @@ public class Registry extends ServiceBase implements Service {
         }
         MultivaluedMap<String, String> parameters = UriComponent.decodeQuery(queries, true);
         Command command = make(op, target, parameters);
-        command.setRequestor(requestor);
 
         ForwardingService fs = getForwarder();
         if (fs != null) {

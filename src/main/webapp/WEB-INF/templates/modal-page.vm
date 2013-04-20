@@ -8,12 +8,8 @@
 <div class="modal-page">
   <div class="row">
     <div class="offset1 span10 modal-page-panel">
-      <div class="modal-page-head">
-        <h1>$title</h1>
-      </div>
-      <div class="modal-page-body">
-        #parse($template)
-      </div>
+      #parse($template)
+
       <div class="modal-page-footer">
         <a href="$return" class="btn pull-right">Close</a>
       </div>

@@ -127,9 +127,9 @@ $(function() {
 
     // Implement edit save-changes functionality
     $(".edit-table-save").click( function(){
-        var id = $(this).attr("data-id");
-        var table = $("#" + id + "-edit-table");
-        var data = $("#" + id + "-edit-prefixes").text();
+        var returnURL = $(this).attr("data-return");
+        var table = $("#" + "edit-table");
+        var data = $("#" + "edit-prefixes").text();
         var url = table.attr("data-target");
         data = data + "\n<" + table.attr("data-root") + ">\n";
         table.find("tbody tr").each(function(){
@@ -144,12 +144,12 @@ $(function() {
             data: data,
             contentType: "text/turtle",
             success: function(){
-                $("#" + id + "-msg").html("Submitted successfully");
-                location.reload();
+                $("#" + "msg").html("Submitted successfully");
+                window.location.href = returnURL;
             },
             error: function(xhr, status, error){
-                $("#" + id + "-msg").html("Save failed: " + error + " - " + xhr.responseText);
-                $('#" + id + "-msg-alert').removeClass('alert-success').addClass('alert-error').show();
+                $("#" + "msg").html("Save failed: " + error + " - " + xhr.responseText);
+                $('#" + "msg-alert').removeClass('alert-success').addClass('alert-error').show();
             }
           });
     });

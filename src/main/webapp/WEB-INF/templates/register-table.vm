@@ -1,4 +1,4 @@
-#set($response=$registry.perform("Read","$uri?status=any&_view=with_metadata", $requestor))
+#set($response=$registry.perform("Read","$uri?status=any&_view=with_metadata"))
 #set($target="$registry.baseURI/$uri")
 
 #if($response.status == 404)
