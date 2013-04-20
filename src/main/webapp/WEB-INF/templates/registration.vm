@@ -1,11 +1,22 @@
 ## Generate the registration dialog
+## Parameters:
+##    $return the page to return to (or is that just referrer)
+##    $register the relative URI of the target register
 
-    <div id="registration-dialog" class="modal hide" tabindex="-1" role="dialog" aria-hidden="true">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3>Chose type of thing to register ...</h3>
+#parse("header.vm")
+#parse("navbar.vm")
+  
+<div class="modal-page">
+  <div class="row">
+    <div class="offset1 span10 modal-page-panel">
+    
+      <div class="modal-page-head">
+        <h3>Register in $register</h3>
+        <h4>Choose type of thing to register</h4>
       </div>
-      <div id="registration-body" class="modal-body body-large">
+
+      <div class="modal-page-body">
+
         <ul class="nav nav-pills">
           <li><a href="#item-upload" data-toggle="pill" class="popinfo" data-trigger="hover" data-placement="right"
                  data-content="Register an entry by uploading an RDF file">Upload</a></li>
@@ -21,7 +32,7 @@
 
         <div class="pill-content">
           <div class="pill-pane" id="item-upload">
-            <form class="form-horizontal ajax-form" action="#linkhref($register)" method="post" enctype="multipart/form-data">
+            <form class="form-horizontal ajax-form" action="$register" method="post" enctype="multipart/form-data" data-return="$return">
               <label>
                 Choose file(s) to upload:
                 <input type="file" name="file" multiple />
@@ -39,7 +50,7 @@
           </div>
 
           <div class="pill-pane" id="batch">
-            <form class="form-inline ajax-form" action="#linkhref($register)?batch-managed" method="post" enctype="multipart/form-data">
+            <form class="form-inline ajax-form" action="$register?batch-managed" method="post" enctype="multipart/form-data" data-return="$return">
               <label>
                 Choose a bulk file to upload:
                 <input type="file" name="file" multiple />
@@ -65,7 +76,17 @@
         </div>
       </div>
 
-      <div class="modal-footer">
-        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+
+      <div class="modal-page-footer">
+        <a href="$return" class="btn pull-right">Close</a>
       </div>
+      
     </div>
+  </div>
+  
+</div>
+
+<div class="modal-backdrop in"></div>
+
+#parse("footer.vm")
+

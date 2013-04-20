@@ -117,7 +117,7 @@
           #end
           #set($foundAction=true)
           <div class="space-above">
-            <a href="#registration-dialog" role="button" class="btn btn-primary" data-toggle="modal">Add registration <i class="icon-plus-sign icon-white"></i></a>
+            <a href="$uiroot/registration?register=#linkhref($register)&return=/$uri" role="button" class="btn btn-primary" data-toggle="modal">Add registration <i class="icon-plus-sign icon-white"></i></a>
           </div>
         #end
 
@@ -127,8 +127,6 @@
         #statusSet("status-dialog", "Set status of register contents to ...", $sample, $register)
     #end
     #statusSet("register-status-dialog", "Set status register itself to ...", $itemForReg, $itemForReg)
-
-    #parse("registration.vm")
 
   </div>
 

@@ -45,17 +45,24 @@ $(function() {
     $(".popinfo").popover();
 
     // General ajax forms which reload the page when actioned. Errors are displayed in elts of class "ajax-error".
-    $(".ajax-form").ajaxForm({
-      success:
-          function(data, status, xhr){
-            // $("#status-dialog").modal("hide");
-            location.reload();
-          },
+    $(".ajax-form").each(function(){
+        var form = $(this);
+        var returnURL = form.attr('data-return');
+        form. ajaxForm({
+            success:
+                function(data, status, xhr){
+                    if (returnURL) {
+                        window.location.href = returnURL;
+                    } else {
+                      location.reload();
+                    }
+                },
 
-      error:
-        function(xhr, status, error){
-           $(".ajax-error").html("<div class='alert'> <button type='button' class='close' data-dismiss='alert'>&times;</button>Action failed: " + error + " - " + xhr.responseText + "</div>");
-        }
+            error:
+              function(xhr, status, error){
+                 $(".ajax-error").html("<div class='alert'> <button type='button' class='close' data-dismiss='alert'>&times;</button>Action failed: " + error + " - " + xhr.responseText + "</div>");
+              }
+          });
     });
 
     // Set up editable fields
