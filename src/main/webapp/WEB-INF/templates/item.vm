@@ -47,12 +47,12 @@
          #restable($item, "table-striped table-condensed")
       </div>
 
-      <div class="tab-pane" id="history" data-action="showhistory">
+      <div class="tab-pane" id="history" data-action="showhistory" data-uri="$uri">
         <p>Loading ...</p>
       </div>
 
       #if($isAdministrator)
-        <div class="tab-pane" id="administer" data-action="embedded-admin" data-args="grant=Maintainer">
+        <div class="tab-pane" id="administer" data-action="embedded-admin" data-args="grant=Maintainer" data-uri="$uri">
           <p>Page is loading ...</p>
         </div>
       #end

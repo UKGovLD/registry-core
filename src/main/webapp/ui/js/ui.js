@@ -17,6 +17,28 @@ $(function() {
     };
 
     processQueryForms();
+    
+    // Set up ajax loading tabs
+    $('.action-tab').bind('show', function(e) {
+        var pattern=/#.+/gi
+        var contentID = e.target.toString().match(pattern)[0];
+        var action = $(contentID).attr('data-action');
+        var uri = $(contentID).attr('data-uri');
+        if (action) {
+          //var url = '$uiroot/' + action +'?uri=$lib.pathEncode($uri)&requestor=$requestor';
+          var url = '/ui/' + action + '?uri=' + uri;
+          var args = $(contentID).attr('data-args');
+          if (args) {
+             url = url + "&" + args;
+          }
+          $(contentID).load(url, function(){
+             $('.action-tab').tab(); //reinitialize tabs
+             $('.datatable').dataTable();
+             processQueryForms();
+           });
+        };
+     });
+    
 
     // Anything marked as popinfo will have a popover (data-trigger, data-placement, data-content)
     // enable popups

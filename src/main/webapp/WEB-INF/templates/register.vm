@@ -50,14 +50,14 @@
           <div class="tab-pane active" id="list">
             #parse("register-list.vm")
           </div>
-          <div class="tab-pane" id="table" data-action="register-table">
+          <div class="tab-pane" id="table" data-action="register-table" data-uri="$uri">
             <p>Page is loading ...</p>
           </div>
           <div class="tab-pane" id="metadata">
              #restable($itemForReg, "table-striped table-condensed")
           </div>
           #if($isAdministrator)
-            <div class="tab-pane" id="administer" data-action="embedded-admin" data-args="grant=Manager">
+            <div class="tab-pane" id="administer" data-action="embedded-admin" data-args="grant=Manager" data-uri="uri">
               <p>Page is loading ...</p>
             </div>
           #end
