@@ -66,6 +66,7 @@ public class Login {
     public static final String SA_OPENID_DISC = "openid_disc";
     public static final String SA_OPENID_PROVIDER = "openid_provider";
     public static final String SA_REGISTRATION = "isRegistration";
+    public static final String SA_RETURN_URL = "returnURL";
 
     // Attribute parameter names
     public static final String AP_EMAIL = "email";
@@ -95,15 +96,15 @@ public class Login {
 
     @Path("/login")
     @POST
-    public Response login(@FormParam("provider") String provider, @Context HttpServletResponse response) {
-        processOpenID(request, response, provider, false);
+    public Response login(@FormParam("provider") String provider, @FormParam("return") String returnURL, @Context HttpServletResponse response) {
+        processOpenID(request, response, provider, returnURL, false);
         return Response.ok().build();
     }
 
     @Path("/register")
     @POST
-    public Response register(@FormParam("provider") String provider, @Context HttpServletResponse response) {
-        processOpenID(request, response, provider, true);
+    public Response register(@FormParam("provider") String provider, @FormParam("return") String returnURL,  @Context HttpServletResponse response) {
+        processOpenID(request, response, provider, returnURL, true);
         return Response.ok().build();
     }
 
@@ -266,10 +267,14 @@ public class Login {
     }
 
     @SuppressWarnings("rawtypes")
-    protected void processOpenID(HttpServletRequest request, HttpServletResponse response, String provider, boolean isRegister) {
+    protected void processOpenID(HttpServletRequest request, HttpServletResponse response, String provider, String returnURL, boolean isRegister) {
         HttpSession session = request.getSession();
         session.setAttribute(SA_REGISTRATION, isRegister);
         session.setAttribute(SA_OPENID_PROVIDER, provider);
+        if (returnURL == null || returnURL.isEmpty()) {
+            returnURL = "/ui/admin";
+        }
+        session.setAttribute(SA_RETURN_URL, returnURL);
 
         if (provider == null || provider.isEmpty()) {
             provider = DEFAULT_PROVIDER;
@@ -389,7 +394,7 @@ public class Login {
                         cookie.setPath("/");
                         httpresponse.addCookie(cookie);
                     }
-                    return redirectTo("/ui/admin");
+                    return redirectTo( session.getAttribute(SA_RETURN_URL).toString() );
 //                    return RequestProcessor.render("admin.vm", uriInfo, servletContext, request, VN_SUBJECT, subject, VN_REGISTRATION_STATUS, registrationStatus);
                 } catch (Exception e) {
                     log.error("Authentication failure: " + e);

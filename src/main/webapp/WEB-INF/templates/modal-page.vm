@@ -1,0 +1,28 @@
+## Parameters:
+##    $return the page to return to (or is that just referrer)
+##    $template  the template to show as the contents    
+
+#parse("header.vm")
+#parse("navbar.vm")
+  
+<div class="modal-page">
+  <div class="row">
+    <div class="offset1 span10 modal-page-panel">
+      <div class="modal-page-head">
+        <h1>$title</h1>
+      </div>
+      <div class="modal-page-body">
+        #parse($template)
+      </div>
+      <div class="modal-page-footer">
+        <a href="$return" class="btn pull-right">Close</a>
+      </div>
+    </div>
+  </div>
+  
+</div>
+
+<div class="modal-backdrop in"></div>
+
+#parse("footer.vm")
+

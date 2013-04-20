@@ -45,7 +45,7 @@
       #else
         <ul class="nav pull-right">
           <li class="popinfo" data-trigger="hover" data-placement="bottom"   data-content="Login to allow access to administration functions.">
-            <a href="$uiroot/login"><span class="muted">Not logged in</span><i class="icon-user icon-white"></i></a>
+            <a href="$uiroot/login?return=/$uri"><span class="muted">Not logged in</span><i class="icon-user icon-white"></i></a>
           </li>
         </ul>
       #end

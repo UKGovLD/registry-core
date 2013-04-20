@@ -1,9 +1,9 @@
+## Parameters:
+##    $return the page to return to (or is that just referrer)
+
 #set($pageTitle="Registry login")
 
 #parse("header.vm")
-  #if($uri.isEmpty())
-    #set($nav="root")
-  #end
 #parse("navbar.vm")
 
 #set($provider=false)
@@ -13,70 +13,96 @@
   #end
 #end
 
-<div class="row space-above">
-
-  <div class="span5 blob pale-blue">
-    <div class="blob-inner">
-      <div class="row">
-        <div class="span5">
-          <h2>Login</h2>
-          <p>It is not necessary to login to simply access the registry</p>
-        </div>
+  
+<div class="modal-page">
+  <div class="row">
+    <div class="offset1 span11 modal-page-panel">
+      <div class="modal-page-head">
+        <h1>Login or register</h1>
       </div>
-      <div class="row">
-        <div class="span3">
-          <form class="form-horizontal" action="/system/security/login" method="post">
-            <input type="submit" value="Login with google account" class="btn btn-block btn-primary" />
-          </form>
-        </div>
-      </div>
-      <div class="row space-above">
-        <div class="span5">
-          <form class="form-horizontal" action="/system/security/login" method="post">
-            <p>Or enter an OpenID provider such as Google+ profile page.</p>
-            <div class="input-append">
-              <input class="span4" type="text" name="provider"  #if($provider)value="$provider"#end    />
-              <input type="submit" value="login" class="btn btn-primary" type="button" />
+      <div class="modal-page-body">
+        
+        <div class="row space-above">
+        
+          <div class="span5 blob pale-blue">
+            <div class="blob-inner">
+              <div class="row">
+                <div class="span5">
+                  <h2>Login</h2>
+                  <p>It is not necessary to login to simply access the registry</p>
+                </div>
+              </div>
+              <div class="row">
+                <div class="span3">
+                  <form class="form-horizontal" action="/system/security/login" method="post">
+                    <input type="hidden" name="return" value="$return" />
+                    <input type="submit" value="Login with google account" class="btn btn-block btn-primary" />
+                  </form>
+                </div>
+              </div>
+              <div class="row space-above">
+                <div class="span5">
+                  <form class="form-horizontal" action="/system/security/login" method="post">
+                    <p>Or enter an OpenID provider such as Google+ profile page.</p>
+                    <div class="input-append">
+                      <input class="span4" type="text" name="provider"  #if($provider)value="$provider"#end    />
+                      <input type="hidden" name="return" value="$return" />
+                      <input type="submit" value="login" class="btn btn-primary" type="button" />
+                    </div>
+                  </form>
+                </div>
+              </div>
             </div>
-          </form>
+          </div>
+        
+          <div class="span5 blob pale-orange">
+            <div class="blob-inner">
+              <h2>Register as a new user</h2>
+              <p>A registered login is required before you can be granted administration privileges.</p>
+              <div class="row">
+                <div class="span3">
+                  <form class="form-horizontal" action="/system/security/register" method="post">
+                    <input type="hidden" name="provider" value="https://www.google.com/accounts/o8/id" />
+                    <input type="hidden" name="return" value="$return" />
+                    <input type="submit" value="Register using google account" class="btn btn-block btn-primary" />
+                  </form>
+                </div>
+              </div>
+              <div class="row space-above">
+                <div class="span5">
+                  <form class="form-horizontal" action="/system/security/register" method="post">
+                    <p>Or enter an OpenID provider such as Google+ profile page.</p>
+                    <div class="input-append">
+                      <input class="span4" type="text" name="provider">
+                      <input type="hidden" name="return" value="$return" />
+                      <input type="submit" value="register" class="btn btn-primary" type="button" />
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        
         </div>
+        
+        <div class="row space-above">
+          <div class="offset1 span10">
+            <p>If you register or login this site will use cookies to record your
+             preferred OpenID provider and to record the ID you are logged in with for this session.</p>
+          </div>
+        </div>
+        
+
+      </div>
+      <div class="modal-page-footer">
+        <a href="#if($return)$return#else/#end" class="btn pull-right">Close</a>
       </div>
     </div>
   </div>
-
-  <div class="offset span6 blob pale-orange">
-    <div class="blob-inner">
-      <h2>Register as a new user</h2>
-      <p>A registered login is required before you can be granted administration privileges.</p>
-      <div class="row">
-        <div class="span3">
-          <form class="form-horizontal" action="/system/security/register" method="post">
-            <input type="hidden" name="provider" value="https://www.google.com/accounts/o8/id" />
-            <input type="submit" value="Register using google account" class="btn btn-block btn-primary" />
-          </form>
-        </div>
-      </div>
-      <div class="row space-above">
-        <div class="span5">
-          <form class="form-horizontal" action="/system/security/register" method="post">
-            <p>Or enter an OpenID provider such as Google+ profile page.</p>
-            <div class="input-append">
-              <input class="span4" type="text" name="provider">
-              <input type="submit" value="register" class="btn btn-primary" type="button" />
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
+  
 </div>
 
-<div class="row space-above">
-  <div class="offset1 span10">
-    <p>If you register or login this site will use cookies to record your
-     preferred OpenID provider and to record the ID you are logged in with for this session.</p>
-  </div>
-</div>
+<div class="modal-backdrop in"></div>
 
 #parse("footer.vm")
+
