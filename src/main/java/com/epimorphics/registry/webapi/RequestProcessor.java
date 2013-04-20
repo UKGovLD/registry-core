@@ -38,6 +38,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
+import org.apache.velocity.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,10 +79,25 @@ public class RequestProcessor extends BaseEndpoint {
 
     public static final String FULL_MIME_TURTLE = "text/turtle; charset=UTF-8";
     public static final String FORWARDED_FOR_HEADER = "X-Forwarded-For";
+    public static final String UI_PATH = "ui";
 
     @GET
     @Produces("text/html")
     public Response htmlrender() {
+        String path = uriInfo.getPath();
+        if (path.startsWith(UI_PATH) ) {
+            String template = path.substring(UI_PATH.length()+1) + ".vm";
+            try {
+                return render(template, uriInfo, context, request);
+            } catch (ResourceNotFoundException e) {
+                // Will chain through to file serving
+                throw new NotFoundException();
+            }
+        } else if (path.startsWith("system/query") || path.equals("favicon.ico")) {
+            // Pass to the generic velocity handler, which in turn falls through to file serving
+            throw new NotFoundException();
+        }
+        
         PassThroughResult result = checkForPassThrough();
         if (result != null && result.isDone()) {
             return result.getResponse();
@@ -172,11 +188,6 @@ public class RequestProcessor extends BaseEndpoint {
 
     private PassThroughResult checkForPassThrough() {
         String path = uriInfo.getPath();
-        if (path.startsWith("ui") || path.startsWith("system/query") || path.equals("favicon.ico")) {
-            // Pass through all ui requests to the generic velocity handler, which in turn falls through to file serving
-            throw new NotFoundException();
-        }
-
         ForwardingService fs = Registry.get().getForwarder();
         if (fs != null) {
             MatchResult match = fs.match(path);
