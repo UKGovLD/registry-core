@@ -48,9 +48,12 @@ public class CommandValidate extends Command {
     public Response doExecute() {
         StringBuffer msg = new StringBuffer();
         boolean valid = true;
-        for (String uri : parameters.get(Parameters.VALIDATE)) {
+        List<String> testURIs = parameters.get(Parameters.VALIDATE);
+        int count = 0;
+        for (String uri : testURIs) {
             uri = uri.trim();
             if (uri.isEmpty()) continue;
+            count++;
             boolean thisValid = false;
             List<EntityInfo> infos = store.listEntityOccurences(uri);
             for (EntityInfo info : infos) {
@@ -72,7 +75,11 @@ public class CommandValidate extends Command {
             }
         }
         if (valid) {
-            return Response.ok().type(MediaType.TEXT_PLAIN).entity(msg.toString()).build();
+            if (count > 0) {
+                return Response.ok().type(MediaType.TEXT_PLAIN).entity(msg.toString()).build();
+            } else {
+                throw new WebApiException(BAD_REQUEST, "Empty validation list");
+            }
         } else {
             throw new WebApiException(BAD_REQUEST, msg.toString());
         }

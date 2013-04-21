@@ -33,6 +33,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
@@ -226,24 +227,40 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     @POST
+    @Consumes({"text/plain"})
+    public Response validate(@Context HttpHeaders hh, InputStream body) {
+        MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
+        if ( parameters.get(Parameters.VALIDATE) != null ) {
+            if (body != null) {
+                for (String uri : FileManager.get().readWholeFileAsUTF8(body).split("\\s")) {
+                    parameters.add(Parameters.VALIDATE, uri);
+                }
+            }
+            Command command = makeCommand(Operation.Validate);
+            return command.execute();
+        } else {
+            throw new WebApiException(Response.Status.BAD_REQUEST, "No operations supported on text/plain other than validate");
+        }
+    }
+
+    @POST
     @Consumes({MIME_TURTLE, MIME_RDFXML, JSONLDSupport.MIME_JSONLD})
     public Response register(@Context HttpHeaders hh, InputStream body) {
         MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
         Command command = null;
         if ( parameters.get(Parameters.VALIDATE) != null ) {
-            for (String uri : FileManager.get().readWholeFileAsUTF8(body).split("\\s")) {
-                parameters.add(Parameters.VALIDATE, uri);
-            }
-            command = makeCommand(Operation.Validate);
+            return validate(hh , body);
         } else if ( parameters.get(Parameters.STATUS_UPDATE) != null ) {
             command = makeCommand(Operation.StatusUpdate);
-        } else {
+        } else if (body != null) {
             command = makeCommand(Operation.Register);
             try {
                 command.setPayload( getBodyModel(hh, body, true) );
             } catch(Exception e) {
                 throw new WebApiException(Response.Status.BAD_REQUEST, "Payload failed to parse: " + e.getMessage());
             }
+        } else {
+            throw new WebApiException(Status.BAD_REQUEST, "Did not recognize request");
         }
         return command.execute();
     }
