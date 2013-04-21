@@ -33,6 +33,7 @@ import com.epimorphics.registry.webapi.Parameters;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDF;
+import com.hp.hpl.jena.vocabulary.RDFS;
 
 
 public class CommandUpdate extends Command {
@@ -95,11 +96,18 @@ public class CommandUpdate extends Command {
                 typeOK = root.hasProperty(RDF.type, RegistryVocab.RegisterItem);
             }
         }
-        if (currentItem.getStatus().isAccepted() && wouldChange(currentItem.getEntity(), newitem.getEntity(), RDF.type)) {
+        Resource newEntity = newitem.getEntity();
+        if (!isPatch && !newEntity.hasProperty(RDF.type)) {
+            typeOK = false;
+        } else if (currentItem.getStatus().isAccepted() && wouldChange(currentItem.getEntity(), newEntity, RDF.type)) {
             typeOK = false;
         }
         if (!typeOK) {
             return new ValidationResponse(BAD_REQUEST, "The rdf:type of an entity cannot be changed once registered and accepted");
+        }
+        
+        if (!isPatch && !newEntity.hasProperty(RDFS.label)) {
+            return new ValidationResponse(BAD_REQUEST, "Cannot remove the rdfs:label of an entity");
         }
 
         if (!isEntityUpdate && currentItem.getStatus().isAccepted()) {

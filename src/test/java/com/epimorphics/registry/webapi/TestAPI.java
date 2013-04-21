@@ -168,6 +168,12 @@ public class TestAPI extends TomcatTestBase {
     private void doInvalidUpdateTest() {
         assertEquals(400, invoke("PATCH", "test/blue-patch.ttl", BASE_URL).getStatus());
         assertEquals(400, invoke("PATCH", "test/blue-patch.ttl", REG1).getStatus());
+        
+        // Can't drop label
+        assertEquals(400, invoke("PUT", "test/red-bad-update-label.ttl", REG1 + "/red").getStatus());
+        
+        // Can't remove type
+        assertEquals(400, invoke("PUT", "test/red-bad-update-type.ttl", REG1 + "/red").getStatus());
     }
 
     private void doRegisterRegistrationTests() {
