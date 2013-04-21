@@ -151,17 +151,6 @@
          });
        });
 
-        $(".query-form").each(function() {
-            var target = $(this).attr('data-target');
-            var queryField = $(this).attr('data-query');
-            var resultField = $(this).attr('data-result');
-            $(this).submit( function(){
-                var url = target + $(queryField).val();
-                $(resultField).load(url);
-                return false;
-            });
-        });
-
     });
 
 </script>

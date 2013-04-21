@@ -253,6 +253,56 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
     }
     
     /**
+     * Create a list of item/entity pairs corresponding to a list of (wrapper) entities
+     * in a paged register listing
+     */
+    public List<ItemMember> asItemList(List<RDFNodeWrapper> members) {
+        List<ItemMember> items = new ArrayList<ItemMember>();
+        Set<RDFNodeWrapper> seenItems = new HashSet<RDFNodeWrapper>();
+        for (RDFNodeWrapper member : members) {
+            List<RDFNodeWrapper> linkedItems = member.connectedNodes("^reg:entity/^reg:definition");
+            if (linkedItems.isEmpty()) {
+                items.add( new ItemMember(member, null) );
+            } else {
+                Collections.sort(linkedItems, new Comparator<RDFNodeWrapper>(){
+                    @SuppressWarnings({ "rawtypes", "unchecked" })
+                    @Override
+                    public int compare(RDFNodeWrapper arg0, RDFNodeWrapper arg1) {
+                        Object o0 = arg0.getPropertyValue(RegistryVocab.notation).asLiteral().getValue();
+                        Object o1 = arg1.getPropertyValue(RegistryVocab.notation).asLiteral().getValue();
+                        if (o0 instanceof Comparable && o1 instanceof Comparable) {
+                            return ((Comparable)o0).compareTo((Comparable)o1);
+                        } else {
+                            return (o0.toString()).compareTo(o1.toString());
+                        }
+                    }
+                });
+                for (RDFNodeWrapper item : linkedItems) {
+                    if (seenItems.add(item)) {
+                        items.add( new ItemMember(member, item) );
+                    }
+                }
+            }
+        }
+        return items;
+    }
+    
+    public class ItemMember {
+        protected RDFNodeWrapper member;
+        protected RDFNodeWrapper item;
+        public ItemMember(RDFNodeWrapper member, RDFNodeWrapper item) {
+            this.member = member;
+            this.item = item;
+        }
+        public RDFNodeWrapper getMember() { 
+            return member;
+        }
+        public RDFNodeWrapper getItem() { 
+            return item;
+        }
+    }
+    
+    /**
      * Utility for incrementally building up compacted range notation
      * for reserved entries
      */
