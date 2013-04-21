@@ -78,6 +78,9 @@ public class DelegationRecord extends ForwardingRecord {
         QueryExecution exec = QueryExecutionFactory.sparqlService(getTarget(), "DESCRIBE <"+ member.getURI() + ">");
         try {
             return exec.execDescribe();
+        } catch (Exception e) {
+            // Assume this is a 404/500 from the service, need some way to check this and log if appropriate
+            return null;
         } finally {
             exec.close();
         }

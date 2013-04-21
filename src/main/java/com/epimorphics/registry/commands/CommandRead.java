@@ -194,16 +194,18 @@ public class CommandRead extends Command {
         Resource entity = ResourceFactory.createResource(uri);
         for (DelegationRecord delegation : registry.getForwarder().listDelegations(path)) {
             Model member = delegation.describeMember(entity);
-            result.add( member );
-            if (withMetadata && member.contains(entity, RDF.type, (RDFNode)null)) {
-                // Add pseudo RegisterItem so we know which register it was in
-                Resource entityRef = result.createResource().addProperty(RegistryVocab.entity, entity);
-                Resource registerRef = result.createResource(delegation.getLocation())
-                        .addProperty(RDF.type, RegistryVocab.Register)
-                        .addProperty(RDF.type, RegistryVocab.DelegatedRegister);
-                result.createResource()
-                    .addProperty(RegistryVocab.definition, entityRef)
-                    .addProperty(RegistryVocab.register, registerRef);
+            if (member != null) {
+                result.add( member );
+                if (withMetadata && member.contains(entity, RDF.type, (RDFNode)null)) {
+                    // Add pseudo RegisterItem so we know which register it was in
+                    Resource entityRef = result.createResource().addProperty(RegistryVocab.entity, entity);
+                    Resource registerRef = result.createResource(delegation.getLocation())
+                            .addProperty(RDF.type, RegistryVocab.Register)
+                            .addProperty(RDF.type, RegistryVocab.DelegatedRegister);
+                    result.createResource()
+                        .addProperty(RegistryVocab.definition, entityRef)
+                        .addProperty(RegistryVocab.register, registerRef);
+                }
             }
         }
         return returnModel(result, target);
