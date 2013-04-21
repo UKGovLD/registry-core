@@ -26,7 +26,7 @@
   #set($response=$registry.perform("Read","?entity=$lib.pathEncode($validate)&_view=with_metadata"))
   #set($model=$response.entity)
 
-  #set($occurs=$model.querySelectW("SELECT ?register ?status WHERE {?item reg:definition [reg:entity <$validate>]; reg:register ?register . OPTIONAL {?item reg:status ?status}}"))
+  #set($occurs=$model.querySelectW("SELECT ?item ?register ?status WHERE {?item reg:definition [reg:entity <$validate>]; reg:register ?register . OPTIONAL {?item reg:status ?status}}"))
 
   #if ($occurs.isEmpty())
     <div class="offset2 span4 alert">
@@ -39,6 +39,7 @@
     <table class="table table-bordered table-condensed span4">
       <thead>
         <tr>
+          <th>Item</th>
           <th>Register</th>
           <th>Status</th>
         </tr>
@@ -46,6 +47,7 @@
       <tbody>
         #foreach($occur in $occurs)
           <tr>
+            <td>#linkfor($occur.item)</td>
             <td>#linkfor($occur.register)
             #if($occur.register.hasResourceValue("rdf:type", "reg:DelegatedRegister"))
             (delegated)
