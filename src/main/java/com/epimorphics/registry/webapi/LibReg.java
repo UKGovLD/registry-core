@@ -12,8 +12,10 @@ package com.epimorphics.registry.webapi;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.Permission;
@@ -31,6 +33,7 @@ import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.util.Prefixes;
+import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.server.core.Service;
 import com.epimorphics.server.core.ServiceBase;
 import com.epimorphics.server.templates.LibPlugin;
@@ -40,6 +43,9 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.shared.PrefixMapping;
+import com.hp.hpl.jena.vocabulary.DCTerms;
+import com.hp.hpl.jena.vocabulary.OWL;
+import com.hp.hpl.jena.vocabulary.RDFS;
 
 /**
  * Some supporting methods to help Velocity UI access the registry store.
@@ -209,6 +215,41 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
             return uri.substring(base.length() + 1);
         }
         return uri;
+    }
+    
+    /**
+     * Test whether RegisterItem property should be allowed into an edit dialog 
+     */
+    protected static Set<Resource> NonEditableRIProps = new HashSet<Resource>();
+    static {
+        NonEditableRIProps.add( RegistryVocab.definition);
+        NonEditableRIProps.add( RegistryVocab.itemClass);
+        NonEditableRIProps.add( RegistryVocab.notation);
+        NonEditableRIProps.add( RegistryVocab.register);
+        NonEditableRIProps.add( RegistryVocab.submitter);
+        NonEditableRIProps.add( DCTerms.dateAccepted );
+        NonEditableRIProps.add( DCTerms.dateSubmitted );
+        NonEditableRIProps.add( OWL.versionInfo );
+        NonEditableRIProps.add( RDFS.label );
+    }
+    
+    public boolean isEditable(Object prop) {
+        Resource p;
+        if (prop instanceof RDFNodeWrapper) {
+            p = ((RDFNodeWrapper)prop).asResource();
+        } else if (prop instanceof Resource) {
+            p = (Resource)prop;
+        } else {
+            throw new EpiException("Illegal type");
+        }
+        return ! NonEditableRIProps.contains(p);
+    }
+    
+    /**
+     * Test if a URI corresponds to a RegisterItem
+     */
+    public boolean isItem(String uri) {
+        return uri.matches(".*/_[^/]+$");
     }
     
     /**

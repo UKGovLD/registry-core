@@ -29,6 +29,8 @@
               #set($model=$response.entity)
               $model.setLanguage($language)
               #set($editTarget=$model.getNode($target))
+              
+              #set($isItem = $lib.reg.isItem($target))
             
               #set($posturl = $editTarget.uRI.replaceAll("^https?://[^/]*/","/"))
               
@@ -50,15 +52,18 @@
                         <tbody>
                         #set($count = 0)
                         #foreach($pv in $editTarget.listProperties())
-                          #foreach($v in $pv.values)
-                            #set($newid = "edit-" + $count)
-                            #set($count = $count + 1)
-                            <tr id="$newid">
-                              <td>$pv.prop.shortURI</td>
-                              <td><a href="#" class="ui-editable" data-type="text" data-inputclass="input-large" data-name="$pv.prop.shortURI">$v.asTurtle().replaceAll("<","&lt;")</a></td>
-                              <td><a class="edit-remove-row"><i data-target="#$newid"  class="icon-minus-sign"></i></a>
-                                  <a class="edit-add-row"><i data-target="#$newid"  class="icon-plus-sign"></i></a></td>
-                            </tr>
+                          #if(!$isItem || $lib.reg.isEditable($pv.prop))
+                            #foreach($v in $pv.values)
+                              #set($newid = "edit-" + $count)
+                              #set($count = $count + 1)
+                              <tr id="$newid">
+                                <td>$pv.prop.shortURI</td>
+                                <td><a href="#" class="ui-editable" data-type="text" data-inputclass="input-large" data-name="$pv.prop.shortURI">$v.asTurtle().replaceAll("<","&lt;")</a></td>
+                                <td>#if(!$isItem)<a class="edit-remove-row"><i data-target="#$newid"  class="icon-minus-sign"></i></a>#end
+                                    <a class="edit-add-row"><i data-target="#$newid"  class="icon-plus-sign"></i></a>
+                                </td>
+                              </tr>
+                            #end
                           #end
                         #end
                         </tbody>
@@ -87,7 +92,7 @@
         </div>
 
       <div class="modal-page-footer">
-        <button class="btn btn-primary space-above edit-table-save" data-return="$return">Save changes</button>
+        <button class="btn btn-primary space-above edit-table-save" data-isitem="$isItem" data-return="$return">Save changes</button>
         <a href="$return" class="btn pull-right">Close</a>
       </div>
       

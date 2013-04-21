@@ -135,6 +135,10 @@ $(function() {
     // Implement edit save-changes functionality
     $(".edit-table-save").click( function(){
         var returnURL = $(this).attr("data-return");
+        var isItem = $(this).attr("data-isitem");
+        if (isItem) {
+            isItem = isItem.toLowerCase() === "true";
+        }
         var table = $("#edit-table");
         var data = $("#edit-prefixes").text();
         var url = table.attr("data-target");
@@ -146,7 +150,7 @@ $(function() {
             data = data + "    " + prop + " " + value + " ;\n";
         });
         $.ajax({
-            type: "PUT",
+            type: (isItem ? "PATCH" : "PUT"),
             url: url,
             data: data,
             contentType: "text/turtle",
