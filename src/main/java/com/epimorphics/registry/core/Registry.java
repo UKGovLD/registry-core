@@ -21,6 +21,8 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.UnavailableSecurityManagerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +36,7 @@ import com.epimorphics.registry.commands.CommandUpdate;
 import com.epimorphics.registry.commands.CommandValidate;
 import com.epimorphics.registry.core.Command.Operation;
 import com.epimorphics.registry.core.ForwardingRecord.Type;
+import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.security.UserStore;
 import com.epimorphics.registry.store.CachingStore;
 import com.epimorphics.registry.store.StoreAPI;
@@ -284,7 +287,7 @@ public class Registry extends ServiceBase implements Service {
     /**
      * Instantiate and invoke commands, used from the ui
      */
-    public Response perform(String operation, String uriTarget) {
+    public Response perform(String operation, String uriTarget, String requestor) {
         Operation op = Operation.valueOf(operation);
         URI uri;
         try {
@@ -301,6 +304,18 @@ public class Registry extends ServiceBase implements Service {
         }
         MultivaluedMap<String, String> parameters = UriComponent.decodeQuery(queries, true);
         Command command = make(op, target, parameters);
+        
+        if (requestor == null || requestor.isEmpty()) {
+            try {
+                UserInfo user = (UserInfo) SecurityUtils.getSubject().getPrincipal();
+                if (user != null) {
+                    requestor = user.toString();
+                }
+            } catch (UnavailableSecurityManagerException e) {
+                // shiro not running, presumably test mode, fall through to default requestor based on IP
+            }
+        }
+        command.setRequestor(requestor);
 
         ForwardingService fs = getForwarder();
         if (fs != null) {

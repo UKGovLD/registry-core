@@ -20,7 +20,7 @@
             <div class="alert">Sorry, can only update managed entities, this looks like an external reference</div>
           #else 
             #set($uri=$lib.reg.pathFor($target))
-            #set($response=$registry.perform("Read","$uri?_view=with_metadata"))
+            #set($response=$registry.perform("Read","$uri?_view=with_metadata", $requestor))
             #if($response.status == 404)
               #parse("not-found.vm")
             #elseif($response.status >= 500)
