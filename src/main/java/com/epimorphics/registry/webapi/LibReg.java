@@ -84,7 +84,16 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
     public List<RegisterEntryInfo> listMembers(Object arg) {
         Register reg = null;;
         if (arg instanceof String) {
-            reg = getStore().getCurrentVersion((String)arg).asRegister();
+            String uri = (String)arg;
+            if ( ! uri.startsWith("http") ) {
+                uri = Registry.get().getBaseURI() + uri;
+            }
+            Description d = getStore().getCurrentVersion(uri);
+            if (d != null) {
+                reg = d.asRegister();
+            } else {
+                return null;
+            }
         } else if (arg instanceof RDFNodeWrapper) {
             reg = new Register( ((RDFNodeWrapper)arg).asResource() );
         } else if (arg instanceof Register) {

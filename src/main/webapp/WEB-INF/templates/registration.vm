@@ -12,7 +12,7 @@
     
       <div class="modal-page-head">
         <h3>Register in $register</h3>
-        <h4>Choose type of thing to register</h4>
+        <h4>Choose registration option ...</h4>
       </div>
 
       <div class="modal-page-body">
@@ -24,15 +24,15 @@
                  data-content="Register a collection of entries by uploading a bulk file">Upload batchfile</a></li>
           <li><a href="#register" data-toggle="pill" class="popinfo" data-trigger="hover" data-placement="bottom"
                  data-content="Create a new sub-register here">Subregister</a></li>
-          <li><a href="#item" data-toggle="pill" class="popinfo" data-trigger="hover" data-placement="bottom"
-                 data-content="Define a concept to add to this register">Concept</a></li>
           <li><a href="#forward" data-toggle="pill" class="popinfo" data-trigger="hover" data-placement="bottom"
                  data-content="Specify child URI to forward elsewhere">Forward</a></li>
+          <li><a href="#entry-form" data-toggle="pill" class="popinfo" data-trigger="hover" data-placement="bottom"
+                 data-content="Create and register a new entity via a form">General entry form</a></li>
         </ul>
 
         <div class="pill-content">
           <div class="pill-pane" id="item-upload">
-            <form class="form-horizontal ajax-form" action="$register" method="post" enctype="multipart/form-data" data-return="$return">
+            <form class="ajax-form" action="$register" method="post" enctype="multipart/form-data" data-return="$return">
               <label>
                 Choose file(s) to upload:
                 <input type="file" name="file" multiple />
@@ -43,14 +43,8 @@
             <div class="ajax-error"></div>
           </div>
 
-          <div class="pill-pane" id="item">
-            #set($spec=$lib.reg.getResource("/system/form-templates/concept"))
-            #parse("form-for.vm")
-            <div class="ajax-error"></div>
-          </div>
-
           <div class="pill-pane" id="batch">
-            <form class="form-inline ajax-form" action="$register?batch-managed" method="post" enctype="multipart/form-data" data-return="$return">
+            <form class="ajax-form" action="$register?batch-managed" method="post" enctype="multipart/form-data" data-return="$return">
               <label>
                 Choose a bulk file to upload:
                 <input type="file" name="file" multiple />
@@ -73,6 +67,38 @@
             #parse("form-for.vm")
           </div>
 
+
+          <div class="pill-pane" id="entry-form">
+            <select id="form-chooser">
+              <option>Choose a form:</option>
+              #foreach($form in $lib.reg.listMembers("/system/form-templates"))
+                #if(!$form.entityURI.endsWith("/forward") && !$form.entityURI.endsWith("/register"))
+                  #set($label = $form.labels.iterator().next().lexicalForm)
+                  <option data-target="#form-$label">$label</option>
+                #end
+              #end
+            </select>
+              #foreach($form in $lib.reg.listMembers("/system/form-templates"))
+                #if(!$form.entityURI.endsWith("/forward") && !$form.entityURI.endsWith("/register"))
+                  #set($label = $form.labels.iterator().next().lexicalForm)
+
+                  <div class="hidden form-choice" id="form-$label">
+                    #set($spec=$lib.reg.getResource($form.entityURI))
+                    #parse("form-for.vm")
+                    <div class="ajax-error"></div>
+                  </div>
+
+                #end
+              #end
+          </div>
+
+          <div class="pill-pane" id="item">
+            #set($spec=$lib.reg.getResource("/system/form-templates/concept"))
+            #parse("form-for.vm")
+            <div class="ajax-error"></div>
+          </div>
+
+
         </div>
       </div>
 
@@ -87,6 +113,26 @@
 </div>
 
 <div class="modal-backdrop in"></div>
+
+   <script type="text/javascript">
+    $(function() {
+
+       $("#form-chooser").change(function(event){
+         $(".form-choice").each(function(){
+           var form = $(this);
+           if (!form.hasClass("hidden")) {
+              form.addClass("hidden")
+           }
+         });
+         var target = event.target;
+         var option = target.options[target.selectedIndex];
+         var form = $(option).attr('data-target');
+         $(form).removeClass("hidden");
+         return false;
+       });
+    });
+
+   </script>
 
 #parse("footer.vm")
 

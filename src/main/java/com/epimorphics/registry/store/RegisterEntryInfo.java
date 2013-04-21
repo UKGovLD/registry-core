@@ -71,6 +71,15 @@ public class RegisterEntryInfo {
     public String getNotation() {
         return notation;
     }
+    
+    public boolean hasLabel(String lexical) {
+        for (Literal label : labels) {
+            if (label.getLexicalForm().equals(lexical)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     @Override
     public String toString() {
