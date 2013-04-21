@@ -87,6 +87,7 @@ public class CommandRegister extends Command {
 
     @Override
     public ValidationResponse validate() {
+        boolean isBatch = parameters.containsKey(Parameters.BATCH_MANAGED) || parameters.containsKey(Parameters.BATCH_REFERENCED);
         store.lock(target);
         try {
             Description d = store.getCurrentVersion(target);
@@ -131,11 +132,44 @@ public class CommandRegister extends Command {
                     return new ValidationResponse(BAD_REQUEST, "reg:status value which is not a resource " + status);
                 }
             }
+            
+            if (!isBatch) {    // Validation of batch entries has to be relative to the batch parent so defer till then
+                String parentURI = NameUtils.stripLastSlash( parent.getRoot().getURI() );
+                // String stripLastSlash needed to cope with the out-of-pattern URI for the root register
+                RegisterItem item = RegisterItem.fromRIRequest(itemSpec, parentURI, true);
+                if (store.getDescription(item.getRoot().getURI()) != null) {
+                    return new ValidationResponse(Response.Status.FORBIDDEN, "Item already registered at request location: " + item.getRoot());
+                }
+                
+                ValidationResponse entityValid = validateEntity(parent, item.getEntity() );
+                if (!entityValid.isOk()) {
+                    return entityValid;
+                }
+            }
         }
 
         return ValidationResponse.OK;
     }
 
+    private ValidationResponse validateEntity(Register parent, Resource entity) {
+        if ( !entity.hasProperty(RDF.type) || !entity.hasProperty(RDFS.label) ) {
+            return new ValidationResponse(BAD_REQUEST, "Missing required property (rdf:type or rdfs:label) on " + entity);
+        }
+
+        List<Resource> itemClasses = RDFUtil.allResourceValues(parent.getRoot(), RegistryVocab.containedItemClass);
+        boolean foundLegalType = itemClasses.isEmpty();
+        for (Resource itemClass : itemClasses) {
+            if (entity.hasProperty(RDF.type, itemClass)) {
+                foundLegalType = true;
+                break;
+            }
+        }
+        if (!foundLegalType) {
+            return new ValidationResponse(BAD_REQUEST, "Entity does not have one of the types required by this register: " + entity);
+        }
+        return ValidationResponse.OK;
+    }
+    
     @Override
     public RegPermission permissionRequried() {
         RegPermission required = super.permissionRequried();
@@ -301,7 +335,10 @@ public class CommandRegister extends Command {
             throw new WebApiException(Response.Status.FORBIDDEN, "Item already registered at request location: " + ri.getRoot());
         }
 
-        validateEntity(parent, ri.getEntity());
+        ValidationResponse entityValid = validateEntity(parent, ri.getEntity() );
+        if (!entityValid.isOk()) {
+            throw new WebApiException(entityValid.getStatus(), entityValid.getMessage());
+        }
         ri.skolemize();
 
         if (statusOverride != null) {
@@ -351,27 +388,6 @@ public class CommandRegister extends Command {
         return ri.getRoot();
     }
 
-    /**
-     * Run validation checks on a submitted entity.
-     * Run here rather than as part of Command#validate because a single payload can contain
-     * multiple registration requrests.
-     */
-    private void validateEntity(Register parent, Resource entity) {
-        if ( !entity.hasProperty(RDF.type) || !entity.hasProperty(RDFS.label) ) {
-            throw new WebApiException(BAD_REQUEST, "Missing required property (rdf:type or rdfs:label) on " + entity);
-        }
 
-        List<Resource> itemClasses = RDFUtil.allResourceValues(parent.getRoot(), RegistryVocab.containedItemClass);
-        boolean foundLegalType = itemClasses.isEmpty();
-        for (Resource itemClass : itemClasses) {
-            if (entity.hasProperty(RDF.type, itemClass)) {
-                foundLegalType = true;
-                break;
-            }
-        }
-        if (!foundLegalType) {
-            throw new WebApiException(BAD_REQUEST, "Entity does not have one of the types required by this register: " + entity);
-        }
-    }
 
 }

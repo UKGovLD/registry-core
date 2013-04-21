@@ -65,7 +65,13 @@ public class TestAPIDebug extends TomcatTestBase {
         assertEquals(201, postFileStatus("test/reg1.ttl", BASE_URL));
         assertEquals(201, postFileStatus("test/red.ttl", REG1));
 
-
+        assertEquals(400, postFileStatus("test/test-multi-item-validate.ttl", BASE_URL+"reg1"));
+        
+        Model m = getModelResponse(BASE_URL + "reg1?status=any");
+        List<String> members = getRegisterList(m, SKOS.member, ROOT_REGISTER + "reg1");
+        assertFalse(members.contains("concept1"));
+        assertFalse(members.contains("concept2"));
+        assertFalse(members.contains("concept3"));
     }
 
 

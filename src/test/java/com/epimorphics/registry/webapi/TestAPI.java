@@ -344,7 +344,10 @@ public class TestAPI extends TomcatTestBase {
     private void doBulkRegistrationTest() {
         assertEquals("Not a bulk type", 400, postFileStatus("test/blue.ttl", BASE_URL + "?batch-managed"));
 
-        assertEquals(201, postFileStatus("test/bulk-skos-collection.ttl", BASE_URL + "?batch-managed"));
+//        assertEquals(201, postFileStatus("test/bulk-skos-collection.ttl", BASE_URL + "?batch-managed"));
+        ClientResponse response = postFile("test/bulk-skos-collection.ttl", BASE_URL + "?batch-managed");
+        TestAPIDebug.debugStatus(response);
+        
         Model m = getModelResponse(BASE_URL + "collection?status=any");
         checkRegisterList( m, ROOT_REGISTER + "collection", "item 1", "item 2", "item 3");
 
@@ -650,6 +653,16 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(400, postFileStatus("test/reg2-entry-bad2.ttl", BASE_URL+"reg2"));
         assertEquals(400, postFileStatus("test/reg2-entry-bad3.ttl", BASE_URL+"reg2"));
         assertEquals(400, postFileStatus("test/reg2-entry-bad4.ttl", BASE_URL+"reg2"));
+        
+        // Check that a multi-item upload is reject in its entirety
+        assertEquals(400, postFileStatus("test/test-multi-item-validate.ttl", BASE_URL+"reg2"));
+        
+        Model m = getModelResponse(BASE_URL + "reg2?status=any");
+        List<String> members = getRegisterList(m, SKOS.member, ROOT_REGISTER + "reg2");
+        assertFalse(members.contains("concept1"));
+        assertFalse(members.contains("concept2"));
+        assertFalse(members.contains("concept3"));
+ 
     }
 
     /**
