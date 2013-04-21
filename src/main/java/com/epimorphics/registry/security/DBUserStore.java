@@ -269,8 +269,8 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service, Sh
     }
 
     @Override
-    public List<UserInfo> authorizedOn(String path) {
-        List<UserInfo> matches = new ArrayList<UserInfo>();
+    public List<UserPermission> authorizedOn(String path) {
+        List<UserPermission> matches = new ArrayList<UserPermission>();
         try {
             scanForAuthorizations(path, matches);
             // Might also need to scan for case where path is an item rather than entity
@@ -285,12 +285,14 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service, Sh
         return matches;
     }
 
-    private void scanForAuthorizations(String path, List<UserInfo> matches) throws SQLException {
-        PreparedStatement s = conn.prepareStatement("SELECT DISTINCT USERS.ID, USERS.NAME FROM PERMISSIONS JOIN USERS ON PERMISSIONS.ID = USERS.ID WHERE PATH = ?");
+    private void scanForAuthorizations(String path, List<UserPermission> matches) throws SQLException {
+        PreparedStatement s = conn.prepareStatement("SELECT DISTINCT USERS.ID, USERS.NAME, PERMISSIONS.ACTION FROM PERMISSIONS JOIN USERS ON PERMISSIONS.ID = USERS.ID WHERE PATH = ?");
         s.setString(1, path);
         ResultSet rs = s.executeQuery();
         while (rs.next()) {
-            matches.add( new UserInfo(rs.getString(1), rs.getString(2)) );
+            UserInfo user = new UserInfo(rs.getString(1), rs.getString(2));
+            String permissions = rs.getString(3);
+            matches.add( new UserPermission(user, permissions) );
         }
         rs.close();
     }

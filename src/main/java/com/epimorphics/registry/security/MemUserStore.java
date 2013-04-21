@@ -115,13 +115,14 @@ public class MemUserStore extends BaseUserStore implements UserStore, Service {
     }
 
     @Override
-    public List<UserInfo> authorizedOn(String path) {
-        List<UserInfo> matches = new ArrayList<UserInfo>();
+    public List<UserPermission> authorizedOn(String path) {
+        List<UserPermission> matches = new ArrayList<UserPermission>();
         for (String id : permissions.keySet()) {
             Set<RegPermission> perms = permissions.get(id);
             for (RegPermission p : perms) {
                 if (p.getPath().equals(path) || p.getImpliedPath().equals(path)) {
-                    matches.add( new UserInfo(id, users.get(id).name) );
+                    UserInfo user = new UserInfo(id, users.get(id).name); 
+                    matches.add( new UserPermission(user, p.getActionString()) );
                 }
             }
         }

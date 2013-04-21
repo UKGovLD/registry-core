@@ -95,16 +95,23 @@ public class TestDBUserStore {
         permissions = store.getPermissions(ALICE_ID).getObjectPermissions();
         assertEquals(3, permissions.size());
 
-        List<UserInfo> authusers = store.authorizedOn("/reg2");
-        assertEquals(2, authusers.size());
-        Collections.sort(authusers, new Comparator<UserInfo>() {
+        List<UserPermission> authusers = store.authorizedOn("/reg2");
+        assertEquals(3, authusers.size());
+        Collections.sort(authusers, new Comparator<UserPermission>() {
             @Override
-            public int compare(UserInfo o1, UserInfo o2) {
-                return o1.getName().compareTo(o2.getName());
+            public int compare(UserPermission o1, UserPermission o2) {
+                int nameCompare = o1.getUser().getName().compareTo(o2.getUser().getName());
+                if (nameCompare == 0) { 
+                    return o1.getPermissions().compareTo(o2.getPermissions());
+                } else {
+                    return nameCompare;
+                }
             }
         });
-        assertTrue (authusers.get(0).getName().equals(ALICE_NAME));
-        assertTrue (authusers.get(1).getName().equals(BOB_NAME));
+        assertEquals (ALICE_NAME, authusers.get(0).getUser().getName());
+        assertEquals (ALICE_NAME, authusers.get(1).getUser().getName());
+        assertEquals ("Update", authusers.get(1).getPermissions());
+        assertEquals (BOB_NAME, authusers.get(2).getUser().getName());
 
         store.removePermission(ALICE_ID, "/reg2");
         permissions = store.getPermissions(ALICE_ID).getObjectPermissions();

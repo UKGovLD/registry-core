@@ -57,7 +57,7 @@
              #restable($itemForReg, "table-striped table-condensed")
           </div>
           #if($isAdministrator)
-            <div class="tab-pane" id="administer" data-action="embedded-admin" data-args="grant=Manager" data-uri="uri">
+            <div class="tab-pane" id="administer" data-action="embedded-admin" data-args="grant=Manager" data-uri="$uri">
               <p>Page is loading ...</p>
             </div>
           #end

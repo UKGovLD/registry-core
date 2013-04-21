@@ -100,7 +100,7 @@ public interface UserStore {
     /**
      * Return the set of users who have some explicit permission over the given path
      */
-    public List<UserInfo> authorizedOn(String path);
+    public List<UserPermission> authorizedOn(String path);
 
     /**
      * Return the set of users whose name includes the given string
