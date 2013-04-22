@@ -111,6 +111,7 @@ public class Registry extends ServiceBase implements Service {
 
     @Override
     public void postInit() {
+        // Locate the configured store and optionally wrap it in a cache
         try {
             store = getNamedService(getRequiredParam(STORE_PARAM), StoreAPI.class);
             String cacheSizeStr = config.get(CACHE_SIZE_PARAM);
@@ -122,9 +123,9 @@ public class Registry extends ServiceBase implements Service {
             log.error("Misconfigured StoreAPI implementation", e);
         }
 
-
         registry = this;   // Assumes singleton registry
 
+        // Initialize the registry RDF store from the bootstrap registers if needed
         Description root = store.getDescription(getBaseURI() + "/");
         if (root == null) {
             // Blank store, need to install a bootstrap root registers
@@ -142,11 +143,13 @@ public class Registry extends ServiceBase implements Service {
             log.info("Installed bootstrap root register");
         }
 
+        // Configure the velocity renderer
         VelocityRender velocity = ServiceConfig.get().getServiceAs(Registry.VELOCITY_SERVICE, VelocityRender.class);
         if (velocity != null) {
             velocity.setPrefixes( Prefixes.get() );
         }
 
+        // Initialize the forwarding service from the stored forwarding records
         String fname = config.get(FORWARDER_PARAM);
         if (fname != null) {
             forwarder = getNamedService(fname, ForwardingService.class);
@@ -157,12 +160,14 @@ public class Registry extends ServiceBase implements Service {
             forwarder.updateConfig();
         }
 
+        // Configure the log area
         logDir = config.get(LOG_DIR_PARAM);
         if (logDir != null) {
             FileUtil.ensureDir(logDir);
             logDir = ServiceConfig.get().expandFileLocation( logDir );
         }
 
+        // Configure the authorization store
         String usName = config.get(USERSTORE_PARAM);
         if (usName != null) {
             userStore = getNamedService(usName, UserStore.class);

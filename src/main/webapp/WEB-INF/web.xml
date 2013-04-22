@@ -57,6 +57,10 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
   </filter-mapping>
 
   <listener>
+    <listener-class>com.epimorphics.registry.core.RegistryDirBootstrap</listener-class>
+  </listener>
+
+  <listener>
     <listener-class>com.epimorphics.server.core.ServiceConfig</listener-class>
   </listener>
 
@@ -70,61 +74,14 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
   </session-config>
 
   <context-param>
-    <param-name>config.basestore</param-name>
-    <param-value>com.epimorphics.server.stores.TDBStore,
-    location=/var/local/registry/store,
-    ep=system</param-value>
+    <param-name>registry-file-root</param-name>
+    <param-value>/var/local/registry</param-value>
   </context-param>
 
   <context-param>
-    <param-name>config.storeapi</param-name>
-    <param-value>com.epimorphics.registry.store.StoreBaseImpl,store=basestore,indexer=index
-    </param-value>
-  </context-param>
-
-  <context-param>
-    <param-name>config.index</param-name>
-    <param-value>com.epimorphics.server.indexers.LuceneIndex,
-    location=/var/local/registry/index,
-    commitWindow=5,
-    config=${webapp}/WEB-INF/index-config.ttl</param-value>
-  </context-param>
-
-  <context-param>
-    <param-name>config.velocity</param-name>
-    <param-value>com.epimorphics.server.templates.VelocityRender, templates=${webapp}/WEB-INF/templates, root=/ui,
-    plugins=reg, manualConfig=true</param-value>
-  </context-param>
-
-  <context-param>
-    <param-name>config.reg</param-name>
-    <param-value>com.epimorphics.registry.webapi.LibReg</param-value>
-  </context-param>
-
-  <context-param>
-    <param-name>config.forwarder</param-name>
-    <param-value>com.epimorphics.registry.core.ForwardingServiceImpl,
-    proxyConfDir=/var/local/registry,
-    proxyRestartScript=/var/local/registry/proxy-conf.sh</param-value>
-  </context-param>
-
-  <context-param>
-    <param-name>config.userstore</param-name>
-    <param-value>com.epimorphics.registry.security.DBUserStore, initfile=${webapp}/WEB-INF/user.ini, dbfile=/var/local/registry/userstore</param-value>
-  </context-param>
-
-  <context-param>
-    <param-name>config.registry</param-name>
-    <param-value>com.epimorphics.registry.core.Registry,
-    baseURI=http://ukgovld-registry.dnsalias.net/,
-    store=storeapi,
-    cacheSize=100,
-    pageSize=25,
-    forwarder=forwarder,
-    userStore=userstore,
-    log=/var/local/registry/logstore,
-    bootSpec=${webapp}/WEB-INF/root-register.ttl|${webapp}/WEB-INF/registry.ttl,
-    systemBoot=${webapp}/WEB-INF/boot|/var/local/registry/boot</param-value>
+    <param-name>service-config</param-name>
+    <!-- Will initialize from first of these it finds, so external overrides internal -->
+    <param-value>/var/local/registry/config/services.conf|${webapp}/WEB-INF/services.conf</param-value>
   </context-param>
 
     <servlet>

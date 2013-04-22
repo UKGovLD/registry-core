@@ -10,6 +10,7 @@
 package com.epimorphics.registry;
 
 import java.io.File;
+import java.net.URL;
 
 import org.apache.catalina.startup.Tomcat;
 
@@ -43,7 +44,8 @@ public class RegRun {
             System.exit(1);
         }
 
-        tomcat.addWebapp(contextPath,  rootF.getAbsolutePath());
+        org.apache.catalina.Context context = tomcat.addWebapp(contextPath,  rootF.getAbsolutePath());
+        context.setConfigFile(new URL("file:src/main/webapp/META-INF/context.xml"));
 
         tomcat.start();
         tomcat.getServer().await();
