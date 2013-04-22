@@ -93,6 +93,19 @@ curl -i -X POST "http://localhost:8080/reg1?update&status=stable"
 // API security session testing
 curl -i --data "userid=http://example.com/alice&password=testing" http://localhost:8080/system/security/apilogin
 
+# Configure /var/local/registry
+
+The bootstrap configuration assumes the root files are all in /var/local/registry
+and initializes that area from the webapp.
+
+The directory must exist and an empty /var/local/registry/ui must exist to startup a fresh registry.
+
+For development want the resources and templates to be served from src area so:
+
+cd /var/local/registry
+ln -s ~/projects/java-workspace/ukl/ukl-registry-poc/src/main/webapp/WEB-INF/templates .
+ln -s ~/projects/java-workspace/ukl/ukl-registry-poc/src/main/webapp/WEB-INF/ui .
+
 # Configure proxy update permissions
 
 Add to /etc/sudoers:
