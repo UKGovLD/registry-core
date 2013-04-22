@@ -18,6 +18,7 @@ import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.util.DescriptionCache;
 import com.epimorphics.server.indexers.LuceneResult;
+import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
@@ -172,6 +173,16 @@ public class CachingStore implements StoreAPI {
     @Override
     public List<ForwardingRecord> listDelegations() {
         return store.listDelegations();
+    }
+
+    @Override
+    public void storeGraph(String graphURI, Model model) {
+        store.storeGraph(graphURI, model);
+    }
+
+    @Override
+    public Model getGraph(String graphURI) {
+        return store.getGraph(graphURI);
     }
 
 }

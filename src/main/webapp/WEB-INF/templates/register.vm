@@ -40,6 +40,7 @@
         <ul class="nav nav-tabs nav-compact action-tab">
           <li class="active"><a href="#list" data-toggle="tab">List</a></li>
           <li><a href="#table" data-toggle="tab">Table</a></li>
+          <li><a href="#properties" data-toggle="tab">Properties</a></li>
           <li><a href="#metadata" data-toggle="tab">Metadata</a></li>
           #if($isAdministrator)
             <li><a href="#administer" data-toggle="tab">Administer</a></li>
@@ -52,6 +53,9 @@
           </div>
           <div class="tab-pane" id="table" data-action="register-table" data-uri="$uri">
             <p>Page is loading ...</p>
+          </div>
+          <div class="tab-pane" id="properties">
+             #restable($register, "table-striped table-condensed")
           </div>
           <div class="tab-pane" id="metadata">
              #restable($itemForReg, "table-striped table-condensed")

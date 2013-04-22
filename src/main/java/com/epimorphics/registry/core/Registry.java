@@ -32,6 +32,7 @@ import com.epimorphics.registry.commands.CommandRead;
 import com.epimorphics.registry.commands.CommandRegister;
 import com.epimorphics.registry.commands.CommandSearch;
 import com.epimorphics.registry.commands.CommandStatusUpdate;
+import com.epimorphics.registry.commands.CommandTag;
 import com.epimorphics.registry.commands.CommandUpdate;
 import com.epimorphics.registry.commands.CommandValidate;
 import com.epimorphics.registry.core.Command.Operation;
@@ -268,6 +269,7 @@ public class Registry extends ServiceBase implements Service {
      * Factory for command instances, used for handling API requests from the request processor
      */
     public Command make(Operation operation, String target,  MultivaluedMap<String, String> parameters) {
+        // TODO Would be cleaner to attach command subclass to the operation code and inject the parameters separately
         switch (operation) {
         case Read:         return new CommandRead(operation, target, parameters, this);
         case Delete:       return new CommandDelete(operation, target, parameters, this);
@@ -276,6 +278,7 @@ public class Registry extends ServiceBase implements Service {
         case StatusUpdate: return new CommandStatusUpdate(operation, target, parameters, this);
         case Validate:     return new CommandValidate(operation, target, parameters, this);
         case Search:       return new CommandSearch(operation, target, parameters, this);
+        case Tag:          return new CommandTag(operation, target, parameters, this);
         }
         return null;    // Should never get here but the compiler doesn't seem to know that
     }
@@ -304,7 +307,7 @@ public class Registry extends ServiceBase implements Service {
         }
         MultivaluedMap<String, String> parameters = UriComponent.decodeQuery(queries, true);
         Command command = make(op, target, parameters);
-        
+
         if (requestor == null || requestor.isEmpty()) {
             try {
                 UserInfo user = (UserInfo) SecurityUtils.getSubject().getPrincipal();

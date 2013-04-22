@@ -1,0 +1,84 @@
+#set($response=$registry.perform("Read","$uri?tag=$tag", $requestor))
+#if($response.status == 404)
+  #parse("not-found.vm")
+#elseif($response.status >= 500)
+  #parse("internal-error.vm")
+#else
+  #set($model=$response.entity)
+  $model.setLanguage($language)
+
+  #set($collURI="$registry.baseURI/$uri?tag=$tag")
+  #set($coll=$model.getNode($collURI))
+
+  <div class="row space-above">
+    <div class="span12">
+      #parse("breadcrumbs.vm")
+    </div>
+  </div>
+
+  <div class="row">
+
+    ## Left hand column
+    <div class="span8">
+
+      ## Name/description header section
+      <div class="row">
+        <div class="span6">
+          <h1>Tagged collection</h1>
+          <p><strong>$collURI</strong></p>
+          #set($time=$coll.getPropertyValue("prov:generatedAtTime").lexicalForm)
+          <p>View register state as at tagged time: <a href="/$uri?_versionAt=$time">$time</a></p>
+        </div>
+      </div>
+
+      ## Listing members
+      <h3>Tagged members</h3>
+      <div class="row space-above">
+        <div class="span8">
+          #foreach($member in $coll.listPropertyValues("prov:hadMember"))
+            <div class="result-blob">
+              <div class="blob-inner">
+                <a href="#linkhref($member)">$member.uRI</a>
+              </div>
+            </div>
+          #end
+        </div>
+      </div>
+
+    </div>
+
+    ## Right hand column RDF access, metadata and actions
+    <div class="span4">
+      <div class="formats">
+        <table class="table table-condensed">
+          <tr>
+            <td>
+              <img src="$uiroot/img/molecule-medium.png"></img>
+            </td><td>
+              <dl class="dl-horizontal">
+                <dt>plain:</dt>
+                <dd><a href="/$uri?tag=$tag&_format=ttl">ttl</a> | <a href="/$uri?tag=$tag&_format=rdf">rdf/xml</a></dd>
+              </dl>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h4>About the collection</h4>
+        </div>
+        <div class="panel-body">
+           <table class="table table-striped table-condensed">
+             #metadatarow("derived from", $coll.listPropertyValues("prov:wasDerivedFrom"))
+             #metadatarow("generated at", $coll.listPropertyValues("prov:generatedAtTime"))
+             #metadatarow("tag", $coll.listPropertyValues("reg:tag"))
+           </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+#end
+

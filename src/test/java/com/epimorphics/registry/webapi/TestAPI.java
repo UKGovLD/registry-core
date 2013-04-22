@@ -27,6 +27,7 @@ import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.util.JSONLDSupport;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.Ldbp;
+import com.epimorphics.registry.vocab.Prov;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
 import com.epimorphics.util.TestUtil;
@@ -121,7 +122,7 @@ public class TestAPI extends TomcatTestBase {
 
         // Test deletions using the /collection register
         doDeletionTest();
-        
+
         // Test validation operation
         doValidationTest();
 
@@ -157,9 +158,11 @@ public class TestAPI extends TomcatTestBase {
         // Check validation of entries in a register with validation constraints
         doValidationChecks();
 
-
         // Check use of numeric literals as notation values
         doCheckNumericNotations();
+
+        // Check tagging
+        doTaggingTest();
 
 //        System.out.println("Store dump");
 //        ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel().write(System.out, "Turtle");
@@ -168,10 +171,10 @@ public class TestAPI extends TomcatTestBase {
     private void doInvalidUpdateTest() {
         assertEquals(400, invoke("PATCH", "test/blue-patch.ttl", BASE_URL).getStatus());
         assertEquals(400, invoke("PATCH", "test/blue-patch.ttl", REG1).getStatus());
-        
+
         // Can't drop label
         assertEquals(400, invoke("PUT", "test/red-bad-update-label.ttl", REG1 + "/red").getStatus());
-        
+
         // Can't remove type
         assertEquals(400, invoke("PUT", "test/red-bad-update-type.ttl", REG1 + "/red").getStatus());
     }
@@ -347,7 +350,7 @@ public class TestAPI extends TomcatTestBase {
 //        assertEquals(201, postFileStatus("test/bulk-skos-collection.ttl", BASE_URL + "?batch-managed"));
         ClientResponse response = postFile("test/bulk-skos-collection.ttl", BASE_URL + "?batch-managed");
         TestAPIDebug.debugStatus(response);
-        
+
         Model m = getModelResponse(BASE_URL + "collection?status=any");
         checkRegisterList( m, ROOT_REGISTER + "collection", "item 1", "item 2", "item 3");
 
@@ -406,7 +409,7 @@ public class TestAPI extends TomcatTestBase {
         checkRegisterList(
                 getModelResponse(BASE_URL + "collection/collection?status=stable"), ROOT_REGISTER + "collection/collection");
     }
-    
+
     private void doValidationTest() {
         assertEquals(400, postFileStatus("test/validation-request1.txt", BASE_URL + "?validate" ));
         assertEquals(204, post(BASE_URL + "collection?update&status=stable&force").getStatus());
@@ -415,7 +418,7 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(200, post(BASE_URL + "?validate=http://location.data.gov.uk/collection/item1").getStatus());
         assertEquals(404, post(BASE_URL + "foo?validate=http://location.data.gov.uk/collection/item1").getStatus());
         assertEquals(400, post(BASE_URL + "?validate=http://location.data.gov.uk/collection/item1&validate=http://location.data.gov.uk/collection/item8").getStatus());
-        
+
         ClientResponse response = post(BASE_URL + "?validate=http://location.data.gov.uk/collection/item1");
         assertEquals(200, response.getStatus());
         assertEquals("http://location.data.gov.uk/collection/item1 in http://location.data.gov.uk/collection", response.getEntity(String.class).trim());
@@ -610,7 +613,7 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(204, invoke("PUT", "test/jmt/number-six-update.ttl", REG1+"/_six").getStatus());
         m = getModelResponse(REG1+"?status=any&_view=with_metadata");
         validateReservedEntry(m, "http://example.com/six", "six");
-        
+
         // Check that reserved item does not appear in normal listing
         List<String> after = getRegisterList(getModelResponse(REG1), SKOS.member, REG1_URI);
         assertTrue(after.containsAll(before) && before.containsAll(after));
@@ -653,16 +656,16 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(400, postFileStatus("test/reg2-entry-bad2.ttl", BASE_URL+"reg2"));
         assertEquals(400, postFileStatus("test/reg2-entry-bad3.ttl", BASE_URL+"reg2"));
         assertEquals(400, postFileStatus("test/reg2-entry-bad4.ttl", BASE_URL+"reg2"));
-        
+
         // Check that a multi-item upload is reject in its entirety
         assertEquals(400, postFileStatus("test/test-multi-item-validate.ttl", BASE_URL+"reg2"));
-        
+
         Model m = getModelResponse(BASE_URL + "reg2?status=any");
         List<String> members = getRegisterList(m, SKOS.member, ROOT_REGISTER + "reg2");
         assertFalse(members.contains("concept1"));
         assertFalse(members.contains("concept2"));
         assertFalse(members.contains("concept3"));
- 
+
     }
 
     /**
@@ -674,7 +677,7 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(201, postFileStatus("test/codes.ttl", BASE_URL));
         assertEquals(201, postFileStatus("test/jmt/runway-numeric.ttl", BASE_URL + "codes"));
         Model m = getModelResponse(BASE_URL + "codes?_view=with_metadata&firstPage");
-        
+
         Resource page = m.getResource(ROOT_REGISTER + "codes?_view=with_metadata&firstPage=");
         Resource items = page.getPropertyResourceValue(API.items);
         assertNotNull(items);
@@ -690,7 +693,41 @@ public class TestAPI extends TomcatTestBase {
             assertEquals(e, ((Number)value).intValue());
         }
     }
-    
+
+    /**
+     * Check that tagging a register works and the results can be retrieved
+     */
+    private void doTaggingTest() {
+        // Create a clean register state
+        assertEquals(201, postFileStatus("test/reg3.ttl", BASE_URL));
+        assertEquals(201, postFileStatus("test/red.ttl", BASE_URL + "reg3"));
+        assertEquals(201, postFileStatus("test/blue.ttl", BASE_URL + "reg3"));
+        assertEquals(204, post(BASE_URL + "reg3/_red?update&status=stable").getStatus());
+        assertEquals(204, post(BASE_URL + "reg3/_blue?update&status=stable").getStatus());
+
+        // Tag it
+        ClientResponse response = post(BASE_URL+"reg3?tag=tag1");
+        assertEquals(201, response.getStatus());
+        String uri = ROOT_REGISTER+"reg3?tag=tag1";
+        assertEquals(uri, response.getLocation().toString());
+
+        // Modify some entries
+        response = invoke("PATCH", "test/red1b.ttl", BASE_URL + "reg3/red");
+        assertEquals(204,  response.getStatus());
+        assertEquals(201, postFileStatus("test/green.ttl", BASE_URL + "reg3"));
+
+        Model model = getModelResponse(BASE_URL + "reg3?tag=tag1");
+        Resource collection = model.getResource(uri);
+        assertTrue(collection.hasProperty(RDF.type, Prov.Collection));
+        assertTrue(collection.hasProperty(Prov.generatedAtTime));
+        assertTrue(collection.hasProperty(RegistryVocab.tag, "tag1"));
+        assertTrue(collection.hasProperty(Prov.wasDerivedFrom));
+        List<RDFNode> members = model.listObjectsOfProperty(collection, Prov.hadMember).toList();
+        assertTrue( members.contains( model.getResource(ROOT_REGISTER + "reg3/_red:2") ) );
+        assertTrue( members.contains( model.getResource(ROOT_REGISTER + "reg3/_blue:2") ) );
+        assertEquals(2, members.size());
+    }
+
     private void checkPageResponse(Model m, String nextpage, int length) {
         ResIterator ri = m.listSubjectsWithProperty(RDF.type, Ldbp.Page);
         assertTrue(ri.hasNext());

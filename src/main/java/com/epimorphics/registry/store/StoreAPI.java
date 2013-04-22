@@ -17,6 +17,7 @@ import com.epimorphics.registry.core.ForwardingRecord;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.server.indexers.LuceneResult;
+import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 
@@ -175,6 +176,15 @@ public interface StoreAPI {
      */
     public String update(RegisterItem item, boolean withEntity, Calendar timestamp);
 
+    /**
+     * Store a set of RDF data as a graph in the store, replacing any previous version for this graph
+     */
+    public void storeGraph(String graphURI, Model model);
+
+    /**
+     * Return a set of RDF from a named graph in the store
+     */
+    public Model getGraph(String graphURI);
 
     // --- misc operations ---
 

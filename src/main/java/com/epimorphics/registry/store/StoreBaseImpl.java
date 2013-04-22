@@ -160,6 +160,28 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
     }
 
     @Override
+    public void storeGraph(String graphURI, Model model) {
+        lockStoreWrite();
+        try {
+            storeLockedGraph(graphURI, model);
+        } finally {
+            unlockStore();
+        }
+    }
+
+    @Override
+    public Model getGraph(String graphURI) {
+        lockStore();
+        try {
+            Model result = ModelFactory.createDefaultModel();
+            result.add( store.asDataset().getNamedModel(graphURI) );
+            return result;
+        } finally {
+            unlockStore();
+        }
+    }
+
+    @Override
     public Description getDescription(String uri) {
         lockStore();
         try {
@@ -665,7 +687,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
                 } else {
                     entityModel = entity.getModel();
                 }
-                storeGraph(graphURI, entityModel);
+                storeLockedGraph(graphURI, entityModel);
 
                 getDefaultModel().add( entityModel );
                 Resource graph = ResourceFactory.createResource( graphURI );
@@ -676,7 +698,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         return newVersion.getURI();
     }
 
-    private void storeGraph(String graphURI, Model entityModel) {
+    private void storeLockedGraph(String graphURI, Model entityModel) {
         // Avoids Store.updateGraph because we are already in a transaction
         Model graphModel = store.asDataset().getNamedModel(graphURI);
         if (graphModel == null) {

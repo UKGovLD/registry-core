@@ -98,7 +98,7 @@ public class RequestProcessor extends BaseEndpoint {
             // Pass to the generic velocity handler, which in turn falls through to file serving
             throw new NotFoundException();
         }
-        
+
         PassThroughResult result = checkForPassThrough();
         if (result != null && result.isDone()) {
             return result.getResponse();
@@ -174,7 +174,20 @@ public class RequestProcessor extends BaseEndpoint {
         }
     }
 
+    @GET
+    public Response defaultRead() {
+        // Will chain through to file serving
+        throw new NotFoundException();
+    }
+
+
     private Response doRead(PassThroughResult ptr) {
+        String path = uriInfo.getPath();
+        if (path.startsWith(UI_PATH) ) {
+            // Will chain through to file serving
+            throw new NotFoundException();
+        }
+
         Command command = null;
         if (uriInfo.getQueryParameters().containsKey(Parameters.QUERY)) {
             command = makeCommand( Operation.Search );
@@ -250,12 +263,19 @@ public class RequestProcessor extends BaseEndpoint {
         Command command = null;
         if ( parameters.get(Parameters.VALIDATE) != null ) {
             return validate(hh , body);
+        } else if ( parameters.get(Parameters.TAG) != null ) {
+            // TODO to support tagging delegated regsiter would need a checkForPassThrough here
+            command = makeCommand(Operation.Tag);
         } else if ( parameters.get(Parameters.STATUS_UPDATE) != null ) {
             command = makeCommand(Operation.StatusUpdate);
         } else if (body != null) {
+            Model model = getBodyModel(hh, body, true);
+            if (model == null) {
+                throw new WebApiException(Status.BAD_REQUEST, "Did not recognize request");
+            }
             command = makeCommand(Operation.Register);
             try {
-                command.setPayload( getBodyModel(hh, body, true) );
+                command.setPayload( model );
             } catch(Exception e) {
                 throw new WebApiException(Response.Status.BAD_REQUEST, "Payload failed to parse: " + e.getMessage());
             }

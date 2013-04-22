@@ -19,6 +19,7 @@ public class Parameters {
     public static final String STATUS_UPDATE = "update";
     public static final String FORCE = "force";
     public static final String QUERY = "query";
+    public static final String TAG = "tag";
 
     public static final String VIEW = "_view";
     public static final String WITH_METADATA = "with_metadata";

@@ -19,6 +19,7 @@ import org.junit.Test;
 
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.util.Prefixes;
+import com.epimorphics.registry.vocab.Prov;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
 import com.epimorphics.server.core.ServiceConfig;
@@ -26,6 +27,7 @@ import com.epimorphics.server.core.Store;
 import com.epimorphics.util.TestUtil;
 import com.epimorphics.vocabs.API;
 import com.epimorphics.vocabs.SKOS;
+import com.hp.hpl.jena.assembler.Mode;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -39,6 +41,7 @@ import com.hp.hpl.jena.sparql.util.Closure;
 import com.hp.hpl.jena.util.FileManager;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.OWL;
+import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
 import com.sun.jersey.api.client.ClientResponse;
 
@@ -65,13 +68,41 @@ public class TestAPIDebug extends TomcatTestBase {
         assertEquals(201, postFileStatus("test/reg1.ttl", BASE_URL));
         assertEquals(201, postFileStatus("test/red.ttl", REG1));
 
-        assertEquals(400, postFileStatus("test/test-multi-item-validate.ttl", BASE_URL+"reg1"));
+        doTaggingTest();
+    }
+
+    /**
+     * Check that tagging a register works and the results can be retrieved
+     */
+    private void doTaggingTest() {
+        // Create a clean register state
+        assertEquals(201, postFileStatus("test/reg3.ttl", BASE_URL));
+        assertEquals(201, postFileStatus("test/red.ttl", BASE_URL + "reg3"));
+        assertEquals(201, postFileStatus("test/blue.ttl", BASE_URL + "reg3"));
+        assertEquals(204, post(BASE_URL + "reg3/_red?update&status=stable").getStatus());
+        assertEquals(204, post(BASE_URL + "reg3/_blue?update&status=stable").getStatus());
         
-        Model m = getModelResponse(BASE_URL + "reg1?status=any");
-        List<String> members = getRegisterList(m, SKOS.member, ROOT_REGISTER + "reg1");
-        assertFalse(members.contains("concept1"));
-        assertFalse(members.contains("concept2"));
-        assertFalse(members.contains("concept3"));
+        // Tag it
+        ClientResponse response = post(BASE_URL+"reg3?tag=tag1");
+        assertEquals(201, response.getStatus());
+        String uri = ROOT_REGISTER+"reg3?tag=tag1";
+        assertEquals(uri, response.getLocation().toString());
+        
+        // Modify some entries
+        response = invoke("PATCH", "test/red1b.ttl", BASE_URL + "reg3/red");
+        assertEquals(204,  response.getStatus());
+        assertEquals(201, postFileStatus("test/green.ttl", BASE_URL + "reg3"));
+        
+        Model model = getModelResponse(BASE_URL + "reg3?tag=tag1");
+        Resource collection = model.getResource(uri);
+        assertTrue(collection.hasProperty(RDF.type, Prov.Collection));
+        assertTrue(collection.hasProperty(Prov.generatedAtTime));
+        assertTrue(collection.hasProperty(RegistryVocab.tag, "tag1"));
+        assertTrue(collection.hasProperty(Prov.wasDerivedFrom));
+        List<RDFNode> members = model.listObjectsOfProperty(collection, Prov.hadMember).toList();
+        assertTrue( members.contains( model.getResource(ROOT_REGISTER + "reg3/_red:2") ) );
+        assertTrue( members.contains( model.getResource(ROOT_REGISTER + "reg3/_blue:2") ) );
+        assertEquals(2, members.size());
     }
 
 

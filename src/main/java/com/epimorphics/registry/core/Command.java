@@ -67,7 +67,8 @@ public abstract class Command {
         Update(RegAction.Update),
         StatusUpdate(RegAction.StatusUpdate),
         Validate,
-        Search;
+        Search,
+        Tag(RegAction.StatusUpdate);
 
         protected RegAction action;
         private Operation(RegAction action) {

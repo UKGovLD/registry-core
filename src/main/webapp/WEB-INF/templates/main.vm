@@ -6,73 +6,79 @@
   #end
 #parse("navbar.vm")
 
-#if($page)
-  #set($paging="_page=$page")
+#if($tag)
+  #parse("tagview.vm")
 #else
-  #set($paging="firstPage")
-#end
 
-#if($entity)
-  #set($response=$registry.perform("Read","$uri?entity=$entity&_view=with_metadata&status=any&$paging", $requestor))
-  #set($target=$entity)
-  #set($uri=$entity)
-#else
-  #if($subject.isAuthenticated())
-    #set($response=$registry.perform("Read","$uri?_view=with_metadata&status=any&$paging", $requestor))
-  #else
-    #set($response=$registry.perform("Read","$uri?_view=with_metadata&status=accepted&$paging", $requestor))
-  #end
-  #set($versionNumber=$lib.regex($uri,".*:(\d+)$"))
-  #if($versionNumber)
-    #set($versionNumber=$versionNumber[0])
-    #set($uri=$lib.replaceAll($uri,":\d+$",""))
-  #end
-  #set($target="$registry.baseURI/$uri")
-#end
-
-#if($response.status == 404)
-  #parse("not-found.vm")
-#elseif($response.status >= 500)
-  #parse("internal-error.vm")
-#else
-  #set($model=$response.entity)
-  $model.setLanguage($language)
-  #set($node=$model.getNode($target))
-
-  #if($uri.isEmpty())
-    #parse("root.vm")
-
-  #elseif($node.hasResourceValue("rdf:type","reg:Register"))
-    #set($register=$node)
-    #set($itemForReg=$model.getNode($node.uRI.replaceAll("/([^/]+)$", "/_$1")))
-    #parse("register.vm")
-
-  #elseif($node.hasResourceValue("rdf:type","reg:RegisterItem"))
-    #set($item=$node)
-    #set($entity=$item.connectedNodes("reg:definition/reg:entity").get(0))
-    #if($entity.hasResourceValue("rdf:type","reg:Register"))
-      #set($register=$entity)
-      #set($itemForReg=$item)
-      #parse("register.vm")
-
+    #if($page)
+      #set($paging="_page=$page")
     #else
-      #parse("item.vm")
+      #set($paging="firstPage")
     #end
 
-  #else
-    #set($entity=$node)
-    #set($items=$node.connectedNodes("^reg:entity/^reg:definition"))
-    #if(!$items.isEmpty())
-      #set($item=$items.get(0))
-      #if($item.isAnon())
-        #parse("resource.vm")
+    #if($entity)
+      #set($response=$registry.perform("Read","$uri?entity=$entity&_view=with_metadata&status=any&$paging", $requestor))
+      #set($target=$entity)
+      #set($uri=$entity)
+    #else
+      #if($subject.isAuthenticated())
+        #set($response=$registry.perform("Read","$uri?_view=with_metadata&status=any&$paging", $requestor))
       #else
-        #parse("item.vm")
+        #set($response=$registry.perform("Read","$uri?_view=with_metadata&status=accepted&$paging", $requestor))
       #end
-    #else
-      #parse("resource.vm")
+      #set($versionNumber=$lib.regex($uri,".*:(\d+)$"))
+      #if($versionNumber)
+        #set($versionNumber=$versionNumber[0])
+        #set($uri=$lib.replaceAll($uri,":\d+$",""))
+      #end
+      #set($target="$registry.baseURI/$uri")
     #end
-  #end
+
+    #if($response.status == 404)
+      #parse("not-found.vm")
+    #elseif($response.status >= 500)
+      #parse("internal-error.vm")
+    #else
+      #set($model=$response.entity)
+      $model.setLanguage($language)
+      #set($node=$model.getNode($target))
+
+      #if($uri.isEmpty())
+        #parse("root.vm")
+
+      #elseif($node.hasResourceValue("rdf:type","reg:Register"))
+        #set($register=$node)
+        #set($itemForReg=$model.getNode($node.uRI.replaceAll("/([^/]+)$", "/_$1")))
+        #parse("register.vm")
+
+      #elseif($node.hasResourceValue("rdf:type","reg:RegisterItem"))
+        #set($item=$node)
+        #set($entity=$item.connectedNodes("reg:definition/reg:entity").get(0))
+        #if($entity.hasResourceValue("rdf:type","reg:Register"))
+          #set($register=$entity)
+          #set($itemForReg=$item)
+          #parse("register.vm")
+
+        #else
+          #parse("item.vm")
+        #end
+
+      #else
+        #set($entity=$node)
+        #set($items=$node.connectedNodes("^reg:entity/^reg:definition"))
+        #if(!$items.isEmpty())
+          #set($item=$items.get(0))
+          #if($item.isAnon())
+            #parse("resource.vm")
+          #else
+            #parse("item.vm")
+          #end
+        #else
+          #parse("resource.vm")
+        #end
+      #end
+    #end
+
 #end
 
 #parse("footer.vm")

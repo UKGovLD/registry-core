@@ -36,6 +36,7 @@ import com.epimorphics.registry.store.VersionInfo;
 import com.epimorphics.registry.util.Util;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
+import com.epimorphics.registry.webapi.Parameters;
 import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.vocabs.API;
 import com.epimorphics.vocabs.Time;
@@ -58,6 +59,7 @@ public class CommandRead extends Command {
     boolean versioned;
     boolean timestamped;
     boolean entityLookup;
+    boolean tagRetieval;
 
     public CommandRead(Operation operation, String target,
             MultivaluedMap<String, String> parameters, Registry registry) {
@@ -67,10 +69,16 @@ public class CommandRead extends Command {
         versioned = lastSegment.contains(":");
         timestamped = parameters.containsKey(VERSION_AT);
         entityLookup = parameters.containsKey(ENTITY_LOOKUP);
+        tagRetieval = parameters.containsKey(Parameters.TAG);
     }
 
     @Override
     public Response doExecute() {
+        if (tagRetieval) {
+            String uri = target + "?tag=" + parameters.getFirst(Parameters.TAG);
+            Model m = store.getGraph(uri);
+            return returnModel(m, uri);
+        }
         if (entityLookup) {
             return entityLookup();
         }
