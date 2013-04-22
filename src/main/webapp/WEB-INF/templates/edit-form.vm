@@ -5,20 +5,20 @@
 
 #parse("header.vm")
 #parse("navbar.vm")
-  
+
 <div class="modal-page">
   <div class="row">
     <div class="offset1 span10 modal-page-panel">
-    
+
         <div class="modal-page-head">
           <h3>Edit: $target</h3>
         </div>
 
         <div class="modal-page-body">
-          
+
           #if(!$target.startsWith($registry.baseURI))
             <div class="alert">Sorry, can only update managed entities, this looks like an external reference</div>
-          #else 
+          #else
             #set($uri=$lib.reg.pathFor($target))
             #set($response=$registry.perform("Read","$uri?_view=with_metadata", $requestor))
             #if($response.status == 404)
@@ -29,22 +29,22 @@
               #set($model=$response.entity)
               $model.setLanguage($language)
               #set($editTarget=$model.getNode($target))
-              
+
               #set($isItem = $lib.reg.isItem($target))
-            
+
               #set($posturl = $editTarget.uRI.replaceAll("^https?://[^/]*/","/"))
-              
-                <p>The entries in the table should be valid Turtle, string literal should be enclosed in quotes and
-                raw URLs should be enclosed in &lt;...&gt;. The set of prefixes available for prefixes names is in the prefixes tab, which
-                can be edited.</p>
-        
+
+                <p>The values will be converted to Turtle syntax (anything that looks like a URL will be wrapped in  &lt;...&gt;,
+                anything that looks like a general string will be quoted. To force a particular interpretation (e.g. to enter a string
+                and looks like a number) then use explicit Turtle syntax.</p>
+
                 <div class="tabbable">
-        
+
                   <ul class="nav nav-tabs nav-compact">
                     <li class="active"><a href="#tabPT" data-toggle="tab">Property table</a></li>
                     <li><a href="#tabPrefixes" data-toggle="tab">Prefixes</a></li>
                   </ul>
-        
+
                   <div class="tab-content">
                     <div class="tab-pane active" id="tabPT">
                       <p>Click on values to edit them. </p>
@@ -72,21 +72,21 @@
                          <a class="edit-add-newrow"><i data-target="#edit-table" class="icon-plus-sign"></i></a></td>
                       </div>
                     </div>
-        
+
                     <div class="tab-pane" id="tabPrefixes">
                       <a href="#" id="edit-prefixes" data-type="textarea" class="ui-editable" data-inputclass="input-xxlarge" data-rows="12">
                       $lib.reg.turtlePrefixes($editTarget).replaceAll("<","&lt;").replaceAll("\n","<br/>")
                       </a>
                     </div>
-        
+
                   </div>
                 </div>
-        
+
             #end
           #end
-        
+
         </div>
-        
+
         <div id="msg-alert" class="alert hide">
             <div id="msg"></div>
         </div>
@@ -95,10 +95,10 @@
         <button class="btn btn-primary space-above edit-table-save" data-isitem="$isItem" data-return="$return">Save changes</button>
         <a href="$return" class="btn pull-right">Close</a>
       </div>
-      
+
     </div>
   </div>
-  
+
 </div>
 
 <div class="modal-backdrop in"></div>
@@ -108,4 +108,4 @@
 <div class="modal-page-head">
     <h3>Edit: $target</h3>
 </div>
-  
+

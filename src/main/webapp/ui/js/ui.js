@@ -17,7 +17,7 @@ $(function() {
     };
 
     processQueryForms();
-    
+
     // Set up ajax loading tabs
     $('.action-tab').bind('show', function(e) {
         var pattern=/#.+/gi
@@ -38,7 +38,7 @@ $(function() {
            });
         };
      });
-    
+
 
     // Anything marked as popinfo will have a popover (data-trigger, data-placement, data-content)
     // enable popups
@@ -87,7 +87,7 @@ $(function() {
     };
 
     var installEditRow = function(position, id, prop, value) {
-        position.after( makeEditRow(id, prop, '""') );
+        position.after( makeEditRow(id, prop, '') );
         $("#" + id).each(function(){
             $(this).find(".ui-editable").editable();
             $(this).find(".edit-remove-row").click( editRemoveAction );
@@ -100,7 +100,7 @@ $(function() {
             });
         });
     };
-    
+
     var idcount = 1;
 
     var editAddAction = function(e){
@@ -110,12 +110,12 @@ $(function() {
         installEditRow(row, newid, prop, '""');
         return false;
     }
-    
+
     var editAddNewAction = function(e) {
         var tableid = $(e.target).attr("data-target");
         var lastrow = $(tableid).find("tbody tr:last");
         var newid =  (tableid.replace(/^#/,'')) + "-newrow-"+ idcount++;
-        installEditRow(lastrow, newid, '', '""');
+        installEditRow(lastrow, newid, '', '');
         return false;
     }
 
@@ -124,11 +124,20 @@ $(function() {
     $(".edit-add-row").click( editAddAction );
     $(".edit-add-newrow").click( editAddNewAction );
 
-    var emitResource = function(val) {
-        if (val.match(/https?:/)) {
+    var emit = function(valin) {
+        var val = $.trim(valin);
+        var ch = val.charAt(0);
+        if (ch === '[' || ch === '<' || ch === '"' || ch === "'") {
+            return val;     // Already looks like Turtle
+        }
+        if (val.match(/^https?:/)) {
             return "<" + val + ">";
+        } if (val.match(/^[+-]?[0-9]*(\.[0-9]+)?$/)) {
+            return val;     // number
+        } if (val.match(/^[a-zA-Z][\w\d\.]*:[\w\d\.:]*$/)) {
+            return val;     // prefixed
         } else {
-            return val;
+            return '"""' + val + '"""';
         }
     };
 
@@ -145,10 +154,11 @@ $(function() {
         data = data + "\n<" + table.attr("data-root") + ">\n";
         table.find("tbody tr").each(function(){
             var row = $(this).find("td").toArray();
-            var prop = emitResource($(row[0]).text());
-            var value = $(row[1]).text();
+            var prop = emit($(row[0]).text());
+            var value = emit( $(row[1]).text() );
             data = data + "    " + prop + " " + value + " ;\n";
         });
+        alert(data);
         $.ajax({
             type: (isItem ? "PATCH" : "PUT"),
             url: url,
