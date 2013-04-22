@@ -17,7 +17,11 @@
   #set($target=$entity)
   #set($uri=$entity)
 #else
-  #set($response=$registry.perform("Read","$uri?_view=with_metadata&status=any&$paging", $requestor))
+  #if($subject.isAuthenticated())
+    #set($response=$registry.perform("Read","$uri?_view=with_metadata&status=any&$paging", $requestor))
+  #else
+    #set($response=$registry.perform("Read","$uri?_view=with_metadata&status=accepted&$paging", $requestor))
+  #end
   #set($versionNumber=$lib.regex($uri,".*:(\d+)$"))
   #if($versionNumber)
     #set($versionNumber=$versionNumber[0])
