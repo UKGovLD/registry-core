@@ -2,7 +2,7 @@
  * File:        RegistryDirBootstrap.java
  * Created by:  Dave Reynolds
  * Created on:  22 Apr 2013
- * 
+ *
  * (c) Copyright 2013, Epimorphics Limited
  *
  *****************************************************************/
@@ -24,31 +24,32 @@ import com.epimorphics.util.FileUtil;
 
 
 /**
- * Checks the configured root directory to ensure it has all the 
+ * Checks the configured root directory to ensure it has all the
  * configuration elements we expect. Any missing ones are initialized
  * by copying files from the webapp resources. Should be run before
  * the services configuration starts up.
- * 
+ *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public class RegistryDirBootstrap implements ServletContextListener {
     static Logger log = LoggerFactory.getLogger(RegistryDirBootstrap.class);
 
     public static final String ROOT_DIR_PARAM = "registry-file-root";
-    
+
     String filebase;
     String fileRoot;
-    
+
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         ServletContext context = sce.getServletContext();
         filebase = withTrailingSlash(context.getRealPath("/"));
-        
+
         fileRoot = withTrailingSlash(context.getInitParameter(ROOT_DIR_PARAM));
 
             ensureDirectory("config");
             ensureFile("config/user.ini", "WEB-INF/user.ini");
             ensureFile("config/root-register.ttl", "WEB-INF/root-register.ttl");
+            ensureFile("config/services.conf", "WEB-INF/services.conf");
             ensureDirectory("boot", "WEB-INF/boot");
             ensureDirectory("ui/css", "ui/css");
             ensureDirectory("ui/images", "ui/images");
@@ -66,7 +67,7 @@ public class RegistryDirBootstrap implements ServletContextListener {
     private void ensureDirectory(String dir) {
         FileUtil.ensureDir(fileRoot + dir);
     }
-    
+
     private void ensureFile(String dest, String src) {
         if (!new File(fileRoot + dest).exists()) {
             log.info("Intializing " + dest);
@@ -77,7 +78,7 @@ public class RegistryDirBootstrap implements ServletContextListener {
             }
         }
     }
-    
+
     private void ensureDirectory(String dest, String src)  {
         if (!new File(fileRoot + dest).exists()) {
             log.info("Intializing " + dest);
@@ -88,7 +89,7 @@ public class RegistryDirBootstrap implements ServletContextListener {
             }
         }
     }
-    
+
     private String withTrailingSlash(String path) {
         return path.endsWith("/") ? path : path + "/";
     }

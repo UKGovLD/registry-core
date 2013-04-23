@@ -104,7 +104,7 @@ For development want the resources and templates to be served from src area so:
 
 cd /var/local/registry
 ln -s ~/projects/java-workspace/ukl/ukl-registry-poc/src/main/webapp/WEB-INF/templates .
-ln -s ~/projects/java-workspace/ukl/ukl-registry-poc/src/main/webapp/WEB-INF/ui .
+ln -s ~/projects/java-workspace/ukl/ukl-registry-poc/src/main/webapp/ui .
 
 # Configure proxy update permissions
 
