@@ -73,6 +73,10 @@ public class RegistryDirBootstrap implements ServletContextListener {
             log.info("Intializing " + dest);
             try {
                 FileUtil.copyResource(filebase + src, fileRoot + dest);
+                if (dest.endsWith(".sh")) {
+                    File script = new File(fileRoot + dest);
+                    script.setExecutable(true);
+                }
             } catch (IOException e) {
                 log.error("Failed to initialize " + dest, e);
             }
