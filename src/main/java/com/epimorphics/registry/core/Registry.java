@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import com.epimorphics.rdfutil.ModelWrapper;
 import com.epimorphics.registry.commands.CommandDelete;
+import com.epimorphics.registry.commands.CommandGraphRegister;
 import com.epimorphics.registry.commands.CommandRead;
 import com.epimorphics.registry.commands.CommandRegister;
 import com.epimorphics.registry.commands.CommandSearch;
@@ -279,6 +280,7 @@ public class Registry extends ServiceBase implements Service {
         case Read:         return new CommandRead(operation, target, parameters, this);
         case Delete:       return new CommandDelete(operation, target, parameters, this);
         case Register:     return new CommandRegister(operation, target, parameters, this);
+        case GraphRegister:  return new CommandGraphRegister(operation, target, parameters, this);
         case Update:       return new CommandUpdate(operation, target, parameters, this);
         case StatusUpdate: return new CommandStatusUpdate(operation, target, parameters, this);
         case Validate:     return new CommandValidate(operation, target, parameters, this);

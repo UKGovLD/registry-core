@@ -689,7 +689,9 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
                 }
                 storeLockedGraph(graphURI, entityModel);
 
-                getDefaultModel().add( entityModel );
+                if (!item.isGraph()) {
+                    getDefaultModel().add( entityModel );
+                }
                 Resource graph = ResourceFactory.createResource( graphURI );
                 entityRef.removeAll(RegistryVocab.sourceGraph);
                 entityRef.addProperty(RegistryVocab.sourceGraph, graph);

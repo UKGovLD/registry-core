@@ -46,6 +46,7 @@ import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
@@ -84,6 +85,7 @@ public class CommandRead extends Command {
         }
         Description d = null;
         boolean entityWithMetadata = false;
+        boolean graphEntity = false;
         try {
             if (lastSegment.startsWith("_")) {
                 // An item
@@ -109,7 +111,13 @@ public class CommandRead extends Command {
                 } else {
                     // plain entity
                     d = store.getCurrentVersion(target);
+                    if (d == null) {
+                        // Check for graph entities
+                        d = store.getItem(parent +"/_" + lastSegment, true);
+                        graphEntity = true;
+                    }
                 }
+                    
             }
         } catch (Exception e) {
             // Typically an attempt to retrieve the version of something which doesn't not exist
@@ -124,7 +132,19 @@ public class CommandRead extends Command {
         // Include any entity in the response
         if (d instanceof RegisterItem) {
             RegisterItem ri = d.asRegisterItem();
-            if (ri.getEntity() != null) {
+            if (graphEntity) {
+                Resource entityRef = ri.getRoot().getPropertyResourceValue(RegistryVocab.definition);
+                StmtIterator si = entityRef.listProperties(RegistryVocab.sourceGraph);
+                while (si.hasNext()) {
+                    RDFNode graphname = si.next().getObject();
+                    if (graphname.isURIResource()) {
+                        Model graph = store.getGraph( graphname.asResource().getURI() );
+                        if (graph != null) {
+                            m.add(graph);
+                        }
+                    }
+                }
+            } else if (ri.getEntity() != null) {
                 m.add( ri.getEntity().getModel() );
             }
         }

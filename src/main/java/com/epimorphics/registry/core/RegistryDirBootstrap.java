@@ -76,6 +76,11 @@ public class RegistryDirBootstrap implements ServletContextListener {
                 if (dest.endsWith(".sh")) {
                     File script = new File(fileRoot + dest);
                     script.setExecutable(true);
+                    try {
+                        Runtime.getRuntime().exec("chmod 755 " + fileRoot + dest);
+                    } catch (Exception e) {
+                        log.warn("Failed to set full execute permissions for " + dest, e);
+                    }
                 }
             } catch (IOException e) {
                 log.error("Failed to initialize " + dest, e);

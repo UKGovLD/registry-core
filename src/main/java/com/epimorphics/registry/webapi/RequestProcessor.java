@@ -288,7 +288,13 @@ public class RequestProcessor extends BaseEndpoint {
     @PUT
     @Consumes({MIME_TURTLE, MIME_RDFXML, JSONLDSupport.MIME_JSONLD})
     public Response update(@Context HttpHeaders hh, InputStream body) {
-        Command command = makeCommand( Operation.Update );
+        MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
+        Command command = null;
+        if ( parameters.get(Parameters.GRAPH) != null ) {
+            command = makeCommand( Operation.GraphRegister ); 
+        } else {
+            command = makeCommand( Operation.Update );
+        }
         command.setPayload( getBodyModel(hh, body, false) );
         return command.execute();
     }

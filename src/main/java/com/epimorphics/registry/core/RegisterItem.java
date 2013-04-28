@@ -46,6 +46,7 @@ public class RegisterItem extends Description {
     Resource entity;
     String notation;
     String parentURI;
+    boolean entityAsGraph = false;
 
     /** Properties that should not be changed once set */
     public static final Property[] RIGID_PROPS = new Property[] {
@@ -96,6 +97,21 @@ public class RegisterItem extends Description {
      */
     public void setEntity(Resource entity) {
         this.entity = entity;
+    }
+    
+    /**
+     * Flag that the entity should stored as a whole graph, not as a simple closure
+     */
+    public void setAsGraph(boolean asGraph) {
+        this.entityAsGraph = asGraph;
+    }
+
+    
+    /**
+     * Test if the entity should stored as a whole graph, not as a simple closure
+     */
+    public boolean isGraph() {
+        return entityAsGraph;
     }
 
     public String getNotation() {
@@ -311,8 +327,6 @@ public class RegisterItem extends Description {
             root.addProperty(RegistryVocab.itemClass, s.getObject());
         }
         // Omit entity reference link itself, this will be created per-version when added to store
-
-        // TODO the reg:submitter may be set automatically to an identifier for the user making the submission
     }
 
     public String getEntityRefURI() {

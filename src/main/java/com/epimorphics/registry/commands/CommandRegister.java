@@ -78,7 +78,7 @@ public class CommandRegister extends Command {
     Status statusOverride = null;
     boolean needStatusPermission = false;
 
-    Register parent;
+    Register parentRegister;
 
     public CommandRegister(Operation operation, String target,
             MultivaluedMap<String, String> parameters, Registry registry) {
@@ -97,12 +97,12 @@ public class CommandRegister extends Command {
             if (!(d instanceof Register)) {
                 return new ValidationResponse(BAD_REQUEST, "Can only register items in a register");
             }
-            parent = d.asRegister();
+            parentRegister = d.asRegister();
         } finally {
             store.unlock(target);
         }
 
-        for (Resource validationQuery : RDFUtil.allResourceValues(parent.getRoot(), RegistryVocab.validationQuery)) {
+        for (Resource validationQuery : RDFUtil.allResourceValues(parentRegister.getRoot(), RegistryVocab.validationQuery)) {
             String query = RDFUtil.getStringValue(validationQuery, RegistryVocab.query);
             String expquery = PrefixUtils.expandQuery(query, Prefixes.get());
             QueryExecution qexec = QueryExecutionFactory.create(expquery, payload);
@@ -134,14 +134,14 @@ public class CommandRegister extends Command {
             }
             
             if (!isBatch) {    // Validation of batch entries has to be relative to the batch parent so defer till then
-                String parentURI = NameUtils.stripLastSlash( parent.getRoot().getURI() );
+                String parentURI = NameUtils.stripLastSlash( parentRegister.getRoot().getURI() );
                 // String stripLastSlash needed to cope with the out-of-pattern URI for the root register
                 RegisterItem item = RegisterItem.fromRIRequest(itemSpec, parentURI, true);
                 if (store.getDescription(item.getRoot().getURI()) != null) {
                     return new ValidationResponse(Response.Status.FORBIDDEN, "Item already registered at request location: " + item.getRoot());
                 }
                 
-                ValidationResponse entityValid = validateEntity(parent, item.getEntity() );
+                ValidationResponse entityValid = validateEntity(parentRegister, item.getEntity() );
                 if (!entityValid.isOk()) {
                     return entityValid;
                 }
@@ -186,15 +186,15 @@ public class CommandRegister extends Command {
         try {
             Resource location = null;
             if (parameters.containsKey(Parameters.BATCH_MANAGED) || parameters.containsKey(Parameters.BATCH_REFERENCED)) {
-                location = batchRegister(parent);
+                location = batchRegister(parentRegister);
             } else {
                 if (payload.contains(null, RDF.type, RegistryVocab.RegisterItem)) {
                     for (ResIterator ri = payload.listSubjectsWithProperty(RDF.type, RegistryVocab.RegisterItem); ri.hasNext();) {
                         Resource itemSpec = ri.next();
-                        location = register(parent, itemSpec, true);
+                        location = register(parentRegister, itemSpec, true, false);
                     }
                 } else {
-                    location = register(parent, findSingletonRoot(), false);
+                    location = register(parentRegister, findSingletonRoot(), false, false);
                 }
             }
             try {
@@ -285,7 +285,7 @@ public class CommandRegister extends Command {
             }
         }
         root.addProperty(isInverse ? RegistryVocab.inverseMembershipPredicate : Ldbp.membershipPredicate, memberProp);
-        Resource item = register(parent, root, false);
+        Resource item = register(parent, root, false, false);
         String registerURI = item.getURI().replaceAll("/_([^/]*)$", "/$1");
         Register newReg = store.getCurrentVersion(registerURI).asRegister();
 
@@ -301,9 +301,9 @@ public class CommandRegister extends Command {
                 if (entity.getURI().startsWith(registry.getBaseURI())) {
                     em.add( store.getDescription(entity.getURI()).getRoot().listProperties() );
                 }
-                register(newReg, ei, true);
+                register(newReg, ei, true, false);
             } else {
-                register(newReg, entity, false);
+                register(newReg, entity, false, false);
             }
         }
 
@@ -320,7 +320,7 @@ public class CommandRegister extends Command {
         return null;
     }
 
-    private Resource register(Register parent, Resource itemSpec, boolean withItemSpec) {
+    protected Resource register(Register parent, Resource itemSpec, boolean withItemSpec, boolean asGraph) {
         String parentURI = NameUtils.stripLastSlash( parent.getRoot().getURI() );
                 // String stripLastSlash needed to cope with the out-of-pattern URI for the root register
         RegisterItem ri = null;
@@ -329,6 +329,7 @@ public class CommandRegister extends Command {
         } else {
             ri = RegisterItem.fromEntityRequest(itemSpec, parentURI, true);
         }
+        ri.setAsGraph(asGraph);
 
         if (store.getDescription(ri.getRoot().getURI()) != null) {
             // Item already exists

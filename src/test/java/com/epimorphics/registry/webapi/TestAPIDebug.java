@@ -66,45 +66,21 @@ public class TestAPIDebug extends TomcatTestBase {
     public void testDebug() throws IOException {
         // Set up some base data
         assertEquals(201, postFileStatus("test/reg1.ttl", BASE_URL));
-        assertEquals(201, postFileStatus("test/red.ttl", REG1));
-
-        doTaggingTest();
-    }
-
-    /**
-     * Check that tagging a register works and the results can be retrieved
-     */
-    private void doTaggingTest() {
-        // Create a clean register state
-        assertEquals(201, postFileStatus("test/reg3.ttl", BASE_URL));
-        assertEquals(201, postFileStatus("test/red.ttl", BASE_URL + "reg3"));
-        assertEquals(201, postFileStatus("test/blue.ttl", BASE_URL + "reg3"));
-        assertEquals(204, post(BASE_URL + "reg3/_red?update&status=stable").getStatus());
-        assertEquals(204, post(BASE_URL + "reg3/_blue?update&status=stable").getStatus());
         
-        // Tag it
-        ClientResponse response = post(BASE_URL+"reg3?tag=tag1");
+        ClientResponse response =  invoke("PUT", "test/ont1.ttl", BASE_URL + "reg1/ont?graph");
         assertEquals(201, response.getStatus());
-        String uri = ROOT_REGISTER+"reg3?tag=tag1";
-        assertEquals(uri, response.getLocation().toString());
         
-        // Modify some entries
-        response = invoke("PATCH", "test/red1b.ttl", BASE_URL + "reg3/red");
-        assertEquals(204,  response.getStatus());
-        assertEquals(201, postFileStatus("test/green.ttl", BASE_URL + "reg3"));
-        
-        Model model = getModelResponse(BASE_URL + "reg3?tag=tag1");
-        Resource collection = model.getResource(uri);
-        assertTrue(collection.hasProperty(RDF.type, Prov.Collection));
-        assertTrue(collection.hasProperty(Prov.generatedAtTime));
-        assertTrue(collection.hasProperty(RegistryVocab.tag, "tag1"));
-        assertTrue(collection.hasProperty(Prov.wasDerivedFrom));
-        List<RDFNode> members = model.listObjectsOfProperty(collection, Prov.hadMember).toList();
-        assertTrue( members.contains( model.getResource(ROOT_REGISTER + "reg3/_red:2") ) );
-        assertTrue( members.contains( model.getResource(ROOT_REGISTER + "reg3/_blue:2") ) );
-        assertEquals(2, members.size());
+        Model m = getModelResponse(BASE_URL + "reg1/ont");
+//        m.write(System.out, "Turtle");
+        assertTrue( hasTerm(m, "A") );
+        assertTrue( hasTerm(m, "a") );
+        assertTrue( hasTerm(m, "p") );
     }
-
+    
+    private boolean hasTerm(Model m, String term) {
+        Resource r = m.getResource(ROOT_REGISTER + "reg1/ont#" + term);
+        return r.hasProperty(RDF.type);
+    }
 
     // Debugging utility only, should not be used while transactions are live
     public void printResourceState(String...uris) {

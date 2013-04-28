@@ -63,6 +63,7 @@ public abstract class Command {
     public enum Operation {
         Read,
         Register(RegAction.Register),
+        GraphRegister(RegAction.Register),
         Delete(RegAction.StatusUpdate),
         Update(RegAction.Update),
         StatusUpdate(RegAction.StatusUpdate),
@@ -85,16 +86,16 @@ public abstract class Command {
 
     protected Operation operation;
 
-    protected String target;
-    protected String path;
+    protected String target;            // The absolute target URI
+    protected String path;              // The relative request path
     protected MultivaluedMap<String, String> parameters;
     protected Model payload;
 
     protected String requestor;
 
-    protected String parent;
-    protected String lastSegment;
-    protected boolean paged;
+    protected String parent;            // The URI of the parent register
+    protected String lastSegment;       // Last segment in the request
+    protected boolean paged; 
     protected int length = -1;
     protected int pagenum = 0;
 
