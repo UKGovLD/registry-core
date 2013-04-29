@@ -9,20 +9,19 @@
 
 package com.epimorphics.registry.commands;
 
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Calendar;
 import java.util.List;
 
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.RegisterItem;
-import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.core.ValidationResponse;
 import com.epimorphics.registry.security.RegAction;
@@ -44,11 +43,6 @@ public class CommandUpdate extends Command {
     protected RegisterItem currentItem;
     boolean needStatusPermission = false;
     boolean needStatusForce = false;
-
-    public CommandUpdate(Operation operation, String target,
-            MultivaluedMap<String, String> parameters, Registry registry) {
-        super(operation, target, parameters, registry);
-    }
 
     public void setToPatch() {
         isPatch = true;

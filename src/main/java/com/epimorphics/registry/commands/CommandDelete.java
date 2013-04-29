@@ -9,24 +9,17 @@
 
 package com.epimorphics.registry.commands;
 
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
-import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.sun.jersey.api.NotFoundException;
 
 
 public class CommandDelete extends Command {
-
-    public CommandDelete(Operation operation, String target,
-            MultivaluedMap<String, String> parameters, Registry registry) {
-        super(operation, target, parameters, registry);
-    }
 
     @Override
     public Response doExecute() {

@@ -9,18 +9,16 @@
 
 package com.epimorphics.registry.commands;
 
-import java.util.List;
-
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
+import java.util.List;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Description;
-import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.core.ValidationResponse;
 import com.epimorphics.registry.store.EntityInfo;
@@ -29,11 +27,6 @@ import com.epimorphics.server.webapi.WebApiException;
 
 
 public class CommandValidate extends Command {
-
-    public CommandValidate(Operation operation, String target,
-            MultivaluedMap<String, String> parameters, Registry registry) {
-        super(operation, target, parameters, registry);
-    }
     
     @Override
     public ValidationResponse validate() {

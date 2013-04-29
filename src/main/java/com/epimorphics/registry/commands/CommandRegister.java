@@ -20,7 +20,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import org.apache.shiro.SecurityUtils;
@@ -34,7 +33,6 @@ import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
-import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.core.ValidationResponse;
 import com.epimorphics.registry.security.RegAction;
@@ -79,11 +77,6 @@ public class CommandRegister extends Command {
     boolean needStatusPermission = false;
 
     Register parentRegister;
-
-    public CommandRegister(Operation operation, String target,
-            MultivaluedMap<String, String> parameters, Registry registry) {
-        super(operation, target, parameters, registry);
-    }
 
     @Override
     public ValidationResponse validate() {

@@ -17,14 +17,12 @@ import java.net.URISyntaxException;
 import java.util.Calendar;
 
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
-import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.ValidationResponse;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDF;
@@ -38,11 +36,6 @@ import com.hp.hpl.jena.vocabulary.RDFS;
 public class CommandGraphRegister extends CommandRegister {
 
     Resource root;
-
-    public CommandGraphRegister(Operation operation, String target,
-            MultivaluedMap<String, String> parameters, Registry registry) {
-        super(operation, target, parameters, registry);
-    }
 
     @Override
     public ValidationResponse validate() {

@@ -42,9 +42,9 @@ public class CommandTag extends Command {
     Register register;
     String tag;
 
-    public CommandTag(Operation operation, String target,
+    public void init(Operation operation, String target,
             MultivaluedMap<String, String> parameters, Registry registry) {
-        super(operation, target, parameters, registry);
+        super.init(operation, target, parameters, registry);
         tag = parameters.getFirst(Parameters.TAG);
     }
 

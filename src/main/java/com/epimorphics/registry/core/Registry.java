@@ -27,15 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.epimorphics.rdfutil.ModelWrapper;
-import com.epimorphics.registry.commands.CommandDelete;
-import com.epimorphics.registry.commands.CommandGraphRegister;
-import com.epimorphics.registry.commands.CommandRead;
-import com.epimorphics.registry.commands.CommandRegister;
-import com.epimorphics.registry.commands.CommandSearch;
-import com.epimorphics.registry.commands.CommandStatusUpdate;
-import com.epimorphics.registry.commands.CommandTag;
-import com.epimorphics.registry.commands.CommandUpdate;
-import com.epimorphics.registry.commands.CommandValidate;
 import com.epimorphics.registry.core.Command.Operation;
 import com.epimorphics.registry.core.ForwardingRecord.Type;
 import com.epimorphics.registry.security.UserInfo;
@@ -275,19 +266,9 @@ public class Registry extends ServiceBase implements Service {
      * Factory for command instances, used for handling API requests from the request processor
      */
     public Command make(Operation operation, String target,  MultivaluedMap<String, String> parameters) {
-        // TODO Would be cleaner to attach command subclass to the operation code and inject the parameters separately
-        switch (operation) {
-        case Read:         return new CommandRead(operation, target, parameters, this);
-        case Delete:       return new CommandDelete(operation, target, parameters, this);
-        case Register:     return new CommandRegister(operation, target, parameters, this);
-        case GraphRegister:  return new CommandGraphRegister(operation, target, parameters, this);
-        case Update:       return new CommandUpdate(operation, target, parameters, this);
-        case StatusUpdate: return new CommandStatusUpdate(operation, target, parameters, this);
-        case Validate:     return new CommandValidate(operation, target, parameters, this);
-        case Search:       return new CommandSearch(operation, target, parameters, this);
-        case Tag:          return new CommandTag(operation, target, parameters, this);
-        }
-        return null;    // Should never get here but the compiler doesn't seem to know that
+        Command command = operation.makeCommandInstance();
+        command.init(operation, target, parameters, this);
+        return command;
     }
 
     public Command make(Operation operation, String target,  String parameters) {

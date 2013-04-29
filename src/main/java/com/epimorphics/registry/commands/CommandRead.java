@@ -62,9 +62,9 @@ public class CommandRead extends Command {
     boolean entityLookup;
     boolean tagRetieval;
 
-    public CommandRead(Operation operation, String target,
+    public void init(Operation operation, String target,
             MultivaluedMap<String, String> parameters, Registry registry) {
-        super(operation, target, parameters, registry);
+        super.init(operation, target, parameters, registry);
         withMetadata = hasParamValue(VIEW, WITH_METADATA);
         versionList = hasParamValue(VIEW, VERSION_LIST);
         versioned = lastSegment.contains(":");

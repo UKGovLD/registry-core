@@ -39,9 +39,9 @@ public class CommandSearch extends Command {
 
     boolean withMetadata;
 
-    public CommandSearch(Operation operation, String target,
+    public void init(Operation operation, String target,
             MultivaluedMap<String, String> parameters, Registry registry) {
-        super(operation, target, parameters, registry);
+        super.init(operation, target, parameters, registry);
         if (length == -1) {
             length = MAX_LEN;
         }

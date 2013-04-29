@@ -37,6 +37,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.epimorphics.rdfutil.RDFUtil;
+import com.epimorphics.registry.commands.CommandDelete;
+import com.epimorphics.registry.commands.CommandGraphRegister;
+import com.epimorphics.registry.commands.CommandRead;
+import com.epimorphics.registry.commands.CommandRegister;
+import com.epimorphics.registry.commands.CommandSearch;
+import com.epimorphics.registry.commands.CommandStatusUpdate;
+import com.epimorphics.registry.commands.CommandTag;
+import com.epimorphics.registry.commands.CommandUpdate;
+import com.epimorphics.registry.commands.CommandValidate;
 import com.epimorphics.registry.security.RegAction;
 import com.epimorphics.registry.security.RegPermission;
 import com.epimorphics.registry.security.UserInfo;
@@ -61,26 +70,38 @@ public abstract class Command {
     static final Logger log = LoggerFactory.getLogger( Command.class );
 
     public enum Operation {
-        Read,
-        Register(RegAction.Register),
-        GraphRegister(RegAction.Register),
-        Delete(RegAction.StatusUpdate),
-        Update(RegAction.Update),
-        StatusUpdate(RegAction.StatusUpdate),
-        Validate,
-        Search,
-        Tag(RegAction.StatusUpdate);
+        Read(CommandRead.class),
+        Register(CommandRegister.class, RegAction.Register),
+        GraphRegister(CommandGraphRegister.class, RegAction.Register),
+        Delete(CommandDelete.class, RegAction.StatusUpdate),
+        Update(CommandUpdate.class, RegAction.Update),
+        StatusUpdate(CommandStatusUpdate.class, RegAction.StatusUpdate),
+        Validate(CommandValidate.class),
+        Search(CommandSearch.class),
+        Tag(CommandTag.class, RegAction.StatusUpdate);
 
         protected RegAction action;
-        private Operation(RegAction action) {
+        protected Class<?> implementation;
+        
+        private Operation(Class<?> implementation, RegAction action) {
             this.action = action;
+            this.implementation = implementation;
         }
-        private Operation() {
+        private Operation(Class<?> implementation) {
+            this.implementation = implementation;
             this.action = null;
         }
 
         public RegAction getAuthorizationAction() {
             return action;
+        }
+        
+        public Command makeCommandInstance() {
+            try {
+                return (Command) implementation.newInstance();
+            } catch (Exception e) {
+                throw new EpiException(e);
+            }
         }
     };
 
@@ -105,13 +126,13 @@ public abstract class Command {
     protected ForwardingRecord delegation;
 
     /**
-     * Constructor
+     * Initialize a command instance
      * @param operation   operation request, as determined by HTTP verb
      * @param targetType  type of thing to act on, may be amended or set later after more analysis
      * @param target      the URI to which the operation was targeted, omits the assumed base URI
      * @param parameters  the query parameters
      */
-    public Command(Operation operation, String target,  MultivaluedMap<String, String> parameters, Registry registry) {
+    public void init(Operation operation, String target,  MultivaluedMap<String, String> parameters, Registry registry) {
         this.operation = operation;
         this.target = registry.getBaseURI() + (target.isEmpty() ? "/" : "/" + target);
         this.path = target;
