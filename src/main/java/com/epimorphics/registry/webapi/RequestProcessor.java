@@ -269,20 +269,24 @@ public class RequestProcessor extends BaseEndpoint {
         } else if ( parameters.get(Parameters.STATUS_UPDATE) != null ) {
             command = makeCommand(Operation.StatusUpdate);
         } else if (body != null) {
-            Model model = getBodyModel(hh, body, true);
-            if (model == null) {
-                throw new WebApiException(Status.BAD_REQUEST, "Did not recognize request");
-            }
             command = makeCommand(Operation.Register);
-            try {
-                command.setPayload( model );
-            } catch(Exception e) {
-                throw new WebApiException(Response.Status.BAD_REQUEST, "Payload failed to parse: " + e.getMessage());
-            }
+            setPayload(command, hh, body, true);
         } else {
             throw new WebApiException(Status.BAD_REQUEST, "Did not recognize request");
         }
         return command.execute();
+    }
+
+    private void setPayload(Command command, HttpHeaders hh, InputStream body, boolean isPOST) {
+        try {
+            Model model = getBodyModel(hh, body, isPOST);
+            if (model == null) {
+                throw new WebApiException(Status.BAD_REQUEST, "Did not recognize request");
+            }
+            command.setPayload( model );
+        } catch(Exception e) {
+            throw new WebApiException(Response.Status.BAD_REQUEST, "Payload failed to parse: " + e.getMessage());
+        }
     }
 
     @PUT
@@ -291,11 +295,12 @@ public class RequestProcessor extends BaseEndpoint {
         MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
         Command command = null;
         if ( parameters.get(Parameters.GRAPH) != null ) {
-            command = makeCommand( Operation.GraphRegister ); 
+            command = makeCommand( Operation.GraphRegister );
+            setPayload(command, hh, body, true);
         } else {
             command = makeCommand( Operation.Update );
+            setPayload(command, hh, body, false);
         }
-        command.setPayload( getBodyModel(hh, body, false) );
         return command.execute();
     }
 
@@ -310,7 +315,7 @@ public class RequestProcessor extends BaseEndpoint {
     public Response updatePatch(@Context HttpHeaders hh, InputStream body) {
         Command command = makeCommand( Operation.Update );
         ((CommandUpdate)command).setToPatch();
-        command.setPayload( getBodyModel(hh, body, false) );
+        setPayload(command, hh, body, false);
         return command.execute();
     }
 

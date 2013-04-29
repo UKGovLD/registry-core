@@ -132,7 +132,7 @@ public class CommandRegister extends Command {
                     return new ValidationResponse(BAD_REQUEST, "reg:status value which is not a resource " + status);
                 }
             }
-            
+
             if (!isBatch) {    // Validation of batch entries has to be relative to the batch parent so defer till then
                 String parentURI = NameUtils.stripLastSlash( parentRegister.getRoot().getURI() );
                 // String stripLastSlash needed to cope with the out-of-pattern URI for the root register
@@ -140,7 +140,7 @@ public class CommandRegister extends Command {
                 if (store.getDescription(item.getRoot().getURI()) != null) {
                     return new ValidationResponse(Response.Status.FORBIDDEN, "Item already registered at request location: " + item.getRoot());
                 }
-                
+
                 ValidationResponse entityValid = validateEntity(parentRegister, item.getEntity() );
                 if (!entityValid.isOk()) {
                     return entityValid;
@@ -169,7 +169,7 @@ public class CommandRegister extends Command {
         }
         return ValidationResponse.OK;
     }
-    
+
     @Override
     public RegPermission permissionRequried() {
         RegPermission required = super.permissionRequried();
@@ -351,7 +351,7 @@ public class CommandRegister extends Command {
         for (Property p : RegisterItem.INTERNAL_PROPS) {
             ri.getRoot().removeAll(p);
         }
-        
+
         // Submitter
         Model m = ri.getRoot().getModel();
         Resource submitter = m.createResource();

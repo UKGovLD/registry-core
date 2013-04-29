@@ -12,37 +12,21 @@ package com.epimorphics.registry.webapi;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.junit.Test;
 
-import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.util.Prefixes;
-import com.epimorphics.registry.vocab.Prov;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
 import com.epimorphics.server.core.ServiceConfig;
 import com.epimorphics.server.core.Store;
-import com.epimorphics.util.TestUtil;
-import com.epimorphics.vocabs.API;
-import com.epimorphics.vocabs.SKOS;
-import com.hp.hpl.jena.assembler.Mode;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.RDFList;
-import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.sparql.util.Closure;
-import com.hp.hpl.jena.util.FileManager;
-import com.hp.hpl.jena.vocabulary.DCTerms;
-import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDF;
-import com.hp.hpl.jena.vocabulary.RDFS;
 import com.sun.jersey.api.client.ClientResponse;
 
 /**
@@ -66,20 +50,7 @@ public class TestAPIDebug extends TomcatTestBase {
     public void testDebug() throws IOException {
         // Set up some base data
         assertEquals(201, postFileStatus("test/reg1.ttl", BASE_URL));
-        
-        ClientResponse response =  invoke("PUT", "test/ont1.ttl", BASE_URL + "reg1/ont?graph");
-        assertEquals(201, response.getStatus());
-        
-        Model m = getModelResponse(BASE_URL + "reg1/ont");
-//        m.write(System.out, "Turtle");
-        assertTrue( hasTerm(m, "A") );
-        assertTrue( hasTerm(m, "a") );
-        assertTrue( hasTerm(m, "p") );
-    }
-    
-    private boolean hasTerm(Model m, String term) {
-        Resource r = m.getResource(ROOT_REGISTER + "reg1/ont#" + term);
-        return r.hasProperty(RDF.type);
+
     }
 
     // Debugging utility only, should not be used while transactions are live

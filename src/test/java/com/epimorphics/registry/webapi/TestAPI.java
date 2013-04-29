@@ -163,6 +163,9 @@ public class TestAPI extends TomcatTestBase {
 
         // Check tagging
         doTaggingTest();
+        
+        // Graph entities and annotations
+        doGraphEntityTest();
 
 //        System.out.println("Store dump");
 //        ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel().write(System.out, "Turtle");
@@ -727,7 +730,35 @@ public class TestAPI extends TomcatTestBase {
         assertTrue( members.contains( model.getResource(ROOT_REGISTER + "reg3/_blue:2") ) );
         assertEquals(2, members.size());
     }
+    
+    /**
+     * Check support for graph entities 
+     */
+    private void doGraphEntityTest() {
+        ClientResponse response;
+        Model m;
+        response =  invoke("PUT", "test/ont1.ttl", BASE_URL + "reg1/ont?graph");
+        assertEquals(201, response.getStatus());
 
+        m = getModelResponse(BASE_URL + "reg1/ont");
+        assertTrue( hasTerm(m, "A") );
+        assertTrue( hasTerm(m, "a") );
+        assertTrue( hasTerm(m, "p") );
+
+        assertEquals(204, invoke("PUT", "test/ont1-modified.ttl", BASE_URL + "reg1/ont?graph").getStatus());
+        m = getModelResponse(BASE_URL + "reg1/ont");
+        assertFalse( hasTerm(m, "A") );
+        assertFalse( hasTerm(m, "a") );
+        assertTrue( hasTerm(m, "D") );
+        assertTrue( hasTerm(m, "d") );
+        
+    }
+
+    private boolean hasTerm(Model m, String term) {
+        Resource r = m.getResource(ROOT_REGISTER + "reg1/ont#" + term);
+        return r.hasProperty(RDF.type);
+    }
+    
     private void checkPageResponse(Model m, String nextpage, int length) {
         ResIterator ri = m.listSubjectsWithProperty(RDF.type, Ldbp.Page);
         assertTrue(ri.hasNext());

@@ -8,17 +8,11 @@
 @base <http://location.data.gov.uk/reg1/ont> .
 
 <> a owl:Ontology;
-    rdfs:label "Test ontology 1";
+    rdfs:label "Test ontology 1 - modified";
     .
 
-<#A> a owl:class;  rdfs:label "A" .
-<#B> a owl:class;  rdfs:label "B" .
-<#C> a owl:class;  rdfs:label "C" .
-
-<#p> a owl:ObjectProperty; rdfs:label "p"; rdfs:domain <#A>; rdfs:range <#B> .
-
-<#a> a <#A> ; <#p> <#b> .
-<#b> a <#B> .
+<#D> a owl:class;  rdfs:label "D" .
+<#d> a <#D> .
 
 
 
