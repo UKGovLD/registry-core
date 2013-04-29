@@ -92,6 +92,14 @@ public class CommandRead extends Command {
                 if (versioned) {
                     // An explicit item version
                     d = store.getVersion(target, true);
+                } else if (parameters.containsKey(Parameters.ANNOTATION)) {
+                    String graphURI = target + "?annotation=" + parameters.getFirst(Parameters.ANNOTATION);
+                    Model m = store.getGraph(graphURI);
+                    if (m != null && !m.isEmpty()) {
+                        return returnModel(m, graphURI);
+                    } else {
+                        throw new NotFoundException();
+                    }
                 } else {
                     //  plain item
                     d = store.getItem(target, true) ;

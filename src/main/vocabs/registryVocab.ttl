@@ -169,6 +169,12 @@ reg:submitter a owl:ObjectProperty;
     rdfs:range foaf:Agent;
     .
 
+reg:annotation a owl:ObjectProperty;
+    rdfs:label "annotation"@en;
+    rdfs:comment "The URI of a graph of annotation statements associate with this item"@en;
+    rdfs:domain reg:RegisterItem;
+    .
+    
 # -- Status ------------------------------------------------------
 
 reg:status    a owl:ObjectProperty;
@@ -448,63 +454,5 @@ reg:enumerationObject a owl:ObjectProperty;
     rdfs:range  rdfs:Resource;
     .
 
-# ---------------------------------------------------------------------
-# Below here is experimental, based on earlier Epimorphics explorations
-# ---------------------------------------------------------------------
 
-# -- Views ------------------------------------------------------
-
-reg:hasView    a owl:ObjectProperty;
-    vs:term_status "experimental";
-    rdfs:label "has view"@en;
-    rdfs:comment "Indicates a specification for a view available for the entity described by this record. If the entity is itself a delegated register then the view provides a pattern for accessing all items within the delegated register. Particularly applicable to cases where the entity is not a RDF resource but where some service (such as a Web Feature Service) can provide a view of the entity."@en;
-    rdfs:domain reg:RegisterItem;
-    rdfs:range  reg:View;
-    .
-
-reg:delegationView    a owl:ObjectProperty;
-    vs:term_status "experimental";
-    rdfs:label "delegation view"@en;
-    rdfs:comment "Default view for delegated resources, URL rewrite used A view used to redirect requests for delegated resources."@en;
-    rdfs:domain reg:RegisterItem;
-    rdfs:range  reg:View;
-    rdfs:subPropertyOf reg:hasView;
-    .
-
-reg:View    a owl:Class;
-    vs:term_status "experimental";
-    rdfs:label "View"@en;
-    rdfs:comment "Specifies a view available for a registered item"@en;
-    rdfs:subClassOf [owl:onProperty rdfs:label;       owl:minCardinality 0];  # used to name the view
-    rdfs:subClassOf [owl:onProperty dct:format;       owl:minCardinality 0];  # e.g. mime type
-    rdfs:subClassOf [owl:onProperty reg:urlMatch;     owl:cardinality    1];
-    rdfs:subClassOf [owl:onProperty reg:urlRewrite;   owl:cardinality    1];
-    rdfs:subClassOf [owl:onProperty reg:urlProxy;     owl:cardinality    1];
-    .
-
-reg:urlMatch   a owl:DatatypeProperty;
-    vs:term_status "experimental";
-    rdfs:label "url match"@en;
-    rdfs:comment "A regex which is matched against the incoming request as part of a view forwarding"@en;
-    rdfs:domain reg:View;
-    rdfs:range  xsd:string;
-    .
-
-reg:urlRewrite   a owl:DatatypeProperty;
-    vs:term_status "experimental";
-    rdfs:label "url rewrite"@en;
-    rdfs:comment "A template generating the rewritten URL to forward to, can include $N back references to match groups"@en;
-    rdfs:domain reg:View;
-    rdfs:range  xsd:string;
-    .
-
-# TODO consider adding reg:matchCond to do mod_rewrite style checking of headers and binding of %N rewrite references
-
-reg:urlProxy   a owl:DatatypeProperty;
-    vs:term_status "experimental";
-    rdfs:label "url proxy"@en;
-    rdfs:comment "Flag which sets whether the rewritten URL should be proxied or redirected (302)"@en;
-    rdfs:domain reg:View;
-    rdfs:range  xsd:boolean;
-    .
 

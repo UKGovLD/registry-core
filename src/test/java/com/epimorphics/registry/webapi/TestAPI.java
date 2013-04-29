@@ -166,6 +166,7 @@ public class TestAPI extends TomcatTestBase {
         
         // Graph entities and annotations
         doGraphEntityTest();
+        doGraphAnnotationTest();
 
 //        System.out.println("Store dump");
 //        ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel().write(System.out, "Turtle");
@@ -751,7 +752,28 @@ public class TestAPI extends TomcatTestBase {
         assertFalse( hasTerm(m, "a") );
         assertTrue( hasTerm(m, "D") );
         assertTrue( hasTerm(m, "d") );
+    }
+    
+    /**
+     * Check support for attaching graphs to items
+     */
+    private void doGraphAnnotationTest() {
+        String annotationGraph = BASE_URL + "reg1/_red?annotation=test";
+        assertEquals(404, getResponse(annotationGraph).getStatus());
         
+        ClientResponse response = invoke("PUT", "test/ont1.ttl", annotationGraph);
+        assertEquals(201, response.getStatus());
+        
+        Model m = getModelResponse(annotationGraph);
+        assertNotNull(m);
+        assertTrue( hasTerm(m, "A") );
+        assertTrue( hasTerm(m, "a") );
+        assertTrue( hasTerm(m, "p") );
+        
+        m = getModelResponse(BASE_URL + "reg1/_red");
+        Resource item = m.getResource(ROOT_REGISTER + "reg1/_red");
+        assertTrue( item.hasProperty(RegistryVocab.annotation) );
+        assertTrue( item.hasProperty(RegistryVocab.annotation, m.getResource(ROOT_REGISTER + "reg1/_red?annotation=test")) );
     }
 
     private boolean hasTerm(Model m, String term) {

@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.epimorphics.rdfutil.RDFUtil;
+import com.epimorphics.registry.commands.CommandAnnotate;
 import com.epimorphics.registry.commands.CommandDelete;
 import com.epimorphics.registry.commands.CommandGraphRegister;
 import com.epimorphics.registry.commands.CommandRead;
@@ -78,7 +79,8 @@ public abstract class Command {
         StatusUpdate(CommandStatusUpdate.class, RegAction.StatusUpdate),
         Validate(CommandValidate.class),
         Search(CommandSearch.class),
-        Tag(CommandTag.class, RegAction.StatusUpdate);
+        Tag(CommandTag.class, RegAction.StatusUpdate),
+        Annotate(CommandAnnotate.class, RegAction.Register);
 
         protected RegAction action;
         protected Class<?> implementation;

@@ -297,6 +297,9 @@ public class RequestProcessor extends BaseEndpoint {
         if ( parameters.get(Parameters.GRAPH) != null ) {
             command = makeCommand( Operation.GraphRegister );
             setPayload(command, hh, body, true);
+        } else if ( parameters.get(Parameters.ANNOTATION) != null ) {
+            command = makeCommand( Operation.Annotate );
+            setPayload(command, hh, body, true);
         } else {
             command = makeCommand( Operation.Update );
             setPayload(command, hh, body, false);
