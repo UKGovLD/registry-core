@@ -80,7 +80,7 @@ public abstract class Command {
         Validate(CommandValidate.class),
         Search(CommandSearch.class),
         Tag(CommandTag.class, RegAction.StatusUpdate),
-        Annotate(CommandAnnotate.class, RegAction.Register);
+        Annotate(CommandAnnotate.class, RegAction.Update);
 
         protected RegAction action;
         protected Class<?> implementation;
