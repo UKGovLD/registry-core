@@ -98,7 +98,7 @@ public class RegisterItem extends Description {
     public void setEntity(Resource entity) {
         this.entity = entity;
     }
-    
+
     /**
      * Flag that the entity should stored as a whole graph, not as a simple closure
      */
@@ -106,7 +106,7 @@ public class RegisterItem extends Description {
         this.entityAsGraph = asGraph;
     }
 
-    
+
     /**
      * Test if the entity should stored as a whole graph, not as a simple closure
      */
@@ -353,7 +353,8 @@ public class RegisterItem extends Description {
         }
     }
 
-    static final Pattern LEGAL_NOTATION = Pattern.compile("^[a-zA-Z0-9][\\w\\.\\-~%@=!&'()*+,;=]*$");
+//    static final Pattern LEGAL_NOTATION = Pattern.compile("^[a-zA-Z0-9][\\w\\.\\-~%@=!&'()*+,;=]*$");
+    static final Pattern LEGAL_NOTATION = Pattern.compile("^[a-zA-Z0-9\\.\\-~%@=!&'()*+,;=][\\w\\.\\-~%@=!&'()*+,;=]*$");
 
     private static String getExplicitNotation(Resource root) {
         if (root.hasProperty(RegistryVocab.notation)) {

@@ -393,12 +393,18 @@ public class RequestProcessor extends BaseEndpoint {
                     success++;
                     successfullyProcessed.add(filename);
                 }
+            } catch (WebApiException e) {
+                failure++;
+                log.warn("Error processing uploaded file", e);
+                errorMessages.append("<p>" + filename + " - " + e.getResponse().getStatus() + " (" + e.getMessage() + ") </p>");
+                throw e;
             } catch (Exception e) {
                 failure++;
+                log.warn("Error processing uploaded file", e);
                 errorMessages.append("<p>" + filename + " - internal error (" + e.getMessage() + ") </p>");
             }
         }
-        if (success + failure == 0) {
+        if (success == 0) {
             throw new WebApiException(Response.Status.BAD_REQUEST, "No file uploaded");
         }
         if (failure != 0) {
