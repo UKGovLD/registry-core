@@ -16,6 +16,7 @@ import javax.ws.rs.core.Response;
 
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.RegisterItem;
+import com.epimorphics.registry.message.Message;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.Parameters;
 import com.epimorphics.util.EpiException;
@@ -36,6 +37,12 @@ public class CommandAnnotate extends Command {
             store.storeGraph(graphURI, getPayload());
             item.getRoot().addProperty(RegistryVocab.annotation, ResourceFactory.createResource(graphURI));
             store.update(item, false);
+            
+            // notify event
+            Message message = new Message(this);
+            message.setMessage( payload );
+            notify(message);
+            
             try {
                 return Response.created(new URI(graphURI)).build();
             } catch (URISyntaxException e) {

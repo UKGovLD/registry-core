@@ -35,6 +35,7 @@ import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.core.ValidationResponse;
+import com.epimorphics.registry.message.Message;
 import com.epimorphics.registry.security.RegAction;
 import com.epimorphics.registry.security.RegPermission;
 import com.epimorphics.registry.security.UserInfo;
@@ -379,6 +380,9 @@ public class CommandRegister extends Command {
         }
         store.addToRegister(parent, ri);
         checkDelegation(ri);
+        
+        notify( new Message(this, ri) );
+
         return ri.getRoot();
     }
 

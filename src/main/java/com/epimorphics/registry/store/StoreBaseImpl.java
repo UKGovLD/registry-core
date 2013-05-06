@@ -93,7 +93,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
     protected Store store;
     protected Indexer indexer;
-    protected DescriptionCache cache;
+//    protected DescriptionCache cache;
     protected Map<String, Lock> locks = new HashMap<String, Lock>();
 
     @Override

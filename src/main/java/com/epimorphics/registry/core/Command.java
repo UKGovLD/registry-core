@@ -47,6 +47,8 @@ import com.epimorphics.registry.commands.CommandStatusUpdate;
 import com.epimorphics.registry.commands.CommandTag;
 import com.epimorphics.registry.commands.CommandUpdate;
 import com.epimorphics.registry.commands.CommandValidate;
+import com.epimorphics.registry.message.Message;
+import com.epimorphics.registry.message.MessagingService;
 import com.epimorphics.registry.security.RegAction;
 import com.epimorphics.registry.security.RegPermission;
 import com.epimorphics.registry.security.UserInfo;
@@ -211,8 +213,11 @@ public abstract class Command {
         return String.format("Command: %s on %s", operation, target);
     }
 
+    /**
+     * Carries out the actual command
+     */
     public abstract Response doExecute() ;
-
+    
     /**
      * Test that the request is legal. Subclasses should provide
      * an appropriate implementation.
@@ -254,8 +259,6 @@ public abstract class Command {
             response = Response.serverError().entity(e.getMessage()).build();
         }
 
-        // TODO - logging notification
-
         Date now = new Date(System.currentTimeMillis());
         log.info(String.format("%s [%s] %s \"%s?%s\"%s %d",
                 requestor == null ? null : NameUtils.decodeSafeName(requestor),
@@ -280,8 +283,18 @@ public abstract class Command {
                 log.error("Failed to write log of payload", e);
             }
         }
-
+        
         return response;
+    }
+    
+    /**
+     * Notify the command event out to message listeners
+     */
+    public void notify(Message message) {
+        MessagingService ms = registry.getMessagingService();
+        if (ms != null) {
+            ms.sendMessage(message);
+        }
     }
 
     /**

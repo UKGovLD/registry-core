@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
 import com.epimorphics.rdfutil.ModelWrapper;
 import com.epimorphics.registry.core.Command.Operation;
 import com.epimorphics.registry.core.ForwardingRecord.Type;
+import com.epimorphics.registry.message.LocalMessagingService;
+import com.epimorphics.registry.message.MessagingService;
 import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.security.UserStore;
 import com.epimorphics.registry.store.CachingStore;
@@ -74,6 +76,7 @@ public class Registry extends ServiceBase implements Service {
     public static final String STORE_PARAM = "store";
     public static final String CACHE_SIZE_PARAM = "cacheSize";
     public static final String PAGE_SIZE_PARAM = "pageSize";
+    public static final String MESSAGE_SERVICE_PARAM = "messageService";
 
     public static final boolean TEXT_INDEX_INCLUDES_HISTORY = true;
 
@@ -85,6 +88,7 @@ public class Registry extends ServiceBase implements Service {
     protected ForwardingService forwarder;
     protected String logDir;
     protected UserStore userStore;
+    protected MessagingService messageService;
 
 
     @Override
@@ -116,6 +120,15 @@ public class Registry extends ServiceBase implements Service {
         }
 
         registry = this;   // Assumes singleton registry
+        
+        // Configure the messaging service
+        String msName = config.get(MESSAGE_SERVICE_PARAM);
+        if (msName != null) {
+            messageService = getNamedService(msName, MessagingService.class);
+        }
+        if (messageService == null) {
+            messageService = new LocalMessagingService();
+        }
 
         // Initialize the registry RDF store from the bootstrap registers if needed
         Description root = store.getDescription(getBaseURI() + "/");
@@ -260,6 +273,10 @@ public class Registry extends ServiceBase implements Service {
 
     public UserStore getUserStore() {
         return userStore;
+    }
+    
+    public MessagingService getMessagingService() {
+        return messageService;
     }
 
     /**

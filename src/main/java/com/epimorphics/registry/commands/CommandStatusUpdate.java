@@ -18,6 +18,7 @@ import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.ValidationResponse;
+import com.epimorphics.registry.message.Message;
 import com.epimorphics.registry.security.RegAction;
 import com.epimorphics.registry.security.RegPermission;
 import com.epimorphics.registry.store.RegisterEntryInfo;
@@ -49,13 +50,17 @@ public class CommandStatusUpdate extends Command {
         return required;
     }
 
+    public String getRequestedStatus() {
+        return parameters.getFirst(STATUS_PARAM);
+    }
+    
     @Override
     public Response doExecute() {
         store.lock(target);
         RegisterItem ri = store.getItem(itemURI(), false);
         try {
             if (ri != null) {
-                String requestedStatus = parameters.getFirst(STATUS_PARAM);
+                String requestedStatus = getRequestedStatus();
                 if (requestedStatus == null) {
                     throw new WebApiException(BAD_REQUEST, "Could not determine status to update to");
                 }
@@ -69,6 +74,12 @@ public class CommandStatusUpdate extends Command {
                     }
                     doStatusUpdate(ri, requestedStatus);
                 }
+                
+                // Notify event
+                Message message = new Message(this);
+                message.setMessage( getRequestedStatus() );
+                notify(message);
+                
                 return Response.noContent().build();
             } else {
                 throw new NotFoundException();
@@ -90,5 +101,5 @@ public class CommandStatusUpdate extends Command {
         store.update(ri, false);
         checkDelegation(ri);
     }
-
+        
 }

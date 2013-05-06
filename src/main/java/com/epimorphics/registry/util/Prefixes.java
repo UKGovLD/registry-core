@@ -14,6 +14,9 @@ import java.util.Map;
 
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.message.Message;
+import com.epimorphics.registry.message.MessagingService;
+import com.epimorphics.registry.message.ProcessIfChanges;
 import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.epimorphics.registry.webapi.JsonContext;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -31,6 +34,8 @@ public class Prefixes {
     public static final String PREFIXES_FILE = "prefixes.ttl";
 
     public static final String PREFIX_REGISTER = "/system/prefixes";
+    
+    protected static boolean listeningForChanges = false;
 
     static PrefixMapping prefixes;
     static PrefixMapping defaultPrefixes;
@@ -97,6 +102,18 @@ public class Prefixes {
     }
     
     private static PrefixMapping loadPrefixes() {
+        if (!listeningForChanges) {
+            MessagingService.Process reset = new MessagingService.Process(){
+                @Override
+                public void processMessage(Message message) {
+                    resetCache();
+                }
+            };
+            String target = Registry.get().getBaseURI() + PREFIX_REGISTER;
+            Registry.get().getMessagingService().processMessages( new ProcessIfChanges(reset, target) );
+            listeningForChanges = true;
+        }
+        
         Register prefixesRegister = new Register( ResourceFactory.createResource( getPrefixRegisterURI() ) );
         prefixesRegister.setStore( Registry.get().getStore() );
         PrefixMapping pm = ModelFactory.createDefaultModel();
