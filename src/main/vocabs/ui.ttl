@@ -89,4 +89,31 @@ ui:labelField a ui:FieldType; rdfs:label "label field"; rdfs:comment "Short text
 ui:textField a ui:FieldType; rdfs:label "text field"; rdfs:comment "Long text field" .
 ui:anyURIField a ui:FieldType; rdfs:label "any uri field"; rdfs:comment "Manually entered URI for a resource" .
 
-# others to define
+# Template entries
+
+ui:Template a owl:Class;
+    rdfs:label "Template"@en;
+    rdfs:comment "Declaration of a type-specific rendering template"@en;
+    .
+    
+ui:template a owl:DatatypeProperty;
+    rdfs:label "template"@en;
+    rdfs:comment "The relative file name of the template, normally ends with '.vm'"@en;
+    rdfs:domain ui:Template;
+    .
+    
+ui:type a owl:ObjectProperty;
+    rdfs:label "type"@en;
+    rdfs:comment "The resource type to which this template applies"@en;
+    rdfs:domain ui:Template;
+    rdfs:range  owl:Class;
+    .
+    
+ui:templatePriority a owl:DatatypeProperty;
+    rdfs:label "template priority"@en;
+    rdfs:comment "The priority to give this template if multiple types match, high numbers indicate high priority"@en;
+    rdfs:domain ui:Template;
+    rdfs:range  xsd:int;
+    .
+    
+

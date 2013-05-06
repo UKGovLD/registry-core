@@ -18,6 +18,7 @@ import com.epimorphics.registry.util.Util;
 import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
@@ -132,6 +133,13 @@ public class Register extends Description {
         addMembership(model, entities);
 
         return !incomplete;
+    }
+    
+    public List<Resource> getAllEntities() {
+        Model model = ModelFactory.createDefaultModel();
+        List<Resource> entities = new ArrayList<>();
+        constructView(model, false, Status.Accepted, 0, -1, -1, entities);
+        return entities;
     }
 
     protected void addMembership(Model model, List<Resource> entities) {

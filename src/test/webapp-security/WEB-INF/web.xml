@@ -110,7 +110,7 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
     userStore=userstore,
     log=/var/local/registry/logstore,
     bootSpec=${webapp}/WEB-INF/root-register.ttl|${webapp}/WEB-INF/registry.ttl,
-    systemBoot=${webapp}/WEB-INF/boot|/var/local/registry/boot</param-value>
+    systemBoot=${webapp}/WEB-INF/boot</param-value>
   </context-param>
 
 

@@ -404,9 +404,6 @@ public class RequestProcessor extends BaseEndpoint {
                 errorMessages.append("<p>" + filename + " - internal error (" + e.getMessage() + ") </p>");
             }
         }
-        if (success == 0) {
-            throw new WebApiException(Response.Status.BAD_REQUEST, "No file uploaded");
-        }
         if (failure != 0) {
             if (success > 0) {
                 errorMessages.append("<p>Other file were successfully processed: ");
@@ -416,6 +413,9 @@ public class RequestProcessor extends BaseEndpoint {
                 errorMessages.append("</p>");
             }
             throw new WebApiException(Response.Status.BAD_REQUEST, errorMessages.toString());
+        }
+        if (success == 0) {
+            throw new WebApiException(Response.Status.BAD_REQUEST, "No file uploaded");
         }
         return Response.ok().build();
     }

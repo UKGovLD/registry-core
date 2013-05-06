@@ -31,8 +31,8 @@ public class ProcessIfChanges implements MessagingService.Process {
 
     @Override
     public void processMessage(Message message) {
-        log.debug("Received " + message.getOperation() + " on " + message.getTarget());
         if (message.getTarget().startsWith(target)) {
+            log.debug("Processing message " + message.getOperation() + " on " + message.getTarget());
             process.processMessage(message);
         }
     }

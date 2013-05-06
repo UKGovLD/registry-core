@@ -45,14 +45,14 @@ public class LocalMessagingService extends ServiceBase implements Service, Messa
     }
     
     @Override
-    public void sendMessage(Message message) {
+    public synchronized void sendMessage(Message message) {
         for (Process p : processors) {
             executor.execute( new Task(message, p) );
         }
     } 
 
     @Override
-    public void processMessages(Process process) {
+    public synchronized void processMessages(Process process) {
         processors.add(process);
     }
 

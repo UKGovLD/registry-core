@@ -31,6 +31,10 @@
       </div>
     #end
     </div>
+    
+    ## TODO TEMP
+    #set($template = $lib.reg.templateFor($register))
+    #if ($template) #parse($template) #end
 
     ## Listing members
     #set($isAdministrator=$lib.reg.isPermitted("Grant", $uri))

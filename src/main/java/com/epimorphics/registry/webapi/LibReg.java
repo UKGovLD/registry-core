@@ -25,6 +25,7 @@ import com.epimorphics.rdfutil.ModelWrapper;
 import com.epimorphics.rdfutil.RDFNodeWrapper;
 import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
+import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.security.RegAuthorizationInfo;
@@ -33,6 +34,7 @@ import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.util.Prefixes;
+import com.epimorphics.registry.util.TypedTemplateIndex;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.server.core.Service;
 import com.epimorphics.server.core.ServiceBase;
@@ -379,5 +381,29 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
             return getReservations();
         }
     }
+    
+    protected TypedTemplateIndex typedTemplateIndex;
+    
+    /**
+     * Return the name of the template, if any, to use for rendering the given entity
+     * @param arg can be a wrapped resource, raw resource or a register item
+     */
+    public String templateFor(Object arg) {
+        if (arg instanceof RDFNodeWrapper) {
+            return templateForResource( ((RDFNodeWrapper)arg).asResource() );
+        } else if (arg instanceof RegisterItem) {
+            return templateForResource( ((RegisterItem)arg).getEntity() );
+        } else if (arg instanceof Resource) {
+            return templateForResource( (Resource)arg );
+        } else {
+            return null;
+        }
+    }
 
+    private String templateForResource(Resource r) {
+        if (typedTemplateIndex == null) {
+            typedTemplateIndex = new TypedTemplateIndex();
+        }
+        return typedTemplateIndex.templateFor(r);
+    }
 }
