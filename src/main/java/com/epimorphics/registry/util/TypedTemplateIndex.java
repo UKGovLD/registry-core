@@ -2,7 +2,7 @@
  * File:        TypedTemplatedIndex.java
  * Created by:  Dave Reynolds
  * Created on:  6 May 2013
- * 
+ *
  * (c) Copyright 2013, Epimorphics Limited
  *
  *****************************************************************/
@@ -21,7 +21,6 @@ import com.epimorphics.registry.vocab.Ui;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.util.OneToManyMap;
 import com.hp.hpl.jena.vocabulary.RDF;
@@ -29,21 +28,21 @@ import com.hp.hpl.jena.vocabulary.RDF;
 /**
  * Utility to keep track of type-specific UI templates registered
  * in the /system/typed-templates register.
- * 
+ *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public class TypedTemplateIndex {
     public static final String REGISTER = "/system/typed-templates";
-    
+
     private OneToManyMap<Resource, Template> rawTemplates = null;
     protected boolean listeningForChanges = false;
-    
+
     /**
      * Constructor. Should not be called until after the registry has been initialized
      */
     public TypedTemplateIndex() {
     }
-    
+
     /**
      * Find the best template for the different types of this resource
      */
@@ -64,7 +63,7 @@ public class TypedTemplateIndex {
         }
         return template;
     }
-    
+
     protected OneToManyMap<Resource, Template> getTemplates() {
         if (rawTemplates == null) {
             loadTemplates();
@@ -75,7 +74,7 @@ public class TypedTemplateIndex {
     protected void resetCache() {
         rawTemplates = null;
     }
-    
+
     private void loadTemplates() {
         rawTemplates  = new OneToManyMap<>();
         String registerURI = Registry.get().getBaseURI() + REGISTER;
@@ -89,7 +88,7 @@ public class TypedTemplateIndex {
 
         listenForChanges();
     }
-     
+
     private void listenForChanges() {
         if (!listeningForChanges) {
             MessagingService.Process reset = new MessagingService.Process(){
@@ -108,13 +107,13 @@ public class TypedTemplateIndex {
         Resource type;
         int priority;
         String template;
-        
+
         public Template(Resource t) {
             type = t.getPropertyResourceValue(Ui.type);
             priority = RDFUtil.getIntValue(t, Ui.templatePriority, 0);
             template = RDFUtil.getStringValue(t, Ui.template);
         }
     }
-    
-    
+
+
 }

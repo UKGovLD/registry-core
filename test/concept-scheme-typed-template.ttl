@@ -12,8 +12,7 @@
 
 <concept-scheme> a ui:Template;
     rdfs:label "concept scheme template";
-    ui:template "concept-scheme.vm";
+    ui:template "concept-scheme-render.vm";
     ui:templatePriority 50;
     ui:type skos:ConceptScheme;
     .
-    

@@ -20,6 +20,7 @@ import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
 import com.epimorphics.server.core.ServiceConfig;
 import com.epimorphics.server.core.Store;
+import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -49,31 +50,23 @@ public class TestAPIDebug extends TomcatTestBase {
     @Test
     public void testDebug() throws IOException {
         // Set up some base data
-        assertEquals(201, postFileStatus("test/reg1.ttl", BASE_URL));
-        assertEquals(201, postFileStatus("test/red.ttl", REG1));
-        
-        String annotationGraph = BASE_URL + "reg1/_red?annotation=test";
-        assertEquals(404, getResponse(annotationGraph).getStatus());
-        
-        ClientResponse response = invoke("PUT", "test/ont1.ttl", annotationGraph);
-        assertEquals(201, response.getStatus());
-        
-        Model m = getModelResponse(annotationGraph);
-        assertNotNull(m);
-        assertTrue( hasTerm(m, "A") );
-        assertTrue( hasTerm(m, "a") );
-        assertTrue( hasTerm(m, "p") );
-        
-        m = getModelResponse(BASE_URL + "reg1/_red");
-        Resource item = m.getResource(ROOT_REGISTER + "reg1/_red");
-        assertTrue( item.hasProperty(RegistryVocab.annotation) );
-        assertTrue( item.hasProperty(RegistryVocab.annotation, m.getResource(ROOT_REGISTER + "reg1/_red?annotation=test")) );
+//        assertEquals(201, postFileStatus("test/reg1.ttl", BASE_URL));
+//        assertEquals(201, postFileStatus("test/red.ttl", REG1));
 
-    }
+        String stt_reg = BASE_URL + "system/typed-templates";
+        assertEquals(201, postFileStatus("test/typed-templates-reg.ttl", BASE_URL + "system"));
+        assertEquals(201, postFileStatus("test/concept-scheme-typed-template.ttl", stt_reg));
+        assertEquals(204, post(stt_reg + "/_concept-scheme?update&status=stable").getStatus());
 
-    private boolean hasTerm(Model m, String term) {
-        Resource r = m.getResource(ROOT_REGISTER + "reg1/ont#" + term);
-        return r.hasProperty(RDF.type);
+        LibReg reg = new LibReg();
+        Resource test = ModelFactory.createDefaultModel().createResource("http://example.com/test")
+                .addProperty(RDF.type, SKOS.ConceptScheme)
+                .addProperty(RDF.type, SKOS.Collection);
+        assertEquals("concept-scheme-render.vm", reg.templateFor(test) );
+        
+        assertEquals(201, postFileStatus("test/collection-typed-template.ttl", stt_reg));
+        assertEquals(204, post(stt_reg + "/_collection?update&status=stable").getStatus());
+        assertEquals("collection-render.vm", reg.templateFor(test) );
     }
 
     // Debugging utility only, should not be used while transactions are live

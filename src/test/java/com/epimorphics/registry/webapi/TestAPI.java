@@ -167,6 +167,9 @@ public class TestAPI extends TomcatTestBase {
         // Graph entities and annotations
         doGraphEntityTest();
         doGraphAnnotationTest();
+        
+        // Typed template lookup and change notification
+        doTypedTemplateTest();
 
 //        System.out.println("Store dump");
 //        ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel().write(System.out, "Turtle");
@@ -780,6 +783,28 @@ public class TestAPI extends TomcatTestBase {
         Resource r = m.getResource(ROOT_REGISTER + "reg1/ont#" + term);
         return r.hasProperty(RDF.type);
     }
+    
+    /**
+     * Typed template lookup and change notification
+     */
+    private void doTypedTemplateTest() {
+        String stt_reg = BASE_URL + "system/typed-templates";
+        assertEquals(201, postFileStatus("test/typed-templates-reg.ttl", BASE_URL + "system"));
+        assertEquals(201, postFileStatus("test/concept-scheme-typed-template.ttl", stt_reg));
+        assertEquals(204, post(stt_reg + "/_concept-scheme?update&status=stable").getStatus());
+
+        LibReg reg = new LibReg();
+        Resource test = ModelFactory.createDefaultModel().createResource("http://example.com/test")
+                .addProperty(RDF.type, SKOS.ConceptScheme)
+                .addProperty(RDF.type, SKOS.Collection);
+        assertEquals("concept-scheme-render.vm", reg.templateFor(test) );
+        
+        assertEquals(201, postFileStatus("test/collection-typed-template.ttl", stt_reg));
+        assertEquals(204, post(stt_reg + "/_collection?update&status=stable").getStatus());
+        assertEquals("collection-render.vm", reg.templateFor(test) );
+
+    }
+
     
     private void checkPageResponse(Model m, String nextpage, int length) {
         ResIterator ri = m.listSubjectsWithProperty(RDF.type, Ldbp.Page);
