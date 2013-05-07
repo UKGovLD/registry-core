@@ -1,0 +1,15 @@
+<h3>Top concepts in $register.name</h3>
+
+<ul>
+  #foreach($concept in $register.connectedNodes("skos:hasTopConcept|^skos:topConceptOf"))
+
+    #set($conceptItemL = $concept.connectedNodes("^reg:entity/^reg:definition"))
+    #if($conceptItemL.isEmpty())
+      #set($conceptItem = false)
+    #else
+      #set($conceptItem = $conceptItemL[0])
+    #end
+
+    #showMember($conceptItem, $concept)
+  #end
+</ul>

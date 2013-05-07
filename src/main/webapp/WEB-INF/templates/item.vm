@@ -29,8 +29,15 @@
 
     #set($isAdministrator=$lib.reg.isPermitted("Grant", $uri))
 
+    #set($template = $lib.reg.templateFor($entity))
+
     <ul class="nav nav-tabs nav-compact action-tab">
-      <li class="active"><a href="#properties" data-toggle="tab">Properties</a></li>
+      #if ($template)
+        <li class="active"><a href="#view" data-toggle="tab">View</a></li>
+        <li><a href="#properties" data-toggle="tab">Properties</a></li>
+      #else
+        <li class="active"><a href="#properties" data-toggle="tab">Properties</a></li>
+      #end
       <li><a href="#metadata" data-toggle="tab">Metadata</a></li>
       <li><a href="#history" data-toggle="tab">History</a></li>
       #if($isAdministrator)
@@ -39,7 +46,14 @@
     </ul>
 
     <div class="tab-content">
-      <div class="tab-pane active" id="properties">
+
+      #if ($template)
+        <div class="tab-pane active" id="view">
+          #parse($template)
+        </div>
+      #end
+
+      <div class="tab-pane #if($template)#else active#end" id="properties">
         #restable($entity, "table-striped table-condensed table-bordered")
       </div>
 
@@ -87,7 +101,7 @@
           #set($foundAction=true)
         #end
         <a href="$uiroot/edit-form?target=$lib.pathEncode($entity.uRI)&return=/$uri" role="button" class="btn btn-primary" >Edit <i class="icon-edit icon-white"></i></a>
-        
+
         ## Disabled because update breaks the description reference.
         <a href="$uiroot/edit-form?target=$lib.pathEncode($item.uRI)&return=/$uri" role="button" class="btn btn-danger" >Edit metadata<i class="icon-edit icon-white"></i></a>
       #end

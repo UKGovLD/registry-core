@@ -31,18 +31,21 @@
       </div>
     #end
     </div>
-    
-    ## TODO TEMP
-    #set($template = $lib.reg.templateFor($register))
-    #if ($template) #parse($template) #end
 
     ## Listing members
     #set($isAdministrator=$lib.reg.isPermitted("Grant", $uri))
 
+    #set($template = $lib.reg.templateFor($register))
+
     <div class="row">
       <div class="span8">
         <ul class="nav nav-tabs nav-compact action-tab">
-          <li class="active"><a href="#list" data-toggle="tab">List</a></li>
+          #if($template)
+            <li class="active"><a href="#view" data-toggle="tab">View</a></li>
+            <li><a href="#list" data-toggle="tab">List</a></li>
+          #else
+            <li class="active"><a href="#list" data-toggle="tab">List</a></li>
+          #end
           <li><a href="#table" data-toggle="tab">Table</a></li>
           <li><a href="#properties" data-toggle="tab">Properties</a></li>
           <li><a href="#metadata" data-toggle="tab">Metadata</a></li>
@@ -52,7 +55,14 @@
         </ul>
 
         <div class="tab-content">
-          <div class="tab-pane active" id="list">
+
+          #if ($template)
+            <div class="tab-pane active" id="view">
+              #parse($template)
+            </div>
+          #end
+
+          <div class="tab-pane #if($template)#else active#end" id="list">
             #parse("register-list.vm")
           </div>
           <div class="tab-pane" id="table" data-action="register-table" data-uri="$uri">

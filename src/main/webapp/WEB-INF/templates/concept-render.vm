@@ -1,0 +1,29 @@
+<h4>Description</h4>
+#description($entity, "<p><em>no description supplied</em></p>")
+
+#set($r=false)
+#set($r = $entity.getPropertyValue("skos:topConceptOf") )
+#if($r)
+  <h4>Is a top concept in scheme</h4>
+  <ul>
+    <li>#linkfor($r)</li>
+  </ul>
+#end
+
+#if($entity.getPropertyValue("skos:narrower"))
+  <h4>Narrower concepts</h4>
+  <ul>
+    #foreach($r in $entity.listPropertyValues("skos:narrower"))
+      <li>#linkfor($r)</li>
+    #end
+  </ul>
+#end
+
+#if($entity.getPropertyValue("skos:broader"))
+  <h4>Broader concepts</h4>
+  <ul>
+    #foreach($r in $entity.listPropertyValues("skos:broader"))
+      <li>#linkfor($r)</li>
+    #end
+  </ul>
+#end
