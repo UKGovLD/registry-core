@@ -1,0 +1,125 @@
+# Boundary line
+
+CivilVotingArea
+
+  Constinuency (sic)
+
+    GreaterLondonAuthorityAssemblyConstituency
+      -> inRegion - GreaterLondonAuthority
+
+    ScottishParliamentConstituency
+      -> inRegion - ScottishParliamentElectoralRegion
+
+    WelshAssemblyConstituency
+      -> inRegion - WelshAssemblyElectoralRegion
+
+    WestminsterConstituency
+
+  CountyElectoralDivision
+    -> inCounty - County
+
+  ScottishParliamentElectoralRegion
+    -> constituency - ScottishParliamentConstituency
+
+  UnitaryAuthorityElectoralDivision
+
+  WelshAssemblyElectoralRegion
+    -> constituency - WelshAssemblyConstituency
+
+
+EuropeanRegion
+  -> westminsterConstituency - WestminsterConstituency
+
+Borough
+
+CivilAdministrativeArea
+  -> extent - AstractGeometry
+  -> inEuropeanRegion -EuropeanRegion
+
+  CivilParish
+    -> inDistrict - District, MetropolitanDistrict, LondonBorough, UnitaryAuthority
+    -> inCounty - County
+
+  Community
+    -> inDistrict - UnitaryAuthority
+
+  County
+    -> district - District
+
+  District
+    -> ward - DistrictWard
+    -> inCounty - County
+
+  DistrictWard
+    -> inDistrict - District
+    -> inCounty - County
+
+  GreaterLondonAuthority
+    -> constituency - GreaterLondonAuthorityAssemblyConstituency
+    -> district - LondonBorough
+
+  LondonBorough
+    -> ward - LondonBoroughWard
+    -> inCounty - GreaterLondonAuthority
+
+  LondonBoroughWard
+    -> inDistrict - LondonBorough
+    -> inCounty - GreaterLondonAuthority
+
+  MetropolitanDistrict
+    -> ward - MetropolitanDistrictWard
+
+  MetropolitanDistrictWard
+    -> inDistrict - MetropolitanDistrict
+
+  UnitaryAuthority
+    -> ward - UnitaryAuthorityWard, UnitaryAuthorityElectoralDivision
+
+  UnitaryAuthorityWard
+    -> inDistrict - UnitaryAuthority
+
+
+Ward = DistrictWard | LondonBoroughWard | MetropolitanDistrictWard | UnitaryAuthorityWard
+
+
+# 50k Gazetteer
+
+Feature
+  Antiquity
+  City
+  Farm
+  ForestOrWood
+  HillOrMountain
+  Other
+  OtherSettlement
+  RomanAntiquity
+  Town
+  WaterFeature
+
+NamedPlace
+
+# Code point open
+
+PostcodeArea
+
+PostcodeDistrict
+  -> within PostcodeArea
+
+PostcodeSector
+  -> within - PostcodeDistrict
+
+PostcodeUnit
+  -> within - PostcodeSector
+
+country
+
+Cross links to Boundary Line:
+  county
+  district
+  ward
+
+=> link set
+
+
+
+
