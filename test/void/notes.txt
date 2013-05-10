@@ -1,4 +1,101 @@
-# Boundary line
+# Data set link picture
+
+Ordnance Survey : Dataset
+  Contains: Boundary Line, CodePoint Open, 50k Gazetteer
+
+  Boundary Line : Dataset
+    Contains: CivilVotingArea, CivilAdministrativeArea,  EuropeanRegion
+
+    CivilVotingArea  : URISet (32629)
+
+    CivilAdministrativeArea : URISet (11754)
+      Link: ward -> CivilVotingArea
+      Link: constituency -> CivilVotingArea
+      Link: inEuropeanRegion -> EuropeanRegion
+
+    EuropeanRegion : URISet (11)
+      Link: ward -> CivilVotingArea
+      Link: contains -> CivilVotingArea
+      Link: westminsterConstituency -> CivilVotingArea
+
+  CodePoint Open : Dataset
+    Contains: PostcodeArea, PostcodeDistrict, PostcodeSector,  PostcodeUnit
+
+    PostcodeUnit : URISet (1696035)
+      Link: ward -> CivilVotingArea
+      Link: county -> CivilAdministrativeArea
+      Link: district -> CivilAdministrativeArea
+      Link: within ->  PostcodeArea, PostcodeDistrict, PostcodeSector
+
+    PostcodeSector : URISet (10842)
+      Link: within ->  PostcodeArea, PostcodeDistrict
+      Link: contains -> PostcodeUnit
+
+    PostcodeDistrict : URISet(2880)
+      Link: within ->  PostcodeArea
+      Link: contains -> PostcodeSector, PostcodeUnit
+
+    PostcodeArea : URISet(120)
+      Link: contains -> PostcodeDistrict, PostcodeSector, PostcodeUnit
+
+EA Bathing Water Quality
+  Contains:
+
+  BathingWater : URISet (1036 sort of)
+    Link: latestProfile -> BathingWaterProfile
+    Link: samplingPoint -> SamplingPoint
+    Link: zoneOfInfluence -> ZoneOfInfluence
+
+  BathingWaterProfile : URISet (517)
+    Link: bathingWater -> BathingWater
+    Link: district -> CivilAdministrativeArea
+    Link: county -> CivilAdministrativeArea
+    Link: country -> ??
+    Link: latestComplianceAssessment -> BWQ Annual Compliance
+    Link: latestSampleAssessment -> BWQ In-season Assessment
+
+  SamplingPoint : URISet (518)
+    Link: bathingWater -> BathingWater
+    Link: district -> CivilAdministrativeArea
+
+  ZoneOfInfluence : URISet (518)
+    Link: bathingWater -> BathingWater
+
+  BWQ Annual Compliance : DataCube
+    Dimension: compilanceClassification -> Compliance Classification Code
+    Dimension: bathingWater -> BathingWater
+    Dimension: sampleYear -> CalendarYear
+    Dimension: samplingPoint -> SamplingPoint
+    Attribute: inYearDetail -> ?
+
+  BWQ In-season Assessment: DataCube (Observation: ??)
+    Dimension:   samplingPoint  -> SamplingPoint
+    Dimension:   sampleWeek -> CalendarWeek
+    Dimension:   sampleYear -> CalendarYear
+
+    Measure:     totalColiformCount
+    Attribute:   totalColiformQualifier
+    Measure:     faecalColiformCount
+    Attribute:   faecalColiformQualifier
+    Measure:     faecalStreptococciCount
+    Attribute:   faecalStreptococciQualifier
+    Measure:     entrovirusCount
+    Attribute:   entrovirusQualifier
+    Measure:     intestinalEnterococciCount
+    Attribute:   intestinalEnterococciQualifier
+    Measure:     escherichiaColiCount
+    Attribute:   escherichiaColiQualifier
+    Measure:     salmonellaPresent
+    Measure:     sampleClassification
+
+    Attribute:   sampleDateTime
+    Attribute:   abnormalWeatherException
+    Attribute:   recordStatus
+    Attribute:   recordDate
+
+# OS details
+
+## Boundary line
 
 CivilVotingArea
 
@@ -82,7 +179,7 @@ CivilAdministrativeArea
 Ward = DistrictWard | LondonBoroughWard | MetropolitanDistrictWard | UnitaryAuthorityWard
 
 
-# 50k Gazetteer
+## 50k Gazetteer
 
 Feature
   Antiquity
@@ -98,7 +195,7 @@ Feature
 
 NamedPlace
 
-# Code point open
+## Code point open
 
 PostcodeArea
 
