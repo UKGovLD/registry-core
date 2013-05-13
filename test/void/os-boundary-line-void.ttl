@@ -1,182 +1,130 @@
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix void: <http://rdfs.org/ns/void#> .
 @prefix dct: <http://purl.org/dc/terms/> .
 @prefix cc: <http://creativecommons.org/ns#> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix dgu:     <http://reference.data.gov.uk/def/reference/> .
+@prefix admingeo:     <http://data.ordnancesurvey.co.uk/ontology/admingeo/> .
+@prefix spatialrelations:  <http://data.ordnancesurvey.co.uk/ontology/spatialrelations/> .
 
-<http://data.ordnancesurvey.co.uk/id/data/boundary-line> rdf:type void:Dataset ;
-                                                         dct:title "Boundary Line Linked Data" ;
-                                                         dct:description "Boundary-Line contains all levels of electoral and administrative boundaries, from district, wards and civil parishes or communities up to parliamentary, assembly and European constituencies." ;
-                                                         dct:publisher <http://data.ordnancesurvey.co.uk/id/ordnancesurvey> ;
-                                                         dct:language <http://id.loc.gov/vocabulary/iso639-1/en> ;
-                                                         dct:created "2010-10-25T09:00:00+00:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
-                                                         dct:modified "2013-04-26T15:54:23+00:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
-                                                         dct:spatial <http://data.ordnancesurvey.co.uk/id/country/england> ,
-                                                                     <http://data.ordnancesurvey.co.uk/id/country/scotland> ,
-                                                                     <http://data.ordnancesurvey.co.uk/id/country/wales> ;
-                                                         void:triples "653435"^^<http://www.w3.org/2001/XMLSchema#integer> ;
-                                                         void:classPartition _:boundary-line1 ,
-                                                                             _:boundary-line2 ,
-                                                                             _:boundary-line3 ,
-                                                                             _:boundary-line4 ,
-                                                                             _:boundary-line5 ,
-                                                                             _:boundary-line6 ,
-                                                                             _:boundary-line7 ,
-                                                                             _:boundary-line8 ,
-                                                                             _:boundary-line9 ,
-                                                                             _:boundary-line10 ,
-                                                                             _:boundary-line11 ,
-                                                                             _:boundary-line12 ,
-                                                                             _:boundary-line13 ,
-                                                                             _:boundary-line14 ,
-                                                                             _:boundary-line15 ,
-                                                                             _:boundary-line16 ,
-                                                                             _:boundary-line17 ,
-                                                                             _:boundary-line18 ,
-                                                                             _:boundary-line19 ,
-                                                                             _:boundary-line20 ,
-                                                                             _:boundary-line21 ,
-                                                                             _:boundary-line22 ,
-                                                                             _:boundary-line23 ,
-                                                                             _:boundary-line24 ,
-                                                                             _:boundary-line25 ,
-                                                                             _:boundary-line26 ,
-                                                                             _:boundary-line27 ,
-                                                                             _:boundary-line28 ,
-                                                                             _:boundary-line29 ,
-                                                                             _:boundary-line30 ,
-                                                                             _:boundary-line31 ,
-                                                                             _:boundary-line32 ,
-                                                                             _:boundary-line33 ,
-                                                                             _:boundary-line34 ,
-                                                                             _:boundary-line35 ,
-                                                                             _:boundary-line36 ;
-                                                         void:uriRegexPattern "^http://data.ordnancesurvey.co.uk/" ;
-                                                         cc:license <http://www.ordnancesurvey.co.uk/oswebsite/opendata/licence/docs/licence.pdf> ;
-                                                         dct:rightsStatement "Contains Ordnance Survey data Â© Crown copyright and database right 2013." ;
-                                                         foaf:homepage <http://beta.data.ordnancesurvey.co.uk/datasets/boundary-line> ;
-                                                         void:vocabulary <http://www.w3.org/2003/01/geo/wgs84_pos#> ,
-                                                                         <http://data.ordnancesurvey.co.uk/ontology/admingeo/> ,
-                                                                         <http://www.w3.org/2004/02/skos/core#> ,
-                                                                         <http://data.ordnancesurvey.co.uk/ontology/spatialrelations/> ,
-                                                                         <http://www.georss.org/georss/> ,
-                                                                         <http://www.w3.org/2000/01/rdf-schema#> ,
-                                                                         <http://data.ordnancesurvey.co.uk/ontology/geometry/> ;
-                                                         void:exampleResource <http://data.ordnancesurvey.co.uk/id/7000000000000255> ,
-                                                                              <http://data.ordnancesurvey.co.uk/id/7000000000001386> ,
-                                                                              <http://data.ordnancesurvey.co.uk/id/7000000000025504> ,
-                                                                              <http://data.ordnancesurvey.co.uk/id/7000000000011873> ,
-                                                                              <http://data.ordnancesurvey.co.uk/id/7000000000041421> ,
-                                                                              <http://data.ordnancesurvey.co.uk/id/7000000000024881> ;
-                                                         void:openSearchDescription <http://beta.data.ordnancesurvey.co.uk/datasets/boundary-line/apis/search> ;
-                                                         void:sparqlEndpoint <http://beta.data.ordnancesurvey.co.uk/datasets/boundary-line/apis/sparql> ;
-                                                         void:uriLookupEndpoint <http://beta.data.ordnancesurvey.co.uk/datasets/boundary-line/apis/lookup> ;
-                                                         void:dataDump <http://download.data.ordnancesurvey.co.uk/boundary-line/bdline-to-go.zip> .
+<http://data.ordnancesurvey.co.uk/id/data/boundary-line> 
+    rdf:type void:Dataset ;
+     dct:title "Boundary Line Linked Data" ;
+     rdfs:label "Boundary Line Linked Data" ;
+     dct:description "Boundary-Line contains all levels of electoral and administrative boundaries, from district, wards and civil parishes or communities up to parliamentary, assembly and European constituencies." ;
+     dct:publisher <http://data.ordnancesurvey.co.uk/id/ordnancesurvey> ;
+     dct:language <http://id.loc.gov/vocabulary/iso639-1/en> ;
+     dct:created "2010-10-25T09:00:00+00:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
+     dct:modified "2013-04-26T15:54:23+00:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
+     dct:spatial <http://data.ordnancesurvey.co.uk/id/country/england> ,
+                 <http://data.ordnancesurvey.co.uk/id/country/scotland> ,
+                 <http://data.ordnancesurvey.co.uk/id/country/wales> ;
+     void:triples "653435"^^<http://www.w3.org/2001/XMLSchema#integer> ;
+     void:uriRegexPattern "^http://data.ordnancesurvey.co.uk/" ;
+     cc:license <http://www.ordnancesurvey.co.uk/oswebsite/opendata/licence/docs/licence.pdf> ;
+     dct:rightsStatement "Contains Ordnance Survey data Â© Crown copyright and database right 2013." ;
+     foaf:homepage <http://beta.data.ordnancesurvey.co.uk/datasets/boundary-line> ;
+     void:vocabulary <http://www.w3.org/2003/01/geo/wgs84_pos#> ,
+                     <http://data.ordnancesurvey.co.uk/ontology/admingeo/> ,
+                     <http://www.w3.org/2004/02/skos/core#> ,
+                     <http://data.ordnancesurvey.co.uk/ontology/spatialrelations/> ,
+                     <http://www.georss.org/georss/> ,
+                     <http://www.w3.org/2000/01/rdf-schema#> ,
+                     <http://data.ordnancesurvey.co.uk/ontology/geometry/> ;
+     void:exampleResource <http://data.ordnancesurvey.co.uk/id/7000000000000255> ,
+                          <http://data.ordnancesurvey.co.uk/id/7000000000001386> ,
+                          <http://data.ordnancesurvey.co.uk/id/7000000000025504> ,
+                          <http://data.ordnancesurvey.co.uk/id/7000000000011873> ,
+                          <http://data.ordnancesurvey.co.uk/id/7000000000041421> ,
+                          <http://data.ordnancesurvey.co.uk/id/7000000000024881> ;
+     void:openSearchDescription <http://beta.data.ordnancesurvey.co.uk/datasets/boundary-line/apis/search> ;
+     void:sparqlEndpoint <http://beta.data.ordnancesurvey.co.uk/datasets/boundary-line/apis/sparql> ;
+     void:uriLookupEndpoint <http://beta.data.ordnancesurvey.co.uk/datasets/boundary-line/apis/lookup> ;
+     void:dataDump <http://download.data.ordnancesurvey.co.uk/boundary-line/bdline-to-go.zip> .
 
-_:boundary-line1 void:class <http://www.w3.org/2002/07/owl#ObjectProperty> ;
-                 void:entities "23"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://data.ordnancesurvey.co.uk/id/data/boundary-line> 
+    void:subset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> ;
+    
+    void:subset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa> ;
+    void:subset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa-ward> ;
+    void:subset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa-constituency> ;
+    void:subset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa-inEuropeanRegion> ;
+    
+    void:subset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ;
+    void:subset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er-ward> ;
+    void:subset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er-contains-caa> ;
+    void:subset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er-contains-cva> ;
+    void:subset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er-westMinsterConstituency> ;
+    . 
+    
+<http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> 
+    a void:Dataset, dgu:URISet;
+    rdfs:label "Civil Voting Area URI set";
+    void:entities 32629;
+    dgu:itemClass admingeo:CivilVotingArea;
+    .
+        
+<http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa> 
+    a void:Dataset, dgu:URISet;
+    rdfs:label "Civil Administrative Area URI set";
+    void:entities 11754;
+    dgu:itemClass admingeo:CivilAdministrativeArea;
+    .
+        
+<http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa-ward>
+    a void:LinkSet;
+    void:linkPredicate admingeo:ward ;
+    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa> ;
+    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> ;
+    .
+    
+<http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa-constituency>
+    a void:LinkSet;
+    void:linkPredicate admingeo:constituency ;
+    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa> ;
+    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> ;
+    .
+    
+<http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa-er>
+    a void:LinkSet;
+    void:linkPredicate admingeo:inEuropeanRegion ;
+    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> ;
+    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ; 
+    .
+    
+<http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> 
+    a void:Dataset, dgu:URISet;
+    rdfs:label "European Region URI set";
+    void:entities 11;
+    dgu:itemClass admingeo:EuropeanRegion;
+    .
+    
+<http://data.ordnancesurvey.co.uk/id/data/boundary-line#er-ward> 
+    a void:LinkSet;
+    void:linkPredicate admingeo:ward ;
+    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ; 
+    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> ;
+    .
 
-_:boundary-line2 void:class <http://www.w3.org/2002/07/owl#Class> ;
-                 void:entities "44"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://data.ordnancesurvey.co.uk/id/data/boundary-line#er-contains-cva> 
+    a void:LinkSet;
+    void:linkPredicate spatialrelations:contains;
+    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ; 
+    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> ;
+    .
 
-_:boundary-line3 void:class <http://data.ordnancesurvey.co.uk/ontology/admingeo/Community> ;
-                 void:entities "869"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line4 void:class <http://data.ordnancesurvey.co.uk/ontology/admingeo/LondonBoroughWard> ;
-                 void:entities "649"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line5 void:class <http://www.w3.org/2002/07/owl#SymmetricProperty> ;
-                 void:entities "4"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line6 void:class <http://data.ordnancesurvey.co.uk/ontology/admingeo/UnitaryAuthorityElectoralDivision> ;
-                 void:entities "1334"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line7 void:class <http://data.ordnancesurvey.co.uk/ontology/geometry/AbstractGeometry> ;
-                 void:entities "28726"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line8 void:class <http://data.ordnancesurvey.co.uk/ontology/admingeo/WestminsterConstituency> ;
-                 void:entities "632"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line9 void:class <http://data.ordnancesurvey.co.uk/ontology/admingeo/ScottishParliamentConstituency> ;
-                 void:entities "73"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line10 void:class <http://data.ordnancesurvey.co.uk/ontology/admingeo/UnitaryAuthority> ;
-                  void:entities "110"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line11 void:class <http://data.ordnancesurvey.co.uk/ontology/admingeo/EuropeanRegion> ;
-                  void:entities "11"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line12 void:class <http://data.ordnancesurvey.co.uk/ontology/admingeo/UnitaryAuthorityWard> ;
-                  void:entities "1524"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line13 void:class <http://www.w3.org/2002/07/owl#NamedIndividual> ;
-                  void:entities "1"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line14 void:class <http://www.w3.org/2002/07/owl#Thing> ;
-                  void:entities "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line15 void:class <http://www.w3.org/2002/07/owl#TransitiveProperty> ;
-                  void:entities "3"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line16 void:class <http://data.ordnancesurvey.co.uk/ontology/admingeo/Borough> ;
-                  void:entities "177"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line17 void:class <http://data.ordnancesurvey.co.uk/ontology/admingeo/County> ;
-                  void:entities "27"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line18 void:class <http://data.ordnancesurvey.co.uk/ontology/admingeo/ScottishParliamentElectoralRegion> ;
-                  void:entities "8"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line19 void:class <http://data.ordnancesurvey.co.uk/ontology/admingeo/LondonBorough> ;
-                  void:entities "33"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line20 void:class <http://www.w3.org/2002/07/owl#Ontology> ;
-                  void:entities "3"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line21 void:class <http://www.w3.org/2002/07/owl#FunctionalProperty> ;
-                  void:entities "9"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line22 void:class <http://data.ordnancesurvey.co.uk/ontology/admingeo/WelshAssemblyConstituency> ;
-                  void:entities "40"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line23 void:class <http://data.ordnancesurvey.co.uk/ontology/admingeo/GreaterLondonAuthorityAssemblyConstituency> ;
-                  void:entities "14"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line24 void:class <http://data.ordnancesurvey.co.uk/ontology/admingeo/District> ;
-                  void:entities "201"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line25 void:class <http://www.w3.org/2002/07/owl#AnnotationProperty> ;
-                  void:entities "12"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line26 void:class <http://data.ordnancesurvey.co.uk/ontology/admingeo/CivilParish> ;
-                  void:entities "10493"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line27 void:class <http://data.ordnancesurvey.co.uk/ontology/admingeo/MetropolitanDistrictWard> ;
-                  void:entities "815"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line28 void:class <http://data.ordnancesurvey.co.uk/ontology/admingeo/GreaterLondonAuthority> ;
-                  void:entities "1"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line29 void:class <http://data.ordnancesurvey.co.uk/ontology/admingeo/WelshAssemblyElectoralRegion> ;
-                  void:entities "5"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line30 void:class <http://data.ordnancesurvey.co.uk/ontology/admingeo/CountyElectoralDivision> ;
-                  void:entities "1739"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line31 void:class <http://www.w3.org/2002/07/owl#ReflexiveProperty> ;
-                  void:entities "1"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line32 void:class <http://data.ordnancesurvey.co.uk/ontology/admingeo/DistrictWard> ;
-                  void:entities "4590"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line33 void:class <http://www.w3.org/2002/07/owl#Restriction> ;
-                  void:entities "127"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line34 void:class <http://data.ordnancesurvey.co.uk/ontology/admingeo/MetropolitanDistrict> ;
-                  void:entities "36"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line35 void:class <http://www.w3.org/2002/07/owl#AllDisjointClasses> ;
-                  void:entities "4"^^<http://www.w3.org/2001/XMLSchema#integer> .
-
-_:boundary-line36 void:class <http://www.w3.org/2002/07/owl#DatatypeProperty> ;
-                  void:entities "13"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://data.ordnancesurvey.co.uk/id/data/boundary-line#er-contains-caa> 
+    a void:LinkSet;
+    void:linkPredicate spatialrelations:contains;
+    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ; 
+    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa> ;
+    .
+    
+<http://data.ordnancesurvey.co.uk/id/data/boundary-line#er-westMinsterConstituency> 
+    a void:LinkSet;
+    void:linkPredicate admingeo:westminsterConstituency ;
+    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ; 
+    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> ;
+    .
+   

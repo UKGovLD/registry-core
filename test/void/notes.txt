@@ -38,6 +38,10 @@ Ordnance Survey : Dataset
     PostcodeArea : URISet(120)
       Link: contains -> PostcodeDistrict, PostcodeSector, PostcodeUnit
 
+  50K Gazetteer : Dataset
+    NamedPlace : URISet (259080)                          - entity count for urisets?
+      Link: type -> FeatureHierarchy                      - class hierarchy 
+   
 EA Bathing Water Quality
   Contains:
 
@@ -45,14 +49,15 @@ EA Bathing Water Quality
     Link: latestProfile -> BathingWaterProfile
     Link: samplingPoint -> SamplingPoint
     Link: zoneOfInfluence -> ZoneOfInfluence
+    Link: sedimentTypesPresent -> SedimentType
+    Link: type -> BathingWaterHierarchy
+    Link: district -> CivilAdministrativeArea
+    Link: county -> CivilAdministrativeArea
+    Link: latestComplianceAssessment -> BWQ Annual Compliance
+    Link: latestSampleAssessment -> BWQ In-season Assessment
 
   BathingWaterProfile : URISet (517)
     Link: bathingWater -> BathingWater
-    Link: district -> CivilAdministrativeArea
-    Link: county -> CivilAdministrativeArea
-    Link: country -> ??
-    Link: latestComplianceAssessment -> BWQ Annual Compliance
-    Link: latestSampleAssessment -> BWQ In-season Assessment
 
   SamplingPoint : URISet (518)
     Link: bathingWater -> BathingWater
@@ -74,25 +79,51 @@ EA Bathing Water Quality
     Dimension:   sampleYear -> CalendarYear
 
     Measure:     totalColiformCount
-    Attribute:   totalColiformQualifier
+    Attribute:   totalColiformQualifier -> countQualifier
     Measure:     faecalColiformCount
-    Attribute:   faecalColiformQualifier
+    Attribute:   faecalColiformQualifier -> countQualifier
     Measure:     faecalStreptococciCount
-    Attribute:   faecalStreptococciQualifier
+    Attribute:   faecalStreptococciQualifier -> countQualifier
     Measure:     entrovirusCount
-    Attribute:   entrovirusQualifier
+    Attribute:   entrovirusQualifier -> countQualifier
     Measure:     intestinalEnterococciCount
-    Attribute:   intestinalEnterococciQualifier
+    Attribute:   intestinalEnterococciQualifier -> countQualifier
     Measure:     escherichiaColiCount
-    Attribute:   escherichiaColiQualifier
-    Measure:     salmonellaPresent
-    Measure:     sampleClassification
+    Attribute:   escherichiaColiQualifier -> countQualifier
+    Measure:     salmonellaPresent -> presence
+    Measure:     sampleClassification -> compliance
 
     Attribute:   sampleDateTime
     Attribute:   abnormalWeatherException
     Attribute:   recordStatus
     Attribute:   recordDate
 
+  sedimentType : ConceptScheme
+  
+  BathingWaterHierarchy : Class Hierarchy
+  
+  compliance  : ConceptScheme
+  
+  compilance2012  : ConceptScheme
+  
+  presence : ConceptScheme
+  
+  countQualifier : ConceptScheme
+  
+MetOffice wxfcs beta : Dataset
+
+  ForecastSite : URISet
+    Link: nearestPostCodeUnit -> PostCodeUnit
+    Link: nearestSettlement -> NamedPlace
+    Link: sampledFeature -> NamedPlace
+    Link: within -> CivilVotingArea
+    Link: within -> ZoneOfInfluence
+    
+  MostRecentSiteSpecificForecast : DataCube
+    Dimension: forecaseLocation -> ForecastSite
+    Dimension: forecastTime
+    Measure: forecastValue -> ForecastAtmosphericConditionRecord 
+    
 # OS details
 
 ## Boundary line

@@ -1,0 +1,54 @@
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix void: <http://rdfs.org/ns/void#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix cc: <http://creativecommons.org/ns#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix dgu:     <http://reference.data.gov.uk/def/reference/> .
+@prefix admingeo:     <http://data.ordnancesurvey.co.uk/ontology/admingeo/> .
+@prefix spatialrelations:  <http://data.ordnancesurvey.co.uk/ontology/spatialrelations/> .
+
+<http://data.ordnancesurvey.co.uk/id/data/50k-gazetteer> rdf:type void:Dataset ;
+     dct:title "50K Gazetteer Linked Data" ;
+     rdfs:label "50K Gazetteer Linked Data" ;
+     dct:description """1:50 000 Scale Gazetteer contains over 250 000 place names and is the most detailed gazetteer available.""" ;
+     dct:publisher <http://data.ordnancesurvey.co.uk/id/ordnancesurvey> ;
+     dct:language <http://id.loc.gov/vocabulary/iso639-1/en> ;
+     dct:created "2010-10-25T09:00:00+00:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
+     dct:modified "2013-04-26T15:54:15+00:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
+     dct:spatial <http://data.ordnancesurvey.co.uk/id/country/england> ,
+                                     <http://data.ordnancesurvey.co.uk/id/country/scotland> ,
+                                     <http://data.ordnancesurvey.co.uk/id/country/wales> ;
+     void:triples "2368655"^^<http://www.w3.org/2001/XMLSchema#integer> ;
+     void:classPartition _:50k-gazetteer1 ;
+     void:uriRegexPattern "^http://data.ordnancesurvey.co.uk/" ;
+     cc:license <http://www.ordnancesurvey.co.uk/oswebsite/opendata/licence/docs/licence.pdf> ;
+     dct:rightsStatement "Contains Ordnance Survey data © Crown copyright and database right 2013." ;
+     foaf:homepage <http://beta.data.ordnancesurvey.co.uk/datasets/50k-gazetteer> ;
+     void:vocabulary <http://xmlns.com/foaf/0.1/> ,
+                     <http://data.ordnancesurvey.co.uk/ontology/spatialrelations/> ,
+                     <http://data.ordnancesurvey.co.uk/ontology/50kGazetteer/> ,
+                     <http://www.w3.org/2000/01/rdf-schema#> ;
+     void:exampleResource <http://data.ordnancesurvey.co.uk/id/50kGazetteer/90497> ,
+                          <http://data.ordnancesurvey.co.uk/id/50kGazetteer/11016> ,
+                          <http://data.ordnancesurvey.co.uk/id/50kGazetteer/162467> ,
+                          <http://data.ordnancesurvey.co.uk/id/50kGazetteer/9138> ;
+     void:openSearchDescription <http://beta.data.ordnancesurvey.co.uk/datasets/50k-gazetteer/apis/search> ;
+     void:sparqlEndpoint <http://beta.data.ordnancesurvey.co.uk/datasets/50k-gazetteer/apis/sparql> ;
+     void:uriLookupEndpoint <http://beta.data.ordnancesurvey.co.uk/datasets/50k-gazetteer/apis/lookup> ;
+     void:dataDump <http://download.data.ordnancesurvey.co.uk/50k-gazetteer/50KGaz.zip> .
+
+_:50k-gazetteer1 void:class <http://data.ordnancesurvey.co.uk/ontology/50kGazetteer/NamedPlace> ;
+                 void:entities "259080"^^<http://www.w3.org/2001/XMLSchema#integer> .
+                 
+<http://data.ordnancesurvey.co.uk/id/data/50k-gazetteer> 
+    void:subset <http://data.ordnancesurvey.co.uk/id/data/50k-gazetteer#named-place>;
+    .
+    
+<http://data.ordnancesurvey.co.uk/id/data/50k-gazetteer#named-place>
+    a void:Dataset, dgu:URISet;
+    rdfs:label "Named Place URI set";
+    void:entities 259080;
+    dgu:itemClass <http://data.ordnancesurvey.co.uk/ontology/50kGazetteer/NamedPlace>;
+    .
+                      
