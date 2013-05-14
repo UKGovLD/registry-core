@@ -146,6 +146,10 @@ public class CommandRegister extends Command {
     }
 
     private ValidationResponse validateEntity(Register parent, Resource entity) {
+        if (entity == null) {
+            return new ValidationResponse(BAD_REQUEST, "Missing entity");
+        }
+
         if ( !entity.hasProperty(RDF.type) || !entity.hasProperty(RDFS.label) ) {
             return new ValidationResponse(BAD_REQUEST, "Missing required property (rdf:type or rdfs:label) on " + entity);
         }
@@ -380,7 +384,7 @@ public class CommandRegister extends Command {
         }
         store.addToRegister(parent, ri);
         checkDelegation(ri);
-        
+
         notify( new Message(this, ri) );
 
         return ri.getRoot();

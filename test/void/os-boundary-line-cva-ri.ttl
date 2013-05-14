@@ -1,0 +1,24 @@
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix void: <http://rdfs.org/ns/void#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix cc: <http://creativecommons.org/ns#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix dgu:     <http://reference.data.gov.uk/def/reference/> .
+@prefix admingeo:     <http://data.ordnancesurvey.co.uk/ontology/admingeo/> .
+@prefix spatialrelations:  <http://data.ordnancesurvey.co.uk/ontology/spatialrelations/> .
+
+@prefix reg:  <http://purl.org/linked-data/registry#> .
+
+<_boundary-line-cva-dataset> a reg:RegisterItem;
+    reg:definition [
+       reg:entity <http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> ;
+    ]
+    .
+
+<http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva>
+    a void:Dataset, dgu:URISet;
+    rdfs:label "Civil Voting Area URI set";
+    void:entities 32629;
+    dgu:itemClass admingeo:CivilVotingArea;
+    .

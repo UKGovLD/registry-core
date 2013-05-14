@@ -37,6 +37,7 @@
 @prefix xhv:     <http://www.w3.org/1999/xhtml/vocab#> .
 @prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
 
+@prefix reg:  <http://purl.org/linked-data/registry#> .
 
 bw:   a       void:Dataset , dgu:URIset ;
       rdfs:label "Bathing waters monitored by the Environment Agency for England and Wales."@en ;
@@ -49,72 +50,13 @@ bw:   a       void:Dataset , dgu:URIset ;
               "http://environment.data.gov.uk/id/bathing-water/.*" ;
       void:vocabulary def-ef: , spatialrelations: , geometry: , onsadmingeo: , <http://www.w3.org/2003/01/geo/wgs84_pos> , def-bw: , <http://www.w3.org/2004/02/skos/core> , osadmingeo: , <http://www.w3.org/ns/org> , dgu: ;
       dgu:itemType def-bw:BathingWater ;
-      dgu:status <http://reference.data.gov.uk/def/status/draft> .
+      dgu:status <http://reference.data.gov.uk/def/status/draft> ;
+      void:entities  518;
+      .
 
-bw:
-    void:entities  518;
-    void:subset _:link_latestProfile;
-    void:subset _:link_samplingPoint;
-    void:subset _:link_zoneOfInfluence;
-    void:subset _:link_sedimentTypesPresent;
-    void:subset _:link_district;
-    void:subset _:link_county;
-    void:subset _:link_latestComplianceAssessment;
-    void:subset _:link_latestSampleAssessment;
+<_bathing-water-uriset> a reg:RegisterItem;
+    reg:definition [
+       reg:entity  bw: ;
+    ]
     .
 
-_:link_latestProfile
-    a void:LinkSet;
-    void:linkPredicate <http://environment.data.gov.uk/def/bathing-water-profile/latestBathingWaterProfile>;
-    void:target bw: ;
-    void:target <http://environment.data.gov.uk/id/bathing-water-profile/> ;
-    .
-
-_:link_samplingPoint
-    a void:LinkSet;
-    void:linkPredicate <http://location.data.gov.uk/def/ef/SamplingPoint/samplingPoint>;
-    void:target bw: ;
-    void:target <http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/> ;
-    .
-
-_:link_zoneOfInfluence
-    a void:LinkSet;
-    void:linkPredicate <http://location.data.gov.uk/def/ef/ZoneOfInfluence/zoneOfInfluence>;
-    void:target bw: ;
-    void:target <http://location.data.gov.uk/so/ef/ZoneOfInfluence/bwzoi.eaew/> ;
-    .
-
-_:link_sedimentTypesPresent
-    a void:LinkSet;
-    void:linkPredicate <http://environment.data.gov.uk/def/bathing-water/sedimentTypesPresent>;
-    void:target bw: ;
-    void:target <http://environment.data.gov.uk/def/bathing-water/sediment-type> ;
-    .
-
-_:link_district
-    a void:LinkSet;
-    void:linkPredicate <http://statistics.data.gov.uk/def/administrative-geography/district>;
-    void:target bw: ;
-    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa> ;
-    .
-
-_:link_county
-    a void:LinkSet;
-    void:linkPredicate <http://statistics.data.gov.uk/def/administrative-geography/county>;
-    void:target bw: ;
-    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa> ;
-    .
-
-_:link_latestComplianceAssessment
-    a void:LinkSet;
-    void:linkPredicate <http://environment.data.gov.uk/def/bathing-water-quality/latestComplianceAssessment>;
-    void:target bw: ;
-    void:target <http://environment.data.gov.uk/data/bathing-water-quality/eaew/compliance> ;
-    .
-
-_:link_latestSampleAssessment
-    a void:LinkSet;
-    void:linkPredicate <http://environment.data.gov.uk/def/bathing-water-quality/latestSampleAssessment>;
-    void:target bw: ;
-    void:target <http://environment.data.gov.uk/data/bathing-water-quality/eaew/in-season> ;
-    .

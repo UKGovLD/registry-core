@@ -73,7 +73,7 @@
                 #resentry($v)
               #end
               #if( $foreach.hasNext )|#end
-              #if( $foreach.count > 8 ) ... #break #end
+              #if( $foreach.count > 100 ) ... #break #end
             #end
             <br />
           </td>
