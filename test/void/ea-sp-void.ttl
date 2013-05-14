@@ -1,11 +1,6 @@
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix os:      <http://a9.com/-/spec/opensearch/1.1/> .
-@prefix opmv:    <http://purl.org/net/opmv/types/common#> .
 @prefix dct:     <http://purl.org/dc/terms/> .
 @prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix doap:    <http://usefulinc.com/ns/doap#> .
-@prefix xhv:     <http://www.w3.org/1999/xhtml/vocab#> .
-@prefix sparql:  <http://purl.org/net/opmv/types/sparql#> .
 @prefix void:    <http://rdfs.org/ns/void#> .
 
 <http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/>
@@ -31,10 +26,9 @@
     void:subset _:link_bathingWater;
     .
 
-_:link_bathingWater         
+_:link_bathingWater
     a void:LinkSet;
     void:linkPredicate <http://environment.data.gov.uk/def/bathing-water/bathingWater>;
     void:target <http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/> ;
     void:target <http://environment.data.gov.uk/id/bathing-water/>;
     .
-                  

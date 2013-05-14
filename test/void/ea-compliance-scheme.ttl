@@ -1,0 +1,48 @@
+@prefix opmv:    <http://purl.org/net/opmv/types/common#> .
+@prefix interval:  <http://reference.data.gov.uk/def/intervals/> .
+@prefix stats:   <http://statistics.data.gov.uk/def/administrative-geography/> .
+@prefix dgu:     <http://reference.data.gov.uk/def/reference/> .
+@prefix spatialrelations:  <http://data.ordnancesurvey.co.uk/ontology/spatialrelations/> .
+@prefix bw:      <http://environment.data.gov.uk/id/bathing-water/> .
+@prefix def-zoi:  <http://location.data.gov.uk/def/ef/ZoneOfInfluence/> .
+@prefix def-feature:  <http://location.data.gov.uk/def/ef/BathingWaterProfileFeature/> .
+@prefix org:     <http://www.w3.org/ns/org#> .
+@prefix def-som:  <http://environment.data.gov.uk/def/bwq-som/> .
+@prefix version:  <http://environment.data.gov.uk/def/version/> .
+@prefix sparql:  <http://purl.org/net/opmv/types/sparql#> .
+@prefix def-ef:  <http://location.data.gov.uk/def/ef/SamplingPoint/> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix time:    <http://www.w3.org/2006/time#> .
+@prefix elda:    <http://www.epimorphics.com/vocabularies/lda#> .
+@prefix api:     <http://purl.org/linked-data/api/vocab#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix onsadmingeo:  <http://statistics.data.gov.uk/def/administrative-geography/> .
+@prefix bwq-iss:  <http://environment.data.gov.uk/data/bathing-water-quality/in-season/slice/> .
+@prefix bwsp:    <http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/> .
+@prefix os:      <http://a9.com/-/spec/opensearch/1.1/> .
+@prefix geo:     <http://www.w3.org/2003/01/geo/wgs84_pos#> .
+@prefix def-bw:  <http://environment.data.gov.uk/def/bathing-water/> .
+@prefix foaf:    <http://xmlns.com/foaf/0.1/> .
+@prefix osadmingeo:  <http://data.ordnancesurvey.co.uk/ontology/admingeo/> .
+@prefix void:    <http://rdfs.org/ns/void#> .
+@prefix qb:      <http://purl.org/linked-data/cube#> .
+@prefix geometry:  <http://data.ordnancesurvey.co.uk/ontology/geometry/> .
+@prefix def-bwp:  <http://environment.data.gov.uk/def/bathing-water-profile/> .
+@prefix t:       <http://environment.data.gov.uk/api-bwq#> .
+@prefix dct:     <http://purl.org/dc/terms/> .
+@prefix def-bwq:  <http://environment.data.gov.uk/def/bathing-water-quality/> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix def-geom:  <http://location.data.gov.uk/def/common/Geometry/> .
+@prefix doap:    <http://usefulinc.com/ns/doap#> .
+@prefix xhv:     <http://www.w3.org/1999/xhtml/vocab#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+
+def-bwq:compliance
+      a       skos:ConceptScheme, void:Dataset ;
+      rdfs:comment "A collection of Bathing Water Compliance codes derived from classifications given at <http://www.environment-agency.gov.uk/homeandleisure/37841.aspx>"@en ;
+      rdfs:isDefinedBy <http://environment.data.gov.uk/sources/def/bathing-water-quality.ttl> ;
+      rdfs:label "compliance classification codeset concept scheme"@en ;
+      rdfs:seeAlso <http://www.legislation.gov.uk/uksi/1991/1597/schedule/1/made> , <http://www.legislation.gov.uk/uksi/1991/1597/schedule/2/made> , <http://www.legislation.gov.uk/uksi/1991/1597/made> , <http://www.legislation.gov.uk/uksi/1991/1597/schedule/3/made> , <http://www.opsi.gov.uk/legislation/european/directive/1976/0160> ;
+      skos:hasTopConcept def-bwq:I , <http://environment.data.gov.uk/def/bwq-cc-2012/C> , <http://environment.data.gov.uk/def/bwq-cc-2012/F> , def-bwq:N , <http://environment.data.gov.uk/def/bwq-cc-2012/I> , def-bwq:C , def-bwq:G , <http://environment.data.gov.uk/def/bwq-cc-2012/N> , def-bwq:F , <http://environment.data.gov.uk/def/bwq-cc-2012/G> ;
+      skos:note " A SKOS ConceptScheme for bathing water compliance classification codes." .

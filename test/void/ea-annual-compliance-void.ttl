@@ -1,0 +1,107 @@
+@prefix opmv:    <http://purl.org/net/opmv/types/common#> .
+@prefix interval:  <http://reference.data.gov.uk/def/intervals/> .
+@prefix stats:   <http://statistics.data.gov.uk/def/administrative-geography/> .
+@prefix dgu:     <http://reference.data.gov.uk/def/reference/> .
+@prefix spatialrelations:  <http://data.ordnancesurvey.co.uk/ontology/spatialrelations/> .
+@prefix bw:      <http://environment.data.gov.uk/id/bathing-water/> .
+@prefix def-zoi:  <http://location.data.gov.uk/def/ef/ZoneOfInfluence/> .
+@prefix def-feature:  <http://location.data.gov.uk/def/ef/BathingWaterProfileFeature/> .
+@prefix org:     <http://www.w3.org/ns/org#> .
+@prefix def-som:  <http://environment.data.gov.uk/def/bwq-som/> .
+@prefix version:  <http://environment.data.gov.uk/def/version/> .
+@prefix sparql:  <http://purl.org/net/opmv/types/sparql#> .
+@prefix def-ef:  <http://location.data.gov.uk/def/ef/SamplingPoint/> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix time:    <http://www.w3.org/2006/time#> .
+@prefix elda:    <http://www.epimorphics.com/vocabularies/lda#> .
+@prefix api:     <http://purl.org/linked-data/api/vocab#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix onsadmingeo:  <http://statistics.data.gov.uk/def/administrative-geography/> .
+@prefix bwq-iss:  <http://environment.data.gov.uk/data/bathing-water-quality/in-season/slice/> .
+@prefix bwsp:    <http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/> .
+@prefix os:      <http://a9.com/-/spec/opensearch/1.1/> .
+@prefix geo:     <http://www.w3.org/2003/01/geo/wgs84_pos#> .
+@prefix def-bw:  <http://environment.data.gov.uk/def/bathing-water/> .
+@prefix foaf:    <http://xmlns.com/foaf/0.1/> .
+@prefix osadmingeo:  <http://data.ordnancesurvey.co.uk/ontology/admingeo/> .
+@prefix void:    <http://rdfs.org/ns/void#> .
+@prefix qb:      <http://purl.org/linked-data/cube#> .
+@prefix geometry:  <http://data.ordnancesurvey.co.uk/ontology/geometry/> .
+@prefix def-bwp:  <http://environment.data.gov.uk/def/bathing-water-profile/> .
+@prefix t:       <http://environment.data.gov.uk/api-bwq#> .
+@prefix dct:     <http://purl.org/dc/terms/> .
+@prefix def-bwq:  <http://environment.data.gov.uk/def/bathing-water-quality/> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix def-geom:  <http://location.data.gov.uk/def/common/Geometry/> .
+@prefix doap:    <http://usefulinc.com/ns/doap#> .
+@prefix xhv:     <http://www.w3.org/1999/xhtml/vocab#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+
+<http://environment.data.gov.uk/data/bathing-water-quality/eaew/compliance>
+      a       qb:DataSet , void:Dataset , def-bwq:ComplianceDataset ;
+      rdfs:label "Bathing Water Quality - Annual Compliance Assessment Dataset (eaew)"@en ;
+      dct:description "Bathing water quality annual compliance assessments for bathing waters monitored by a single monitoring body - (eaew)."@en ;
+      dct:license <http://reference.data.gov.uk/id/open-government-licence> ;
+      dct:modified "2012-01-01Z"^^xsd:date ;
+      dct:source <http://environment.data.gov.uk/sources/bwq/eaew/input/ea_bw_compliance_history_2011_BWQ_BASELINE.csv> ;
+      qb:structure def-bwq:complianceDsd ;
+      void:uriRegexPattern
+              "http://environment.data.gov.uk/data/bathing-water-quality/compliance/slice/point/([0-9]{5})" , "http://environment.data.gov.uk/data/bathing-water-quality/compliance/point/([0-9]{5})/year/([0-9]{4})" , "http://environment.data.gov.uk/data/bathing-water-quality/compliance/slice/year/([0-9]{4})" ;
+      void:vocabulary <http://purl.org/linked-data/cube> , <http://reference.data.gov.uk/def/intervals> , <http://www.w3.org/2006/time> , <http://environment.data.gov.uk/def/bathing-water-quality> , <http://environment.data.gov.uk/def/bwq-cc-2012> .
+
+
+<http://environment.data.gov.uk/def/bathing-water-quality/complianceDsd>
+      a       <http://purl.org/linked-data/cube#DataStructureDefinition> ;
+      rdfs:comment "A DSD for Bathing Water Quality Annual Compliance assessment reporting."@en ;
+      rdfs:isDefinedBy <http://environment.data.gov.uk/sources/def/bathing-water-quality.ttl> ;
+      rdfs:label "complianceDsd"@en ;
+      <http://purl.org/linked-data/cube#component>
+              [ <http://purl.org/linked-data/cube#attribute>
+                        <http://environment.data.gov.uk/def/bathing-water-quality/inYearDetail>
+              ] ;
+      <http://purl.org/linked-data/cube#component>
+              [ <http://purl.org/linked-data/cube#dimension>
+                        <http://environment.data.gov.uk/def/bathing-water-quality/sampleYear>
+              ] ;
+      <http://purl.org/linked-data/cube#component>
+              [ <http://purl.org/linked-data/cube#measure>
+                        <http://environment.data.gov.uk/def/bathing-water-quality/complianceClassification>
+              ] ;
+      <http://purl.org/linked-data/cube#component>
+              [ <http://purl.org/linked-data/cube#dimension>
+                        <http://environment.data.gov.uk/def/bathing-water-quality/samplingPoint>
+              ] ;
+      <http://purl.org/linked-data/cube#component>
+              [ <http://purl.org/linked-data/cube#dimension>
+                        <http://environment.data.gov.uk/def/bathing-water-quality/bathingWater>
+              ] ;
+      <http://purl.org/linked-data/cube#sliceKey>
+              <http://environment.data.gov.uk/def/bathing-water-quality/complianceBySamplingPointKey> , <http://environment.data.gov.uk/def/bathing-water-quality/complianceByYearKey> .
+
+<http://environment.data.gov.uk/data/bathing-water-quality/eaew/compliance>
+    void:subset   _:link_complianceClassification ;
+    void:subset   _:link_samplingPoint ;
+    void:subset   _:link_bathingWater ;
+    .
+
+_:link_complianceClassification
+    a void:LinkSet;
+    void:linkPredicate    <http://environment.data.gov.uk/def/bathing-water-quality/complianceClassification> ;
+    void:target <http://environment.data.gov.uk/data/bathing-water-quality/eaew/compliance> ;
+    void:target def-bwq:compliance ;
+    .
+
+_:link_samplingPoint
+    a void:LinkSet;
+    void:linkPredicate    <http://environment.data.gov.uk/def/bathing-water-quality/samplingPoint> ;
+    void:target <http://environment.data.gov.uk/data/bathing-water-quality/eaew/compliance> ;
+    void:target <http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/>;
+    .
+
+_:link_bathingWater
+    a void:LinkSet;
+    void:linkPredicate    <http://environment.data.gov.uk/def/bathing-water-quality/bathingWater> ;
+    void:target <http://environment.data.gov.uk/data/bathing-water-quality/eaew/compliance> ;
+    void:target <http://environment.data.gov.uk/id/bathing-water/> ;
+    .
