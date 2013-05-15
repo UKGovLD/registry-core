@@ -186,6 +186,9 @@ table tr td table {
     min-height: 30px;
 }
 
+td.align-right {
+    text-align: right;
+}
 
-   
+
 

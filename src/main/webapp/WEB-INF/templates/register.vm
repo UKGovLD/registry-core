@@ -58,6 +58,8 @@
 
           #if ($template)
             <div class="tab-pane active" id="view">
+              #set($item = $itemForReg)
+              #set($entity = $register)
               #parse($template)
             </div>
           #end

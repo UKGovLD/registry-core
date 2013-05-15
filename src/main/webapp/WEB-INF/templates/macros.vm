@@ -19,10 +19,21 @@
    <a href="#linkhref($res)" title="$res.uRI">$res.name</a>
 #end
 
+## Inject a link to the given resource or literal, using the full URI as the link text
+#macro(linkraw $res)
+  #if($res.isResource())
+   <a href="#linkhref($res)" title="$res.uRI">$res.uRI</a>
+  #else
+   <a href="$res" title="$res.uRI">$res</a>
+  #end
+#end
+
 ## Render a value either as a link (if a resource) or as a (trimmed) lexical form
 #macro(render $v)
       #if($v.isResource())
         #linkfor($v)
+      #elseif ($lib.isDatetime($v))
+        $lib.printDatetime($v)
       #else
         $lib.escapeHtml($v.lexicalForm, 1000)
       #end
@@ -62,7 +73,7 @@
     <tbody>
       #foreach($pv in $res.listProperties())
         <tr>
-          <td> <strong title="$pv.getProp().uRI">$pv.getProp().name</strong> </td>
+          <td class="align-right span2"> <strong title="$pv.getProp().uRI">$pv.getProp().name</strong> </td>
           <td>
             #foreach($v in $pv.getValues())
               #if($v.isList())
@@ -86,7 +97,17 @@
 
 ## Conditional row in a metadata table
 #macro(metadatarow $label $values)
-  #if(!$values.isEmpty())<tr><td><strong>$label</strong></td><td>#foreach($value in $values)#render($value)#if( $foreach.hasNext )| #end#end</td></tr>#end
+  #if(!$values.isEmpty())<tr><td class="align-right span2"><strong>$label</strong></td><td>#foreach($value in $values)#render($value)#if( $foreach.hasNext )| #end#end</td></tr>#end
+#end
+
+## Conditional row in a metadata table, line breaks between multiple values
+#macro(mmetadatarow $label $values)
+  #if(!$values.isEmpty())<tr><td class="align-right span2"><strong>$label</strong></td><td>#foreach($value in $values)#render($value)#if( $foreach.hasNext ) <br /> #end#end</td></tr>#end
+#end
+
+## Conditional row in a metadata table, value is a URI that should be rendered as a full link
+#macro(lmetadatarow $label $values)
+  #if(!$values.isEmpty())<tr><td class="align-right span2"><strong>$label</strong></td><td>#foreach($value in $values)#linkraw($value)#if( $foreach.hasNext ) <br /> #end#end</td></tr>#end
 #end
 
 ## Row in metadata table specifically for submitter
@@ -94,7 +115,7 @@
            #set($submitter=false)
            #set($submitter=$item.listPropertyValues("reg:submitter"))
            #if(!$submitter.isEmpty())
-             <tr><td><strong>submitted by</strong></td><td>#foreach($s in $submitter)
+             <tr><td class="align-right"><strong>submitted by</strong></td><td>#foreach($s in $submitter)
              <a href="$s.getPropertyValue("foaf:openid")">$s.name</a>#if( $foreach.hasNext ), #end#end</td></tr>
            #end
 #end
@@ -132,18 +153,18 @@
           <div class="result-blob">
             <div class="blob-inner">
               <div class="row">
-                <div class="span2">
+                <div class="span4">
                   #if($item)
                     <strong>Item:</strong>  <a href="#linkhref($item)" title="$item.uRI">$item.getPropertyValue("reg:notation").lexicalForm</a>
                   #else
                     <strong>Item:</strong>  <a href="#linkhrefInt($member)" title="$member.uRI">$member.name</a>
                   #end
+                  - $member.name
                 </div>
                 <div class="span2">
-                  <strong>Label:</strong> $member.name
-                </div>
-                <div class="span2">
-                  <strong>Type:</strong> #foreach($ty in $member.listPropertyValues("rdf:type"))#linkfor($ty)#if( $foreach.hasNext ), #end#end
+                  #if($member.getPropertyValue("rdf:type"))
+                    <strong>Type:</strong> #foreach($ty in $member.listPropertyValues("rdf:type"))#linkfor($ty)#if( $foreach.hasNext ), #end#end
+                  #end
                 </div>
               #if($item)
                 <div class="pull-right">
@@ -153,12 +174,11 @@
             </div>
             <div class="row">
               <div class="span7">
-                #description($member, "")
+                <em>#description($member, "")</em>
               </div>
             </div>
           </div>
         </div>
 #end
-
 
 

@@ -83,7 +83,7 @@
     <dependency>
       <groupId>com.epimorphics</groupId>
       <artifactId>serverbase</artifactId>
-      <version>0.0.9</version>
+      <version>0.0.10-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.epimorphics</groupId>

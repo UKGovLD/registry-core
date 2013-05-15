@@ -300,4 +300,34 @@
     vann:preferredNamespaceUri "http://purl.org/linked-data/registry-ui#";
     .
 
+<_cc> a reg:RegisterItem;
+    rdfs:label "cc"@en;
+    dct:description "creative commons prefix registration"@en;
+    reg:itemClass owl:Ontology;
+    reg:status reg:statusStable;
+    reg:definition [ reg:entity <http://creativecommons.org/ns#> ];
+    .
+<http://creativecommons.org/ns#> a owl:Ontology;
+    rdfs:label "cc"@en;
+    dct:description "creative commons prefix registration"@en;
+    vann:preferredNamespacePrefix "cc";
+    vann:preferredNamespaceUri "http://creativecommons.org/ns#" ;
+    .
+
+<_dgu> a reg:RegisterItem;
+    rdfs:label "dgu"@en;
+    dct:description "data gov uk reference ontology prefix registration"@en;
+    reg:itemClass owl:Ontology;
+    reg:status reg:statusStable;
+    reg:definition [ reg:entity <http://reference.data.gov.uk/def/reference/> ];
+    .
+<http://reference.data.gov.uk/def/reference/> a owl:Ontology;
+    rdfs:label "dgu"@en;
+    dct:description "data gov uk reference ontology prefix registration"@en;
+    vann:preferredNamespacePrefix "dgu";
+    vann:preferredNamespaceUri "http://reference.data.gov.uk/def/reference/" ;
+    .
+
+
+
 

@@ -27,8 +27,8 @@
       #foreach($version in $versions)
         <tr>
           <td>#linkfor($version.version)</td>
-          <td>#if($version.from)$version.from.lexicalForm#else - #end</td>
-          <td>#if($version.to)$version.to.lexicalForm#else - #end</td>
+          <td>#if($version.from)$lib.printDatetime($version.from)#else - #end</td>
+          <td>#if($version.to)$lib.printDatetime($version.to)#else - #end</td>
         </tr>
       #end
     </tbody>

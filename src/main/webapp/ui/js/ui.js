@@ -158,7 +158,6 @@ $(function() {
             var value = emit( $(row[1]).text() );
             data = data + "    " + prop + " " + value + " ;\n";
         });
-        alert(data);
         $.ajax({
             type: (isItem ? "PATCH" : "PUT"),
             url: url,

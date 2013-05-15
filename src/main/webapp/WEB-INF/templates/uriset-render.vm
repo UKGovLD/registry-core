@@ -1,0 +1,43 @@
+<p>A set of reference URIs#if($entity.getPropertyValue("dgu:itemType")) of type #render($entity.getPropertyValue("dgu:itemType"))#end.</p>
+
+<h3>Data set information</h3>
+
+<table class="table table-condensed">
+  <tbody>
+    #metadatarow("Homepage", $entity.listPropertyValues("foaf:homepage"))
+    #metadatarow("License", $entity.listPropertyValues("dct:license"))
+    #metadatarow("License", $entity.listPropertyValues("cc:license"))
+    #metadatarow("Rights", $entity.listPropertyValues("dct:rightsStatement"))
+    #metadatarow("Created", $entity.listPropertyValues("dct:created"))
+    #metadatarow("Modified", $entity.listPropertyValues("dct:modified"))
+    #if($entity.getPropertyValue("void:triples"))
+      <tr><td class="align-right"><strong>Size</strong></td><td>#render($entity.getPropertyValue("void:triples")) triples</td></tr>
+    #end
+    #if($entity.getPropertyValue("void:entities"))
+      <tr><td class="align-right"><strong>Size</strong></td><td>#render($entity.getPropertyValue("void:entities")) resources</td></tr>
+    #end
+  </tbody>
+</table>
+
+#if($entity.getPropertyValue("void:dataDump") || $entity.getPropertyValue("void:exampleResource") || $entity.getPropertyValue("void:sparqlEndpoint"))
+<h3>Access</h3>
+
+<table class="table table-condensed">
+  <tbody>
+    #mmetadatarow("Data dump", $entity.listPropertyValues("void:dataDump"))
+    #lmetadatarow("Example resources", $entity.listPropertyValues("void:exampleResource"))
+    #lmetadatarow("SPARQL endpoint", $entity.listPropertyValues("void:sparqlEndpoint"))
+  </tbody>
+</table>
+#end
+
+#if($entity.getPropertyValue("void:vocabulary") || $entity.getPropertyValue("void:uriRegexPattern"))
+<h3>Structure</h3>
+
+<table class="table table-condensed">
+  <tbody>
+    #mmetadatarow("Vocabulary", $entity.listPropertyValues("void:vocabulary"))
+    #mmetadatarow("URI patterns", $entity.listPropertyValues("void:uriRegexPattern"))
+  </tbody>
+</table>
+#end

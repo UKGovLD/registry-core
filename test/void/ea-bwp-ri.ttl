@@ -47,7 +47,7 @@
 
 <http://environment.data.gov.uk/id/bathing-water-profile/>
    a       void:Dataset , dgu:URIset ;
-      rdfs:label "Bathing waters profiles."@en ;
+      rdfs:label "Bathing waters profiles"@en ;
       dct:description "URI Set of Bathing Waters Profiles in England and Wales monitored by the Environment Agency for compliance with the EU Bathing Water Directive"@en ;
       dct:license <http://reference.data.gov.uk/id/open-government-licence> ;
       void:uriRegexPattern
@@ -58,12 +58,5 @@
 
 <http://environment.data.gov.uk/id/bathing-water-profile/>
     void:entities  518;
-    void:subset _:link_bathingWater;
     .
 
-_:link_bathingWater
-    a void:LinkSet;
-    void:linkPredicate <http://environment.data.gov.uk/def/bathing-water/bathingWater>;
-    void:target <http://environment.data.gov.uk/id/bathing-water-profile/>;
-    void:target bw: ;
-    .
