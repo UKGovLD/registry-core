@@ -81,6 +81,7 @@ public class RequestProcessor extends BaseEndpoint {
     public static final String FULL_MIME_TURTLE = "text/turtle; charset=UTF-8";
     public static final String FORWARDED_FOR_HEADER = "X-Forwarded-For";
     public static final String UI_PATH = "ui";
+    private static final String SYSTEM_QUERY = "system/query";
 
     @GET
     @Produces("text/html")
@@ -94,7 +95,7 @@ public class RequestProcessor extends BaseEndpoint {
                 // Will chain through to file serving
                 throw new NotFoundException();
             }
-        } else if (path.startsWith("system/query") || path.equals("favicon.ico")) {
+        } else if (path.startsWith(SYSTEM_QUERY) || path.equals("favicon.ico")) {
             // Pass to the generic velocity handler, which in turn falls through to file serving
             throw new NotFoundException();
         }
@@ -183,8 +184,8 @@ public class RequestProcessor extends BaseEndpoint {
 
     private Response doRead(PassThroughResult ptr) {
         String path = uriInfo.getPath();
-        if (path.startsWith(UI_PATH) ) {
-            // Will chain through to file serving
+        if (path.startsWith(SYSTEM_QUERY) || path.startsWith(UI_PATH) ) {
+            // Will chain through to file serving/fuseki
             throw new NotFoundException();
         }
 
