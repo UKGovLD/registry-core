@@ -17,6 +17,7 @@ import com.epimorphics.registry.core.ForwardingRecord;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.server.indexers.LuceneResult;
+import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
@@ -214,4 +215,15 @@ public interface StoreAPI {
      * List all delegation/forwarding/federation records in the registry.
      */
     public List<ForwardingRecord> listDelegations();
+
+    /**
+     * Run a sparql query the store. It is guaranateed to be run
+     * in an environment in which all annotation graphs area available as named graphs,
+     * there are no guarantees on access to item versioning.
+     */
+    // This breaks the internal goal of hiding sparql, which in turn was to leave
+    // open a path to simpler versioning implementations and maybe non-triple store implementations
+    // The weasel words in the javadoc are intended to leave the possibility of just using
+    // SPARQL for accessing the graph annotations (for which there's no alterantive anyway)
+    public ResultSet query(String query);
 }

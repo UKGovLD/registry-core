@@ -41,3 +41,10 @@
   </tbody>
 </table>
 #end
+
+<h3>Query test - TEMP</h3>
+
+#foreach($row in $lib.reg.query("SELECT ?dataset WHERE {GRAPH ?g {?dataset a void:Dataset}}"))
+  <p>$row.dataset</p>
+#end
+

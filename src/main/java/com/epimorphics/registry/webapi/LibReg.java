@@ -12,7 +12,9 @@ package com.epimorphics.registry.webapi;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,6 +42,9 @@ import com.epimorphics.server.core.Service;
 import com.epimorphics.server.core.ServiceBase;
 import com.epimorphics.server.templates.LibPlugin;
 import com.epimorphics.util.EpiException;
+import com.epimorphics.util.PrefixUtils;
+import com.hp.hpl.jena.query.QuerySolution;
+import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.RDFNode;
@@ -207,7 +212,7 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
         }
         return result.toString();
     }
-    
+
     /**
      * Convert the URI for a managed entity or an item to a path relative to the registry base
      */
@@ -218,9 +223,9 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
         }
         return uri;
     }
-    
+
     /**
-     * Test whether RegisterItem property should be allowed into an edit dialog 
+     * Test whether RegisterItem property should be allowed into an edit dialog
      */
     protected static Set<Resource> NonEditableRIProps = new HashSet<Resource>();
     static {
@@ -234,7 +239,7 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
         NonEditableRIProps.add( OWL.versionInfo );
         NonEditableRIProps.add( RDFS.label );
     }
-    
+
     public boolean isEditable(Object prop) {
         Resource p;
         if (prop instanceof RDFNodeWrapper) {
@@ -246,14 +251,14 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
         }
         return ! NonEditableRIProps.contains(p);
     }
-    
+
     /**
      * Test if a URI corresponds to a RegisterItem
      */
     public boolean isItem(String uri) {
         return uri.matches(".*/_[^/]+$");
     }
-    
+
     /**
      * Create a list of item/entity pairs corresponding to a list of (wrapper) entities
      * in a paged register listing
@@ -288,7 +293,7 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
         }
         return items;
     }
-    
+
     public class ItemMember {
         protected RDFNodeWrapper member;
         protected RDFNodeWrapper item;
@@ -296,14 +301,35 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
             this.member = member;
             this.item = item;
         }
-        public RDFNodeWrapper getMember() { 
+        public RDFNodeWrapper getMember() {
             return member;
         }
-        public RDFNodeWrapper getItem() { 
+        public RDFNodeWrapper getItem() {
             return item;
         }
     }
-    
+
+
+    /**
+     * Run a sparql query, expanding prefixes from the prefix registry, return as an array of variable bindings
+     */
+    public List<Map<String, RDFNode>> query(String query) {
+        String expandedQuery = PrefixUtils.expandQuery(query, Prefixes.get());
+        ResultSet rs = Registry.get().getStore().query(expandedQuery);
+
+        List<Map<String, RDFNode>> result = new ArrayList<Map<String,RDFNode>>();
+        while (rs.hasNext()) {
+            QuerySolution soln = rs.next();
+            Map<String, RDFNode> map = new HashMap<String, RDFNode>();
+            for (Iterator<String> ni = soln.varNames(); ni.hasNext(); ) {
+                String name = ni.next();
+                map.put(name,  soln.get(name));
+            }
+            result.add( map );
+        }
+        return result;
+    }
+
     /**
      * Utility for incrementally building up compacted range notation
      * for reserved entries
@@ -381,9 +407,9 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
             return getReservations();
         }
     }
-    
+
     protected TypedTemplateIndex typedTemplateIndex;
-    
+
     /**
      * Return the name of the template, if any, to use for rendering the given entity
      * @param arg can be a wrapped resource, raw resource or a register item

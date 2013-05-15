@@ -44,7 +44,6 @@ import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
-import com.epimorphics.registry.util.DescriptionCache;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.util.VersionUtil;
 import com.epimorphics.registry.vocab.RegistryVocab;
@@ -58,8 +57,11 @@ import com.epimorphics.server.indexers.LuceneResult;
 import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.vocabs.Time;
+import com.hp.hpl.jena.query.QueryExecution;
+import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.query.ResultSetFactory;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -839,5 +841,20 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             "   } " +
             "}";
 
+
+    @Override
+    public ResultSet query(String query) {
+        store.lock();
+        try {
+            QueryExecution exec = QueryExecutionFactory.create(query, store.asDataset());
+            try {
+                return ResultSetFactory.copyResults( exec.execSelect() );
+            } finally {
+                exec.close();
+            }
+        } finally {
+            store.unlock();
+        }
+    }
 
 }
