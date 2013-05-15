@@ -8,7 +8,7 @@
 @prefix admingeo:     <http://data.ordnancesurvey.co.uk/ontology/admingeo/> .
 @prefix spatialrelations:  <http://data.ordnancesurvey.co.uk/ontology/spatialrelations/> .
 
-<http://data.ordnancesurvey.co.uk/id/data/boundary-line> 
+<http://data.ordnancesurvey.co.uk/id/data/boundary-line>
     rdf:type void:Dataset ;
      dct:title "Boundary Line Linked Data" ;
      rdfs:label "Boundary Line Linked Data" ;
@@ -43,88 +43,87 @@
      void:uriLookupEndpoint <http://beta.data.ordnancesurvey.co.uk/datasets/boundary-line/apis/lookup> ;
      void:dataDump <http://download.data.ordnancesurvey.co.uk/boundary-line/bdline-to-go.zip> .
 
-<http://data.ordnancesurvey.co.uk/id/data/boundary-line> 
+<http://data.ordnancesurvey.co.uk/id/data/boundary-line>
     void:subset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> ;
-    
+
     void:subset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa> ;
     void:subset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa-ward> ;
     void:subset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa-constituency> ;
     void:subset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa-inEuropeanRegion> ;
-    
+
     void:subset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ;
     void:subset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er-ward> ;
     void:subset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er-contains-caa> ;
     void:subset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er-contains-cva> ;
     void:subset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er-westMinsterConstituency> ;
-    . 
-    
-<http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> 
+    .
+
+<http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva>
     a void:Dataset, dgu:URISet;
     rdfs:label "Civil Voting Area URI set";
     void:entities 32629;
     dgu:itemClass admingeo:CivilVotingArea;
     .
-        
-<http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa> 
+
+<http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa>
     a void:Dataset, dgu:URISet;
     rdfs:label "Civil Administrative Area URI set";
     void:entities 11754;
     dgu:itemClass admingeo:CivilAdministrativeArea;
     .
-        
+
 <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa-ward>
-    a void:LinkSet;
+    a void:Linkset;
     void:linkPredicate admingeo:ward ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa> ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> ;
     .
-    
+
 <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa-constituency>
-    a void:LinkSet;
+    a void:Linkset;
     void:linkPredicate admingeo:constituency ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa> ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> ;
     .
-    
+
 <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa-er>
-    a void:LinkSet;
+    a void:Linkset;
     void:linkPredicate admingeo:inEuropeanRegion ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> ;
-    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ; 
+    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ;
     .
-    
-<http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> 
+
+<http://data.ordnancesurvey.co.uk/id/data/boundary-line#er>
     a void:Dataset, dgu:URISet;
     rdfs:label "European Region URI set";
     void:entities 11;
     dgu:itemClass admingeo:EuropeanRegion;
     .
-    
-<http://data.ordnancesurvey.co.uk/id/data/boundary-line#er-ward> 
-    a void:LinkSet;
+
+<http://data.ordnancesurvey.co.uk/id/data/boundary-line#er-ward>
+    a void:Linkset;
     void:linkPredicate admingeo:ward ;
-    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ; 
+    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> ;
     .
 
-<http://data.ordnancesurvey.co.uk/id/data/boundary-line#er-contains-cva> 
-    a void:LinkSet;
+<http://data.ordnancesurvey.co.uk/id/data/boundary-line#er-contains-cva>
+    a void:Linkset;
     void:linkPredicate spatialrelations:contains;
-    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ; 
+    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> ;
     .
 
-<http://data.ordnancesurvey.co.uk/id/data/boundary-line#er-contains-caa> 
-    a void:LinkSet;
+<http://data.ordnancesurvey.co.uk/id/data/boundary-line#er-contains-caa>
+    a void:Linkset;
     void:linkPredicate spatialrelations:contains;
-    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ; 
+    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa> ;
     .
-    
-<http://data.ordnancesurvey.co.uk/id/data/boundary-line#er-westMinsterConstituency> 
-    a void:LinkSet;
+
+<http://data.ordnancesurvey.co.uk/id/data/boundary-line#er-westMinsterConstituency>
+    a void:Linkset;
     void:linkPredicate admingeo:westminsterConstituency ;
-    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ; 
+    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> ;
     .
-   

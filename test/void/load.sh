@@ -12,6 +12,10 @@ function rpost {
   curl -i  -b cookie-jar -c cookie-jar -H "Content-Type: text/turtle" -X POST --data $*
 }
 
+function repost {
+  curl -i  -b cookie-jar -c cookie-jar -H "Content-Type: text/turtle" -X POST $*
+}
+
 rcurl --data "userid=https://profiles.google.com/114719444327647609228&password=cefaaeba600812ea8fe382cd0ebbbc43" http://localhost:8080/system/security/apilogin
 
 rpost "@reg-datasets.ttl" http://localhost:8080/
@@ -39,7 +43,7 @@ rput  "@ea-sp-void.ttl"  http://localhost:8080/datasets/bathing-water/_sampling-
 rpost "@ea-zoi-ri.ttl"  http://localhost:8080/datasets/bathing-water
 rput  "@ea-zoi-void.ttl"  http://localhost:8080/datasets/bathing-water/_zoi-uriset?annotation=void
 
-rpost "" 'http://localhost:8080/datasets/bathing-water?update&status=experimental'
+repost 'http://localhost:8080/datasets/bathing-water?update&status=experimental'
 
 rpost "@reg-os.ttl" http://localhost:8080/datasets
 
@@ -56,4 +60,4 @@ rput  "@os-codepointopen-void.ttl"  http://localhost:8080/datasets/os/_code-poin
 rpost "@os-gazetteer-ri.ttl"  http://localhost:8080/datasets/os
 rpost "@os-gazetteer-np-ri.ttl"  http://localhost:8080/datasets/os
 
-rpost "" 'http://localhost:8080/datasets/os?update&status=experimental'
+repost 'http://localhost:8080/datasets/os?update&status=experimental'

@@ -64,56 +64,56 @@ bw:
     .
 
 _:link_latestProfile
-    a void:LinkSet;
+    a void:Linkset;
     void:linkPredicate <http://environment.data.gov.uk/def/bathing-water-profile/latestBathingWaterProfile>;
     void:target bw: ;
     void:target <http://environment.data.gov.uk/id/bathing-water-profile/> ;
     .
 
 _:link_samplingPoint
-    a void:LinkSet;
+    a void:Linkset;
     void:linkPredicate <http://location.data.gov.uk/def/ef/SamplingPoint/samplingPoint>;
     void:target bw: ;
     void:target <http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/> ;
     .
 
 _:link_zoneOfInfluence
-    a void:LinkSet;
+    a void:Linkset;
     void:linkPredicate <http://location.data.gov.uk/def/ef/ZoneOfInfluence/zoneOfInfluence>;
     void:target bw: ;
     void:target <http://location.data.gov.uk/so/ef/ZoneOfInfluence/bwzoi.eaew/> ;
     .
 
 _:link_sedimentTypesPresent
-    a void:LinkSet;
+    a void:Linkset;
     void:linkPredicate <http://environment.data.gov.uk/def/bathing-water/sedimentTypesPresent>;
     void:target bw: ;
     void:target <http://environment.data.gov.uk/def/bathing-water/sediment-type> ;
     .
 
 _:link_district
-    a void:LinkSet;
+    a void:Linkset;
     void:linkPredicate <http://statistics.data.gov.uk/def/administrative-geography/district>;
     void:target bw: ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa> ;
     .
 
 _:link_county
-    a void:LinkSet;
+    a void:Linkset;
     void:linkPredicate <http://statistics.data.gov.uk/def/administrative-geography/county>;
     void:target bw: ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa> ;
     .
 
 _:link_latestComplianceAssessment
-    a void:LinkSet;
+    a void:Linkset;
     void:linkPredicate <http://environment.data.gov.uk/def/bathing-water-quality/latestComplianceAssessment>;
     void:target bw: ;
     void:target <http://environment.data.gov.uk/data/bathing-water-quality/eaew/compliance> ;
     .
 
 _:link_latestSampleAssessment
-    a void:LinkSet;
+    a void:Linkset;
     void:linkPredicate <http://environment.data.gov.uk/def/bathing-water-quality/latestSampleAssessment>;
     void:target bw: ;
     void:target <http://environment.data.gov.uk/data/bathing-water-quality/eaew/in-season> ;

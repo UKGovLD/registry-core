@@ -56,7 +56,7 @@ _:code-point-open3 void:class <http://data.ordnancesurvey.co.uk/ontology/postcod
 
 _:code-point-open4 void:class <http://data.ordnancesurvey.co.uk/ontology/postcode/PostcodeArea> ;
                    void:entities "120"^^<http://www.w3.org/2001/XMLSchema#integer> .
-                   
+
 <http://data.ordnancesurvey.co.uk/id/data/code-point-open>
     void:subset <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit> ;
     void:subset <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit-ward> ;
@@ -89,71 +89,71 @@ _:code-point-open4 void:class <http://data.ordnancesurvey.co.uk/ontology/postcod
     dgu:itemClass postcode:PostcodeUnit;
     .
 
-<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit-ward>         
-    a void:LinkSet;
+<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit-ward>
+    a void:Linkset;
     void:linkPredicate admingeo:ward ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit>  ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> ;
     .
- 
-<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit-county>         
-    a void:LinkSet;
+
+<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit-county>
+    a void:Linkset;
     void:linkPredicate admingeo:county ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit>  ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa> ;
     .
- 
-<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit-district>         
-    a void:LinkSet;
+
+<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit-district>
+    a void:Linkset;
     void:linkPredicate admingeo:district ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit>  ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa> ;
     .
- 
-<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit-within-pca>         
-    a void:LinkSet;
+
+<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit-within-pca>
+    a void:Linkset;
     void:linkPredicate spatialrelations:within ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit>  ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodearea>  ;
     .
- 
-<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit-within-pcd>         
-    a void:LinkSet;
+
+<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit-within-pcd>
+    a void:Linkset;
     void:linkPredicate spatialrelations:within ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit>  ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodedistrict>  ;
     .
- 
-<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit-within-pcsector>         
-    a void:LinkSet;
+
+<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit-within-pcsector>
+    a void:Linkset;
     void:linkPredicate spatialrelations:within ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit>  ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodesector>  ;
     .
- 
-<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodesector> 
+
+<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodesector>
      a void:Dataset, dgu:URISet;
     rdfs:label "Postcode Sector URI set";
     void:entities 10833;
     dgu:itemClass postcode:PostcodeSector;
     .
 
-<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodesector-within-pca> 
-    a void:LinkSet;
+<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodesector-within-pca>
+    a void:Linkset;
     void:linkPredicate spatialrelations:within ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodesector>  ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodearea>  ;
     .
 
 <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodesector-within-pcd>
-    a void:LinkSet;
+    a void:Linkset;
     void:linkPredicate spatialrelations:within ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodesector>  ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodedistrict>  ;
     .
 
-<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodesector-contains-pcu> 
-    a void:LinkSet;
+<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodesector-contains-pcu>
+    a void:Linkset;
     void:linkPredicate spatialrelations:contains ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodesector>  ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit>  ;
@@ -166,22 +166,22 @@ _:code-point-open4 void:class <http://data.ordnancesurvey.co.uk/ontology/postcod
     dgu:itemClass postcode:PostcodeDistrict;
     .
 
-<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodedistrict-within-pca> 
-    a void:LinkSet;
+<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodedistrict-within-pca>
+    a void:Linkset;
     void:linkPredicate spatialrelations:within ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodedistrict>  ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodearea>  ;
     .
 
 <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodedistrict-contains-pcs>
-    a void:LinkSet;
+    a void:Linkset;
     void:linkPredicate spatialrelations:contains ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodedistrict>  ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodesector>  ;
     .
 
-<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodedistri-contains-pcu> 
-    a void:LinkSet;
+<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodedistri-contains-pcu>
+    a void:Linkset;
     void:linkPredicate spatialrelations:contains ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodedistrict>  ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit>  ;
@@ -194,26 +194,25 @@ _:code-point-open4 void:class <http://data.ordnancesurvey.co.uk/ontology/postcod
     dgu:itemClass postcode:PostcodeArea;
     .
 
-<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodearea-contains-pcd> 
-    a void:LinkSet;
+<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodearea-contains-pcd>
+    a void:Linkset;
     void:linkPredicate spatialrelations:contains ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodearea>  ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodedistrict>  ;
     .
 
-<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodearea-contains-pcs> 
-    a void:LinkSet;
+<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodearea-contains-pcs>
+    a void:Linkset;
     void:linkPredicate spatialrelations:contains ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodearea>  ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodesector>  ;
     .
 
-<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodearea-contains-pcu> 
-    a void:LinkSet;
+<http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodearea-contains-pcu>
+    a void:Linkset;
     void:linkPredicate spatialrelations:contains ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodearea>  ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit>  ;
     .
 
-   
-                   
+

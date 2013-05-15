@@ -53,8 +53,8 @@
     void:subset _:link_bathingWater;
     .
 
-_:link_bathingWater         
-    a void:LinkSet;
+_:link_bathingWater
+    a void:Linkset;
     void:linkPredicate <http://environment.data.gov.uk/def/bathing-water/bathingWater>;
     void:target <http://environment.data.gov.uk/id/bathing-water-profile/>;
     void:target bw: ;

@@ -152,21 +152,21 @@
     .
 
 _:link_complianceClassification
-    a void:LinkSet;
+    a void:Linkset;
     void:linkPredicate    <http://environment.data.gov.uk/def/bathing-water-quality/complianceClassification> ;
     void:target <http://environment.data.gov.uk/data/bathing-water-quality/eaew/compliance> ;
     void:target def-bwq:compliance ;
     .
 
 _:link_samplingPoint
-    a void:LinkSet;
+    a void:Linkset;
     void:linkPredicate    <http://environment.data.gov.uk/def/bathing-water-quality/samplingPoint> ;
     void:target <http://environment.data.gov.uk/data/bathing-water-quality/eaew/in-season> ;
     void:target <http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/>;
     .
 
 _:link_bathingWater
-    a void:LinkSet;
+    a void:Linkset;
     void:linkPredicate    <http://environment.data.gov.uk/def/bathing-water-quality/bathingWater> ;
     void:target <http://environment.data.gov.uk/data/bathing-water-quality/eaew/in-season> ;
     void:target <http://environment.data.gov.uk/id/bathing-water/> ;

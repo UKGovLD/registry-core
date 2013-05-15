@@ -28,7 +28,7 @@
     .
 
 _:link_bathingWater
-    a void:LinkSet;
+    a void:Linkset;
     void:linkPredicate <http://environment.data.gov.uk/def/bathing-water/bathingWater>;
     void:target <http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/> ;
     void:target <http://environment.data.gov.uk/id/bathing-water/>;
