@@ -7,7 +7,7 @@
     #metadatarow("Homepage", $entity.listPropertyValues("foaf:homepage"))
     #metadatarow("License", $entity.listPropertyValues("dct:license"))
     #metadatarow("License", $entity.listPropertyValues("cc:license"))
-    #metadatarow("Rights", $entity.listPropertyValues("dct:rightsStatement"))
+    #metadatarow("Rights", $entity.listPropertyValues("dct:rights"))
     #metadatarow("Created", $entity.listPropertyValues("dct:created"))
     #metadatarow("Modified", $entity.listPropertyValues("dct:modified"))
     #if($entity.getPropertyValue("void:triples"))

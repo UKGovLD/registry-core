@@ -23,7 +23,7 @@
      void:classPartition _:50k-gazetteer1 ;
      void:uriRegexPattern "^http://data.ordnancesurvey.co.uk/" ;
      cc:license <http://www.ordnancesurvey.co.uk/oswebsite/opendata/licence/docs/licence.pdf> ;
-     dct:rightsStatement "Contains Ordnance Survey data © Crown copyright and database right 2013." ;
+     dct:rights "Contains Ordnance Survey data © Crown copyright and database right 2013." ;
      foaf:homepage <http://beta.data.ordnancesurvey.co.uk/datasets/50k-gazetteer> ;
      void:vocabulary <http://xmlns.com/foaf/0.1/> ,
                      <http://data.ordnancesurvey.co.uk/ontology/spatialrelations/> ,

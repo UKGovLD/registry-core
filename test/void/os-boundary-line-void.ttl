@@ -25,7 +25,7 @@
      void:triples "653435"^^<http://www.w3.org/2001/XMLSchema#integer> ;
      void:uriRegexPattern "^http://data.ordnancesurvey.co.uk/" ;
      cc:license <http://www.ordnancesurvey.co.uk/oswebsite/opendata/licence/docs/licence.pdf> ;
-     dct:rightsStatement "Contains Ordnance Survey data Â© Crown copyright and database right 2013." ;
+     dct:rights "Contains Ordnance Survey data Â© Crown copyright and database right 2013." ;
      foaf:homepage <http://beta.data.ordnancesurvey.co.uk/datasets/boundary-line> ;
      void:vocabulary <http://www.w3.org/2003/01/geo/wgs84_pos#> ,
                      <http://data.ordnancesurvey.co.uk/ontology/admingeo/> ,

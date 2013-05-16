@@ -16,7 +16,8 @@ function repost {
   curl -i  -b cookie-jar -c cookie-jar -H "Content-Type: text/turtle" -X POST $*
 }
 
-rcurl --data "userid=https://profiles.google.com/114719444327647609228&password=cefaaeba600812ea8fe382cd0ebbbc43" http://localhost:8080/system/security/apilogin
+# rcurl --data "userid=https://profiles.google.com/114719444327647609228&password=cefaaeba600812ea8fe382cd0ebbbc43" http://localhost:8080/system/security/apilogin
+rcurl --data "userid=https://profiles.google.com/114719444327647609228&password=b4cd030cf91c8f953065e3bf42e564e8" http://localhost:8080/system/security/apilogin
 
 rpost "@reg-datasets.ttl" http://localhost:8080/
 
