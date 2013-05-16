@@ -1,5 +1,5 @@
 #canvas {
-  min-height: 500px;
+  min-height: 800px;
 }
 
 .node {
@@ -44,4 +44,7 @@
     padding: 2px;
 }
 
+.node .header a {
+    color: black;
+}
 
