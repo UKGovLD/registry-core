@@ -1,6 +1,9 @@
-// Set of initialization actions fun on page load to make UI features live
+// Set of initialization actions run on page load to make UI features live
 
 $(function() {
+
+    // Move any rhs elements (typically from type-specific templates) to rhs column
+    $(".rhs").appendTo("#rhs");
 
     // Query forms run a target query and load the resulting HTML into a data-result element
     var processQueryForms = function() {

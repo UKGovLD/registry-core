@@ -24,6 +24,7 @@ import org.apache.shiro.authz.Permission;
 import org.apache.shiro.subject.Subject;
 
 import com.epimorphics.rdfutil.ModelWrapper;
+import com.epimorphics.rdfutil.QueryUtil;
 import com.epimorphics.rdfutil.RDFNodeWrapper;
 import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
@@ -47,6 +48,7 @@ import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.shared.PrefixMapping;
@@ -313,17 +315,22 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
     /**
      * Run a sparql query, expanding prefixes from the prefix registry, return as an array of variable bindings
      */
-    public List<Map<String, RDFNode>> query(String query) {
+    public List<Map<String, RDFNodeWrapper>> query(String query, Object... params) {
         String expandedQuery = PrefixUtils.expandQuery(query, Prefixes.get());
+        expandedQuery = QueryUtil.substituteInQuery(expandedQuery, params);
         ResultSet rs = Registry.get().getStore().query(expandedQuery);
 
-        List<Map<String, RDFNode>> result = new ArrayList<Map<String,RDFNode>>();
+        ModelWrapper mw = new ModelWrapper( ModelFactory.createDefaultModel() );
+        List<Map<String, RDFNodeWrapper>> result = new ArrayList<Map<String,RDFNodeWrapper>>();
         while (rs.hasNext()) {
             QuerySolution soln = rs.next();
-            Map<String, RDFNode> map = new HashMap<String, RDFNode>();
+            Map<String, RDFNodeWrapper> map = new HashMap<String, RDFNodeWrapper>();
             for (Iterator<String> ni = soln.varNames(); ni.hasNext(); ) {
                 String name = ni.next();
-                map.put(name,  soln.get(name));
+                RDFNode node = soln.get(name);
+                if (node != null) {
+                    map.put(name,  new RDFNodeWrapper(mw, node) );
+                }
             }
             result.add( map );
         }

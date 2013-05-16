@@ -38,6 +38,8 @@
 @prefix xhv:     <http://www.w3.org/1999/xhtml/vocab#> .
 @prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
 
+@prefix reg:  <http://purl.org/linked-data/registry#> .
+
 <http://environment.data.gov.uk/data/bathing-water-quality/eaew/compliance>
       a       qb:DataSet , void:Dataset , def-bwq:ComplianceDataset ;
       rdfs:label "Bathing Water Quality - Annual Compliance Assessment Dataset (eaew)"@en ;
@@ -89,6 +91,7 @@ _:link_complianceClassification
     a void:Linkset;
     void:linkPredicate    <http://environment.data.gov.uk/def/bathing-water-quality/complianceClassification> ;
     void:target <http://environment.data.gov.uk/data/bathing-water-quality/eaew/compliance> ;
+    reg:sourceDataset <http://environment.data.gov.uk/data/bathing-water-quality/eaew/compliance> ;
     void:target def-bwq:compliance ;
     .
 
@@ -97,6 +100,7 @@ _:link_samplingPoint
     void:linkPredicate    <http://environment.data.gov.uk/def/bathing-water-quality/samplingPoint> ;
     void:target <http://environment.data.gov.uk/data/bathing-water-quality/eaew/compliance> ;
     void:target <http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/>;
+    reg:sourceDataset <http://environment.data.gov.uk/data/bathing-water-quality/eaew/compliance> ;
     .
 
 _:link_bathingWater
@@ -104,4 +108,5 @@ _:link_bathingWater
     void:linkPredicate    <http://environment.data.gov.uk/def/bathing-water-quality/bathingWater> ;
     void:target <http://environment.data.gov.uk/data/bathing-water-quality/eaew/compliance> ;
     void:target <http://environment.data.gov.uk/id/bathing-water/> ;
+    reg:sourceDataset <http://environment.data.gov.uk/data/bathing-water-quality/eaew/compliance> ;
     .

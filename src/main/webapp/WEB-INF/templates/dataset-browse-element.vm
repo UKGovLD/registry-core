@@ -1,0 +1,43 @@
+## Render a dataset and its links.
+##   $uri: the dataset to be rendered
+## Called from dataset-browse to add new elements to the browse diagram
+
+#set($response=$registry.perform("Read","?entity=$lib.pathEncode($uri)", $requestor))
+#if($response.status < 400)
+  #set($model=$response.entity)
+  $model.setLanguage($language)
+  #set($node=$model.getNode($uri))
+
+  #set($thisNode = "node-" + $lib.pathEncode($uri))
+  <div class="node node-base" data-id="$thisNode">
+    #set($type="Dataset")
+    #if($node.hasResourceProperty("rdf:type", "dgu:URIset"))
+      #set($type="URIset")
+    #elseif($node.hasResourceProperty("rdf:type", "qb:DataSet"))
+      #set($type="Datacube")
+    #end
+    <div class="header">
+      <span>$type</span>
+      <span class="pull-right">
+        <i class="icon-resize-full icon-white"></i>
+        <i class="icon-resize-small icon-white"></i>
+        <i class="icon-remove-circle icon-white"></i>
+      </span>
+    </div>
+    <div class="name">$node.name</div>
+    #if($node.getPropertyValue("void:entities"))
+      <div class="annotation">Size: $node.getPropertyValue("void:entities").lexicalForm</div>
+    #end
+  </div>
+
+  #set($links = $lib.reg.query("SELECT ?predicate ?linked WHERE {GRAPH ?g { [] a void:Linkset; void:target ?linked ; reg:sourceDataset <${0}> ; void:linkPredicate ?predicate. FILTER (?linked != <${0}>)}}", $node))
+  #foreach($row in $links)
+    <div class="connection connection-out hidden" data-out="$thisNode" data-in="node-$lib.pathEncode($row.linked.uRI)">$row.predicate.name</div>
+  #end
+
+  #set($links = $lib.reg.query("SELECT ?predicate ?linked WHERE {GRAPH ?g { [] a void:Linkset; reg:sourceDataset ?linked ; void:target <${0}> ; void:linkPredicate ?predicate. FILTER (?linked != <${0}>)}}", $uri))
+  #foreach($row in $links)
+    <div class="connection connection-in hidden" data-in="$thisNode" data-out="node-$lib.pathEncode($row.linked.uRI)">$row.predicate.name</div>
+  #end
+
+#end

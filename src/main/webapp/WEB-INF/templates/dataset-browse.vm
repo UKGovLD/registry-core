@@ -1,0 +1,14 @@
+#if($uri)#set($pageTitle="Visualize dataset: $uri")#end
+
+#set($extraCSS="ds-explore.css")
+#parse("header.vm")
+#parse("navbar.vm")
+
+<h2>Explore dataset connections</h2>
+
+<div id="canvas">
+  #parse("dataset-browse-element.vm")
+</div>
+
+#set($extraJS="jquery-ui-1.10.3.custom.min.js,jquery.jsPlumb-1.4.1-all-min.js,ds-explore.js")
+#parse("footer.vm")

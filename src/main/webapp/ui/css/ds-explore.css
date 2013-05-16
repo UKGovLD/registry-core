@@ -1,0 +1,47 @@
+#canvas {
+  min-height: 500px;
+}
+
+.node {
+    background-color: white;
+    -moz-box-shadow: 0 5px 24px #888;
+    -webkit-box-shadow: 0 5px 24px #888;
+    box-shadow: 0 5px 24px #888;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    border: 2px solid lightgrey;
+    width: 10em;
+    min-height: 4em;
+    position: absolute;
+}
+
+.node-base {
+    top: 200px;
+    left: 50%;
+    margin-top: -2em;
+    margin-left: -5em;
+}
+
+.node .name {
+    text-align: center;
+    font-weight: bold;
+}
+
+.node .annotation {
+    text-align: center;
+}
+
+.node .header {
+    -webkit-border-top-left-radius: 5px;
+    -webkit-border-top-right-radius: 5px;
+    -moz-border-radius-topleft: 5px;
+    -moz-border-radius-topright: 5px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    background-color: black;
+    color: white;
+    padding: 2px;
+}
+
+

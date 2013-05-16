@@ -37,6 +37,8 @@
 @prefix xhv:     <http://www.w3.org/1999/xhtml/vocab#> .
 @prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
 
+@prefix reg:  <http://purl.org/linked-data/registry#> .
+
 <http://environment.data.gov.uk/id/bathing-water-profile/>
    a       void:Dataset , dgu:URIset ;
       rdfs:label "Bathing waters profiles."@en ;
@@ -57,5 +59,6 @@ _:link_bathingWater
     a void:Linkset;
     void:linkPredicate <http://environment.data.gov.uk/def/bathing-water/bathingWater>;
     void:target <http://environment.data.gov.uk/id/bathing-water-profile/>;
+    reg:sourceDataset <http://environment.data.gov.uk/id/bathing-water-profile/>;
     void:target bw: ;
     .

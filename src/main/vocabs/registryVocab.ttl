@@ -174,7 +174,7 @@ reg:annotation a owl:ObjectProperty;
     rdfs:comment "The URI of a graph of annotation statements associate with this item"@en;
     rdfs:domain reg:RegisterItem;
     .
-    
+
 # -- Status ------------------------------------------------------
 
 reg:status    a owl:ObjectProperty;
@@ -207,14 +207,14 @@ reg:statusSubmitted a skos:Concept, reg:Status;
     skos:inScheme reg:StatusScheme;
     skos:broader  reg:statusNotAccepted;
     .
-    
+
 reg:statusReserved a skos:Concept, reg:Status;
     skos:prefLabel "reserved"@en;
     rdfs:comment "A reserved entry allocated for some as yet undetermined future use."@en;
     skos:inScheme reg:StatusScheme;
     skos:broader  reg:statusNotAccepted;
     .
-    
+
 reg:statusInvalid a skos:Concept, reg:Status;
     skos:prefLabel "invalid"@en;
     rdfs:comment "An entry which has been invalidated due to serious flaws, distinct from retrirement. Corresponds to ISO 19135(redraft) 'invalid'"@en;
@@ -454,5 +454,12 @@ reg:enumerationObject a owl:ObjectProperty;
     rdfs:range  rdfs:Resource;
     .
 
+# -- Dataset metadata ------------------------------------------------------
 
+reg:sourceDataset a owl:ObjectProperty;
+    rdfs:label "source dataset"@en;
+    rdfs:comment "Gives the source dataset in a Linkset, the other link target is assumed to be the destination"@en;
+    rdfs:domain void:Linkset;
+    rdfs:range void:Dataset;
+    .
 

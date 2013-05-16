@@ -1,0 +1,74 @@
+## Assumes that $entity is bound to the dataset being viewed
+
+<div class="rhs">
+<h3>Dataset links <a href="$uiroot/dataset-browse?uri=$lib.pathEncode($entity.uRI)"><i class="icon-picture"></i></a></h3>
+
+#set($links = $lib.reg.query("SELECT ?predicate ?linked WHERE {GRAPH ?g { [] a void:Linkset; void:target ?linked ; reg:sourceDataset <${0}> ; void:linkPredicate ?predicate. FILTER (?linked != <${0}>)}}", $entity))
+#if(!$links.isEmpty())
+  <h4>Links out</h4>
+  <table class="table table-condensed">
+    <thead>
+      <tr><th>Predicate</th><th>Dataset</th></tr>
+    </thead>
+    <tbody>
+      #foreach($row in $links)
+        <tr><td>#render($row.predicate)</td><td><a href="#linkhrefInt($row.linked)">$row.linked.name</a></td></tr>
+      #end
+    </tbody>
+  </table>
+#end
+
+#set($links = $lib.reg.query("SELECT ?predicate ?linked WHERE {GRAPH ?g { [] a void:Linkset; reg:sourceDataset ?linked ; void:target <${0}> ; void:linkPredicate ?predicate. FILTER (?linked != <${0}>)}}", $entity))
+#if(!$links.isEmpty())
+  <h4>Links in</h4>
+  <table class="table table-condensed">
+    <thead>
+      <tr><th>Dataset</th><th>Predicate</th></tr>
+    </thead>
+    <tbody>
+      #foreach($row in $links)
+        <tr><td><a href="#linkhrefInt($row.linked)">$row.linked.name</a></td><td>#render($row.predicate)</td></tr>
+      #end
+    </tbody>
+  </table>
+#end
+
+#set($links = $lib.reg.query("SELECT ?predicate ?linked WHERE {GRAPH ?g { ?ls a void:Linkset; void:target ?linked ; void:target <${0}> ; void:linkPredicate ?predicate. FILTER (?linked != <${0}> && NOT EXISTS{?ls reg:sourceDataset []})}}", $entity))
+#if(!$links.isEmpty())
+  <h4>Bidirectional links</h4>
+  <table class="table table-condensed">
+    <thead>
+      <tr><th>Dataset</th><th>Predicate</th></tr>
+    </thead>
+    <tbody>
+      #foreach($row in $links)
+        <tr><td><a href="#linkhrefInt($row.linked)">$row.linked.name</a></td><td>#render($row.predicate)</td></tr>
+      #end
+    </tbody>
+  </table>
+#end
+
+#set($links = $lib.reg.query("SELECT DISTINCT ?linked WHERE {GRAPH ?g { ?linked void:subset <${0}>}}", $entity))
+#if(!$links.isEmpty())
+  <h4>Parent dataset</h4>
+  <table class="table table-condensed">
+    <tbody>
+      #foreach($row in $links)
+        <tr><td><a href="#linkhrefInt($row.linked)">$row.linked.name</a></td></tr>
+      #end
+    </tbody>
+  </table>
+#end
+
+#set($links = $lib.reg.query("SELECT DISTINCT ?linked WHERE {GRAPH ?g { <${0}> void:subset ?linked. FILTER NOT EXISTS {?linked a void:Linkset}}}", $entity))
+#if(!$links.isEmpty())
+  <h4>Child datasets</h4>
+  <table class="table table-condensed">
+    <tbody>
+      #foreach($row in $links)
+        <tr><td><a href="#linkhrefInt($row.linked)">$row.linked.name</a></td></tr>
+      #end
+    </tbody>
+  </table>
+#end
+</div>

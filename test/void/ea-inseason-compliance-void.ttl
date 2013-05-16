@@ -38,6 +38,8 @@
 @prefix xhv:     <http://www.w3.org/1999/xhtml/vocab#> .
 @prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
 
+@prefix reg:  <http://purl.org/linked-data/registry#> .
+
 <http://environment.data.gov.uk/data/bathing-water-quality/eaew/in-season>
       a       qb:DataSet , def-bwq:SampleDataset ;
       rdfs:label "Bathing Water Quality - In-Season Assessment Dataset (eaew)."@en ;
@@ -154,14 +156,16 @@
 _:link_complianceClassification
     a void:Linkset;
     void:linkPredicate    <http://environment.data.gov.uk/def/bathing-water-quality/complianceClassification> ;
+    void:taget <http://environment.data.gov.uk/data/bathing-water-quality/eaew/in-season>;
+    reg:sourceDataset <http://environment.data.gov.uk/data/bathing-water-quality/eaew/in-season> ;
     void:target <http://environment.data.gov.uk/data/bathing-water-quality/eaew/compliance> ;
-    void:target def-bwq:compliance ;
     .
 
 _:link_samplingPoint
     a void:Linkset;
     void:linkPredicate    <http://environment.data.gov.uk/def/bathing-water-quality/samplingPoint> ;
     void:target <http://environment.data.gov.uk/data/bathing-water-quality/eaew/in-season> ;
+    reg:sourceDataset <http://environment.data.gov.uk/data/bathing-water-quality/eaew/in-season> ;
     void:target <http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/>;
     .
 
@@ -169,5 +173,6 @@ _:link_bathingWater
     a void:Linkset;
     void:linkPredicate    <http://environment.data.gov.uk/def/bathing-water-quality/bathingWater> ;
     void:target <http://environment.data.gov.uk/data/bathing-water-quality/eaew/in-season> ;
+    reg:sourceDataset <http://environment.data.gov.uk/data/bathing-water-quality/eaew/in-season> ;
     void:target <http://environment.data.gov.uk/id/bathing-water/> ;
     .

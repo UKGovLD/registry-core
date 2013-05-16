@@ -4,6 +4,8 @@
 @prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix void:    <http://rdfs.org/ns/void#> .
 
+@prefix reg:  <http://purl.org/linked-data/registry#> .
+
 <http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/>
       a       <http://rdfs.org/ns/void#Dataset> , <http://reference.data.gov.uk/def/reference/URIset> ;
       rdfs:label "Environment Agency Bathing Water Quality Monitoring Sampling Points for England and Wales"@en ;
@@ -31,5 +33,6 @@ _:link_bathingWater
     a void:Linkset;
     void:linkPredicate <http://environment.data.gov.uk/def/bathing-water/bathingWater>;
     void:target <http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/> ;
+    reg:sourceDataset <http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/> ;
     void:target <http://environment.data.gov.uk/id/bathing-water/>;
     .

@@ -38,6 +38,8 @@
 @prefix xhv:     <http://www.w3.org/1999/xhtml/vocab#> .
 @prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
 
+@prefix reg:  <http://purl.org/linked-data/registry#> .
+
 <http://location.data.gov.uk/so/ef/ZoneOfInfluence/bwzoi.eaew/>
       a       void:Dataset , dgu:URIset ;
       rdfs:label "Environment Agency Bathing Water Zones of Influence"@en ;
@@ -62,5 +64,6 @@ _:link_bathingWater
     a void:Linkset;
     void:linkPredicate <http://environment.data.gov.uk/def/bathing-water/bathingWater>;
     void:target <http://location.data.gov.uk/so/ef/ZoneOfInfluence/bwzoi.eaew/> ;
+    reg:sourceDataset <http://location.data.gov.uk/so/ef/ZoneOfInfluence/bwzoi.eaew/> ;
     void:target <http://environment.data.gov.uk/id/bathing-water/>;
     .

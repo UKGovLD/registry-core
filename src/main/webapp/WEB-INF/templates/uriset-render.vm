@@ -2,7 +2,7 @@
 
 <h3>Data set information</h3>
 
-<table class="table table-condensed">
+<table class="table table-condensed  table-bordered">
   <tbody>
     #metadatarow("Homepage", $entity.listPropertyValues("foaf:homepage"))
     #metadatarow("License", $entity.listPropertyValues("dct:license"))
@@ -22,7 +22,7 @@
 #if($entity.getPropertyValue("void:dataDump") || $entity.getPropertyValue("void:exampleResource") || $entity.getPropertyValue("void:sparqlEndpoint"))
 <h3>Access</h3>
 
-<table class="table table-condensed">
+<table class="table table-condensed  table-bordered">
   <tbody>
     #mmetadatarow("Data dump", $entity.listPropertyValues("void:dataDump"))
     #lmetadatarow("Example resources", $entity.listPropertyValues("void:exampleResource"))
@@ -34,10 +34,12 @@
 #if($entity.getPropertyValue("void:vocabulary") || $entity.getPropertyValue("void:uriRegexPattern"))
 <h3>Structure</h3>
 
-<table class="table table-condensed">
+<table class="table table-condensed  table-bordered">
   <tbody>
     #mmetadatarow("Vocabulary", $entity.listPropertyValues("void:vocabulary"))
     #mmetadatarow("URI patterns", $entity.listPropertyValues("void:uriRegexPattern"))
   </tbody>
 </table>
 #end
+
+#parse("dataset-links.vm")

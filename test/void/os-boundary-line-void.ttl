@@ -8,6 +8,8 @@
 @prefix admingeo:     <http://data.ordnancesurvey.co.uk/ontology/admingeo/> .
 @prefix spatialrelations:  <http://data.ordnancesurvey.co.uk/ontology/spatialrelations/> .
 
+@prefix reg:  <http://purl.org/linked-data/registry#> .
+
 <http://data.ordnancesurvey.co.uk/id/data/boundary-line>
     rdf:type void:Dataset ;
      dct:title "Boundary Line Linked Data" ;
@@ -76,6 +78,7 @@
     a void:Linkset;
     void:linkPredicate admingeo:ward ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa> ;
+    reg:sourceDataset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa> ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> ;
     .
 
@@ -83,13 +86,15 @@
     a void:Linkset;
     void:linkPredicate admingeo:constituency ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa> ;
+    reg:sourceDataset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa> ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> ;
     .
 
 <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa-er>
     a void:Linkset;
     void:linkPredicate admingeo:inEuropeanRegion ;
-    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> ;
+    void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa> ;
+    reg:sourceDataset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa> ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ;
     .
 
@@ -104,6 +109,7 @@
     a void:Linkset;
     void:linkPredicate admingeo:ward ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ;
+    reg:sourceDataset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> ;
     .
 
@@ -111,6 +117,7 @@
     a void:Linkset;
     void:linkPredicate spatialrelations:contains;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ;
+    reg:sourceDataset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> ;
     .
 
@@ -118,6 +125,7 @@
     a void:Linkset;
     void:linkPredicate spatialrelations:contains;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ;
+    reg:sourceDataset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa> ;
     .
 
@@ -125,5 +133,6 @@
     a void:Linkset;
     void:linkPredicate admingeo:westminsterConstituency ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ;
+    reg:sourceDataset <http://data.ordnancesurvey.co.uk/id/data/boundary-line#er> ;
     void:target <http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva> ;
     .

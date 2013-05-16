@@ -55,6 +55,9 @@ rput  "@os-boundary-line-void.ttl"  http://localhost:8080/datasets/os/_boundary-
 
 rpost "@os-codepointopen-ri.ttl"  http://localhost:8080/datasets/os
 rpost "@os-codepointopen-pcu-ri.ttl"  http://localhost:8080/datasets/os
+rpost "@os-codepointopen-pca-ri.ttl"  http://localhost:8080/datasets/os
+rpost "@os-codepointopen-pcs-ri.ttl"  http://localhost:8080/datasets/os
+rpost "@os-codepointopen-pcd-ri.ttl"  http://localhost:8080/datasets/os
 rput  "@os-codepointopen-void.ttl"  http://localhost:8080/datasets/os/_code-point-open?annotation=void
 
 rpost "@os-gazetteer-ri.ttl"  http://localhost:8080/datasets/os

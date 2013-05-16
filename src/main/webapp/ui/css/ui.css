@@ -190,5 +190,15 @@ td.align-right {
     text-align: right;
 }
 
-
+.rhs {
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    border: 2px solid lightgrey;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    padding: 5px;
+   font-size: 90%;
+   line-spacing: 80%;
+}
 
