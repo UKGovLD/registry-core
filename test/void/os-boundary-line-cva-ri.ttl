@@ -17,7 +17,7 @@
     .
 
 <http://data.ordnancesurvey.co.uk/id/data/boundary-line#cva>
-    a void:Dataset, dgu:URISet;
+    a void:Dataset, dgu:URIset;
     rdfs:label "Civil Voting Area URI set";
     void:entities 32629;
     dgu:itemClass admingeo:CivilVotingArea;

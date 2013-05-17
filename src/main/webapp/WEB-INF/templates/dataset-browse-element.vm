@@ -11,17 +11,18 @@
   #set($thisNode = $lib.pathEncode($uri))
   <div class="node node-base" data-id="$thisNode">
     #set($type="Dataset")
-    #if($node.hasResourceProperty("rdf:type", "dgu:URIset"))
+    #if($node.hasResourceValue("rdf:type", "dgu:URIset"))
       #set($type="URIset")
-    #elseif($node.hasResourceProperty("rdf:type", "qb:DataSet"))
+    #elseif($node.hasResourceValue("rdf:type", "qb:DataSet"))
       #set($type="Datacube")
     #end
     <div class="header">
       <span>$type</span>
       <span class="pull-right">
         <a href="#" class="add-out" data-node="$thisNode"><i class="icon-resize-full icon-white popinfo" data-trigger="hover" data-placement="bottom"  data-content="add outgoing links"></i></a>
-        <a href="#" class="add-in" data-node="$thisNode"><i class="icon-resize-small icon-white popinfo" data-trigger="hover" data-placement="bottom" data-content="add incoming links"></i></a> 
-        <i class="icon-remove-circle icon-white"></i>
+        <a href="#" class="add-in" data-node="$thisNode"><i class="icon-resize-small icon-white popinfo" data-trigger="hover" data-placement="bottom" data-content="add incoming links"></i></a>
+        <a href="#" class="close-node" data-node="$thisNode"><i class="icon-remove-circle icon-white"></i></a>
+
       </span>
     </div>
     <div class="name">$node.name</div>

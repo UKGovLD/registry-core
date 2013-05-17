@@ -85,7 +85,7 @@ _:code-point-open4 void:class <http://data.ordnancesurvey.co.uk/ontology/postcod
     .
 
 <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit>
-    a void:Dataset, dgu:URISet;
+    a void:Dataset, dgu:URIset;
     rdfs:label "Postcode Unit URI set";
     void:entities 1686911;
     dgu:itemClass postcode:PostcodeUnit;
@@ -148,7 +148,7 @@ _:code-point-open4 void:class <http://data.ordnancesurvey.co.uk/ontology/postcod
     .
 
 <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodesector>
-     a void:Dataset, dgu:URISet;
+     a void:Dataset, dgu:URIset;
     rdfs:label "Postcode Sector URI set";
     void:entities 10833;
     dgu:itemClass postcode:PostcodeSector;
@@ -179,7 +179,7 @@ _:code-point-open4 void:class <http://data.ordnancesurvey.co.uk/ontology/postcod
     .
 
 <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodedistrict>
-     a void:Dataset, dgu:URISet;
+     a void:Dataset, dgu:URIset;
     rdfs:label "Postcode District URI set";
     void:entities 2087;
     dgu:itemClass postcode:PostcodeDistrict;
@@ -210,7 +210,7 @@ _:code-point-open4 void:class <http://data.ordnancesurvey.co.uk/ontology/postcod
     .
 
 <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodearea>
-     a void:Dataset, dgu:URISet;
+     a void:Dataset, dgu:URIset;
     rdfs:label "Postcode Area URI set";
     void:entities 120;
     dgu:itemClass postcode:PostcodeArea;

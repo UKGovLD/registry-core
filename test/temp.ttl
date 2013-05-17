@@ -17,19 +17,17 @@
 @prefix vann: <http://purl.org/vocab/vann/> .
 @prefix reg:  <http://purl.org/linked-data/registry#> .
 @prefix ui:   <http://purl.org/linked-data/registry-ui#> .
+@prefix qb:      <http://purl.org/linked-data/cube#> .
 
-<_dgu> a reg:RegisterItem;
-    rdfs:label "dgu"@en;
-    dct:description "data gov uk reference ontology prefix registration"@en;
-    reg:itemClass owl:Ontology;
+<_qb> a reg:RegisterItem;
     reg:status reg:statusStable;
-    reg:definition [ reg:entity <http://reference.data.gov.uk/def/reference/> ];
-    .
-<http://reference.data.gov.uk/def/reference/> a owl:Ontology;
-    rdfs:label "dgu"@en;
-    dct:description "data gov uk reference ontology prefix registration"@en;
-    vann:preferredNamespacePrefix "dgu";
-    vann:preferredNamespaceUri "http://reference.data.gov.uk/def/reference/" ;
+    reg:definition [ reg:entity qb: ];
     .
 
+qb: a owl:Ontology;
+    rdfs:label "qb"@en;
+    dct:description "Data Cube prefix registration"@en;
+    vann:preferredNamespacePrefix "qb";
+    vann:preferredNamespaceUri "http://purl.org/linked-data/cube#" ;
+    .
 

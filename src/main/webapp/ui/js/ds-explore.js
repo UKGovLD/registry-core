@@ -19,7 +19,8 @@ var DATASET_EXPLORER = function() {
         Connector : [ "Bezier",  { curviness: 40 } ],
         Endpoints : [["Dot", {radius:2}], "Blank"],
         ConnectionOverlays : [ [ "Arrow", { location:1, id:"arrow", length:9, width:8  } ] ],
-        Anchor : dynamicAnchors
+//        Anchor : dynamicAnchors
+        Anchor : "Continuous"
     });
 
     var nodeFor = function(id) {
@@ -36,15 +37,48 @@ var DATASET_EXPLORER = function() {
         nodeFor(toplace).offset(position);
     };
 
-    var addConnections = function(dir, src, target) {
+    var addConnection = function(src, target) {
+        var names = $(".connection-out[data-out='" + src + "'][data-in='" + target + "']").map(function(){ return $(this).text()}).get();
+        if (names.length !== 0) {
+            var linkName = names.join();
+            jsPlumb.connect({
+                source: nodeFor( src ),
+                target: nodeFor( target ),
+                overlays: [ ["Label", {label:linkName, location:0.7, id:"label"}] ]
+            });
+        }
+    };
+
+    var addConnections = function(src, target) {
+        addConnection(src, target);
+        addConnection(target, src);
+    };
+
+    var addNodeFn = function(dir) {
         var idir = dir === "out" ? "in" : "out";
-        var names = $(".connection-out[data-" + dir + "='" + src + "'][data-" + idir + "='" + target + "']").map(function(){ return $(this).text()}).get();
-        var linkName = names.join();
-        jsPlumb.connect({
-            source: nodeFor(src),
-            target: nodeFor(target),
-            overlays: [ ["Label", {label:linkName, location:0.7, id:"label"}] ]
-        });
+        return function(event) {
+            var node = $(event.currentTarget).attr('data-node');
+            var linkSet = $(".connection-" + dir + "[data-" + dir + "='" + node + "']");
+            var targets = {};
+            linkSet.each(function(){ targets[ $(this).attr('data-' + idir) ] = node; });
+            $.each(targets, function(linkedDS, src) {
+                var targetNode = nodeFor(linkedDS);
+                if (targetNode.length === 0) {
+                    $.get('/ui/dataset-browse-element?uri=' + linkedDS, function(data){
+                        $("#canvas").append(data);
+                        initElement();
+                        randomPlacement(node, linkedDS);
+                        addConnections(node, linkedDS);
+                    });
+                } else {
+                    if (targetNode.is(":hidden")) {
+                        targetNode.show();
+                        addConnections( node, linkedDS);
+                    }
+                }
+            });
+            return false;
+        };
     };
 
     var initElement = function() {
@@ -52,22 +86,15 @@ var DATASET_EXPLORER = function() {
 
         jsPlumb.draggable($(".node"));
 
-        $(".add-out").click(function(event){
-            var node = $(event.currentTarget).attr('data-node');
-            var linkSet = $(".connection-out[data-out='" + node + "']");
-            var targets = linkSet.map( function() { return $(this).attr('data-in'); } ).get();
-            $.each(targets, function(index, linkedDS){
-                var i = $.inArray(linkedDS, targets);
-                var alreadyRequested = i !== -1 && i < index;
-                if (!alreadyRequested && nodeFor(linkedDS).length === 0) {
-                    $.get('/ui/dataset-browse-element?uri=' + linkedDS, function(data){
-                        $("#canvas").append(data);
-                        initElement();
-                        randomPlacement(node, linkedDS);
-                        addConnections("out", node, linkedDS);
-                    });
-                }
-            });
+        $(".add-out").unbind().click( addNodeFn("out") );
+        $(".add-in").unbind().click( addNodeFn("in") );
+
+        $(".close-node").unbind().click(function(event){
+            var nodeURI = $(event.currentTarget).attr('data-node');
+            var node = nodeFor(nodeURI);
+            jsPlumb.detachAllConnections(node);
+            node.hide();
+            return false;
         });
     };
 

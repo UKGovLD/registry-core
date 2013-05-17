@@ -41,7 +41,7 @@
 @prefix reg:  <http://purl.org/linked-data/registry#> .
 
 <http://environment.data.gov.uk/data/bathing-water-quality/eaew/in-season>
-      a       qb:DataSet , def-bwq:SampleDataset ;
+      a       qb:DataSet , def-bwq:SampleDataset, void:Dataset;
       rdfs:label "Bathing Water Quality - In-Season Assessment Dataset (eaew)."@en ;
       dct:description "In-Season Sample Assessment results for Bathing Water Quality Compliance Monitoring samples taken by a single monitoring body - (eaew) and processed in the bathing season. Samples are taken and processed weekly for 20 weeks during a 24 week bathing season."@en ;
       dct:license <http://reference.data.gov.uk/id/open-government-licence> ;

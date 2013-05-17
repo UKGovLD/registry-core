@@ -18,7 +18,7 @@
     .
 
 <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodedistrict>
-     a void:Dataset, dgu:URISet;
+     a void:Dataset, dgu:URIset;
     rdfs:label "Postcode District URI set";
     void:entities 2087;
     dgu:itemClass postcode:PostcodeDistrict;

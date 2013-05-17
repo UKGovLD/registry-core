@@ -17,7 +17,7 @@
     .
 
 <http://data.ordnancesurvey.co.uk/id/data/boundary-line#caa>
-    a void:Dataset, dgu:URISet;
+    a void:Dataset, dgu:URIset;
     rdfs:label "Civil Administrative Area URI set";
     void:entities 11754;
     dgu:itemClass admingeo:CivilAdministrativeArea;
