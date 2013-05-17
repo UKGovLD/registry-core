@@ -14,13 +14,14 @@
     width: 10em;
     min-height: 4em;
     position: absolute;
+    font-size: 90%;
 }
 
 .node-base {
     top: 200px;
     left: 50%;
-    margin-top: -2em;
-    margin-left: -5em;
+//    margin-top: -2em;
+//    margin-left: -5em;
 }
 
 .node .name {
