@@ -29,6 +29,7 @@ var DATASET_EXPLORER = function() {
         Anchor : "Continuous"
     });
     
+    
     var linksFor = function(src) {
         var dests = linkState[src];
         if (dests === undefined) {
@@ -47,11 +48,7 @@ var DATASET_EXPLORER = function() {
         return dests;
     };
 
-    var register = function(linkspec) {
-        var src = linkspec[0];
-        var dest = linkspec[1];
-        var name = linkspec[2];
-        
+    var register = function(src, dest, name) {
         var links = linksFor(src);
         var l = links[dest];
         if (l === undefined) {
@@ -67,8 +64,8 @@ var DATASET_EXPLORER = function() {
         return $(".node[data-id='" + id + "']");
     };
     
-    var registerNode = function(nodeid) {
-        nodeState[nodeid] = {element: findNode(nodeid), visible:true};
+    var registerNode = function(nodeid, label) {
+        nodeState[nodeid] = {element: findNode(nodeid), visible: true, label: label};
     };
     
     var hideNode = function(nodeid) {
@@ -173,12 +170,98 @@ var DATASET_EXPLORER = function() {
             return false;
         });
     };
+    
+    var scaling = 4;   // Scaling springy coordinates to screen coordinates, no longer used
+    var maxIter = 100; // Force termination after this many iterations
+    var iterStep = 2;  // 1 + number of iteration steps to skip animating
 
+    var relayout = function() {
+        // Set up springy clone of graph
+        var graph = new Springy.Graph();
+        $.each(nodeState, function(nodeID, state){
+            if (state.visible) {
+                state.springyNode = graph.newNode(state);
+            }
+        });
+        $.each(linkState, function(src, links){
+            $.each(links, function(target, state){
+                if (state.visible) {
+                    graph.newEdge( nodeState[src].springyNode, nodeState[target].springyNode );
+                }
+            });
+        });
+        
+        var width = $("#canvas").width();
+        var height = $("#canvas").height();
+        
+        var layout = new Springy.Layout.ForceDirected(
+                graph,
+                400.0, // Spring stiffness
+                400.0, // Node repulsion
+                0.25  // Damping
+              );
+        
+        
+        // calculate bounding box of graph layout.. with ease-in
+        var currentBB = layout.getBoundingBox();
+        var targetBB = {bottomleft: new Springy.Vector(-2, -2), topright: new Springy.Vector(2, 2)};
+
+        // auto adjusting bounding box
+        Springy.requestAnimationFrame(function adjust() {
+            targetBB = layout.getBoundingBox();
+            // current gets 20% closer to target every iteration
+            currentBB = {
+                bottomleft: currentBB.bottomleft.add( targetBB.bottomleft.subtract(currentBB.bottomleft)
+                    .divide(10)),
+                topright: currentBB.topright.add( targetBB.topright.subtract(currentBB.topright)
+                    .divide(10))
+            };
+
+            Springy.requestAnimationFrame(adjust);
+        });
+
+        // convert to/from screen coordinates
+        var toScreen = function(p) {
+            var size = currentBB.topright.subtract(currentBB.bottomleft);
+            var sx = p.subtract(currentBB.bottomleft).divide(size.x).x * width;
+            var sy = p.subtract(currentBB.bottomleft).divide(size.y).y * height;
+            return {left: sx, top: sy};
+        };
+
+        var fromScreen = function(s) {
+            var size = currentBB.topright.subtract(currentBB.bottomleft);
+            var px = (s.x / width) * size.x + currentBB.bottomleft.x;
+            var py = (s.y / height) * size.y + currentBB.bottomleft.y;
+            return new Springy.Vector(px, py);
+        };
+        
+        var iter = 0;
+        
+        var renderer = new Springy.Renderer(
+                layout,
+                function clear() { 
+                    iter += 1;
+                    if (iter > maxIter) {
+                        renderer.stop();
+                    }
+                },
+                function drawEdge(edge, p1, p2) { },
+                function drawNode(node, p) {
+                    if (iter % iterStep === 0) {
+                        node.data.element.offset( toScreen(p) );
+                        jsPlumb.repaint(node.data.element);
+                    }
+                }
+              );
+        renderer.start();
+    };
+    
     // Return the public variables/functions for this module
     return {
         register : register,
         registerNode : registerNode,
-        initElement : initElement
+        initElement : initElement,
+        relayout : relayout
     };
 
 }(); // "revealing module" pattern
@@ -186,6 +269,7 @@ var DATASET_EXPLORER = function() {
 
 jsPlumb.bind("ready", function() {
     DATASET_EXPLORER.initElement();
+    $("#relayout").click( DATASET_EXPLORER.relayout );
 });
 
 
