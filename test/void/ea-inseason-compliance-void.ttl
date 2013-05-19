@@ -158,7 +158,8 @@ _:link_complianceClassification
     void:linkPredicate    <http://environment.data.gov.uk/def/bathing-water-quality/complianceClassification> ;
     void:taget <http://environment.data.gov.uk/data/bathing-water-quality/eaew/in-season>;
     reg:sourceDataset <http://environment.data.gov.uk/data/bathing-water-quality/eaew/in-season> ;
-    void:target <http://environment.data.gov.uk/data/bathing-water-quality/eaew/compliance> ;
+    void:target  def-bwq:compliance ;
+    
     .
 
 _:link_samplingPoint
