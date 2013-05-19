@@ -8,7 +8,7 @@
 <script type="text/javascript" src="$uiroot/js/jquery.jsPlumb-1.4.1-all-min.js"></script>
 <script type="text/javascript" src="$uiroot/js/ds-explore.js"></script>
 
-<h2>Explore dataset connections</h2>
+<h2>Explore dataset connections<span class="pull-right"><button class="btn">Relayout</button></span> </h2>
 
 <div id="canvas">
   #parse("dataset-browse-element.vm")

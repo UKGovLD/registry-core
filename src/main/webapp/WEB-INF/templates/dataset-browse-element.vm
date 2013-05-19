@@ -34,6 +34,8 @@
   </div>
   
   <script type="text/javascript">
+    DATASET_EXPLORER.registerNode( "$thisNode" );
+     
     #set($links = $lib.reg.query("SELECT ?predicate ?linked WHERE {GRAPH ?g { [] a void:Linkset; void:target ?linked ; reg:sourceDataset <${0}> ; void:linkPredicate ?predicate. FILTER (?linked != <${0}>)}}", $node))
     #foreach($row in $links)
       DATASET_EXPLORER.register( ["$thisNode", "$lib.pathEncode($row.linked.uRI)",  "$row.predicate.name" ] )

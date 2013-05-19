@@ -10,9 +10,10 @@ var DATASET_EXPLORER = function() {
 //                          [0.2, 0, 0, -1], [0.5, 0, 0, -1], [0.8, 0, 0, -1]  // bottom
 //                          ];
 
+    // Structure is {nodeid: {element:jqueryelt, visible:boolean}}
     var nodeState = {};
     
-    // Structure is {srcid : {destid: {names:[name1,...], visible:false}}}
+    // Structure is {srcid : {destid: {names:[name1,...], visible:boolean}}}
     var linkState = {};
     var invLinkState = {};
     
@@ -62,8 +63,33 @@ var DATASET_EXPLORER = function() {
         invLinksFor(dest)[src] = l;
     };
     
-    var nodeFor = function(id) {
+    var findNode = function(id) {
         return $(".node[data-id='" + id + "']");
+    };
+    
+    var registerNode = function(nodeid) {
+        nodeState[nodeid] = {element: findNode(nodeid), visible:true};
+    };
+    
+    var hideNode = function(nodeid) {
+        var state = nodeState[nodeid];
+        state.element.hide();
+        state.visible = false;
+    };
+    
+    var showNode = function(nodeid) {
+        var state = nodeState[nodeid];
+        state.element.show();
+        state.visible = true;
+    };
+    
+    var nodeFor = function(id) {
+        var state = nodeState[id];
+        if (state === undefined) {
+            return undefined;
+        } else {
+            return state.element;
+        }
     };
 
     var randomPlacement = function(current, toplace) {
@@ -114,7 +140,7 @@ var DATASET_EXPLORER = function() {
             var links = outbound ? linksFor(node) : invLinksFor(node);
             $.each(links, function(linkedDS, state){
                 var targetNode = nodeFor(linkedDS);
-                if (targetNode.length === 0) {
+                if (targetNode === undefined) {
                     $.get('/ui/dataset-browse-element?uri=' + linkedDS, function(data){
                         $("#canvas").append(data);
                         initElement();
@@ -123,9 +149,7 @@ var DATASET_EXPLORER = function() {
                         addDirectionalConnections(outbound, node, linkedDS);
                     });
                 } else {
-                    if (targetNode.is(":hidden")) {
-                        targetNode.show();
-                    }
+                    showNode(linkedDS);
 //                    addConnections( node, linkedDS);
                     addDirectionalConnections(outbound, node, linkedDS);
                 }
@@ -145,7 +169,7 @@ var DATASET_EXPLORER = function() {
         $(".close-node").unbind().click(function(event){
             var nodeURI = $(event.currentTarget).attr('data-node');
             removeConnections( nodeURI );
-            nodeFor(nodeURI).hide();
+            hideNode(nodeURI);
             return false;
         });
     };
@@ -153,6 +177,7 @@ var DATASET_EXPLORER = function() {
     // Return the public variables/functions for this module
     return {
         register : register,
+        registerNode : registerNode,
         initElement : initElement
     };
 
