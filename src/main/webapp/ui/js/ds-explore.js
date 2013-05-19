@@ -3,13 +3,19 @@
  */
 var DATASET_EXPLORER = function() {
 
-    var dynamicAnchors = [
-                          [0, 0.2, -1, 0], [0, 0.5, -1, 0], [0, 0.8, -1, 0], // left
-                          [0.2, 1, 0, 1],  [0.5, 1, 0, 1],  [0.8, 1, 0, 1],  // top
-                          [1, 0.2, 1, 0],  [1, 0.5, 1, 0],  [1, 0.8, 1, 0],  // right
-                          [0.2, 0, 0, -1], [0.5, 0, 0, -1], [0.8, 0, 0, -1]  // bottom
-                          ];
+//    var dynamicAnchors = [
+//                          [0, 0.2, -1, 0], [0, 0.5, -1, 0], [0, 0.8, -1, 0], // left
+//                          [0.2, 1, 0, 1],  [0.5, 1, 0, 1],  [0.8, 1, 0, 1],  // top
+//                          [1, 0.2, 1, 0],  [1, 0.5, 1, 0],  [1, 0.8, 1, 0],  // right
+//                          [0.2, 0, 0, -1], [0.5, 0, 0, -1], [0.8, 0, 0, -1]  // bottom
+//                          ];
 
+    var nodeState = {};
+    
+    // Structure is {srcid : {destid: {names:[name1,...], visible:false}}}
+    var linkState = {};
+    var invLinkState = {};
+    
     jsPlumb.importDefaults({
         PaintStyle : {
             lineWidth:2,
@@ -19,10 +25,43 @@ var DATASET_EXPLORER = function() {
         Connector : [ "Bezier",  { curviness: 40 } ],
         Endpoints : [["Dot", {radius:2}], "Blank"],
         ConnectionOverlays : [ [ "Arrow", { location:1, id:"arrow", length:9, width:8  } ] ],
-//        Anchor : dynamicAnchors
         Anchor : "Continuous"
     });
+    
+    var linksFor = function(src) {
+        var dests = linkState[src];
+        if (dests === undefined) {
+            dests = {};
+            linkState[src] = dests;
+        }
+        return dests;
+    };
+    
+    var invLinksFor = function(src) {
+        var dests = invLinkState[src];
+        if (dests === undefined) {
+            dests = {};
+            invLinkState[src] = dests;
+        }
+        return dests;
+    };
 
+    var register = function(linkspec) {
+        var src = linkspec[0];
+        var dest = linkspec[1];
+        var name = linkspec[2];
+        
+        var links = linksFor(src);
+        var l = links[dest];
+        if (l === undefined) {
+            l = {names:[name], visible:false};
+            links[dest] = l;
+        } else if ($.inArray(name, l.names) === -1) {
+            l.names.push( name );
+        }
+        invLinksFor(dest)[src] = l;
+    };
+    
     var nodeFor = function(id) {
         return $(".node[data-id='" + id + "']");
     };
@@ -36,16 +75,17 @@ var DATASET_EXPLORER = function() {
         position.top = position.top + yoffset;
         nodeFor(toplace).offset(position);
     };
-
+    
     var addConnection = function(src, target) {
-        var names = $(".connection-out[data-out='" + src + "'][data-in='" + target + "']").map(function(){ return $(this).text()}).get();
-        if (names.length !== 0) {
-            var linkName = names.join();
+        var link = linksFor(src)[target];
+        if (link !== undefined && !link.visible) {
+            var linkName = link.names.join();
             jsPlumb.connect({
                 source: nodeFor( src ),
                 target: nodeFor( target ),
                 overlays: [ ["Label", {label:linkName, location:0.7, id:"label"}] ]
             });
+            link.visible = true;
         }
     };
 
@@ -53,28 +93,41 @@ var DATASET_EXPLORER = function() {
         addConnection(src, target);
         addConnection(target, src);
     };
+    
+    var addDirectionalConnections = function(outbound, src, target) {
+        if (outbound) {
+            addConnection(src, target);
+        } else {
+            addConnection(target, src);
+        }
+    };
 
-    var addNodeFn = function(dir) {
-        var idir = dir === "out" ? "in" : "out";
+    var removeConnections = function(src) {
+        jsPlumb.detachAllConnections( nodeFor(src) );
+        $.each(linksFor(src), function(target, state){ state.visible = false;  });
+        $.each(invLinksFor(src), function(target, state){ state.visible = false;  });
+    };
+    
+    var addNodeFn = function(outbound) {
         return function(event) {
             var node = $(event.currentTarget).attr('data-node');
-            var linkSet = $(".connection-" + dir + "[data-" + dir + "='" + node + "']");
-            var targets = {};
-            linkSet.each(function(){ targets[ $(this).attr('data-' + idir) ] = node; });
-            $.each(targets, function(linkedDS, src) {
+            var links = outbound ? linksFor(node) : invLinksFor(node);
+            $.each(links, function(linkedDS, state){
                 var targetNode = nodeFor(linkedDS);
                 if (targetNode.length === 0) {
                     $.get('/ui/dataset-browse-element?uri=' + linkedDS, function(data){
                         $("#canvas").append(data);
                         initElement();
                         randomPlacement(node, linkedDS);
-                        addConnections(node, linkedDS);
+//                        addConnections(node, linkedDS);
+                        addDirectionalConnections(outbound, node, linkedDS);
                     });
                 } else {
                     if (targetNode.is(":hidden")) {
                         targetNode.show();
-                        addConnections( node, linkedDS);
                     }
+//                    addConnections( node, linkedDS);
+                    addDirectionalConnections(outbound, node, linkedDS);
                 }
             });
             return false;
@@ -86,21 +139,21 @@ var DATASET_EXPLORER = function() {
 
         jsPlumb.draggable($(".node"));
 
-        $(".add-out").unbind().click( addNodeFn("out") );
-        $(".add-in").unbind().click( addNodeFn("in") );
+        $(".add-out").unbind().click( addNodeFn(true) );
+        $(".add-in").unbind().click( addNodeFn(false) );
 
         $(".close-node").unbind().click(function(event){
             var nodeURI = $(event.currentTarget).attr('data-node');
-            var node = nodeFor(nodeURI);
-            jsPlumb.detachAllConnections(node);
-            node.hide();
+            removeConnections( nodeURI );
+            nodeFor(nodeURI).hide();
             return false;
         });
     };
 
     // Return the public variables/functions for this module
     return {
-       initElement : initElement
+        register : register,
+        initElement : initElement
     };
 
 }(); // "revealing module" pattern

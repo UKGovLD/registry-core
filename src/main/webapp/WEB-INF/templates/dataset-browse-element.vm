@@ -22,23 +22,27 @@
         <a href="#" class="add-out" data-node="$thisNode"><i class="icon-resize-full icon-white popinfo" data-trigger="hover" data-placement="bottom"  data-content="add outgoing links"></i></a>
         <a href="#" class="add-in" data-node="$thisNode"><i class="icon-resize-small icon-white popinfo" data-trigger="hover" data-placement="bottom" data-content="add incoming links"></i></a>
         <a href="#" class="close-node" data-node="$thisNode"><i class="icon-remove-circle icon-white"></i></a>
-
-      </span>
+        </span>
     </div>
     <div class="name">$node.name</div>
-    #if($node.getPropertyValue("void:entities"))
-      <div class="annotation">Size: $node.getPropertyValue("void:entities").lexicalForm</div>
-    #end
+    <div class="annotation">
+      #if($node.getPropertyValue("void:entities"))
+        <span>Size: $node.getPropertyValue("void:entities").lexicalForm<span>
+        <span class="pull-right"><a href="/?entity=$lib.pathEncode($uri)"><i class="icon-share-alt"></i></a></span>
+      #end
+    </div>
   </div>
-
-  #set($links = $lib.reg.query("SELECT ?predicate ?linked WHERE {GRAPH ?g { [] a void:Linkset; void:target ?linked ; reg:sourceDataset <${0}> ; void:linkPredicate ?predicate. FILTER (?linked != <${0}>)}}", $node))
-  #foreach($row in $links)
-    <div class="connection connection-out hidden" data-out="$thisNode" data-in="$lib.pathEncode($row.linked.uRI)">$row.predicate.name</div>
-  #end
-
-  #set($links = $lib.reg.query("SELECT ?predicate ?linked WHERE {GRAPH ?g { [] a void:Linkset; reg:sourceDataset ?linked ; void:target <${0}> ; void:linkPredicate ?predicate. FILTER (?linked != <${0}>)}}", $uri))
-  #foreach($row in $links)
-    <div class="connection connection-in hidden" data-in="$thisNode" data-out="$lib.pathEncode($row.linked.uRI)">$row.predicate.name</div>
-  #end
+  
+  <script type="text/javascript">
+    #set($links = $lib.reg.query("SELECT ?predicate ?linked WHERE {GRAPH ?g { [] a void:Linkset; void:target ?linked ; reg:sourceDataset <${0}> ; void:linkPredicate ?predicate. FILTER (?linked != <${0}>)}}", $node))
+    #foreach($row in $links)
+      DATASET_EXPLORER.register( ["$thisNode", "$lib.pathEncode($row.linked.uRI)",  "$row.predicate.name" ] )
+    #end
+    
+    #set($links = $lib.reg.query("SELECT ?predicate ?linked WHERE {GRAPH ?g { [] a void:Linkset; reg:sourceDataset ?linked ; void:target <${0}> ; void:linkPredicate ?predicate. FILTER (?linked != <${0}>)}}", $uri))
+    #foreach($row in $links)
+      DATASET_EXPLORER.register( ["$lib.pathEncode($row.linked.uRI)", "$thisNode", "$row.predicate.name" ] )
+    #end
+  </script>
 
 #end
