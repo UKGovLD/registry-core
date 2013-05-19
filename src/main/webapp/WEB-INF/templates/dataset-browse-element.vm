@@ -28,8 +28,8 @@
     <div class="annotation">
       #if($node.getPropertyValue("void:entities"))
         <span>Size: $node.getPropertyValue("void:entities").lexicalForm<span>
-        <span class="pull-right"><a href="/?entity=$lib.pathEncode($uri)"><i class="icon-share-alt"></i></a></span>
       #end
+      <span class="pull-right"><a href="/?entity=$lib.pathEncode($uri)"><i class="icon-share-alt"></i></a></span>
     </div>
   </div>
   

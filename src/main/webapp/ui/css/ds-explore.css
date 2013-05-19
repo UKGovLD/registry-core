@@ -49,3 +49,11 @@
     color: black;
 }
 
+.link-label {
+    background-color:white; 
+    padding:0.4em; 
+    z-index:21;
+    opacity:0.8;
+//    filter:alpha(opacity=80);
+}
+

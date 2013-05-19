@@ -83,7 +83,7 @@ var DATASET_EXPLORER = function() {
             jsPlumb.connect({
                 source: nodeFor( src ),
                 target: nodeFor( target ),
-                overlays: [ ["Label", {label:linkName, location:0.7, id:"label"}] ]
+                overlays: [ ["Label", {label:linkName, location:0.7, id:"label", cssClass:"link-label"}] ]
             });
             link.visible = true;
         }
