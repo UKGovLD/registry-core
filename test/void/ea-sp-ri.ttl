@@ -3,12 +3,14 @@
 @prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix void:    <http://rdfs.org/ns/void#> .
 
+@prefix taxo:   <http://ukgovld-registry.dnsalias.net/def/dataset-categories/> .
 @prefix reg:  <http://purl.org/linked-data/registry#> .
 
 <_sampling-point-uriset> a reg:RegisterItem;
     reg:definition [
        reg:entity  <http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/> ;
-    ]
+    ];
+    reg:category taxo:environment;
     .
 
 <http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/>

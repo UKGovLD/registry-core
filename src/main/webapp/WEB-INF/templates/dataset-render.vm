@@ -1,6 +1,13 @@
-<h3>Data set information</h3>
+#set($type="Dataset")
+#if($node.hasResourceValue("rdf:type", "dgu:URIset"))
+  #set($type="URIset")
+#elseif($node.hasResourceValue("rdf:type", "qb:DataSet"))
+  #set($type="Datacube")
+#end
 
-<p>$entity.name</p>
+<h3>$type</h3>
+
+<p>$entity.name </p>
 
 <table class="table table-condensed table-bordered">
   <tbody>

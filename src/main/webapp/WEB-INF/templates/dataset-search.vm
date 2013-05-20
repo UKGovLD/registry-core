@@ -1,0 +1,85 @@
+#parse("header.vm")
+#set($nav="dataset")
+#parse("navbar.vm")
+
+<h1>Browse registered datasets</h2>
+
+#set($base="$uiroot/dataset-search")
+#if(!$state)
+  #set($state="")
+#end
+
+#set($fr=$registry.facetService.query($state))
+<div class="row">
+
+  <div class="span3">
+    #foreach($facet in $fr.facets)
+      #if ($facet.notEmpty())
+       <div>
+       <h4  class="label label-info">$facet.name</h4>
+       #if($facet.isSet())
+         $facet.valueLexicalForm <a class="btn btn-mini btn-inverse" href="${base}?state=$lib.pathEncode($fr.serializeWithout($facet.varname))"><i class="icon-remove icon-white"></i></a>
+       #else
+        <ul>
+         #foreach($fv in $facet.values)
+           <li><a href="$base?state=$lib.pathEncode($fr.serializeWith($facet.varname, $fv.value))">$fv.lexicalForm</a> [$fv.count]</li>
+         #end
+        </ul>
+       #end
+       </div>
+      #end
+    #end
+  </div>
+
+  <div class="span8">
+     #if($page)
+         #set($page = $lib.safeInt($page,0))
+     #else
+         #set($page = 0)
+     #end
+
+     #foreach($item in $lib.reg.wrap( $fr.getResultsPage($page) ))
+       #set($entity = $item.connectedNodes("reg:definition/reg:entity")[0])
+       <div class="result-blob">
+         <div class="blob-inner">
+           <div class="row">
+                <div class="span4">
+                    <strong>Item:</strong>  <a href="#linkhref($item)" title="$item.uRI">$item.getPropertyValue("reg:notation").lexicalForm</a>
+                    - $item.name
+                </div>
+                <div class="span2">
+                  #if($item.getPropertyValue("reg:itemClass"))
+                    <strong>Type:</strong> #foreach($ty in $item.listPropertyValues("reg:itemClass"))#linkfor($ty)#if( $foreach.hasNext ), #end#end
+                  #end
+                </div>
+                <div class="pull-right">
+                  #showstatus($item.getPropertyValue("reg:status")) <br />
+                  <a href="$uiroot/dataset-browse?uri=$lib.pathEncode($entity.uRI)"><i class="icon-picture"></i></a>
+                </div>
+           </div>
+         </div>
+       </div>
+     #end
+
+    #if($fb.numberOfPages() > 1)
+     <div class="pagination">
+      <ul>
+        #if($page != 0)
+          #set($prev = $page - 1)
+          <li><a href="$lib.pageURL($request, $prev)">Prev</a></li>
+        #end
+        #set($max = $fb.numberOfPages() - 1)
+        #foreach($i in [0 .. $max])
+          <li #if($i == $page) class="active" #end><a href="$lib.pageURL($request,$i)">$i</a></li>
+        #end
+        #if($page < $max)
+          #set($next = $page + 1)
+          <li><a href="$lib.pageURL($request,$next)">Next</a></li>
+        #end
+      </ul>
+     </div>
+     #end
+  </div>
+
+</div>
+#parse("footer.vm")

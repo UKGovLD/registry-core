@@ -13,9 +13,9 @@
         <li><a href="$uiroot/check" class="popinfo" data-trigger="hover" data-placement="bottom"
             data-content="Support for checking whether a set of resources have been registered and are current valid.">
             Check URI</a></li>
-        <li><a href="#" class="popinfo" data-trigger="hover" data-placement="bottom"
-            data-content="View and approve/reject any pending submissions (tbd).">
-            Approvals</a></li>
+        <li #if($nav=="dataset")class="active"#end><a href="$uiroot/dataset-search" class="popinfo" data-trigger="hover" data-placement="bottom"
+            data-content="Browse the list of registered datasets">
+            Datasets</a></li>
         <li #if($nav=="admin")class="active"#end><a href="$uiroot/admin" class="popinfo" data-trigger="hover" data-placement="bottom"
             data-content="General administration of the registry.">
             Admin</a></li>

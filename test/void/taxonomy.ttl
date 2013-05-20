@@ -1,0 +1,121 @@
+# (c) Epimorphics Ltd, 2012
+
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+@prefix : <dataset-categories/> .
+
+<dataset-categories> a skos:ConceptScheme;
+    rdfs:label "Gov dataset taxonomy scheme"@en;
+    rdfs:comment "Concept scheme for classification of Government linked data sets. Top level is drawn from UNStats COFOG, extended to add mapping and meteorology."@en;
+    skos:hasTopConcept :general, :mapping, :met, :defence, :order, :economic, :environment, :housing, :health, :recreation, :education, :social ;
+    .
+
+:Taxo a owl:Class;
+    rdfs:subClassOf skos:Concept;
+    rdfs:label "Gov dataset taxonomy concept"@en;
+    rdfs:comment "Class of concepts used for classification of Government linked data sets"@en;
+    skos:inScheme <dataset-categories> ;
+    .
+
+:general a :Taxo, skos:Concept;
+    rdfs:label "General public services"@en;
+    dct:description "Concept representing general public services"@en;
+    skos:notation "general";
+    skos:topConceptOf <dataset-categories> ;
+    skos:inScheme <dataset-categories> ;
+    .
+
+:mapping a :Taxo, skos:Concept;
+    rdfs:label "Mapping, survey and location services"@en;
+    dct:description "Concept representing mapping, survey and location services"@en;
+    skos:notation "mapping";
+    skos:inScheme <dataset-categories> ;
+    .
+
+:defence a :Taxo, skos:Concept;
+    rdfs:label "Defense"@en;
+    dct:description "Concept representing defense"@en;
+    skos:notation "defence";
+    skos:topConceptOf <dataset-categories> ;
+    skos:inScheme <dataset-categories> ;
+    .
+
+:order a :Taxo, skos:Concept;
+    rdfs:label "Public order and safety"@en;
+    dct:description "Concept representing public order and safety"@en;
+    skos:notation "order";
+    skos:topConceptOf <dataset-categories> ;
+    skos:inScheme <dataset-categories> ;
+    .
+
+:economic a :Taxo, skos:Concept;
+    rdfs:label "Economic affairs"@en;
+    dct:description "Concept representing economic affairs"@en;
+    skos:notation "economic";
+    skos:topConceptOf <dataset-categories> ;
+    skos:inScheme <dataset-categories> ;
+    .
+
+:environment a :Taxo, skos:Concept;
+    rdfs:label "Environmental protection"@en;
+    dct:description "Concept representing environmental protection"@en;
+    skos:notation "environment";
+    skos:topConceptOf <dataset-categories> ;
+    skos:inScheme <dataset-categories> ;
+    .
+
+:met a :Taxo, skos:Concept;
+    rdfs:label "Meteorology"@en;
+    dct:description "Concept representing meteorology"@en;
+    skos:notation "met";
+    skos:inScheme <dataset-categories> ;
+    .
+
+:housing a :Taxo, skos:Concept;
+    rdfs:label "Housing and community amenities"@en;
+    dct:description "Concept representing housing and community amenities"@en;
+    skos:notation "housing";
+    skos:topConceptOf <dataset-categories> ;
+    skos:inScheme <dataset-categories> ;
+    .
+
+:health a :Taxo, skos:Concept;
+    rdfs:label "Health"@en;
+    dct:description "Concept representing health"@en;
+    skos:notation "health";
+    skos:topConceptOf <dataset-categories> ;
+    skos:inScheme <dataset-categories> ;
+    .
+
+:recreation a :Taxo, skos:Concept;
+    rdfs:label "Recreation, culture and religion"@en;
+    dct:description "Concept representing recreation, culture and religion"@en;
+    skos:notation "recreation";
+    skos:topConceptOf <dataset-categories> ;
+    skos:inScheme <dataset-categories> ;
+    .
+
+:education a :Taxo, skos:Concept;
+    rdfs:label "Education"@en;
+    dct:description "Concept representing education"@en;
+    skos:notation "education";
+    skos:topConceptOf <dataset-categories> ;
+    skos:inScheme <dataset-categories> ;
+    .
+
+:social a :Taxo, skos:Concept;
+    rdfs:label "Social protection"@en;
+    dct:description "Concept representing social protection"@en;
+    skos:notation "social";
+    skos:topConceptOf <dataset-categories> ;
+    skos:inScheme <dataset-categories> ;
+    .
+
+
+

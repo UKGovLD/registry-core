@@ -1,9 +1,10 @@
 <p>A set of reference URIs#if($entity.getPropertyValue("dgu:itemType")) of type #render($entity.getPropertyValue("dgu:itemType"))#end.</p>
 
-<h3>Data set information</h3>
+<h3>URI set</h3>
 
 <table class="table table-condensed  table-bordered">
   <tbody>
+    #metadatarow("Set of", $entity.listPropertyValues("dgu:itemType"))
     #metadatarow("Homepage", $entity.listPropertyValues("foaf:homepage"))
     #metadatarow("License", $entity.listPropertyValues("dct:license"))
     #metadatarow("License", $entity.listPropertyValues("cc:license"))

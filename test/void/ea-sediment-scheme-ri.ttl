@@ -38,12 +38,14 @@
 @prefix xhv:     <http://www.w3.org/1999/xhtml/vocab#> .
 @prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
 
+@prefix taxo:   <http://ukgovld-registry.dnsalias.net/def/dataset-categories/> .
 @prefix reg:  <http://purl.org/linked-data/registry#> .
 
 <_sediment-type-scheme> a reg:RegisterItem;
     reg:definition [
        reg:entity  def-bw:sediment-type ;
-    ]
+    ];
+    reg:category taxo:environment;
     .
 
 def-bw:sediment-type

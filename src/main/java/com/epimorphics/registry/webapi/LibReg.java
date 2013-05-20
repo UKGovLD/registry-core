@@ -42,6 +42,7 @@ import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.server.core.Service;
 import com.epimorphics.server.core.ServiceBase;
 import com.epimorphics.server.templates.LibPlugin;
+import com.epimorphics.server.webapi.facets.FacetResultEntry;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.util.PrefixUtils;
 import com.hp.hpl.jena.query.QuerySolution;
@@ -438,5 +439,29 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
             typedTemplateIndex = new TypedTemplateIndex();
         }
         return typedTemplateIndex.templateFor(r);
+    }
+
+    /**
+     * Take a of facet search results (assumed over register items), fetches
+     * the corresponding register items to a local model and returns a list of wrapped nodes
+     * over that model.
+     */
+    public List<RDFNodeWrapper> wrap(List<FacetResultEntry> results) {
+        List<RDFNodeWrapper> wrappedResults = new ArrayList<>(results.size());
+        StoreAPI store = Registry.get().getStore();
+        Model model = ModelFactory.createDefaultModel();
+        ModelWrapper modelw = new ModelWrapper(model);
+        model.setNsPrefixes( Prefixes.get() );
+        for (FacetResultEntry result : results) {
+            RDFNode value = result.getItem();
+            if (value.isResource()) {
+                Resource valueR = value.asResource();
+                RegisterItem item = store.getItem(valueR.getURI(), false);
+                Resource root = item.getRoot();
+                model.add( root.getModel() );
+                wrappedResults.add( new RDFNodeWrapper(modelw, root.inModel(model)) );
+            }
+        }
+        return wrappedResults;
     }
 }

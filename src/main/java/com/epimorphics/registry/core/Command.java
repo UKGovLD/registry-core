@@ -86,7 +86,7 @@ public abstract class Command {
 
         protected RegAction action;
         protected Class<?> implementation;
-        
+
         private Operation(Class<?> implementation, RegAction action) {
             this.action = action;
             this.implementation = implementation;
@@ -99,7 +99,7 @@ public abstract class Command {
         public RegAction getAuthorizationAction() {
             return action;
         }
-        
+
         public Command makeCommandInstance() {
             try {
                 return (Command) implementation.newInstance();
@@ -120,7 +120,7 @@ public abstract class Command {
 
     protected String parent;            // The URI of the parent register
     protected String lastSegment;       // Last segment in the request
-    protected boolean paged; 
+    protected boolean paged;
     protected int length = -1;
     protected int pagenum = 0;
 
@@ -217,7 +217,7 @@ public abstract class Command {
      * Carries out the actual command
      */
     public abstract Response doExecute() ;
-    
+
     /**
      * Test that the request is legal. Subclasses should provide
      * an appropriate implementation.
@@ -237,7 +237,7 @@ public abstract class Command {
         if (!isAuthorized()) {
             throw new WebApiException(Response.Status.UNAUTHORIZED, "Either not logged in or not authorized for this action");
         }
-        return authorizedExecute();
+        return performExecute();
     }
 
     protected void performValidate() {
@@ -283,10 +283,10 @@ public abstract class Command {
                 log.error("Failed to write log of payload", e);
             }
         }
-        
+
         return response;
     }
-    
+
     /**
      * Notify the command event out to message listeners
      */

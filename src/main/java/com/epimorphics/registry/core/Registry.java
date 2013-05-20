@@ -42,6 +42,7 @@ import com.epimorphics.server.core.ServiceBase;
 import com.epimorphics.server.core.ServiceConfig;
 import com.epimorphics.server.templates.VelocityRender;
 import com.epimorphics.server.webapi.WebApiException;
+import com.epimorphics.server.webapi.facets.FacetService;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.util.FileUtil;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -77,6 +78,7 @@ public class Registry extends ServiceBase implements Service {
     public static final String CACHE_SIZE_PARAM = "cacheSize";
     public static final String PAGE_SIZE_PARAM = "pageSize";
     public static final String MESSAGE_SERVICE_PARAM = "messageService";
+    public static final String FACET_SERVICE_PARAM = "facetService";
 
     public static final boolean TEXT_INDEX_INCLUDES_HISTORY = true;
 
@@ -89,6 +91,7 @@ public class Registry extends ServiceBase implements Service {
     protected String logDir;
     protected UserStore userStore;
     protected MessagingService messageService;
+    protected FacetService facetService;
 
 
     @Override
@@ -120,7 +123,7 @@ public class Registry extends ServiceBase implements Service {
         }
 
         registry = this;   // Assumes singleton registry
-        
+
         // Configure the messaging service
         String msName = config.get(MESSAGE_SERVICE_PARAM);
         if (msName != null) {
@@ -176,6 +179,12 @@ public class Registry extends ServiceBase implements Service {
         String usName = config.get(USERSTORE_PARAM);
         if (usName != null) {
             userStore = getNamedService(usName, UserStore.class);
+        }
+
+        // Configure optional facet service
+        String fsName = config.get(FACET_SERVICE_PARAM);
+        if (fsName != null) {
+            facetService = getNamedService(fsName, FacetService.class);
         }
     }
 
@@ -274,9 +283,13 @@ public class Registry extends ServiceBase implements Service {
     public UserStore getUserStore() {
         return userStore;
     }
-    
+
     public MessagingService getMessagingService() {
         return messageService;
+    }
+
+    public FacetService getFacetService() {
+        return facetService;
     }
 
     /**

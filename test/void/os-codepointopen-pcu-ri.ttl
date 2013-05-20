@@ -9,12 +9,14 @@
 @prefix admingeo:     <http://data.ordnancesurvey.co.uk/ontology/admingeo/> .
 @prefix spatialrelations:  <http://data.ordnancesurvey.co.uk/ontology/spatialrelations/> .
 
+@prefix taxo:   <http://ukgovld-registry.dnsalias.net/def/dataset-categories/> .
 @prefix reg:  <http://purl.org/linked-data/registry#> .
 
 <_postcodeunit-uriset> a reg:RegisterItem;
     reg:definition [
        reg:entity <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit> ;
-    ]
+    ];
+    reg:category taxo:mapping;
     .
 
 <http://data.ordnancesurvey.co.uk/id/data/code-point-open#cpo-postcodeunit>
