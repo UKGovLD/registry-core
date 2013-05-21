@@ -61,4 +61,4 @@
 #end
 
 
-#include("footer.vm")
+#parse("footer.vm")

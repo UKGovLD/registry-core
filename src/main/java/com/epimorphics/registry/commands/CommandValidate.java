@@ -27,7 +27,7 @@ import com.epimorphics.server.webapi.WebApiException;
 
 
 public class CommandValidate extends Command {
-    
+
     @Override
     public ValidationResponse validate() {
         Description d = store.getCurrentVersion(target);
@@ -52,8 +52,7 @@ public class CommandValidate extends Command {
             for (EntityInfo info : infos) {
                 if (info.getRegisterURI().startsWith(target) && info.getStatus().isA(Status.Valid)) {
                     thisValid = true;
-                    msg.append(uri + " in " + info.getRegisterURI() + "\n");
-                    break;
+                    msg.append(uri + " is " + info.getItemURI() + " in " + info.getRegisterURI() + "\n");
                 }
             }
             // TODO validate in delegated registers as well
