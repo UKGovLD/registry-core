@@ -52,7 +52,7 @@ public class CommandValidate extends Command {
             for (EntityInfo info : infos) {
                 if (info.getRegisterURI().startsWith(target) && info.getStatus().isA(Status.Valid)) {
                     thisValid = true;
-                    msg.append(uri + " is " + info.getItemURI() + " in " + info.getRegisterURI() + "\n");
+                    msg.append(uri + " is " + info.getItemURI() + "\n");
                 }
             }
             // TODO validate in delegated registers as well

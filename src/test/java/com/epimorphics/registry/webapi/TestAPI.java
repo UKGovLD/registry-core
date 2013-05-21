@@ -428,7 +428,7 @@ public class TestAPI extends TomcatTestBase {
 
         ClientResponse response = post(BASE_URL + "?validate=http://location.data.gov.uk/collection/item1");
         assertEquals(200, response.getStatus());
-        assertEquals("http://location.data.gov.uk/collection/item1 in http://location.data.gov.uk/collection", response.getEntity(String.class).trim());
+        assertEquals("http://location.data.gov.uk/collection/item1 is http://location.data.gov.uk/collection/_item1", response.getEntity(String.class).trim());
 
     }
 
