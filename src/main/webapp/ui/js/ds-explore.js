@@ -12,11 +12,11 @@ var DATASET_EXPLORER = function() {
 
     // Structure is {nodeid: {element:jqueryelt, visible:boolean}}
     var nodeState = {};
-    
+
     // Structure is {srcid : {destid: {names:[name1,...], visible:boolean}}}
     var linkState = {};
     var invLinkState = {};
-    
+
     jsPlumb.importDefaults({
         PaintStyle : {
             lineWidth:2,
@@ -28,8 +28,8 @@ var DATASET_EXPLORER = function() {
         ConnectionOverlays : [ [ "Arrow", { location:1, id:"arrow", length:9, width:8  } ] ],
         Anchor : "Continuous"
     });
-    
-    
+
+
     var linksFor = function(src) {
         var dests = linkState[src];
         if (dests === undefined) {
@@ -38,7 +38,7 @@ var DATASET_EXPLORER = function() {
         }
         return dests;
     };
-    
+
     var invLinksFor = function(src) {
         var dests = invLinkState[src];
         if (dests === undefined) {
@@ -59,27 +59,27 @@ var DATASET_EXPLORER = function() {
         }
         invLinksFor(dest)[src] = l;
     };
-    
+
     var findNode = function(id) {
         return $(".node[data-id='" + id + "']");
     };
-    
+
     var registerNode = function(nodeid, label) {
         nodeState[nodeid] = {element: findNode(nodeid), visible: true, label: label};
     };
-    
+
     var hideNode = function(nodeid) {
         var state = nodeState[nodeid];
         state.element.hide();
         state.visible = false;
     };
-    
+
     var showNode = function(nodeid) {
         var state = nodeState[nodeid];
         state.element.show();
         state.visible = true;
     };
-    
+
     var nodeFor = function(id) {
         var state = nodeState[id];
         if (state === undefined) {
@@ -98,7 +98,7 @@ var DATASET_EXPLORER = function() {
         position.top = position.top + yoffset;
         nodeFor(toplace).offset(position);
     };
-    
+
     var addConnection = function(src, target) {
         var link = linksFor(src)[target];
         if (link !== undefined && !link.visible) {
@@ -116,7 +116,7 @@ var DATASET_EXPLORER = function() {
         addConnection(src, target);
         addConnection(target, src);
     };
-    
+
     var addDirectionalConnections = function(outbound, src, target) {
         if (outbound) {
             addConnection(src, target);
@@ -130,7 +130,7 @@ var DATASET_EXPLORER = function() {
         $.each(linksFor(src), function(target, state){ state.visible = false;  });
         $.each(invLinksFor(src), function(target, state){ state.visible = false;  });
     };
-    
+
     var addNodeFn = function(outbound) {
         return function(event) {
             var node = $(event.currentTarget).attr('data-node');
@@ -170,9 +170,9 @@ var DATASET_EXPLORER = function() {
             return false;
         });
     };
-    
+
     var scaling = 4;   // Scaling springy coordinates to screen coordinates, no longer used
-    var maxIter = 100; // Force termination after this many iterations
+    var maxIter = 200; // Force termination after this many iterations
     var iterStep = 2;  // 1 + number of iteration steps to skip animating
 
     var relayout = function() {
@@ -190,18 +190,18 @@ var DATASET_EXPLORER = function() {
                 }
             });
         });
-        
+
         var width = $("#canvas").width();
         var height = $("#canvas").height();
-        
+
         var layout = new Springy.Layout.ForceDirected(
                 graph,
                 400.0, // Spring stiffness
                 400.0, // Node repulsion
                 0.25  // Damping
               );
-        
-        
+
+
         // calculate bounding box of graph layout.. with ease-in
         var currentBB = layout.getBoundingBox();
         var targetBB = {bottomleft: new Springy.Vector(-2, -2), topright: new Springy.Vector(2, 2)};
@@ -234,12 +234,12 @@ var DATASET_EXPLORER = function() {
             var py = (s.y / height) * size.y + currentBB.bottomleft.y;
             return new Springy.Vector(px, py);
         };
-        
+
         var iter = 0;
-        
+
         var renderer = new Springy.Renderer(
                 layout,
-                function clear() { 
+                function clear() {
                     iter += 1;
                     if (iter > maxIter) {
                         renderer.stop();
@@ -255,7 +255,7 @@ var DATASET_EXPLORER = function() {
               );
         renderer.start();
     };
-    
+
     // Return the public variables/functions for this module
     return {
         register : register,
