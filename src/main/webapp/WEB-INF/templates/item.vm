@@ -95,17 +95,6 @@
     <div>
       #set($foundAction=false)
 
-      #if($lib.reg.isPermitted("Update", $uri))
-        #if(!$foundAction)
-          <h3 class="text-center">Actions</h3>
-          #set($foundAction=true)
-        #end
-        <a href="$uiroot/edit-form?target=$lib.pathEncode($entity.uRI)&return=/$uri" role="button" class="btn btn-primary" >Edit <i class="icon-edit icon-white"></i></a>
-
-        ## Disabled because update breaks the description reference.
-        <a href="$uiroot/edit-form?target=$lib.pathEncode($item.uRI)&return=/$uri" role="button" class="btn btn-danger" >Edit metadata<i class="icon-edit icon-white"></i></a>
-      #end
-
       #if($lib.reg.isPermitted("StatusUpdate", $uri))
         #if(!$foundAction)
           <h3 class="text-center">Actions</h3>
@@ -114,6 +103,46 @@
         <a href="#status-dialog" role="button" class="btn btn-primary" data-toggle="modal">Set status</a>
 
         #statusSet("status-dialog", "Set status of $entity.name to ...", $item, $item)
+      #end
+
+      #if($lib.reg.isPermitted("Update", $uri))
+        #if(!$foundAction)
+          <h3 class="text-center">Actions</h3>
+          #set($foundAction=true)
+        #end
+        <a href="$uiroot/edit-form?target=$lib.pathEncode($entity.uRI)&return=/$uri" role="button" class="btn btn-primary" >Edit <i class="icon-edit icon-white"></i></a>
+
+        <a href="$uiroot/edit-form?target=$lib.pathEncode($item.uRI)&return=/$uri" role="button" class="btn btn-danger" >Edit metadata<i class="icon-edit icon-white"></i></a>
+
+        <div class="space-above">
+          <a href="#annotate-dialog" role="button" class="btn btn-primary" data-toggle="modal">Annotate</a>
+        </div>
+
+        <div id="annotate-dialog" class="modal hide" tabindex="-1" role="dialog" aria-hidden="true">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3>Annotate the item with a data graph</h3>
+          </div>
+          <div id="annotate-dialog-status-body" class="modal-body">
+            <form id="annotate-form" action="/$uri" method="post" enctype="multipart/form-data" data-action="/$uri">
+              <label>
+                Choose annotation file to upload:
+                <input type="file" name="file" multiple />
+              </label>
+              <label>
+                Annotation label to use:
+                <input type="text" name="annotation" id="annotation" value="label" />
+              </label>
+              <input type="hidden" name="action" value="annotate" />
+              <button class="btn form-submit">Annotate</button>
+            </form>
+            <div class="ajax-error"></div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+          </div>
+        </div>
+
       #end
     </div>
 
@@ -140,6 +169,25 @@
          });
        });
 
+    });
+
+    $("#annotate-form").each(function(){
+        var form = $(this);
+        form. ajaxForm({
+            beforeSerialize: function(form, options) {
+                options.url = form.attr('data-action') + "?annotation=" + $("#annotation").val();
+            },
+
+            success:
+                function(data, status, xhr){
+                      location.reload();
+                },
+
+            error:
+              function(xhr, status, error){
+                 $(".ajax-error").html("<div class='alert'> <button type='button' class='close' data-dismiss='alert'>&times;</button>Action failed: " + error + " - " + xhr.responseText + "</div>");
+              }
+          });
     });
 
    </script>

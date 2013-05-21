@@ -106,7 +106,6 @@ public class RequestProcessor extends BaseEndpoint {
         }
         MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
         if (parameters.containsKey(Parameters.FORMAT)) {
-            Response response = doRead(result);
             String mime = MIME_RDFXML;
             String format = parameters.getFirst(Parameters.FORMAT);
             if (format.equals("ttl")) {
@@ -114,10 +113,17 @@ public class RequestProcessor extends BaseEndpoint {
             } else if (format.equals("jsonld")) {
                 mime = JSONLDSupport.FULL_MIME_JSONLD;
             }
-            return Response.ok().type(mime).entity(response.getEntity()).build();
+            return readAsRDF(result, mime);
+        } if (parameters.containsKey(Parameters.ANNOTATION)) {
+            return readAsRDF(result, FULL_MIME_TURTLE);
         } else {
             return render("main.vm", uriInfo, context, request);
         }
+    }
+
+    private Response readAsRDF(PassThroughResult ptr, String mime) {
+        Response response = doRead(ptr);
+        return Response.ok().type(mime).entity(response.getEntity()).build();
     }
 
     public static Response render(String template, UriInfo uriInfo, ServletContext context, HttpServletRequest request, Object...params) {
@@ -380,6 +386,8 @@ public class RequestProcessor extends BaseEndpoint {
             Command command = null;
             if (action.equals("register")) {
                 command = makeCommand( Operation.Register );
+            } else if (action.equals("annotate")) {
+                command = makeCommand( Operation.Annotate );
             }
             if (command == null) {
                 throw new WebApiException(Response.Status.BAD_REQUEST, "Action " + action + " not recognized");
