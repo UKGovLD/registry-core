@@ -12,9 +12,7 @@ package com.epimorphics.registry.message;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executors;
 
 import com.epimorphics.server.core.Service;
 import com.epimorphics.server.core.ServiceBase;
@@ -26,7 +24,8 @@ import com.epimorphics.server.core.ServiceBase;
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public class LocalMessagingService extends ServiceBase implements Service, MessagingService {
-    protected Executor executor = new ThreadPoolExecutor(0, 1, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+    protected Executor executor = Executors.newSingleThreadExecutor();
+//                                 new ThreadPoolExecutor(0, 1, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
     List<Process> processors = new ArrayList<>();
 
     static class Task implements Runnable {
@@ -55,5 +54,6 @@ public class LocalMessagingService extends ServiceBase implements Service, Messa
     public synchronized void processMessages(Process process) {
         processors.add(process);
     }
+
 
 }

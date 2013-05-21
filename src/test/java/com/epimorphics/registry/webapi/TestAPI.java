@@ -163,11 +163,11 @@ public class TestAPI extends TomcatTestBase {
 
         // Check tagging
         doTaggingTest();
-        
+
         // Graph entities and annotations
         doGraphEntityTest();
         doGraphAnnotationTest();
-        
+
         // Typed template lookup and change notification
         doTypedTemplateTest();
 
@@ -508,9 +508,23 @@ public class TestAPI extends TomcatTestBase {
 
         // Prefix update
         assertEquals(201, postFileStatus("test/prefix-test-xyz.ttl", BASE_URL + "system/prefixes"));
-        pm = Prefixes.get().getNsPrefixMap();
-        assertTrue(pm.containsKey("xyz"));
-        assertEquals("http://example.com/xyz", pm.get("xyz"));
+
+        // Update of prefixes depends on the background message thread, this is fragile to test for
+        int trycount = 0;
+        boolean passed = false;
+        while (trycount < 10 && !passed) {
+            trycount++;
+            pm = Prefixes.get().getNsPrefixMap();
+            if (pm.containsKey("xyz")) {
+                assertTrue(pm.containsKey("xyz"));
+                assertEquals("http://example.com/xyz", pm.get("xyz"));
+                passed = true;
+            } else {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {};
+            }
+        }
     }
 
     // Assumes /reg1 exists all earlier tests run (so has at least blue in it)
@@ -734,9 +748,9 @@ public class TestAPI extends TomcatTestBase {
         assertTrue( members.contains( model.getResource(ROOT_REGISTER + "reg3/_blue:2") ) );
         assertEquals(2, members.size());
     }
-    
+
     /**
-     * Check support for graph entities 
+     * Check support for graph entities
      */
     private void doGraphEntityTest() {
         ClientResponse response;
@@ -756,23 +770,23 @@ public class TestAPI extends TomcatTestBase {
         assertTrue( hasTerm(m, "D") );
         assertTrue( hasTerm(m, "d") );
     }
-    
+
     /**
      * Check support for attaching graphs to items
      */
     private void doGraphAnnotationTest() {
         String annotationGraph = BASE_URL + "reg1/_red?annotation=test";
         assertEquals(404, getResponse(annotationGraph).getStatus());
-        
+
         ClientResponse response = invoke("PUT", "test/ont1.ttl", annotationGraph);
         assertEquals(201, response.getStatus());
-        
+
         Model m = getModelResponse(annotationGraph);
         assertNotNull(m);
         assertTrue( hasTerm(m, "A") );
         assertTrue( hasTerm(m, "a") );
         assertTrue( hasTerm(m, "p") );
-        
+
         m = getModelResponse(BASE_URL + "reg1/_red");
         Resource item = m.getResource(ROOT_REGISTER + "reg1/_red");
         assertTrue( item.hasProperty(RegistryVocab.annotation) );
@@ -783,7 +797,7 @@ public class TestAPI extends TomcatTestBase {
         Resource r = m.getResource(ROOT_REGISTER + "reg1/ont#" + term);
         return r.hasProperty(RDF.type);
     }
-    
+
     /**
      * Typed template lookup and change notification
      */
@@ -798,14 +812,14 @@ public class TestAPI extends TomcatTestBase {
                 .addProperty(RDF.type, SKOS.ConceptScheme)
                 .addProperty(RDF.type, SKOS.Collection);
         assertEquals("concept-scheme-render.vm", reg.templateFor(test) );
-        
+
         assertEquals(201, postFileStatus("test/collection-typed-template.ttl", stt_reg));
         assertEquals(204, post(stt_reg + "/_collection?update&status=stable").getStatus());
         assertEquals("collection-render.vm", reg.templateFor(test) );
 
     }
 
-    
+
     private void checkPageResponse(Model m, String nextpage, int length) {
         ResIterator ri = m.listSubjectsWithProperty(RDF.type, Ldbp.Page);
         assertTrue(ri.hasNext());
