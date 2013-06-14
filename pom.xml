@@ -33,6 +33,7 @@
       </snapshots>
     </repository>
 
+<!--
     <repository>
       <id>repo-epi</id>
       <name>Epimorphics repository</name>
@@ -42,7 +43,8 @@
         <enabled>true</enabled>
       </snapshots>
     </repository>
-
+  -->
+  
     <repository>
       <releases>
         <enabled>true</enabled>
@@ -83,12 +85,12 @@
     <dependency>
       <groupId>com.epimorphics</groupId>
       <artifactId>serverbase</artifactId>
-      <version>0.0.10-SNAPSHOT</version>
+      <version>0.0.10</version>
     </dependency>
     <dependency>
       <groupId>com.epimorphics</groupId>
       <artifactId>lib</artifactId>
-      <version>0.0.16-SNAPSHOT</version>
+      <version>0.0.16</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -152,7 +154,14 @@
           <artifactId>slf4j-jdk14</artifactId>
         </exclusion>
       </exclusions>
+      </dependency>
+    <!-- 
+    <dependency>
+      <groupId>com.github.jsonld-java</groupId>
+      <artifactId>jsonld-java</artifactId>
+      <version>0.1</version>
     </dependency>
+       -->
     <dependency>
         <groupId>com.sun.jersey.contribs</groupId>
         <artifactId>jersey-multipart</artifactId>
@@ -265,6 +274,7 @@
         </configuration>
       </plugin>
 
+<!--
       <plugin>
         <groupId>org.apache.jena.tools</groupId>
         <artifactId>schemagen</artifactId>
@@ -294,7 +304,8 @@
           </execution>
         </executions>
       </plugin>
-
+  -->
+  
     </plugins>
 
     <extensions>
