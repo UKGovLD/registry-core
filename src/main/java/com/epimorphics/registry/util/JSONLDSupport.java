@@ -15,15 +15,13 @@ import java.util.Map;
 import javax.ws.rs.core.MediaType;
 
 import com.epimorphics.util.EpiException;
+import com.github.jsonldjava.core.JSONLD;
+import com.github.jsonldjava.core.Options;
+import com.github.jsonldjava.impl.JenaRDFParser;
+import com.github.jsonldjava.impl.JenaTripleCallback;
+import com.github.jsonldjava.utils.JSONUtils;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 
-import de.dfki.km.json.JSONUtils;
-import de.dfki.km.json.jsonld.JSONLD;
-import de.dfki.km.json.jsonld.JSONLDProcessor;
-import de.dfki.km.json.jsonld.JSONLDProcessor.Options;
-import de.dfki.km.json.jsonld.impl.JenaJSONLDSerializer;
-import de.dfki.km.json.jsonld.impl.JenaTripleCallback;
 
 /**
  * Utilities for assisting with JSON-LD parsing.
@@ -65,9 +63,7 @@ public class JSONLDSupport {
                 }
             }
             JenaTripleCallback callback = new JenaTripleCallback();
-            Model m = ModelFactory.createDefaultModel();
-            callback.setJenaModel(m);
-            JSONLD.toRDF(jsonObject, new Options(baseURI), callback);
+            Model m = (Model) JSONLD.toRDF(jsonObject, callback, new Options(baseURI));
             return m;
         } catch (Exception e) {
             throw new EpiException(e);
@@ -76,9 +72,9 @@ public class JSONLDSupport {
 
     public static Object toJSONLD(Model m) {
         try {
-            JenaJSONLDSerializer serializer = new JenaJSONLDSerializer();
-            Object json = JSONLD.fromRDF(m, serializer);
-            json = JSONLD.compact(json, Prefixes.getJsonldContext(), new JSONLDProcessor.Options());
+            JenaRDFParser parser = new JenaRDFParser();
+            Object json = JSONLD.fromRDF(m, parser);
+            json = JSONLD.compact(json, Prefixes.getJsonldContext(), new Options());
             return json;
         } catch (Exception e) {
             throw new EpiException(e);

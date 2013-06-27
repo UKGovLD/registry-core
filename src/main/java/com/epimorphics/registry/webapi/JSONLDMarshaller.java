@@ -27,8 +27,7 @@ import javax.ws.rs.ext.Provider;
 import com.epimorphics.registry.util.JSONLDSupport;
 import com.hp.hpl.jena.rdf.model.Model;
 
-import de.dfki.km.json.JSONUtils;
-//import com.github.jsonldjava.utils.JSONUtils;
+import com.github.jsonldjava.utils.JSONUtils;
 
 @Provider
 @Produces(JSONLDSupport.MIME_JSONLD)

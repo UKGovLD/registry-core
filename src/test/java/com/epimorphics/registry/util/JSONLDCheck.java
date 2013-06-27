@@ -13,13 +13,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.github.jsonldjava.core.JSONLD;
+import com.github.jsonldjava.core.JSONLDProcessingError;
+import com.github.jsonldjava.core.Options;
+import com.github.jsonldjava.impl.JenaTripleCallback;
+import com.github.jsonldjava.utils.JSONUtils;
 import com.hp.hpl.jena.rdf.model.Model;
 
-import de.dfki.km.json.JSONUtils;
-import de.dfki.km.json.jsonld.JSONLD;
-import de.dfki.km.json.jsonld.JSONLDProcessingError;
-import de.dfki.km.json.jsonld.JSONLDProcessor.Options;
-import de.dfki.km.json.jsonld.impl.JenaTripleCallback;
 
 public class JSONLDCheck {
 
@@ -37,9 +37,8 @@ public class JSONLDCheck {
         JenaTripleCallback callback = new JenaTripleCallback();
 //        callback.setJenaModel(jenaModel);
         // call the toRDF function
-        JSONLD.toRDF(jsonObject, new Options("http://dummy.org/"), callback);
+        Model m = (Model) JSONLD.toRDF(jsonObject, callback, new Options("http://dummy.org/"));
         // If you didn't use your own Jena Model, get the resulting one with:
-        Model m = callback.getJenaModel();
         System.out.println("Model is ...");
         m.write(System.out, "Turtle");
     }
