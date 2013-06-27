@@ -18,4 +18,4 @@ For information on installing and operating a registry instance see the wiki:
 ## Project governance
 
 See:
-   * [Project governance](https://github.com/der/ukl-registry-poc/wiki/ProjectGovernance)
+   * [Project governance](https://github.com/der/ukl-registry-poc/wiki/Project-Governance)
