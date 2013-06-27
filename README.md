@@ -1,13 +1,17 @@
 # ukl-registry-poc
 
-Workspace for design of UK Location registry proof-of-concept
+This is a proof-of-concept implementation of the UKGovLD Linked Data Registry design.
 
-## Status notes
+For information on the design, see the project wiki.
 
-### Vocabulary
+## Building
 
-`src/main/vocab` has the definitive versions of the registry and associated versioning vocabulary
+The implementation is build using Maven. By default Maven will run system tests which in turn requires access to a registry configuraiton area, by default this is /var/local/registry. That directory needs to exist and be writable for the test to run.  
 
-### Registry code base
+    mvn clean package
 
-The code base here is purely a proof-of-concept implementation of the core API. It is subject to change without notice.
+For information on installing and operating a registry instance see the wiki:
+   * [](https://github.com/der/ukl-registry-poc/wiki/Installation)
+   * [](https://github.com/der/ukl-registry-poc/wiki/Configuration)
+   * [](https://github.com/der/ukl-registry-poc/wiki/Operation)
+ 
