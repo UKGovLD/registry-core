@@ -15,8 +15,21 @@
 #macro(linkhrefInt $res)#if($res.uRI.startsWith($registry.baseURI))$res.uRI.substring($registry.baseURI.length())#else${root}/?entity=$lib.pathEncode($res.getURI())#end#end
 
 ## Inject a link to the given resource
+###macro(linkfor $res)
+##    <a href="#linkhref($res)" title="$res.uRI">$res.name</a>
+###end
+
+## Inject a link which is safe against bnodes
 #macro(linkfor $res)
-   <a href="#linkhref($res)" title="$res.uRI">$res.name</a>
+  #if($res.isAnon())
+    #if($res.getPropertyValue("foaf:homepage"))
+      <a href="#linkhref($res.getPropertyValue("foaf:homepage"))">$res.name</a>
+    #else
+      $res.name
+    #end
+  #else
+    <a href="#linkhref($res)" title="$res.uRI">$res.name</a>
+  #end
 #end
 
 ## Inject a link to the given resource or literal, using the full URI as the link text
