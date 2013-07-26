@@ -1,0 +1,26 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+@base <http://ukgovld-registry.dnsalias.net/reg1/ont> .
+
+<> a owl:Ontology;
+    rdfs:label "Test ontology 1";
+    .
+
+<#A> a owl:class;  rdfs:label "A" .
+<#B> a owl:class;  rdfs:label "B" .
+<#C> a owl:class;  rdfs:label "C" .
+
+<#p> a owl:ObjectProperty; rdfs:label "p"; rdfs:domain <#A>; rdfs:range <#B> .
+
+<#a> a <#A> ; <#p> <#b> .
+<#b> a <#B> .
+
+
+
+
+

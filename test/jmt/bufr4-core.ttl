@@ -1,0 +1,93 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix reg: <http://purl.org/linked-data/registry#> .
+@prefix qudt: <http://qudt.org/schema/qudt#> .
+
+@prefix bufr4-core: <http://ukgovld-registry.dnsalias.net/codes/bufr4/schema3/core#> .
+
+<http://ukgovld-registry.dnsalias.net/codes/bufr4/schema3/core> a owl:Ontology;
+    rdfs:label "WMO No. 306 Vol I.2 FM 94 BUFR code-table structure and metadata ontology"@en;
+    rdfs:comment "Ontology for describing structure and domain-specific metadata for WMO No. 306 Vol I.2 FM 94 BUFR code-tables."@en;
+    dc:creator "Jeremy Tandy";
+    dc:date "2013-03-26"^^xsd:date;
+    owl:versionInfo "0.1";
+    # For documentation tools
+    dc:description "Ontology for describing structure and domain-specific metadata for WMO No. 306 Vol I.2 FM 94 BUFR code-tables. Derived from pre-assigned terms from WMO Secretariat in legacy publications of the WMO code-tables."@en; 
+    .
+bufr4-core:No a owl:ObjectProperty; 
+    rdfs:isDefinedBy <http://ukgovld-registry.dnsalias.net/codes/bufr4/schema3/core> ;
+    rdfs:label "No"@en; 
+    rdfs:comment "Line number within WMO code-table publication."@en; 
+    rdfs:domain reg:RegisterItem; 
+    rdfs:range xsd:integer; 
+    .
+bufr4-core:FXY a owl:ObjectProperty; 
+    rdfs:isDefinedBy <http://ukgovld-registry.dnsalias.net/codes/bufr4/schema3/core> ;
+    rdfs:label "FXY"@en; 
+    rdfs:comment "6-digit BUFR descriptor for Element (from Table B) or Operator (from Table C)."@en; 
+    rdfs:domain reg:RegisterItem; 
+    rdfs:range xsd:string;
+    .
+bufr4-core:Status a owl:ObjectProperty; 
+    rdfs:isDefinedBy <http://ukgovld-registry.dnsalias.net/codes/bufr4/schema3/core> ;
+    rdfs:label "Status"@en; 
+    rdfs:comment "Used in BUFR code-tables to indicate the status of the associated term with respect to usage in WMO No. 306 Vol I.2 FM 94 BUFR products."@en; 
+    rdfs:domain reg:RegisterItem; 
+    rdfs:range bufr4-core:StatusType;
+    .
+bufr4-core:StatusType a owl:Class; 
+    rdfs:isDefinedBy <http://ukgovld-registry.dnsalias.net/codes/bufr4/schema3/core> ;
+    rdfs:label "Status (class)"@en; 
+    rdfs:comment "Open set of status codes for describing code-table entries with respect to their usage in WMO No. 306 Vol I.2 FM 94 BUFR."@en; 
+    rdfs:subClassOf skos:Concept;
+    .
+bufr4-core:StatusScheme a skos:ConceptScheme; 
+    rdfs:isDefinedBy <http://ukgovld-registry.dnsalias.net/codes/bufr4/schema3/core> ;
+    rdfs:label "Status Scheme"@en; 
+    rdfs:comment "Concept scheme containing status codes for describing code-table entries with respect to their usage in WMO No. 306 Vol I.2 FM 94 BUFR."@en;
+    .
+bufr4-core:statusValidation a skos:Concept, bufr4-core:StatusType; 
+    rdfs:isDefinedBy <http://ukgovld-registry.dnsalias.net/codes/bufr4/schema3/core> ;
+    skos:prefLabel "Validation"@en; 
+    rdfs:comment "A code-table entry that may only be used for validation purposes within WMO No. 306 Vol I.2 FM 94 BUFR products - it is prohibited to use this code-table entry in operational products."@en; 
+    skos:topConceptOf bufr4-core:StatusScheme; 
+    .  
+bufr4-core:statusOperational a skos:Concept, bufr4-core:StatusType; 
+    rdfs:isDefinedBy <http://ukgovld-registry.dnsalias.net/codes/bufr4/schema3/core> ;
+    skos:prefLabel "Operational"@en; 
+    rdfs:comment "A code-table entry that may be used within operational WMO No. 306 Vol I.2 FM 94 BUFR products."@en; 
+    skos:topConceptOf bufr4-core:StatusScheme;
+    .
+bufr4-core:BUFR_DataWidth_Bits a owl:ObjectProperty; 
+    rdfs:isDefinedBy <http://ukgovld-registry.dnsalias.net/codes/bufr4/schema3/core> ;
+    rdfs:label "Data width (bits)"@en; 
+    rdfs:comment "Number of bits that are used when encoding the value of the BUFR Table B Element in WMO No. 306 Vol I.2 FM 94 BUFR."@en; 
+    rdfs:domain reg:RegisterItem; 
+    rdfs:range xsd:integer; 
+    .
+bufr4-core:BUFR_ReferenceValue a owl:ObjectProperty; 
+    rdfs:isDefinedBy <http://ukgovld-registry.dnsalias.net/codes/bufr4/schema3/core> ;
+    rdfs:label "Reference value"@en; 
+    rdfs:comment "Reference value used when encoding the value of the BUFR Table B Element in WMO No. 306 Vol I.2 FM 94 BUFR."@en; 
+    rdfs:domain reg:RegisterItem; 
+    rdfs:range xsd:integer; 
+    .
+bufr4-core:BUFR_Scale a owl:ObjectProperty; 
+    rdfs:isDefinedBy <http://ukgovld-registry.dnsalias.net/codes/bufr4/schema3/core> ;
+    rdfs:label "Scale"@en; 
+    rdfs:comment "Scale factor used when encoding the value of the BUFR Table B Element in WMO No. 306 Vol I.2 FM 94 BUFR."@en; 
+    rdfs:domain reg:RegisterItem; 
+    rdfs:range xsd:integer; 
+    .
+bufr4-core:BUFR_Unit a owl:ObjectProperty; 
+    rdfs:isDefinedBy <http://ukgovld-registry.dnsalias.net/codes/bufr4/schema3/core> ;
+    rdfs:label "Unit of measure"@en; 
+    rdfs:comment "Unit (or equivalent concept) used when encoding the value of the BUFR Table B Element in WMO No. 306 Vol I.2 FM 94 BUFR."@en; 
+    rdfs:domain reg:RegisterItem; 
+    .
+    
