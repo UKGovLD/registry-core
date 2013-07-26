@@ -30,7 +30,8 @@
 
 # -- Registers ------------------------------------------------------
 
-reg:Register    a owl:Class, version:VersionedThing, ldp:Container, void:Dataset;
+reg:Register    a owl:Class;
+    rdfs:subClassOf version:VersionedThing, ldp:Container, void:Dataset;
     rdfs:label "Register"@en;
     rdfs:comment "Represents a collection of registered items, together with some associated governance regime. If one or more licenses is stated then each license applies to all the entries in the register. "@en;
     rdfs:subClassOf [owl:onProperty rdfs:label;       owl:minCardinality 1];
@@ -94,7 +95,8 @@ reg:governancePolicy a owl:ObjectProperty;
 
 # -- RegisterItems ------------------------------------------------------
 
-reg:RegisterItem    a owl:Class, version:VersionedThing;
+reg:RegisterItem    a owl:Class;
+    rdfs:subClassOf version:VersionedThing;
     rdfs:label "RegisterItem"@en;
     rdfs:comment "A metadata record for an entry in a register. Note that cardinality constraints can be met by sub-properties, for example an item with a skos:prefLabel implies an rdfs:label and so meets the cardinality constraint on rdfs:label."@en;
     rdfs:subClassOf [owl:onProperty rdfs:label;        owl:minCardinality 1];
