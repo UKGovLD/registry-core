@@ -272,7 +272,6 @@
         </configuration>
       </plugin>
 
-<!--
       <plugin>
         <groupId>org.apache.jena.tools</groupId>
         <artifactId>schemagen</artifactId>
@@ -302,7 +301,6 @@
           </execution>
         </executions>
       </plugin>
-  -->
   
     </plugins>
 

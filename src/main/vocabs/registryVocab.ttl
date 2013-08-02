@@ -22,7 +22,7 @@
     rdfs:comment "Core ontology for linked data registry services. Based on ISO19135 but heavily modified to suit Linked Data representations and applications."@en;
     dc:creator  "Dave Reynolds";     # As a string to enable documentation tool to work
     dc:date     "2012-11-11"^^xsd:date;
-    owl:versionInfo "0.2";
+    owl:versionInfo "0.3";
     # For documentation tools
     dc:description"Core ontology for linked data registry services. Based on ISO19135 but heavily modified to suit Linked Data representations and applications."@en;
     dc:description <https://github.com/der/ukl-registry-poc/wiki/images/registry-diagram.png> ;
