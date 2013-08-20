@@ -27,3 +27,12 @@
     #end
   </ul>
 #end
+
+#if($entity.getPropertyValue("skos:related"))
+  <h4>Related concepts</h4>
+  <ul>
+    #foreach($r in $entity.listPropertyValues("skos:related"))
+      <li>#linkfor($r)</li>
+    #end
+  </ul>
+#end
