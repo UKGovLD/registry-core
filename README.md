@@ -1,10 +1,10 @@
-# ukl-registry-poc
+# Registry core
 
-This is a proof-of-concept implementation of the UKGovLD Linked Data Registry design.
-
-For information on the design, see the project wiki.
+This is a fork of ukl-registry-poc intended as the basis of pilot level registry deployments.
 
 ## Building
+
+@@ TODO rewrite the instructions below once the directory layout and new build is in place.
 
 The implementation is build using Maven. By default Maven will run system tests which in turn requires access to a registry configuraiton area, by default this is `/var/local/registry`. That directory needs to exist and be writable for the test to run.  
 

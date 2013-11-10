@@ -1,15 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.epimorphics</groupId>
-  <artifactId>ukl-registry</artifactId>
+  <groupId>ukgovld</groupId>
+  <artifactId>registry-core</artifactId>
   <packaging>war</packaging>
   <version>0.0.1-SNAPSHOT</version>
-  <name>UKL Registry POC</name>
+  <name>Registry Core</name>
   <url>http://maven.apache.org</url>
 
   <scm>
-    <developerConnection>scm:git:git@github.com:der/ukl-registry-poc.git</developerConnection>
+    <developerConnection>scm:git:git@github.com:UKGovLD/registry-core.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
 
