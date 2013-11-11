@@ -90,8 +90,8 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
   <context-param>
     <param-name>config.forwarder</param-name>
     <param-value>com.epimorphics.registry.core.ForwardingServiceImpl,
-    proxyConfDir=/var/local/registry,
-    proxyRestartScript=/var/local/registry/proxy-conf.sh</param-value>
+    proxyConfDir=/var/opt/ldregistry,
+    proxyRestartScript=/opt/ldregistry/proxy-conf.sh</param-value>
   </context-param>
 
   <context-param>
@@ -108,7 +108,7 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
     pageSize=25,
     forwarder=forwarder,
     userStore=userstore,
-    log=/var/local/registry/logstore,
+    log=/var/opt/ldregistry/logstore,
     bootSpec=${webapp}/WEB-INF/root-register.ttl|${webapp}/WEB-INF/registry.ttl,
     systemBoot=${webapp}/WEB-INF/boot</param-value>
   </context-param>

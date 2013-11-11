@@ -75,13 +75,13 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
 
   <context-param>
     <param-name>registry-file-root</param-name>
-    <param-value>/var/local/registry</param-value>
+    <param-value>/opt/ldregistry</param-value>
   </context-param>
 
   <context-param>
     <param-name>service-config</param-name>
     <!-- Will initialize from first of these it finds, so external overrides internal -->
-    <param-value>/var/local/registry/config/services.conf|${webapp}/WEB-INF/services.conf</param-value>
+    <param-value>/opt/ldregistry/config/services.conf|${webapp}/WEB-INF/services.conf</param-value>
   </context-param>
 
     <servlet>

@@ -52,6 +52,7 @@ import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.server.core.Service;
 import com.epimorphics.server.core.ServiceBase;
 import com.epimorphics.server.core.ServiceConfig;
+import com.epimorphics.server.core.Shutdown;
 import com.epimorphics.server.templates.VelocityRender;
 import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.server.webapi.facets.FacetService;
@@ -75,7 +76,7 @@ import com.sun.jersey.api.uri.UriComponent;
  * <ul>
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
-public class Registry extends ServiceBase implements Service {
+public class Registry extends ServiceBase implements Service, Shutdown {
     static final Logger log = LoggerFactory.getLogger( Registry.class );
 
     public static final String VELOCITY_SERVICE = "velocity";
@@ -380,5 +381,10 @@ public class Registry extends ServiceBase implements Service {
     static Registry registry;
     public static Registry get() {
         return registry;
+    }
+
+    @Override
+    public void shutdown() {
+        Prefixes.shutdown();
     }
 }

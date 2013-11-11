@@ -33,12 +33,17 @@
     <param-value>com.epimorphics.registry.webapi.LibReg</param-value>
   </context-param>
  -->
+ 
+  <context-param>
+    <param-name>config.messages</param-name>
+    <param-value>com.epimorphics.registry.message.LocalMessagingService</param-value>
+  </context-param>
 
   <context-param>
     <param-name>config.forwarder</param-name>
     <param-value>com.epimorphics.registry.core.ForwardingServiceImpl,
-    proxyConfDir=/var/local/registry,
-    proxyRestartScript=/var/local/registry/proxy-conf.sh</param-value>
+    proxyConfDir=/var/opt/ldregistry,
+    proxyRestartScript=/opt/ldregistry/proxy-conf.sh</param-value>
   </context-param>
 
   <context-param>
@@ -48,6 +53,7 @@
     store=storeapi,
     forwarder=forwarder,
     cacheSize=100,
+    messageService=messages,
     bootSpec=${webapp}/WEB-INF/root-register.ttl|${webapp}/WEB-INF/registry.ttl|${webapp}/WEB-INF/system-registers.ttl|${webapp}/WEB-INF/prefixes-register.ttl</param-value>
   </context-param>
 

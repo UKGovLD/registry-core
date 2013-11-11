@@ -23,11 +23,12 @@ package com.epimorphics.registry.message;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.epimorphics.server.core.Service;
 import com.epimorphics.server.core.ServiceBase;
+import com.epimorphics.server.core.Shutdown;
 
 /**
  * Trivial, in-process version of a messaging service.
@@ -35,8 +36,8 @@ import com.epimorphics.server.core.ServiceBase;
  *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
-public class LocalMessagingService extends ServiceBase implements Service, MessagingService {
-    protected Executor executor = Executors.newSingleThreadExecutor();
+public class LocalMessagingService extends ServiceBase implements Service, MessagingService, Shutdown {
+    protected ExecutorService executor = Executors.newSingleThreadExecutor();
 //                                 new ThreadPoolExecutor(0, 1, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
     List<Process> processors = new ArrayList<>();
 
@@ -65,6 +66,11 @@ public class LocalMessagingService extends ServiceBase implements Service, Messa
     @Override
     public synchronized void processMessages(Process process) {
         processors.add(process);
+    }
+
+    @Override
+    public void shutdown() {
+        executor.shutdown();
     }
 
 

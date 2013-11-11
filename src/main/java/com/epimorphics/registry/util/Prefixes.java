@@ -69,7 +69,7 @@ public class Prefixes {
      * Return the prefix mapping derived from the prefixes system register
      * use for external serializations
      */
-    public static PrefixMapping get() {
+    public synchronized static PrefixMapping get() {
         if (prefixes == null) {
             prefixes = loadPrefixes();
         }
@@ -108,7 +108,7 @@ public class Prefixes {
      * Flush the cache if system/prefixes register has been updated
      * TODO need notification mechanism to do this properly
      */
-    public static void resetCache() {
+    public synchronized static void resetCache() {
         prefixes = null;
         jsonldContext = null;
     }
@@ -133,6 +133,14 @@ public class Prefixes {
             pm.setNsPrefix(info.getNotation(), info.getEntityURI());
         }
         return pm;
+   }
+    
+   /**
+    * Clear any cached state. Used during testing when we start/stop multiple differently configured versions of the service
+    */
+   public static void shutdown() {
+       resetCache();
+       listeningForChanges = false;
    }
 
 }

@@ -42,6 +42,8 @@ import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.Prov;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
+import com.epimorphics.server.core.ServiceConfig;
+import com.epimorphics.server.stores.MemStore;
 import com.epimorphics.util.TestUtil;
 import com.epimorphics.vocabs.API;
 import com.epimorphics.vocabs.SKOS;
@@ -477,13 +479,13 @@ public class TestAPI extends TomcatTestBase {
 
         // convert forwarding to proxying, will only actually function if nginx is up and test doesn't require that
         assertEquals(204, invoke("PATCH", "test/bw-proxy-patch.ttl", REG1 + "/eabw").getStatus());
-        String proxyConfig = FileManager.get().readWholeFileAsUTF8("/var/local/registry/proxy-registry.conf");
+        String proxyConfig = FileManager.get().readWholeFileAsUTF8("/var/opt/ldregistry/proxy-registry.conf");
         assertTrue(proxyConfig.contains("location /reg1/eabw"));
         assertTrue(proxyConfig.contains("proxy_pass http://environment.data.gov.uk/doc/bathing-water/"));
 
         // Switch batch to forwarding mode to check switching off proxy works
         assertEquals(204, invoke("PATCH", "test/bw-forward-patch.ttl", REG1 + "/eabw").getStatus());
-        proxyConfig = FileManager.get().readWholeFileAsUTF8("/var/local/registry/proxy-registry.conf");
+        proxyConfig = FileManager.get().readWholeFileAsUTF8("/var/opt/ldregistry/proxy-registry.conf");
         assertFalse(proxyConfig.contains("location /reg1/eabw"));
         assertEquals(200, getResponse(REG1 + "/eabw/ukc2102-03600").getStatus());
     }
@@ -508,6 +510,10 @@ public class TestAPI extends TomcatTestBase {
     }
 
     private void doPrefixTests() {
+        // TEMP
+        MemStore store = ServiceConfig.get().getServiceAs("basestore", MemStore.class);
+        store.asDataset().getDefaultModel().write(System.out, "Turtle");
+        // END
         Map<String, String> pm = Prefixes.get().getNsPrefixMap();
         assertTrue(pm.containsKey("rdf"));
         assertEquals(RDF.getURI(), pm.get("rdf"));
