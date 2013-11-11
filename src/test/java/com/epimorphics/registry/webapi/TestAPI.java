@@ -42,8 +42,6 @@ import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.Prov;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
-import com.epimorphics.server.core.ServiceConfig;
-import com.epimorphics.server.stores.MemStore;
 import com.epimorphics.util.TestUtil;
 import com.epimorphics.vocabs.API;
 import com.epimorphics.vocabs.SKOS;
@@ -510,10 +508,6 @@ public class TestAPI extends TomcatTestBase {
     }
 
     private void doPrefixTests() {
-        // TEMP
-        MemStore store = ServiceConfig.get().getServiceAs("basestore", MemStore.class);
-        store.asDataset().getDefaultModel().write(System.out, "Turtle");
-        // END
         Map<String, String> pm = Prefixes.get().getNsPrefixMap();
         assertTrue(pm.containsKey("rdf"));
         assertEquals(RDF.getURI(), pm.get("rdf"));
