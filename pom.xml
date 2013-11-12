@@ -56,8 +56,45 @@
       <name>Epimorphics Public Repository</name>
       <url>http://repository.epimorphics.com</url>
     </repository>
-
+    
+    <repository>  
+     <id>ukgovld-s3-snapshot</id>  
+     <name>UKGovLD snapshot repository</name>  
+     <url>s3://ukgovld/snapshot</url>  
+     <releases>  
+       <enabled>false</enabled>  
+     </releases>  
+     <snapshots>  
+       <enabled>true</enabled>  
+     </snapshots>  
+    </repository>  
+    
+    <repository>  
+     <id>ukgovld-s3-release</id>  
+     <name>UKGovLD release repository</name>  
+     <url>s3://ukgovld/release</url>  
+     <releases>  
+       <enabled>true</enabled>  
+     </releases>  
+     <snapshots>  
+       <enabled>false</enabled>  
+     </snapshots>  
+    </repository>  
+    
   </repositories>
+
+   <distributionManagement>  
+     <repository>  
+       <id>ukgovld-s3-release</id>  
+       <name>UKGovLD release repository</name>  
+       <url>s3://ukgovld/release</url>  
+     </repository>  
+     <snapshotRepository>  
+       <id>ukgovld-s3-snapshot</id>  
+       <name>UKGovLD snapshot repository</name>  
+       <url>s3://ukgovld/snapshot</url>  
+     </snapshotRepository>  
+   </distributionManagement> 
 
   <pluginRepositories>
     <pluginRepository>
@@ -190,6 +227,7 @@
   <build>
     <plugins>
 
+<!-- 
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <version>2.4</version>
@@ -208,7 +246,8 @@
           </execution>
         </executions>
       </plugin>
-
+ -->
+ 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -312,6 +351,13 @@
         <artifactId>wagon-ftp</artifactId>
         <version>2.2</version>
       </extension>
+      
+     <extension>  
+       <groupId>org.springframework.build.aws</groupId>  
+       <artifactId>org.springframework.build.aws.maven</artifactId>  
+       <version>3.0.0.RELEASE</version>  
+     </extension>  
+      
     </extensions>
 
     <pluginManagement>
@@ -344,6 +390,5 @@
       </plugins>
     </pluginManagement>
   </build>
-
 
 </project>
