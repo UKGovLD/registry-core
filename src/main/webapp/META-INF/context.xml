@@ -1,2 +1,2 @@
-<Context path="/" aliases="/ui=/var/local/registry/ui">
+<Context path="/" aliases="/ui=/opt/ldregistry/ui">
 </Context>

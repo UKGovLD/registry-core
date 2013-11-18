@@ -49,6 +49,8 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service, Sh
     static final Logger log = LoggerFactory.getLogger( DBUserStore.class );
 
     public static final String DATABASE_PARAM = "dbfile";
+    public static final String SYSTEM_HOME_PARAM = "home";
+    public static final String SYSTEM_HOME_PROP = "derby.system.home";
     public static final String DATABASE_SCHEMA = "userdbinit.sql";
 
     protected static final String driver = "org.apache.derby.jdbc.EmbeddedDriver";
@@ -59,6 +61,8 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service, Sh
     @Override
     public void init(Map<String, String> config, ServletContext context) {
         super.init(config, context);
+        String home = getRequiredParam(SYSTEM_HOME_PARAM);
+        System.setProperty(SYSTEM_HOME_PROP, home);
         try {
             Class.forName(driver).newInstance();
             String dbName = getRequiredParam(DATABASE_PARAM);

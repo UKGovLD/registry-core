@@ -70,7 +70,7 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
   <context-param>
     <param-name>config.index</param-name>
     <param-value>com.epimorphics.server.indexers.LuceneIndex,
-    location=/var/local/registry/index,
+    location=/var/opt/ldregistry/index,
     commitWindow=5,
     config=${webapp}/WEB-INF/index-config.ttl</param-value>
   </context-param>
@@ -96,7 +96,9 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
 
   <context-param>
     <param-name>config.userstore</param-name>
-    <param-value>com.epimorphics.registry.security.MemUserStore, initfile=${webapp}/WEB-INF/usertest.ini</param-value>
+    <param-value>com.epimorphics.registry.security.MemUserStore,
+    home=/var/opt/ldregistry,    
+    initfile=${webapp}/WEB-INF/usertest.ini</param-value>
   </context-param>
 
   <context-param>

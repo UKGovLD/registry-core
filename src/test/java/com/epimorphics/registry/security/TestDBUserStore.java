@@ -54,6 +54,8 @@ public class TestDBUserStore {
     public void setUp() {
         Map<String, String> config = new HashMap<String, String>();
         config.put("dbfile", "memory:test");
+        config.put("home", "/var/opt/ldregistry");
+
         store = new DBUserStore();
         store.init(config, null);
         BaseRegRealm realm = new BaseRegRealm();
