@@ -6,7 +6,6 @@
 /.project
 /generated
 /runtime
-/modal.log
+/*.log
 /work
-/derby.log
 /cookie-jar

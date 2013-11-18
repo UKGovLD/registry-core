@@ -45,7 +45,7 @@ public class RegRun {
 
         tomcat.setBaseDir(".");
 
-        String contextPath = "/";
+        String contextPath = "/registry";
 
         File rootF = new File(root);
         if (!rootF.exists()) {
