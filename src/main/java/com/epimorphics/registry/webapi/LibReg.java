@@ -476,4 +476,16 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
         }
         return wrappedResults;
     }
+    
+    /**
+     * Text string helper for summarizing text fields that might have mark up
+     */
+    public String stripHtml(String src, int limit) {
+        String stripped = src.replaceAll("\\<.*?>","");
+        if (stripped.length() > limit) {
+            return stripped.substring(0, limit-3) + "...";
+        } else {
+            return stripped;
+        }
+    }
 }
