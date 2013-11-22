@@ -42,6 +42,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.shiro.SecurityUtils;
@@ -126,7 +127,7 @@ public class Login {
         // TODO set session attribute as part of Shiro realm
         request.getSession().removeAttribute(VN_SUBJECT);
         SecurityUtils.getSubject().logout();
-        response.sendRedirect("/");
+        response.sendRedirect(request.getServletContext().getContextPath());
     }
 
     @Path("/apilogin")
@@ -334,7 +335,7 @@ public class Login {
         }
         catch (Exception e)
         {
-            throw new WebApplicationException(e);
+            throw new WebApiException(Status.BAD_REQUEST, "Login/registration action failed: " + e);
         }
     }
 
