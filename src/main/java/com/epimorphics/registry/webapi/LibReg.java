@@ -468,9 +468,10 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
             RDFNode value = result.getItem();
             if (value.isResource()) {
                 Resource valueR = value.asResource();
-                RegisterItem item = store.getItem(valueR.getURI(), false);
+                RegisterItem item = store.getItem(valueR.getURI(), true);
                 Resource root = item.getRoot();
                 model.add( root.getModel() );
+                model.add( item.getEntity().getModel() );
                 wrappedResults.add( new RDFNodeWrapper(modelw, root.inModel(model)) );
             }
         }
