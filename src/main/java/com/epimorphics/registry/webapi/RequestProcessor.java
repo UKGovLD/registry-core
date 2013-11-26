@@ -195,8 +195,8 @@ public class RequestProcessor extends BaseEndpoint {
 
     @GET
     public Response defaultRead() {
-        // Will chain through to file serving
-        throw new NotFoundException();
+        // Default to text/html case which in turn will default to file serving for image files etc
+        return htmlrender();
     }
 
 
