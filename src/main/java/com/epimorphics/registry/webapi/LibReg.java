@@ -349,6 +349,64 @@ public class LibReg extends ServiceBase implements LibPlugin, Service {
         }
         return result;
     }
+    
+    /**
+     * Run a sparql query, expanding prefixes from the prefix registry, for each RegisterItem bound to ?item fetch
+     * its description with its entity description and return the aggregate as a wrapped model 
+     */
+    public ModelWrapper describeAll(String query, Object... params) {
+        StoreAPI store = Registry.get().getStore();
+        String expandedQuery = PrefixUtils.expandQuery(query, Prefixes.get());
+        expandedQuery = QueryUtil.substituteInQuery(expandedQuery, params);
+        ResultSet rs = store.query(expandedQuery);
+
+        List<String> itemURIs = new ArrayList<>();
+        while (rs.hasNext()) {
+            QuerySolution soln = rs.next();
+            itemURIs.add( soln.getResource("item").getURI() );
+        }
+        
+        Model aggregate = ModelFactory.createDefaultModel();
+        for (RegisterItem ri : store.fetchAll(itemURIs, true)) {
+            aggregate.add( ri.getRoot().getModel() );
+            aggregate.add( ri.getEntity().getModel() );
+        }
+        return new ModelWrapper(aggregate);
+    }
+    
+    /**
+     * Run a sparql query, expanding prefixes from the prefix registry, for each RegisterItem bound to ?item fetch
+     * its description with its entity description and return as a sorted list of ItemMembers 
+     */
+    public List<ItemMember> describeAsItems(String query, Object... params) {
+        StoreAPI store = Registry.get().getStore();
+        String expandedQuery = PrefixUtils.expandQuery(query, Prefixes.get());
+        expandedQuery = QueryUtil.substituteInQuery(expandedQuery, params);
+        ResultSet rs = store.query(expandedQuery);
+
+        List<String> itemURIs = new ArrayList<>();
+        while (rs.hasNext()) {
+            QuerySolution soln = rs.next();
+            itemURIs.add( soln.getResource("item").getURI() );
+        }
+        
+        Collections.sort(itemURIs);
+        
+        Model aggregate = ModelFactory.createDefaultModel();
+        aggregate.setNsPrefixes( Prefixes.get() );
+        ModelWrapper mw = new ModelWrapper(aggregate);
+        List<ItemMember> results = new ArrayList<>(itemURIs.size());
+        for (RegisterItem ri : store.fetchAll(itemURIs, true)) {
+            aggregate.add( ri.getRoot().getModel() );
+            aggregate.add( ri.getEntity().getModel() );
+            
+            Resource entity = ri.getEntity().inModel(aggregate);
+            Resource item = ri.getRoot().inModel(aggregate);
+            
+            results.add( new ItemMember(new RDFNodeWrapper(mw, entity), new RDFNodeWrapper(mw, item)) );
+        }
+        return results;
+    }
 
     /**
      * Utility for incrementally building up compacted range notation
