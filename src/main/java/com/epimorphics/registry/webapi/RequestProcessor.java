@@ -45,6 +45,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
@@ -92,6 +93,8 @@ public class RequestProcessor extends BaseEndpoint {
 
     public static final String FULL_MIME_TURTLE = "text/turtle; charset=UTF-8";
     public static final String FORWARDED_FOR_HEADER = "X-Forwarded-For";
+    public static final String CONTENT_DISPOSITION_HEADER = "Content-Disposition";
+    public static final String CONTENT_DISPOSITION_FMT = "attachment; filename=\"%s.%s\"";
     public static final String UI_PATH = "ui";
     private static final String SYSTEM_QUERY = "system/query";
 
@@ -119,23 +122,32 @@ public class RequestProcessor extends BaseEndpoint {
         MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
         if (parameters.containsKey(Parameters.FORMAT)) {
             String mime = MIME_RDFXML;
+            String extension = "rdf";
             String format = parameters.getFirst(Parameters.FORMAT);
             if (format.equals("ttl")) {
                 mime = FULL_MIME_TURTLE;
+                extension = "ttl";
             } else if (format.equals("jsonld")) {
                 mime = JSONLDSupport.FULL_MIME_JSONLD;
+                extension = "json";
             }
-            return readAsRDF(result, mime);
+            return readAsRDF(result, mime, extension);
         } if (parameters.containsKey(Parameters.ANNOTATION)) {
-            return readAsRDF(result, FULL_MIME_TURTLE);
+            return readAsRDF(result, FULL_MIME_TURTLE, "ttl");
         } else {
             return render("main.vm", uriInfo, context, request);
         }
     }
 
-    private Response readAsRDF(PassThroughResult ptr, String mime) {
+    private Response readAsRDF(PassThroughResult ptr, String mime, String ext) {
         Response response = doRead(ptr);
-        return Response.ok().type(mime).entity(response.getEntity()).build();
+        Object location = response.getMetadata().getFirst(HttpHeaders.LOCATION);
+        ResponseBuilder builder = Response.ok().type(mime).entity(response.getEntity());
+        if (location != null) {
+            String fname = NameUtils.lastSegment(location.toString());
+            builder.header(CONTENT_DISPOSITION_HEADER, String.format(CONTENT_DISPOSITION_FMT, fname, ext));
+        }
+        return builder.build();
     }
 
     public static Response render(String template, UriInfo uriInfo, ServletContext context, HttpServletRequest request, Object...params) {
