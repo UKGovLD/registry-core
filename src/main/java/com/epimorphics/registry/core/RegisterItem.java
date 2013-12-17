@@ -212,8 +212,13 @@ public class RegisterItem extends Description {
         String notation = notationFromEntity(e, parentURI);
         String riURI = makeItemURI(parentURI, notation);
         Resource ri = ModelFactory.createDefaultModel().createResource(riURI)
-                .addProperty(RDF.type, RegistryVocab.RegisterItem)
-                .addProperty(RegistryVocab.notation, notation);
+                .addProperty(RDF.type, RegistryVocab.RegisterItem);
+        try {
+            int notationInt = Integer.parseInt(notation);
+            ri.addLiteral(RegistryVocab.notation, notationInt);
+        } catch (NumberFormatException ex) {
+            ri.addProperty(RegistryVocab.notation, notation);
+        }
         RegisterItem item = new RegisterItem( ri, parentURI, notation );
         Resource entity = e;
         item.relocateEntity(entity);
