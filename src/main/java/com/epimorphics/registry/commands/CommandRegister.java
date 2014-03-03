@@ -56,6 +56,7 @@ import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.Parameters;
+import com.epimorphics.registry.webapi.TestAPIDebug;
 import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.util.NameUtils;
@@ -207,6 +208,7 @@ public class CommandRegister extends Command {
                     location = register(parentRegister, findSingletonRoot(), false, false);
                 }
             }
+            store.update(parentRegister);
             try {
                 return Response.created(new URI(location.getURI())).build();
             } catch (URISyntaxException e) {

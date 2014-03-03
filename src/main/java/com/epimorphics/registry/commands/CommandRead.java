@@ -143,7 +143,7 @@ public class CommandRead extends Command {
             // Typically an attempt to retrieve the version of something which doesn't not exist
             // Fall through to "not found" case
         }
-
+        
         if (d == null) {
             throw new NotFoundException();
         }
@@ -302,7 +302,7 @@ public class CommandRead extends Command {
                 Resource page = injectPagingInformation(view, register.getRoot(), !complete);
                 page.addProperty(API.items, view.createList(members.iterator()));
             }
-
+            
             return view;
         }
     }

@@ -563,13 +563,15 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         lockStoreWrite();
         try {
             doUpdateItem(item, true, now);
-            doUpdate(register.getRoot(), now);
+            // Don't automatically update register, we want the option to do batch updates
+//            doUpdate(register.getRoot(), now);
             mod(item).addProperty(RegistryVocab.register, register.getRoot());
             Resource entity = item.getEntity();
             if (entity.hasProperty(RDF.type, RegistryVocab.Register)) {
                 modCurrent(register).addProperty(RegistryVocab.subregister, entity);
             }
-            modCurrent(register).removeAll(DCTerms.modified).addProperty(DCTerms.modified, getDefaultModel().createTypedLiteral(now));
+            // Don't automatically update register, we want the option to do batch updates
+//            modCurrent(register).removeAll(DCTerms.modified).addProperty(DCTerms.modified, getDefaultModel().createTypedLiteral(now));
         } finally {
             unlockStore();
         }
@@ -615,6 +617,7 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         RDFUtil.copyProperty( current, root, OWL.versionInfo );
         // Preserve subregister - could this just be added to rigids
         RDFUtil.copyProperty( current, root, RegistryVocab.subregister );
+        root.removeAll(DCTerms.modified).addProperty(DCTerms.modified, getDefaultModel().createTypedLiteral(cal));
         return doUpdate(root, cal, rigids);
     }
 

@@ -24,9 +24,11 @@ package com.epimorphics.registry.webapi;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 import org.junit.Test;
 
+import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
@@ -40,6 +42,7 @@ import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.sparql.util.Closure;
 import com.hp.hpl.jena.vocabulary.DCTerms;
+import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.sun.jersey.api.client.ClientResponse;
 
@@ -62,16 +65,10 @@ public class TestAPIDebug extends TomcatTestBase {
 
     @Test
     public void testDebug() throws IOException {
-        // Test case for bnode duplication on registry reconstruction
-        assertEquals(201, postFileStatus("test/rbd.ttl", BASE_URL + "?batch-managed&status=stable"));
-        Model m = getModelResponse(BASE_URL + "RiverBasinDistrict");
-        int count = m.getResource("http://location.data.gov.uk/RiverBasinDistrict")
-            .listProperties(DCTerms.rights).toList().size();
-        assertEquals(1, count);
     }
 
     // Debugging utility only, should not be used while transactions are live
-    public void printResourceState(String...uris) {
+    public static void printResourceState(String...uris) {
         Store storesvc = ServiceConfig.get().getServiceAs("basestore", Store.class);
         storesvc.lock();
         try {
@@ -93,6 +90,27 @@ public class TestAPIDebug extends TomcatTestBase {
                 Model graph = ModelFactory.createDefaultModel().add( ds.getNamedModel(graphname) );
                 System.out.println("Graph " + graphname);
                 graph.setNsPrefixes(Prefixes.get());
+                graph.write(System.out, "Turtle");
+            }
+        } finally {
+            storesvc.unlock();
+        }
+    }
+
+
+    // Debugging utility only, should not be used while transactions are live
+    public static void printStore() {
+        Store storesvc = ServiceConfig.get().getServiceAs("basestore", Store.class);
+        storesvc.lock();
+        try {
+            Dataset ds =  storesvc.asDataset();
+            Model store = ds.getDefaultModel();
+            System.out.println("Default model:");
+            store.write(System.out, "Turtle");
+            for (Iterator<String> i = ds.listNames(); i.hasNext(); ) {
+                String graphName = i.next();
+                Model graph = ds.getNamedModel(graphName);
+                System.out.println("Graph " + graphName + ":");
                 graph.write(System.out, "Turtle");
             }
         } finally {

@@ -182,6 +182,9 @@ public class TestAPI extends TomcatTestBase {
 
         // Typed template lookup and change notification
         doTypedTemplateTest();
+        
+        // Bug tests
+        doBNodeDuplicationBugTest();
 
 //        System.out.println("Store dump");
 //        ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel().write(System.out, "Turtle");
@@ -831,6 +834,24 @@ public class TestAPI extends TomcatTestBase {
 
     }
 
+    /**
+     *  Test case for bnode duplication on registry reconstruction
+     */
+    private void doBNodeDuplicationBugTest() {
+        assertEquals(201, postFileStatus("test/rbd.ttl", BASE_URL + "?batch-managed&status=stable"));
+        
+        Model m = getModelResponse(BASE_URL + "RiverBasinDistrict");
+        Resource reg = m.getResource("http://location.data.gov.uk/RiverBasinDistrict"); 
+        int count = reg.listProperties(DCTerms.rights).toList().size();
+        assertEquals(1, count);
+        int version = RDFUtil.getIntValue(reg, OWL.versionInfo, -1);
+
+        // Add to the register
+        assertEquals(201, postFileStatus("test/red.ttl", BASE_URL + "RiverBasinDistrict"));
+        m = getModelResponse(BASE_URL + "RiverBasinDistrict");
+        reg = m.getResource("http://location.data.gov.uk/RiverBasinDistrict"); 
+        assertEquals(version + 1, RDFUtil.getIntValue(reg, OWL.versionInfo, -1));        
+    }
 
     private void checkPageResponse(Model m, String nextpage, int length) {
         ResIterator ri = m.listSubjectsWithProperty(RDF.type, Ldbp.Page);

@@ -150,6 +150,7 @@ public interface StoreAPI {
      * Initializes the versioning of the new RegisterItem.
      * If the entity of the item is a Register then the versioning of the new sub-register will be initialized.
      * Otherwise a new entity graph will be created for the entity.
+     * Does not increment the version of the register itself, call update on the register to achieve that
      */
     public void addToRegister(Register register, RegisterItem item);
 
@@ -158,6 +159,7 @@ public interface StoreAPI {
      * Initializes the versioning of the new RegisterItem.
      * If the entity of the item is a Register then the versioning of the new sub-register will be initialized.
      * Otherwise a new entity graph will be created for the entity.
+     * Does not increment the version of the register itself, call update on the register to achieve that
      */
     public void addToRegister(Register register, RegisterItem item, Calendar timestamp);
 

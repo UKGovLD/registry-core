@@ -84,6 +84,7 @@ public class Register extends Description {
      */
     public boolean constructView(Model model, boolean withMetadata, Status status, int offset, int length, long timestamp, List<Resource> results) {
         getMembers();
+
         List<String> itemURIs = new ArrayList<String>( length == -1 ? 50 : length );
         List<String> entityURIs = new ArrayList<String>( length == -1 ? 50 : length );
 
@@ -119,7 +120,7 @@ public class Register extends Description {
                 if (count > limit) break;
             }
         }
-
+        
         if (timestamp != -1) {
             // already fetched while checking for valid entries
         } else if (withMetadata && !itemURIs.isEmpty()) {
@@ -127,12 +128,13 @@ public class Register extends Description {
             model.add( items.get(0).getRoot().getModel() );
         } else {
             for (String uri : entityURIs) {
-                model.add( store.getCurrentVersion(uri).getRoot().getModel() );
+                Model d =  store.getCurrentVersion(uri).getRoot().getModel();
+                model.add( d );
             }
         }
 
-        model.add( root.getModel() );
-
+        model.add( root.getModel() ); 
+        
         List<Resource> entities = results;
         if (entities == null) {
             entities = new ArrayList<Resource>();
