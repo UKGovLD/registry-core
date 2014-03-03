@@ -39,6 +39,7 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.sparql.util.Closure;
+import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.sun.jersey.api.client.ClientResponse;
 
@@ -61,24 +62,12 @@ public class TestAPIDebug extends TomcatTestBase {
 
     @Test
     public void testDebug() throws IOException {
-        // Set up some base data
-//        assertEquals(201, postFileStatus("test/reg1.ttl", BASE_URL));
-//        assertEquals(201, postFileStatus("test/red.ttl", REG1));
-
-        String stt_reg = BASE_URL + "system/typed-templates";
-        assertEquals(201, postFileStatus("test/typed-templates-reg.ttl", BASE_URL + "system"));
-        assertEquals(201, postFileStatus("test/concept-scheme-typed-template.ttl", stt_reg));
-        assertEquals(204, post(stt_reg + "/_concept-scheme?update&status=stable").getStatus());
-
-        LibReg reg = new LibReg();
-        Resource test = ModelFactory.createDefaultModel().createResource("http://example.com/test")
-                .addProperty(RDF.type, SKOS.ConceptScheme)
-                .addProperty(RDF.type, SKOS.Collection);
-        assertEquals("concept-scheme-render.vm", reg.templateFor(test) );
-        
-        assertEquals(201, postFileStatus("test/collection-typed-template.ttl", stt_reg));
-        assertEquals(204, post(stt_reg + "/_collection?update&status=stable").getStatus());
-        assertEquals("collection-render.vm", reg.templateFor(test) );
+        // Test case for bnode duplication on registry reconstruction
+        assertEquals(201, postFileStatus("test/rbd.ttl", BASE_URL + "?batch-managed&status=stable"));
+        Model m = getModelResponse(BASE_URL + "RiverBasinDistrict");
+        int count = m.getResource("http://location.data.gov.uk/RiverBasinDistrict")
+            .listProperties(DCTerms.rights).toList().size();
+        assertEquals(1, count);
     }
 
     // Debugging utility only, should not be used while transactions are live

@@ -1,0 +1,154 @@
+@prefix ui:      <http://purl.org/linked-data/registry-ui#> .
+@prefix dc:      <http://purl.org/dc/elements/1.1/> .
+@prefix ssd:     <http://www.w3.org/ns/sparql-service-description#> .
+@prefix prov:    <http://www.w3.org/ns/prov#> .
+@prefix foaf:    <http://xmlns.com/foaf/0.1/> .
+@prefix dgu:     <http://reference.data.gov.uk/def/reference/> .
+@prefix void:    <http://rdfs.org/ns/void#> .
+@prefix vann:    <http://purl.org/vocab/vann/> .
+@prefix vs:      <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+@prefix org:     <http://www.w3.org/ns/org#> .
+@prefix qb:      <http://purl.org/linked-data/cube#> .
+@prefix version:  <http://purl.org/linked-data/version#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix time:    <http://www.w3.org/2006/time#> .
+@prefix dct:     <http://purl.org/dc/terms/> .
+@prefix reg:     <http://purl.org/linked-data/registry#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix api:     <http://purl.org/linked-data/api/vocab#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix cc:      <http://creativecommons.org/ns#> .
+@prefix ldp:     <http://www.w3.org/ns/ldp#> .
+@prefix odrs: <http://schema.theodi.org/odrs#> .
+@prefix er-ui:   <http://environment.data.gov.uk/registry/structure/ui/> .
+@prefix er-cat:  <http://environment.data.gov.uk/registry/structure/category/> .
+@prefix er-org:  <http://environment.data.gov.uk/registry/structure/org/> .
+@prefix er-entity:  <http://environment.data.gov.uk/registry/structure/entity-type/> .
+
+<RiverBasinDistrict>
+      a       reg:Register ;
+      rdfs:label "River Basin Districts" ;
+      dct:description "The river basin is the geographical area from which all surface run-off flows through a sequence of streams, rivers and, possibly, lakes into the sea at a single river mouth or estuary. <br /> The river basin district is the main unit for management of river basins under the Water Framework Directive. River basin districts were designated by Member States. A river basin district can consist of one or more river basins.";
+      reg:notation "RiverBasinDistrict" ;
+      reg:category <http://environment.data.gov.uk/registry/structure/category/Water>;
+      er-ui:entityType <http://environment.data.gov.uk/registry/structure/entity-type/Regions_and_Habitats>;
+    reg:owner        er-org:environment-agency ;
+    dct:publisher    er-org:environment-agency ;
+    dct:license      <http://www.nationalarchives.gov.uk/doc/open-government-licence/version/2/> ;
+    dct:rights       _:1 ;
+    .
+
+_:1
+    odrs:attributionText "Contains public sector information licensed under the Open Government Licence v2.0." .
+
+
+
+
+<RiverBasinDistrict/UK02>
+        a       <http://location.data.gov.uk/def/am/wfd/RiverBasinDistrict> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Solway Tweed" ;
+        <http://www.w3.org/2002/07/owl#sameAs>
+                <http://location.data.gov.uk/so/am/RiverBasinDistrict/wfd.eaew/2> ;
+        <http://www.w3.org/2004/02/skos/core#notation>
+                "UK02" .
+
+<RiverBasinDistrict/UK07>
+        a       <http://location.data.gov.uk/def/am/wfd/RiverBasinDistrict> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "South East" ;
+        <http://www.w3.org/2002/07/owl#sameAs>
+                <http://location.data.gov.uk/so/am/RiverBasinDistrict/wfd.eaew/7> ;
+        <http://www.w3.org/2004/02/skos/core#notation>
+                "UK07" .
+
+<RiverBasinDistrict/UK11>
+        a       <http://location.data.gov.uk/def/am/wfd/RiverBasinDistrict> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Dee" ;
+        <http://www.w3.org/2002/07/owl#sameAs>
+                <http://location.data.gov.uk/so/am/RiverBasinDistrict/wfd.eaew/11> ;
+        <http://www.w3.org/2004/02/skos/core#notation>
+                "UK11" .
+
+<RiverBasinDistrict/UK05>
+        a       <http://location.data.gov.uk/def/am/wfd/RiverBasinDistrict> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Anglian" ;
+        <http://www.w3.org/2002/07/owl#sameAs>
+                <http://location.data.gov.uk/so/am/RiverBasinDistrict/wfd.eaew/5> ;
+        <http://www.w3.org/2004/02/skos/core#notation>
+                "UK05" .
+
+<RiverBasinDistrict>  <http://www.w3.org/2000/01/rdf-schema#member>
+                <RiverBasinDistrict/UK04> , <RiverBasinDistrict/UK09> , <RiverBasinDistrict/UK07> , <RiverBasinDistrict/UK06> , <RiverBasinDistrict/UK01> , <RiverBasinDistrict/UK03> , <RiverBasinDistrict/UK11> , <RiverBasinDistrict/UK05> , <RiverBasinDistrict/UK10> , <RiverBasinDistrict/UK08> , <RiverBasinDistrict/UK02> , <RiverBasinDistrict/UK12> .
+
+<RiverBasinDistrict/UK03>
+        a       <http://location.data.gov.uk/def/am/wfd/RiverBasinDistrict> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Northumbria" ;
+        <http://www.w3.org/2002/07/owl#sameAs>
+                <http://location.data.gov.uk/so/am/RiverBasinDistrict/wfd.eaew/3> ;
+        <http://www.w3.org/2004/02/skos/core#notation>
+                "UK03" .
+
+<RiverBasinDistrict/UK08>
+        a       <http://location.data.gov.uk/def/am/wfd/RiverBasinDistrict> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "South West" ;
+        <http://www.w3.org/2002/07/owl#sameAs>
+                <http://location.data.gov.uk/so/am/RiverBasinDistrict/wfd.eaew/8> ;
+        <http://www.w3.org/2004/02/skos/core#notation>
+                "UK08" .
+
+<RiverBasinDistrict/UK12>
+        a       <http://location.data.gov.uk/def/am/wfd/RiverBasinDistrict> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "North West" ;
+        <http://www.w3.org/2002/07/owl#sameAs>
+                <http://location.data.gov.uk/so/am/RiverBasinDistrict/wfd.eaew/12> ;
+        <http://www.w3.org/2004/02/skos/core#notation>
+                "UK12" .
+
+<RiverBasinDistrict/UK01>
+        a       <http://location.data.gov.uk/def/am/wfd/RiverBasinDistrict> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Scotland" ;
+        <http://www.w3.org/2002/07/owl#sameAs>
+                <http://location.data.gov.uk/so/am/RiverBasinDistrict/wfd.eaew/1> ;
+        <http://www.w3.org/2004/02/skos/core#notation>
+                "UK01" .
+
+<RiverBasinDistrict/UK06>
+        a       <http://location.data.gov.uk/def/am/wfd/RiverBasinDistrict> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Thames" ;
+        <http://www.w3.org/2004/02/skos/core#notation>
+                "UK06" .
+
+<RiverBasinDistrict/UK10>
+        a       <http://location.data.gov.uk/def/am/wfd/RiverBasinDistrict> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Western Wales" ;
+        <http://www.w3.org/2004/02/skos/core#notation>
+                "UK10" .
+
+<RiverBasinDistrict/UK04>
+        a       <http://location.data.gov.uk/def/am/wfd/RiverBasinDistrict> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Humber" ;
+        <http://www.w3.org/2002/07/owl#sameAs>
+                <http://location.data.gov.uk/so/am/RiverBasinDistrict/wfd.eaew/4> ;
+        <http://www.w3.org/2004/02/skos/core#notation>
+                "UK04" .
+
+<RiverBasinDistrict/UK09>
+        a       <http://location.data.gov.uk/def/am/wfd/RiverBasinDistrict> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Severn" ;
+        <http://www.w3.org/2002/07/owl#sameAs>
+                <http://location.data.gov.uk/so/am/RiverBasinDistrict/wfd.eaew/9> ;
+        <http://www.w3.org/2004/02/skos/core#notation>
+                "UK09" .
