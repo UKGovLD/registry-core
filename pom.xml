@@ -121,12 +121,7 @@
     <dependency>
       <groupId>com.epimorphics</groupId>
       <artifactId>serverbase</artifactId>
-      <version>0.0.10</version>
-    </dependency>
-    <dependency>
-      <groupId>com.epimorphics</groupId>
-      <artifactId>lib</artifactId>
-      <version>0.0.16</version>
+      <version>0.0.12-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -183,7 +178,7 @@
     <dependency>
       <groupId>com.github.jsonld-java</groupId>
       <artifactId>jsonld-java</artifactId>
-      <version>0.1</version>
+      <version>0.3</version>
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
@@ -194,8 +189,18 @@
     <dependency>
       <groupId>com.github.jsonld-java</groupId>
       <artifactId>jsonld-java-jena</artifactId>
-      <version>0.1</version>
-    </dependency>
+      <version>0.3</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.jena</groupId>
+          <artifactId>jena-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.jena</groupId>
+          <artifactId>jena-arq</artifactId>
+        </exclusion>
+      </exclusions>
+     </dependency>
     <dependency>
         <groupId>com.sun.jersey.contribs</groupId>
         <artifactId>jersey-multipart</artifactId>

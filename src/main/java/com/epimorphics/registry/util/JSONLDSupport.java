@@ -27,13 +27,12 @@ import java.util.Map;
 import javax.ws.rs.core.MediaType;
 
 import com.epimorphics.util.EpiException;
-import com.github.jsonldjava.core.JSONLD;
-import com.github.jsonldjava.core.Options;
-import com.github.jsonldjava.impl.JenaRDFParser;
-import com.github.jsonldjava.impl.JenaTripleCallback;
+import com.github.jsonldjava.core.JsonLdOptions;
+import com.github.jsonldjava.core.JsonLdProcessor;
+import com.github.jsonldjava.jena.JenaRDFParser;
+import com.github.jsonldjava.jena.JenaTripleCallback;
 import com.github.jsonldjava.utils.JSONUtils;
 import com.hp.hpl.jena.rdf.model.Model;
-
 
 /**
  * Utilities for assisting with JSON-LD parsing.
@@ -46,12 +45,6 @@ public class JSONLDSupport {
     public static final String FULL_MIME_JSONLD = "application/ld+json; charset=UTF-8";
     public static final MediaType MT_JSONLD = new MediaType("application", "ld+json");
     public static final String CONTEXT_KEY = "@context";
-
-    static Options readOptions;
-
-//    static {
-//        readOptions = new Options(BaseEndpoint.DUMMY_BASE_URI + "/");
-//    }
 
     public static Model readModel(String baseURI, InputStream inputStream) {
         try {
@@ -75,7 +68,8 @@ public class JSONLDSupport {
                 }
             }
             JenaTripleCallback callback = new JenaTripleCallback();
-            Model m = (Model) JSONLD.toRDF(jsonObject, callback, new Options(baseURI));
+            Model m = (Model) JsonLdProcessor.toRDF(jsonObject, callback, new JsonLdOptions(baseURI));
+//            Model m = (Model) JSONLD.toRDF(jsonObject, callback, new Options(baseURI));
             return m;
         } catch (Exception e) {
             throw new EpiException(e);
@@ -85,8 +79,8 @@ public class JSONLDSupport {
     public static Object toJSONLD(Model m) {
         try {
             JenaRDFParser parser = new JenaRDFParser();
-            Object json = JSONLD.fromRDF(m, parser);
-            json = JSONLD.compact(json, Prefixes.getJsonldContext(), new Options());
+            Object json = JsonLdProcessor.fromRDF(m, parser);
+            json = JsonLdProcessor.compact(json, Prefixes.getJsonldContext(), new JsonLdOptions());
             return json;
         } catch (Exception e) {
             throw new EpiException(e);
