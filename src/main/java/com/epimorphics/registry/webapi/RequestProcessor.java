@@ -174,7 +174,12 @@ public class RequestProcessor extends BaseEndpoint {
 
         VelocityRender velocity = ServiceConfig.get().getServiceAs(Registry.VELOCITY_SERVICE, VelocityRender.class);
         StreamingOutput out = velocity.render(template, uriInfo.getPath(), context, uriInfo.getQueryParameters(), fullParams);
-        return Response.ok().type("text/html").entity(out).build();
+        
+        ResponseBuilder builder = Response.ok().type("text/html");
+        if (SecurityUtils.getSubject().isAuthenticated()) {
+            builder.header("Cache-control", "no-cache");
+        }
+        return builder.entity(out).build();
     }
 
     public static String getRequestor(HttpServletRequest request) {
