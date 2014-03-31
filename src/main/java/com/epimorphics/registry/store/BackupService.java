@@ -45,17 +45,18 @@ public class BackupService {
         this.backupDir = backupDir;
         this.store = store;
         FileUtil.ensureDir(backupDir);
+        log.info("Backup directory set to: " + backupDir);
     }
     
     public void scheduleBackup() {
         String timestamp =  new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date()) ;
-        final String filename = backupDir + "/backup-" + timestamp + ".nq.tz";
+        final String filename = backupDir + "/backup-" + timestamp + ".nq.gz";
         
             final Callable<Boolean> task = new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception
                 {
-                    log.info("Started backup to + " +filename);
+                    log.info("Started  backup to " +filename);
                     OutputStream out = null ;
                     store.lock();
                     try {
