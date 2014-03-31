@@ -45,8 +45,10 @@ import com.epimorphics.registry.message.LocalMessagingService;
 import com.epimorphics.registry.message.MessagingService;
 import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.security.UserStore;
+import com.epimorphics.registry.store.BackupService;
 import com.epimorphics.registry.store.CachingStore;
 import com.epimorphics.registry.store.StoreAPI;
+import com.epimorphics.registry.store.StoreBaseImpl;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.server.core.Service;
@@ -92,6 +94,7 @@ public class Registry extends ServiceBase implements Service, Shutdown {
     public static final String PAGE_SIZE_PARAM = "pageSize";
     public static final String MESSAGE_SERVICE_PARAM = "messageService";
     public static final String FACET_SERVICE_PARAM = "facetService";
+    public static final String BACKUP_DIR_PARAM = "backupDir";
 
     public static final boolean TEXT_INDEX_INCLUDES_HISTORY = true;
 
@@ -105,6 +108,7 @@ public class Registry extends ServiceBase implements Service, Shutdown {
     protected UserStore userStore;
     protected MessagingService messageService;
     protected FacetService facetService;
+    protected BackupService backupService;
 
 
     @Override
@@ -123,13 +127,17 @@ public class Registry extends ServiceBase implements Service, Shutdown {
 
     @Override
     public void postInit() {
+        StoreAPI baseStore = null;
+        
         // Locate the configured store and optionally wrap it in a cache
         try {
-            store = getNamedService(getRequiredParam(STORE_PARAM), StoreAPI.class);
+            baseStore = getNamedService(getRequiredParam(STORE_PARAM), StoreAPI.class);
             String cacheSizeStr = config.get(CACHE_SIZE_PARAM);
             if (cacheSizeStr != null) {
                 int cacheSize = Integer.parseInt(cacheSizeStr);
-                store = new CachingStore(store, cacheSize);
+                store = new CachingStore(baseStore, cacheSize);
+            } else {
+                store = baseStore;
             }
         } catch (Exception e) {
             log.error("Misconfigured StoreAPI implementation", e);
@@ -198,6 +206,14 @@ public class Registry extends ServiceBase implements Service, Shutdown {
         String fsName = config.get(FACET_SERVICE_PARAM);
         if (fsName != null) {
             facetService = getNamedService(fsName, FacetService.class);
+        }
+        
+        // Configure optional backup service
+        String backupDir = getFileParam(BACKUP_DIR_PARAM);
+        if (backupDir != null && baseStore != null && baseStore instanceof StoreBaseImpl) {
+            backupService = new BackupService(backupDir, ((StoreBaseImpl)baseStore).getStore());
+        } else {
+            log.warn("No backup service configured");
         }
     }
 
@@ -303,6 +319,10 @@ public class Registry extends ServiceBase implements Service, Shutdown {
 
     public FacetService getFacetService() {
         return facetService;
+    }
+    
+    public BackupService getBackupService() {
+        return backupService;
     }
 
     /**

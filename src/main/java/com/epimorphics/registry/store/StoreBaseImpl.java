@@ -118,6 +118,13 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             indexer = getNamedService(indexerName, Indexer.class);
         }
     }
+    
+    /**
+     * Provides access to underlying store implementation for management purposes only.
+     */
+    public Store getStore() {
+        return store;
+    }
 
     public synchronized void lock(String uri) {
         Lock lock = locks.get(uri);
