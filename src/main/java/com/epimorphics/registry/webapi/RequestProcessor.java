@@ -407,7 +407,7 @@ public class RequestProcessor extends BaseEndpoint {
             String base = baseURI(true);
             if (filename.endsWith(".ttl")) {
                 payload.read(uploadedInputStream, base, FileUtils.langTurtle);
-            } else if (filename.endsWith(".jsonld")) {
+            } else if (filename.endsWith(".jsonld") || filename.endsWith(".json")) {
                 payload = JSONLDSupport.readModel(base, uploadedInputStream);
             } else {
                 payload.read(uploadedInputStream, base, FileUtils.langXML);
