@@ -447,7 +447,7 @@ public abstract class Command {
         } catch (URISyntaxException e) {
             throw new WebApplicationException(e);
         }
-        return Response.ok().location(uri).entity( m ).build();
+        return Response.ok().location(uri).entity( m ).header("Vary", "Accept").build();
     }
 
     protected Resource injectPagingInformation(Model m, Resource root,  boolean more) {

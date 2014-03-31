@@ -95,6 +95,7 @@ public class RequestProcessor extends BaseEndpoint {
     public static final String FORWARDED_FOR_HEADER = "X-Forwarded-For";
     public static final String CONTENT_DISPOSITION_HEADER = "Content-Disposition";
     public static final String CONTENT_DISPOSITION_FMT = "attachment; filename=\"%s.%s\"";
+    public static final String VARY_HEADER = "Vary";
     public static final String UI_PATH = "ui";
     private static final String SYSTEM_QUERY = "system/query";
 
@@ -147,6 +148,7 @@ public class RequestProcessor extends BaseEndpoint {
             String fname = NameUtils.lastSegment(location.toString());
             builder.header(CONTENT_DISPOSITION_HEADER, String.format(CONTENT_DISPOSITION_FMT, fname, ext));
         }
+        builder = builder.header(VARY_HEADER, "Accept");   // Help proxies cope with conneg
         return builder.build();
     }
 
@@ -200,7 +202,7 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     @GET
-    @Produces({FULL_MIME_TURTLE, FULL_MIME_RDFXML, JSONLDSupport.FULL_MIME_JSONLD})
+    @Produces({FULL_MIME_TURTLE, FULL_MIME_RDFXML, JSONLDSupport.FULL_MIME_JSONLD, MediaType.APPLICATION_JSON})
     public Response read() {
         PassThroughResult result = checkForPassThrough();
         if (result != null && result.isDone()) {
