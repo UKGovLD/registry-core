@@ -74,6 +74,8 @@ public class Login {
 
     public static final String DEFAULT_PROVIDER = "https://www.google.com/accounts/o8/id";
     public static final String PROVIDER_COOKIE = "ukgovld-login-provider";
+    
+    public static final String NOCACHE_COOKIE = "nocache";
 
     // Session attribute names
     public static final String SA_OPENID_DISC = "openid_disc";
@@ -125,8 +127,12 @@ public class Login {
     @POST
     public void logout(@Context HttpServletResponse response) throws IOException {
         // TODO set session attribute as part of Shiro realm
-        request.getSession().removeAttribute(VN_SUBJECT);
-        SecurityUtils.getSubject().logout();
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.removeAttribute(VN_SUBJECT);
+            SecurityUtils.getSubject().logout();
+        }
+        removeNocache(response);
         response.sendRedirect(request.getServletContext().getContextPath());
     }
 
@@ -407,6 +413,7 @@ public class Login {
                         cookie.setPath("/");
                         httpresponse.addCookie(cookie);
                     }
+                    setNocache(httpresponse);
                     return redirectTo( session.getAttribute(SA_RETURN_URL).toString() );
 //                    return RequestProcessor.render("admin.vm", uriInfo, servletContext, request, VN_SUBJECT, subject, VN_REGISTRATION_STATUS, registrationStatus);
                 } catch (Exception e) {
@@ -418,5 +425,22 @@ public class Login {
             throw new WebApplicationException(e);
         }
         return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "OpenID login failed");
+    }
+    
+    private void setNocache(HttpServletResponse httpresponse) {
+        setNocache(httpresponse, "cache bypass", 60 * 60 *24);
+    }
+    
+    private void removeNocache(HttpServletResponse httpresponse) {
+        setNocache(httpresponse, null, 0);
+    }
+    
+    private void setNocache(HttpServletResponse httpresponse, String value, int age) {
+        Cookie cookie = new Cookie(NOCACHE_COOKIE, value);
+        cookie.setComment("Bypass proxy cache when logged in");
+        cookie.setMaxAge(age);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        httpresponse.addCookie(cookie);
     }
 }
