@@ -40,6 +40,7 @@ public class BackupService {
     
     protected Store store;
     protected String backupDir;
+    protected String status = "";
     
     public BackupService(String backupDir, Store store) {
         this.backupDir = backupDir;
@@ -56,6 +57,7 @@ public class BackupService {
                 @Override
                 public Boolean call() throws Exception
                 {
+                    setStatus("Backup in progress: " + filename);
                     log.info("Started  backup to " +filename);
                     OutputStream out = null ;
                     store.lock();
@@ -68,6 +70,7 @@ public class BackupService {
                         out.close() ;
                         out = null ;
 
+                        setStatus("Last backup: " + filename);
                         log.info("Finished backup to " + filename);
                         return true;
                         
@@ -86,8 +89,16 @@ public class BackupService {
                     }
                 }};
             
+                setStatus("Backup scheduled: " + filename);
             log.info("Scheduled backup to " + filename);                
             service.submit(task) ;
     }
     
+    public synchronized void setStatus(String status) {
+        this.status = status;
+    }
+    
+    public synchronized String getStatus() {
+        return status;
+    }
 }
