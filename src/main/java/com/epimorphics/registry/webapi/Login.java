@@ -133,7 +133,11 @@ public class Login {
             SecurityUtils.getSubject().logout();
         }
         removeNocache(response);
-        response.sendRedirect(request.getServletContext().getContextPath());
+        String redirect = request.getServletContext().getContextPath();
+        if (redirect == null || redirect.isEmpty()) {
+            redirect = "/";
+        }
+        response.sendRedirect(redirect);
     }
 
     @Path("/apilogin")
