@@ -405,6 +405,9 @@ public class RequestProcessor extends BaseEndpoint {
             InputStream uploadedInputStream       = field.getValueAs(InputStream.class);
             String filename = field.getContentDisposition().getFileName();
             log.debug("Multipart form invoked on file " + filename + " action=" + action);
+            if (filename == null) {
+                throw new WebApiException(Status.BAD_REQUEST, "No filename to upload");
+            }
             Model payload = ModelFactory.createDefaultModel();
             String base = baseURI(true);
             if (filename.endsWith(".ttl")) {
