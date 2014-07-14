@@ -60,6 +60,7 @@ import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.util.NameUtils;
 import com.epimorphics.util.PrefixUtils;
+import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.ResultSet;
@@ -311,6 +312,9 @@ public class CommandRegister extends Command {
                 Resource ei = em.createResource()
                         .addProperty(RDF.type, RegistryVocab.RegisterItem)
                         .addProperty(RegistryVocab.definition, em.createResource().addProperty(RegistryVocab.entity, entity));
+                if (entity.hasProperty(SKOS.notation)) {
+                    ei.addProperty(RegistryVocab.notation, entity.getRequiredProperty(SKOS.notation).getObject());
+                }
                 if (entity.getURI().startsWith(registry.getBaseURI())) {
                     em.add( store.getDescription(entity.getURI()).getRoot().listProperties() );
                 }
