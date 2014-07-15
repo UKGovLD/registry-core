@@ -138,15 +138,15 @@ public abstract class BaseUserStore extends ServiceBase implements UserStore, Se
         return password;
     }
 
-    // Check that current subject is the given id
+    // Check that current subject is the given id or is an admin
     private void checkSubjectIs(String id) {
         try {
             Subject subject = SecurityUtils.getSubject();
             if (subject.isAuthenticated()) {
-                if (id.equals( ((UserInfo)subject.getPrincipal()).getOpenid() )) {
+                if (id.equals( ((UserInfo)subject.getPrincipal()).getOpenid() ) || subject.hasRole(RegAuthorizationInfo.ADMINSTRATOR_ROLE) ) {
                     return;
                 } else {
-                    throw new AuthorizationException("Cannot change credenitials for another user");
+                    throw new AuthorizationException("Cannot change credentials for another user");
                 }
             } else {
                 throw new UnauthenticatedException();

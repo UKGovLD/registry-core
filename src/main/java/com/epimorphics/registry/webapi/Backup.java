@@ -24,7 +24,7 @@ public class Backup {
     @POST
     public Response startBackup() throws URISyntaxException {
         Registry.get().getBackupService().scheduleBackup();
-        URI redirect = new URI("/ui/admin");
+        URI redirect = new URI("/ui/backups");
         return Response.seeOther(redirect).build();
     }
 }
