@@ -55,6 +55,14 @@ public class BaseRegRealm extends AuthorizingRealm {
     }
 
     /**
+     * Set the number of iterations that the hash service should use.
+     * Default is 1. See to high numbers (e.g. 10^5 or more) to increase cost of brute force attack
+     */
+    public void setHashIterations(int iterations) {
+        ((DefaultHashService) hashService).setHashIterations(iterations);
+    }
+    
+    /**
      * Clear cached authentication and authorization information
      * for an individual. Should be called from UserStore implementation
      * whenever a change is made.
