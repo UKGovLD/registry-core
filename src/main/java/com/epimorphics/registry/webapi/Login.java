@@ -119,7 +119,7 @@ public class Login {
             }
             return redirectTo( returnURL );
         } catch (Exception e) {
-            log.warn(String.format("Password Login failure for userid %s [%s]: %s", userid, e.getClass().toString(), e.getMessage()));
+            log.warn(String.format("Password login failure for userid %s [%s]: %s", userid, e.getClass().toString(), e.getMessage()));
             return error("Login failed");
         }
     }
@@ -262,7 +262,7 @@ public class Login {
 
     @Path("/setpassword")
     @POST
-    public Response setPassword(@FormParam("currentPassword") String currentPassword, @FormParam("newPassword") String newPassword) {
+    public Response setPassword(@FormParam("currentPassword") String currentPassword, @FormParam("newPassword") String newPassword, @FormParam("return") String returnURL) {
         Subject subject = SecurityUtils.getSubject();
         if (!subject.isAuthenticated()) {
             return error("You must be logged in to reset your password");
@@ -281,7 +281,11 @@ public class Login {
             userstore.setCredentials(userid, ByteSource.Util.bytes(newPassword), Integer.MAX_VALUE);
             log.info("Changed password for user " + userid);
             setNocache(response);
-            return redirectTo( "/ui/admin" );
+            
+            if (returnURL == null || returnURL.isEmpty()) {
+                returnURL = "/ui/admin";
+            }
+            return redirectTo( returnURL );
         } catch (Exception e) {
             log.warn(String.format("Failed to change password for userid %s [%s]: %s", userid, e.getClass().toString(), e.getMessage()));
             return error("Failed to confirm login before changing password");
@@ -290,7 +294,7 @@ public class Login {
 
     @Path("/resetpassword")
     @POST
-    public Response resetPassword(@FormParam("userid") String userid, @FormParam("newPassword") String newPassword) {
+    public Response resetPassword(@FormParam("userid") String userid, @FormParam("newPassword") String newPassword, @FormParam("return") String returnURL) {
         if (userid == null || userid.isEmpty() || newPassword == null || newPassword.isEmpty()) {
             return error("Must give a user and a new password");
         }
@@ -300,8 +304,12 @@ public class Login {
                 UserStore userstore = Registry.get().getUserStore();
                 userstore.setCredentials(userid, ByteSource.Util.bytes(newPassword), Integer.MAX_VALUE);
                 log.info("Administrator " + subject.getPrincipal() + " changed password for user " + userid);
+                
                 setNocache(response);
-                return redirectTo( "/ui/admin" );
+                if (returnURL == null || returnURL.isEmpty()) {
+                    returnURL = "/ui/admin";
+                }
+                return redirectTo( returnURL );
             } catch (Exception e) {
                 log.warn(String.format("Administrator failed to change password for userid %s [%s]: %s", userid, e.getClass().toString(), e.getMessage()));
                 return error("Failed to change password: " + e);
