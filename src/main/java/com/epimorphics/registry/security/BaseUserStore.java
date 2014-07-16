@@ -280,7 +280,7 @@ public abstract class BaseUserStore extends ServiceBase implements UserStore, Se
                         register(user);
                         String password = patternMatch.group(3);
                         if (password != null && !password.isEmpty()) {
-                            setCredentials(id,  ByteSource.Util.bytes(password), 60);
+                            setCredentials(id,  ByteSource.Util.bytes(password), Integer.MAX_VALUE);
                         }
                     } else {
                         throw new EpiException("Could not parse user declaration: " + line);
