@@ -121,7 +121,7 @@
     <dependency>
       <groupId>com.epimorphics</groupId>
       <artifactId>serverbase</artifactId>
-      <version>0.0.12-SNAPSHOT</version>
+      <version>0.0.14</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -303,7 +303,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
-        <version>2.3.2</version>
+        <version>2.5</version>
       </plugin>
 
       <!-- Run in root context using maven tomcat plugin -->
