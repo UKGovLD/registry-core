@@ -34,7 +34,7 @@
               </div>
               <div class="row">
                 <div class="span3">
-                  <form class="form-horizontal" action="/system/security/login" method="post">
+                  <form class="form-horizontal" action="/system/security/loginoa" method="post">
                     <input type="hidden" name="return" value="$return" />
                     <input type="submit" value="Login with google account" class="btn btn-block btn-primary" />
                   </form>
@@ -61,8 +61,8 @@
               <p>A registered login is required before you can be granted administration privileges.</p>
               <div class="row">
                 <div class="span3">
-                  <form class="form-horizontal" action="/system/security/register" method="post">
-                    <input type="hidden" name="provider" value="https://www.google.com/accounts/o8/id" />
+                  <form class="form-horizontal" action="/system/security/registeroa" method="post">
+                    <input type="hidden" name="provider" value="https://accounts.google.com/o/oauth2/auth" />
                     <input type="hidden" name="return" value="$return" />
                     <input type="submit" value="Register using google account" class="btn btn-block btn-primary" />
                   </form>
