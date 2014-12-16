@@ -806,34 +806,38 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             ResultSet rs = QueryUtil.selectAll(m, DELEGATION_LIST_QUERY, Prefixes.getDefault());
             while (rs.hasNext()) {
                 QuerySolution soln = rs.nextSolution();
-                Status status = Status.forResource( soln.getResource("status") );
-                if (status.isAccepted()) {
-                    Resource record = soln.getResource("record").inModel(m);
-                    ForwardingRecord.Type type = Type.FORWARD;
-                    if (record.hasProperty(RDF.type, RegistryVocab.FederatedRegister)) {
-                        type = Type.FEDERATE;
-                    } else if (record.hasProperty(RDF.type, RegistryVocab.DelegatedRegister)) {
-                        type = Type.DELEGATE;
-                    }
-                    String target = soln.getResource("target").getURI();
-                    ForwardingRecord fr = null;
-                    if (type == Type.DELEGATE) {
-                        DelegationRecord dr = new DelegationRecord(record.getURI(), target, type);
-                        Resource s = soln.getResource("subject");
-                        if (s != null) dr.setSubject(s);
-                        Resource p = soln.getResource("predicate");
-                        if (p != null) dr.setPredicate(p);
-                        Resource o = soln.getResource("object");
-                        if (o != null) dr.setObject(o);
-                        fr = dr;
-                    } else {
-                        fr = new ForwardingRecord(record.getURI(), target, type);
-                        Literal code = soln.getLiteral("code");
-                        if (code != null) {
-                            fr.setForwardingCode( code.getInt() );
+                try {
+                    Status status = Status.forResource( soln.getResource("status") );
+                    if (status.isAccepted()) {
+                        Resource record = soln.getResource("record").inModel(m);
+                        ForwardingRecord.Type type = Type.FORWARD;
+                        if (record.hasProperty(RDF.type, RegistryVocab.FederatedRegister)) {
+                            type = Type.FEDERATE;
+                        } else if (record.hasProperty(RDF.type, RegistryVocab.DelegatedRegister)) {
+                            type = Type.DELEGATE;
                         }
+                        String target = soln.getResource("target").getURI();
+                        ForwardingRecord fr = null;
+                        if (type == Type.DELEGATE) {
+                            DelegationRecord dr = new DelegationRecord(record.getURI(), target, type);
+                            Resource s = soln.getResource("subject");
+                            if (s != null) dr.setSubject(s);
+                            Resource p = soln.getResource("predicate");
+                            if (p != null) dr.setPredicate(p);
+                            Resource o = soln.getResource("object");
+                            if (o != null) dr.setObject(o);
+                            fr = dr;
+                        } else {
+                            fr = new ForwardingRecord(record.getURI(), target, type);
+                            Literal code = soln.getLiteral("code");
+                            if (code != null) {
+                                fr.setForwardingCode( code.getInt() );
+                            }
+                        }
+                        results.add(fr);
                     }
-                    results.add(fr);
+                } catch (Exception e) {
+                    log.error("Bad delegation record for " + soln.get("record"), e);
                 }
             }
             return results;
