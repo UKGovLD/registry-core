@@ -21,6 +21,7 @@ package com.epimorphics.registry.util;
  */
 
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.oltu.oauth2.common.OAuthProviderType;
 
 import javax.servlet.http.Cookie;
@@ -37,45 +38,20 @@ public class Oauth2Util {
     private Oauth2Util() {
     }
 
-//    public static final String REDIRECT_URI = "http://localhost:8080/redirect";
-//    public static final String DISCOVERY_URI = "http://localhost:8080";
 
-    public static final String REG_TYPE_PULL = "pull";
-    public static final String REG_TYPE_PUSH = "push";
-
-    public static final String REQUEST_TYPE_QUERY= "queryParameter";
-    public static final String REQUEST_TYPE_HEADER= "headerField";
-    public static final String REQUEST_TYPE_BODY= "bodyParameter";
-
-    public static final String GENERIC = "generic";
-
-    public static final String FACEBOOK = OAuthProviderType.FACEBOOK.getProviderName();
-    public static final String FACEBOOK_AUTHZ = OAuthProviderType.FACEBOOK.getAuthzEndpoint();
-    public static final String FACEBOOK_TOKEN = OAuthProviderType.FACEBOOK.getTokenEndpoint();
-
-    public static final String GOOGLE = OAuthProviderType.GOOGLE.getProviderName();
-    public static final String GOOGLE_AUTHZ = OAuthProviderType.GOOGLE.getAuthzEndpoint();
-    public static final String GOOGLE_TOKEN = OAuthProviderType.GOOGLE.getTokenEndpoint();
-
-    public static final String LINKEDIN = OAuthProviderType.LINKEDIN.getProviderName();
-    public static final String LINKEDIN_AUTHZ = OAuthProviderType.LINKEDIN.getAuthzEndpoint();
-    public static final String LINKEDIN_TOKEN = OAuthProviderType.LINKEDIN.getTokenEndpoint();
-
-    public static final String GITHUB = OAuthProviderType.GITHUB.getProviderName();
-    public static final String GITHUB_AUTHZ = OAuthProviderType.GITHUB.getAuthzEndpoint();
-    public static final String GITHUB_TOKEN = OAuthProviderType.GITHUB.getTokenEndpoint();
 
     public static final String TMP_OAUTH_FILE_LOCATION = "/opt/ldregistry/config/oauth.conf";
     public static final String TMP_CLIENT_ID_NAME = "ldregistry.client-id";
     public static final String TMP_CLIENT_SECRET_NAME = "ldregistry.client-secret";
-    public static final Properties oauthCredentials = new Properties();
+    public static final String USE_HTTPS = "ldregistry.usehttps";
+    public static final Properties oauthParams = new Properties();
 
     static {
 
         try {
             FileReader reader = new FileReader(TMP_OAUTH_FILE_LOCATION);
 
-            oauthCredentials.load(reader);
+            oauthParams.load(reader);
 
             reader.close();
 
@@ -89,143 +65,22 @@ public class Oauth2Util {
 
 
     public static String getClientId() {
-        return (String) oauthCredentials.getProperty(TMP_CLIENT_ID_NAME);
+        return oauthParams.getProperty(TMP_CLIENT_ID_NAME);
     }
 
     public static String getClientSecret() {
-        return (String) oauthCredentials.getProperty(TMP_CLIENT_SECRET_NAME);
+        return oauthParams.getProperty(TMP_CLIENT_SECRET_NAME);
     }
 
-//    public static void validateRegistrationParams(OAuthRegParams oauthParams) throws ApplicationException {
-//
-//        String regType = oauthParams.getRegistrationType();
-//
-//        String name = oauthParams.getName();
-//        String url = oauthParams.getUrl();
-//        String description = oauthParams.getDescription();
-//        StringBuffer sb = new StringBuffer();
-//
-//        if (isEmpty(url)) {
-//            sb.append("Application URL ");
-//        }
-//
-//        if (REG_TYPE_PUSH.equals(regType)) {
-//            if (isEmpty(name)) {
-//                sb.append("Application Name ");
-//            }
-//
-//            if (isEmpty(description)) {
-//                sb.append("Application URL ");
-//            }
-//        } else if (!REG_TYPE_PULL.equals(regType)) {
-//            throw new ApplicationException("Incorrect registration type: " + regType);
-//        }
-//
-//        String incorrectParams = sb.toString();
-//        if ("".equals(incorrectParams)) {
-//            return;
-//        }
-//        throw new ApplicationException("Incorrect parameters: " + incorrectParams);
-//
-//    }
-
-    public static void validateAuthorizationParams(OAuthParams oauthParams) throws ApplicationException {
-
-
-        String authzEndpoint = oauthParams.getAuthzEndpoint();
-        String tokenEndpoint = oauthParams.getTokenEndpoint();
-        String clientId = oauthParams.getClientId();
-        String clientSecret = oauthParams.getClientSecret();
-        String redirectUri = oauthParams.getRedirectUri();
-
-        StringBuffer sb = new StringBuffer();
-
-        if (isEmpty(authzEndpoint)) {
-            sb.append("Authorization Endpoint ");
-        }
-
-        if (isEmpty(tokenEndpoint)) {
-            sb.append("Token Endpoint ");
-        }
-
-        if (isEmpty(clientId)) {
-            sb.append("Client ID ");
-        }
-
-        if (isEmpty(clientSecret)) {
-            sb.append("Client Secret ");
-        }
-
-//        if (!REDIRECT_URI.equals(redirectUri)) {
-//            sb.append("Redirect URI");
-//        }
-
-        String incorrectParams = sb.toString();
-        if ("".equals(incorrectParams)) {
-            return;
-        }
-        throw new ApplicationException("Incorrect parameters: " + incorrectParams);
-
+    public static boolean istUseHttps() {
+        return Boolean.parseBoolean(oauthParams.getProperty(USE_HTTPS));
     }
 
-    public static void validateTokenParams(OAuthParams oauthParams) throws ApplicationException {
-
-        String authzEndpoint = oauthParams.getAuthzEndpoint();
-        String tokenEndpoint = oauthParams.getTokenEndpoint();
-        String clientId = oauthParams.getClientId();
-        String clientSecret = oauthParams.getClientSecret();
-        String redirectUri = oauthParams.getRedirectUri();
-        String authzCode = oauthParams.getAuthzCode();
-
-        StringBuffer sb = new StringBuffer();
-
-        if (isEmpty(authzCode)) {
-            sb.append("Authorization Code ");
-        }
-
-        if (isEmpty(authzEndpoint)) {
-            sb.append("Authorization Endpoint ");
-        }
-
-        if (isEmpty(tokenEndpoint)) {
-            sb.append("Token Endpoint ");
-        }
-
-        if (isEmpty(clientId)) {
-            sb.append("Client ID ");
-        }
-
-        if (isEmpty(clientSecret)) {
-            sb.append("Client Secret ");
-        }
-
-//        if (!REDIRECT_URI.equals(redirectUri)) {
-//            sb.append("Redirect URI");
-//        }
-
-        String incorrectParams = sb.toString();
-        if ("".equals(incorrectParams)) {
-            return;
-        }
-        throw new ApplicationException("Incorrect parameters: " + incorrectParams);
-
-    }
 
     public static boolean isEmpty(String value) {
         return value == null || "".equals(value);
     }
 
-
-    public static String findCookieValue(HttpServletRequest request, String key) {
-        Cookie[] cookies = request.getCookies();
-
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(key)) {
-                return cookie.getValue();
-            }
-        }
-        return "";
-    }
 
     public static String isIssued(String value) {
         if (isEmpty(value)) {
