@@ -46,7 +46,7 @@ import java.util.UUID;
 public class ProcessOauth2 {
     static final Logger log = LoggerFactory.getLogger( Login.class );
 
-    public static final String DEFAULT_PROVIDER = "https://www.google.com/accounts/o8/id";
+    public static final String DEFAULT_PROVIDER = "https://accounts.google.com/o/oauth2/auth";
     public static final String PROVIDER_COOKIE = "ukgovld-login-provider";
 
     public static final String NOCACHE_COOKIE = "nocache";
@@ -91,7 +91,7 @@ public class ProcessOauth2 {
     @SuppressWarnings("rawtypes")
     protected void processOpenID(HttpServletRequest request, HttpServletResponse response, String provider, String returnURL, boolean isRegister) {
         HttpSession session = request.getSession();
-        String state = generateCSRFToken();
+        String state = generateState();
         session.setAttribute(SA_REGISTRATION, isRegister);
         session.setAttribute(SA_OPENID_PROVIDER, provider);
         session.setAttribute(SA_STATE, state);
@@ -275,7 +275,7 @@ public class ProcessOauth2 {
         return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "OpenID Connect login failed");
     }
 
-    private static String generateCSRFToken() {
+    private static String generateState() {
         return UUID.randomUUID().toString();
     }
 
