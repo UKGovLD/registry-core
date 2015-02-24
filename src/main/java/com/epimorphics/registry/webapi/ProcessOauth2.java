@@ -52,9 +52,7 @@ public class ProcessOauth2 {
     public static final String NOCACHE_COOKIE = "nocache";
 
     public static final String OPENID_CONNECT_DISCOVERY_LOC = "https://accounts.google.com/.well-known/openid-configuration";
-    public static final String TMP_AUTHZ_ENDPOINT = "https://accounts.google.com/o/oauth2/auth";
-    public static final String TMP_TOKEN_ENDPOINT = "https://accounts.google.com/o/oauth2/token";
-    public static final String TMP_RESOURCE_ENDPOINT = "https://www.googleapis.com/plus/v1/people/me/openIdConnect";
+
     public static final String GOOGLE_SCOPE = "openid email";
 
 
