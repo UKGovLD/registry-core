@@ -49,6 +49,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import java.net.URL;
+import java.net.URI;
 import java.util.Map;
 import java.util.UUID;
 
@@ -108,7 +109,11 @@ public class ProcessOauth2 {
         if (returnURL == null || returnURL.isEmpty()) {
             returnURL = "/ui/admin";
         }
-        session.setAttribute(SA_RETURN_URL, returnURL);
+	returnURL = returnURL.replaceFirst("^/", "");
+	returnURL = uriInfo.getBaseUri().toString() + returnURL ;
+	log.info(String.format("OAuth returnURL is %s", returnURL));
+	String secureReturnURL = returnURL.replace("http://", "https://");
+        session.setAttribute(SA_RETURN_URL, secureReturnURL);
 
         if (provider == null || provider.isEmpty()) {
             provider = DEFAULT_PROVIDER;
@@ -116,7 +121,9 @@ public class ProcessOauth2 {
         log.info("Authentication request for " + provider + (isRegister ? " (registration)" : ""));
 
 
-        String responseURL = uriInfo.getBaseUri().toString() + "system/security/responseoa";
+        String tempResponseURL = uriInfo.getBaseUri().toString() + "system/security/responseoa";
+        String responseURL = tempResponseURL.replace("http://", "https://");
+	log.info(String.format("response URL for auth request: %s", responseURL));
         session.setAttribute(SA_RESPONSE_URL, responseURL);
 
         try
