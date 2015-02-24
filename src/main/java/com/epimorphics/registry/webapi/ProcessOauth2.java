@@ -117,13 +117,12 @@ public class ProcessOauth2 {
 
         String responseURL = uriInfo.getBaseUri().toString() + "system/security/responseoa";
         if (Oauth2Util.istUseHttps()) {
-            String secureResponseURL = responseURL.replace("http://", "https://");
-            log.info(String.format("response URL for auth request: %s", secureResponseURL));
-            session.setAttribute(SA_RESPONSE_URL, secureResponseURL);
-        } else {
-
-            session.setAttribute(SA_RESPONSE_URL, responseURL);
+            responseURL = responseURL.replace("http://", "https://");
         }
+
+        log.info(String.format("response URL for auth request: %s", responseURL));
+        session.setAttribute(SA_RESPONSE_URL, responseURL);
+
 
         try
         {
