@@ -21,40 +21,29 @@
 
 package com.epimorphics.registry.webapi;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-
+import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.security.*;
+import com.epimorphics.server.webapi.WebApiException;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ByteSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.epimorphics.registry.core.Registry;
-import com.epimorphics.registry.security.RegAuthorizationInfo;
-import com.epimorphics.registry.security.RegPermission;
-import com.epimorphics.registry.security.RegToken;
-import com.epimorphics.registry.security.UserInfo;
-import com.epimorphics.registry.security.UserStore;
-import com.epimorphics.server.webapi.WebApiException;
+import javax.servlet.ServletContext;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
 
 @Path("/system/security")
 public class Login {
@@ -85,6 +74,20 @@ public class Login {
     @POST
     public Response register(@FormParam("provider") String provider, @FormParam("return") String returnURL) {
         new ProcessOpenID(uriInfo, servletContext).processOpenID(request, response, provider, returnURL, true);
+        return Response.ok().build();
+    }
+
+    @Path("/loginoa")
+    @POST
+    public Response loginOauth2(@FormParam("provider") String provider, @FormParam("return") String returnURL) {
+        new ProcessOauth2(uriInfo, servletContext).processOpenID(request, response, provider, returnURL, false);
+        return Response.ok().build();
+    }
+
+    @Path("/registeroa")
+    @POST
+    public Response registerOauth2(@FormParam("provider") String provider, @FormParam("return") String returnURL) {
+        new ProcessOauth2(uriInfo, servletContext).processOpenID(request, response, provider, returnURL, true);
         return Response.ok().build();
     }
 
@@ -174,6 +177,12 @@ public class Login {
     @GET
     public Response openIDResponse() {
         return new ProcessOpenID(uriInfo, servletContext).verifyResponse(request, response);
+    }
+
+    @Path("/responseoa")
+    @GET
+    public Response openIDConnectResponse() {
+        return new ProcessOauth2(uriInfo, servletContext).verifyResponse(request, response);
     }
 
     // Return the name of the loggedin user on this session, for test purposes
