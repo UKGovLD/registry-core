@@ -79,7 +79,7 @@
        <enabled>false</enabled>  
      </snapshots>  
     </repository>  
-    
+     
   </repositories>
 
    <distributionManagement>  
@@ -385,11 +385,11 @@
         <version>2.2</version>
       </extension>
       
-     <extension>  
-       <groupId>org.springframework.build.aws</groupId>  
-       <artifactId>org.springframework.build.aws.maven</artifactId>  
-       <version>3.0.0.RELEASE</version>  
-     </extension>  
+     <extension>
+        <groupId>org.springframework.build</groupId>
+        <artifactId>aws-maven</artifactId>
+        <version>5.0.0.RELEASE</version>
+      </extension>
       
     </extensions>
 
