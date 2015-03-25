@@ -88,7 +88,6 @@ public class ProcessOauth2 {
         this.servletContext = servletContext;
     }
 
-    @SuppressWarnings("rawtypes")
     protected void processOpenID(HttpServletRequest request, HttpServletResponse response, String provider, String returnURL, boolean isRegister) {
         HttpSession session = request.getSession();
         String state = generateState();
@@ -146,7 +145,6 @@ public class ProcessOauth2 {
         }
     }
 
-    @SuppressWarnings({ "unchecked" })
     public Response verifyResponse(HttpServletRequest request, HttpServletResponse httpresponse) {
         OAuthParams oauthParams = new OAuthParams();
 
@@ -170,7 +168,7 @@ public class ProcessOauth2 {
 //            oauthParams.setAuthzCode(code);
             String responseUrl = (String) session.getAttribute(SA_RESPONSE_URL);
 
-            String accessToken = oar.getAccessToken();
+//            String accessToken = oar.getAccessToken();
 
             OAuthClientRequest authzRequest = OAuthClientRequest
                     .tokenLocation(discovery.getTokenEndpoint())
@@ -227,7 +225,7 @@ public class ProcessOauth2 {
                 Map<String, Object> mapObject = mapper.readValue(oauthParams.getResource(), new TypeReference<Map<String, Object>>() {
                 });
                 String name = (String) mapObject.get("name");
-                String email = (String) mapObject.get("email");
+//                String email = (String) mapObject.get("email");
                 String identifier = (String) mapObject.get("profile");
 
                 log.info(String.format("Verified identity https://accounts.google.com/o/oauth2/authy %s = %s", identifier, name));

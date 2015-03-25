@@ -28,6 +28,8 @@ package com.epimorphics.registry.util;
  */
 public class ApplicationException extends Exception {
 
+    private static final long serialVersionUID = 4346079419538625923L;
+
     public ApplicationException() {
         super();    //To change body of overridden methods use File | Settings | File Templates.
     }

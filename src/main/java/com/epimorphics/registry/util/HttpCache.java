@@ -1,23 +1,17 @@
 package com.epimorphics.registry.util;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.cache.CacheResponseStatus;
-
-
 import org.apache.http.client.methods.HttpGet;
-
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.cache.CacheConfig;
 import org.apache.http.impl.client.cache.CachingHttpClient;
-
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 public class HttpCache {
 

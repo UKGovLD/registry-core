@@ -12,7 +12,7 @@ public class OpenIdConnectDiscovery {
     private static final String USERINFO_KEY = "userinfo_endpoint";
 
     private HttpCache httpCache;
-    private Map<String, String> discDocMap;
+//    private Map<String, String> discDocMap;
     private String url;
 
 
@@ -38,6 +38,7 @@ public class OpenIdConnectDiscovery {
         return discoMap.get(USERINFO_KEY);
     }
 
+    @SuppressWarnings("unchecked")
     private Map<String, String> getDocument() throws Exception {
 
         String result = httpCache.getRequest(url);
