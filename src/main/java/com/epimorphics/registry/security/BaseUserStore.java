@@ -24,11 +24,8 @@ package com.epimorphics.registry.security;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.servlet.ServletContext;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
@@ -46,9 +43,7 @@ import org.apache.shiro.util.ByteSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.epimorphics.server.core.Service;
-import com.epimorphics.server.core.ServiceBase;
-import com.epimorphics.server.core.ServiceConfig;
+import com.epimorphics.appbase.core.ComponentBase;
 import com.epimorphics.util.EpiException;
 
 /**
@@ -56,7 +51,7 @@ import com.epimorphics.util.EpiException;
  *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
-public abstract class BaseUserStore extends ServiceBase implements UserStore, Service {
+public abstract class BaseUserStore extends ComponentBase implements UserStore {
     static final Logger log = LoggerFactory.getLogger( BaseUserStore.class );
 
     public static final String INITFILE_PARAM = "initfile";
@@ -65,15 +60,10 @@ public abstract class BaseUserStore extends ServiceBase implements UserStore, Se
     protected BaseRegRealm realm;
     protected String initfile = null;
 
-    @Override
-    public void init(Map<String, String> config, ServletContext context) {
-        super.init(config, context);
-
-        initfile = config.get(INITFILE_PARAM);
-        if (initfile != null) {
-            initfile = ServiceConfig.get().expandFileLocation( initfile) ;
-        }
+    public void setInitfile(String file) {
+        initfile = expandFileLocation(file);
     }
+    
 
     @Override
     public void setRealm(BaseRegRealm realm) {

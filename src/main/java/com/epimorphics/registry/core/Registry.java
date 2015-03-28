@@ -26,9 +26,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Map;
 
-import javax.servlet.ServletContext;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -39,8 +37,11 @@ import org.apache.shiro.UnavailableSecurityManagerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.epimorphics.appbase.core.App;
 import com.epimorphics.appbase.core.ComponentBase;
+import com.epimorphics.appbase.core.Shutdown;
 import com.epimorphics.appbase.core.Startup;
+import com.epimorphics.appbase.templates.VelocityRender;
 import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.rdfutil.ModelWrapper;
 import com.epimorphics.registry.core.Command.Operation;
@@ -56,7 +57,6 @@ import com.epimorphics.registry.store.StoreBaseImpl;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.util.EpiException;
-import com.epimorphics.util.FileUtil;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.util.FileUtils;
@@ -75,7 +75,7 @@ import com.sun.jersey.api.uri.UriComponent;
  * <ul>
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
-public class Registry extends ComponentBase implements Startup, com.epimorphics.appbase.core.Shutdown {
+public class Registry extends ComponentBase implements Startup, Shutdown {
     static final Logger log = LoggerFactory.getLogger( Registry.class );
 
     public static final String VELOCITY_SERVICE = "velocity";
@@ -98,117 +98,118 @@ public class Registry extends ComponentBase implements Startup, com.epimorphics.
     public static final int DEFAULT_PAGE_SIZE = 50;
 
     protected StoreAPI store;
+    protected long cacheSize = -1;
     protected String baseURI;
-    protected int pageSize;
+    protected int pageSize = DEFAULT_PAGE_SIZE;
     protected ForwardingService forwarder;
     protected String logDir;
     protected UserStore userStore;
-    protected MessagingService messageService;
-    protected FacetService facetService;
+    protected MessagingService messageService = new LocalMessagingService();
+    // TODO re-enable facet service
+//    protected FacetService facetService;
     protected BackupService backupService;
-
-
-    @Override
-    public void init(Map<String, String> config, ServletContext context) {
-        this.config = config;
-        baseURI = getRequiredParam(BASE_URI_PARAM);
+    protected String bootFile;
+    protected String bootdirs;
+    protected VelocityRender velocity;
+    protected String backupDir;
+    
+    public void setPageSize(long size) {
+        pageSize = (int)size;
+    }
+    
+    public void setBaseUri(String uri) {
+        baseURI = uri;
         if (baseURI.endsWith("/")) {
             baseURI = baseURI.substring(0, baseURI.length() -1 );
         }
-        if (config.containsKey(PAGE_SIZE_PARAM)) {
-            pageSize = Integer.parseInt(config.get(PAGE_SIZE_PARAM));
-        } else {
-            pageSize = DEFAULT_PAGE_SIZE;
-        }
     }
 
+    public void setStore( StoreAPI store ) {
+        this.store = store;
+    }
+    
+    public void setCacheSize(long size) {
+        this.cacheSize = size;
+    }
+    
+    public void setMessageService( MessagingService service ) {
+        messageService = service;
+    }
+    
+    // TODO setFacetStore
+    
+    public void setBootSpec(String file) {
+        bootFile = file;
+    }
+    
+    public void setSystemBoot(String dirs) {
+        bootdirs = dirs;
+    }
+    
+    public void setVelocity(VelocityRender velocity) {
+        this.velocity = velocity;
+    }
+    
+    public VelocityRender getVelocity() {
+        return velocity;
+    }
+    
+    public void setForwarder(ForwardingService service) {
+        this.forwarder = service;
+    }
+    
+    public void setLog(String logdir) {
+        this.logDir = expandFileLocation(logdir);
+    }
+    
+    public void setUserStore(UserStore store) {
+        this.userStore = store;
+    }
+    
+    public void setBackupDir(String dir) {
+        backupDir = expandFileLocation(dir);
+    }
+    
     @Override
-    public void postInit() {
-        StoreAPI baseStore = null;
+    public void startup(App app) {
+        require(store, STORE_PARAM);
+        require(bootFile, BOOT_FILE_PARAM);
         
-        // Locate the configured store and optionally wrap it in a cache
-        try {
-            baseStore = getNamedService(getRequiredParam(STORE_PARAM), StoreAPI.class);
-            String cacheSizeStr = config.get(CACHE_SIZE_PARAM);
-            if (cacheSizeStr != null) {
-                int cacheSize = Integer.parseInt(cacheSizeStr);
-                store = new CachingStore(baseStore, cacheSize);
-            } else {
-                store = baseStore;
-            }
-        } catch (Exception e) {
-            log.error("Misconfigured StoreAPI implementation", e);
+        StoreAPI baseStore = store;
+        if (cacheSize > 1) {
+            store = new CachingStore(store, (int)cacheSize);
         }
-
         registry = this;   // Assumes singleton registry
-
-        // Configure the messaging service
-        String msName = config.get(MESSAGE_SERVICE_PARAM);
-        if (msName != null) {
-            messageService = getNamedService(msName, MessagingService.class);
-        }
-        if (messageService == null) {
-            messageService = new LocalMessagingService();
-        }
 
         // Initialize the registry RDF store from the bootstrap registers if needed
         Description root = store.getDescription(getBaseURI() + "/");
         if (root == null) {
             // Blank store, need to install a bootstrap root registers
-            for(String bootSrc : getRequiredFileParam(BOOT_FILE_PARAM).split("\\|")) {
+            for(String bootSrc : bootFile.split("\\|")) {
                 log.info("Loading bootstrap file " + bootSrc);
                 store.loadBootstrap( bootSrc );
             }
-            String bootdirs = config.get(SYSTEM_BOOTSTRAP_DIR_PARAM);
             if (bootdirs != null) {
                 for (String bootdir : bootdirs.split("\\|")) {
-                    bootdir = ServiceConfig.get().expandFileLocation( bootdir );
+                    bootdir = expandFileLocation( bootdir );
                     loadInitialRegisterTree(bootdir);
                 }
             }
             log.info("Installed bootstrap root register");
         }
 
-        // Configure the velocity renderer
-        VelocityRender velocity = ServiceConfig.get().getServiceAs(Registry.VELOCITY_SERVICE, VelocityRender.class);
-        if (velocity != null) {
-            velocity.setPrefixes( Prefixes.get() );
-        }
-
         // Initialize the forwarding service from the stored forwarding records
-        String fname = config.get(FORWARDER_PARAM);
-        if (fname != null) {
-            forwarder = getNamedService(fname, ForwardingService.class);
-
+        if (forwarder != null) {
             for (ForwardingRecord fr : store.listDelegations()) {
                 forwarder.register(fr);
             }
             forwarder.updateConfig();
         }
-
-        // Configure the log area
-        logDir = config.get(LOG_DIR_PARAM);
-        if (logDir != null) {
-            FileUtil.ensureDir(logDir);
-            logDir = ServiceConfig.get().expandFileLocation( logDir );
-        }
-
-        // Configure the authorization store
-        String usName = config.get(USERSTORE_PARAM);
-        if (usName != null) {
-            userStore = getNamedService(usName, UserStore.class);
-        }
-
-        // Configure optional facet service
-        String fsName = config.get(FACET_SERVICE_PARAM);
-        if (fsName != null) {
-            facetService = getNamedService(fsName, FacetService.class);
-        }
         
         // Configure optional backup service
-        String backupDir = getFileParam(BACKUP_DIR_PARAM);
         if (backupDir != null && baseStore != null && baseStore instanceof StoreBaseImpl) {
-            backupService = new BackupService(backupDir, ((StoreBaseImpl)baseStore).getStore());
+            // TODO sort out backup service
+//            backupService = new BackupService(backupDir, ((StoreBaseImpl)baseStore).getStore());
         } else {
             log.warn("No backup service configured");
         }
@@ -314,9 +315,10 @@ public class Registry extends ComponentBase implements Startup, com.epimorphics.
         return messageService;
     }
 
-    public FacetService getFacetService() {
-        return facetService;
-    }
+    // TODO - re-enable facet service
+//    public FacetService getFacetService() {
+//        return facetService;
+//    }
     
     public BackupService getBackupService() {
         return backupService;

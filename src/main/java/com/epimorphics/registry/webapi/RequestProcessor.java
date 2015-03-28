@@ -56,6 +56,10 @@ import org.apache.velocity.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.epimorphics.appbase.core.AppConfig;
+import com.epimorphics.appbase.templates.VelocityRender;
+import com.epimorphics.appbase.webapi.BaseEndpoint;
+import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.registry.commands.CommandUpdate;
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Command.Operation;
@@ -68,10 +72,6 @@ import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.util.JSONLDSupport;
 import com.epimorphics.registry.util.PATCH;
 import com.epimorphics.registry.util.UiForm;
-import com.epimorphics.server.core.ServiceConfig;
-import com.epimorphics.server.templates.VelocityRender;
-import com.epimorphics.server.webapi.BaseEndpoint;
-import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.util.NameUtils;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -174,7 +174,7 @@ public class RequestProcessor extends BaseEndpoint {
         fullParams[i++] = "language";
         fullParams[i++] = language;
 
-        VelocityRender velocity = ServiceConfig.get().getServiceAs(Registry.VELOCITY_SERVICE, VelocityRender.class);
+        VelocityRender velocity = AppConfig.getApp().getA(VelocityRender.class);
         StreamingOutput out = velocity.render(template, uriInfo.getPath(), context, uriInfo.getQueryParameters(), fullParams);
         
         ResponseBuilder builder = Response.ok().type("text/html");

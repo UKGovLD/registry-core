@@ -35,6 +35,8 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.Permission;
 import org.apache.shiro.subject.Subject;
 
+import com.epimorphics.appbase.core.ComponentBase;
+import com.epimorphics.appbase.templates.LibPlugin;
 import com.epimorphics.rdfutil.ModelWrapper;
 import com.epimorphics.rdfutil.QueryUtil;
 import com.epimorphics.rdfutil.RDFNodeWrapper;
@@ -51,10 +53,6 @@ import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.util.TypedTemplateIndex;
 import com.epimorphics.registry.vocab.RegistryVocab;
-import com.epimorphics.server.core.Service;
-import com.epimorphics.server.core.ServiceBase;
-import com.epimorphics.server.templates.LibPlugin;
-import com.epimorphics.server.webapi.facets.FacetResultEntry;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.util.PrefixUtils;
 import com.hp.hpl.jena.query.QuerySolution;
@@ -74,7 +72,7 @@ import com.hp.hpl.jena.vocabulary.RDFS;
  *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
-public class LibReg extends ServiceBase implements LibPlugin, Service {
+public class LibReg extends ComponentBase implements LibPlugin {
 
     /**
      * Raw access to the registry store

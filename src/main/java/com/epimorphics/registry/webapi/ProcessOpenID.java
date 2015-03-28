@@ -41,7 +41,7 @@ import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.security.RegToken;
 import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.security.UserStore;
-import com.epimorphics.server.webapi.WebApiException;
+import com.epimorphics.appbase.webapi.WebApiException;
 
 public class ProcessOpenID {
     static final Logger log = LoggerFactory.getLogger( Login.class );
