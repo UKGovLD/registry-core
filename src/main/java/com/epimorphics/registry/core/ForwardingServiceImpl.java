@@ -29,8 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletContext;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,13 +70,13 @@ public class ForwardingServiceImpl extends ComponentBase implements ForwardingSe
     protected Trie<ForwardingRecord> trie = new Trie<ForwardingRecord>();
     protected Map<String, ForwardingRecord> proxyForwards = new HashMap<String, ForwardingRecord>();
     boolean configUpdateNeeded = false;
-
-    @Override
-    public void init(Map<String, String> config, ServletContext context) {
-        super.init(config, context);
-
-        confDir = getRequiredFileParam(PROXY_CONF_DIR_PARAM);
-        script = getRequiredFileParam(PROXY_RESTART_SCRIPT_PARAM);
+    
+    public void setProxyRestartScript(String f) {
+        script = expandFileLocation(f);
+    }
+    
+    public void setProxyConfDir(String dir) {
+        confDir = expandFileLocation(dir);
     }
 
     @Override

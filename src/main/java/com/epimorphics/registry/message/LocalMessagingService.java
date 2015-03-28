@@ -26,9 +26,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.epimorphics.server.core.Service;
-import com.epimorphics.server.core.ServiceBase;
-import com.epimorphics.server.core.Shutdown;
+import com.epimorphics.appbase.core.ComponentBase;
+import com.epimorphics.appbase.core.Shutdown;
 
 /**
  * Trivial, in-process version of a messaging service.
@@ -36,7 +35,7 @@ import com.epimorphics.server.core.Shutdown;
  *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
-public class LocalMessagingService extends ServiceBase implements Service, MessagingService, Shutdown {
+public class LocalMessagingService extends ComponentBase implements MessagingService, Shutdown {
     protected ExecutorService executor = Executors.newSingleThreadExecutor();
 //                                 new ThreadPoolExecutor(0, 1, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
     List<Process> processors = new ArrayList<>();
