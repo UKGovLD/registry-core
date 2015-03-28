@@ -32,12 +32,16 @@ import javax.servlet.ServletContext;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.epimorphics.appbase.core.ComponentBase;
+import com.epimorphics.appbase.core.Startup;
+import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.rdfutil.ModelWrapper;
 import com.epimorphics.registry.core.Command.Operation;
 import com.epimorphics.registry.core.ForwardingRecord.Type;
@@ -51,13 +55,6 @@ import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.store.StoreBaseImpl;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
-import com.epimorphics.server.core.Service;
-import com.epimorphics.server.core.ServiceBase;
-import com.epimorphics.server.core.ServiceConfig;
-import com.epimorphics.server.core.Shutdown;
-import com.epimorphics.server.templates.VelocityRender;
-import com.epimorphics.server.webapi.WebApiException;
-import com.epimorphics.server.webapi.facets.FacetService;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.util.FileUtil;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -78,7 +75,7 @@ import com.sun.jersey.api.uri.UriComponent;
  * <ul>
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
-public class Registry extends ServiceBase implements Service, Shutdown {
+public class Registry extends ComponentBase implements Startup, com.epimorphics.appbase.core.Shutdown {
     static final Logger log = LoggerFactory.getLogger( Registry.class );
 
     public static final String VELOCITY_SERVICE = "velocity";
@@ -347,7 +344,7 @@ public class Registry extends ServiceBase implements Service, Shutdown {
         try {
             uri = new URI(uriTarget);
         } catch (URISyntaxException e) {
-            throw new EpiException(e);
+            throw new WebApiException(Status.BAD_REQUEST, "Illegal URI");
         }
         String encPath = uri.getRawPath();
         String target = UriComponent.decode(encPath, UriComponent.Type.PATH);

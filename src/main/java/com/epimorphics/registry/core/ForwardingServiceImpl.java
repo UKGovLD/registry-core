@@ -34,12 +34,11 @@ import javax.servlet.ServletContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.epimorphics.appbase.core.ComponentBase;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.ForwardingRecord.Type;
 import com.epimorphics.registry.util.Trie;
 import com.epimorphics.registry.vocab.RegistryVocab;
-import com.epimorphics.server.core.Service;
-import com.epimorphics.server.core.ServiceBase;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.util.FileManager;
 import com.hp.hpl.jena.util.iterator.Filter;
@@ -59,7 +58,7 @@ import com.hp.hpl.jena.vocabulary.RDF;
  *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
-public class ForwardingServiceImpl extends ServiceBase implements ForwardingService, Service {
+public class ForwardingServiceImpl extends ComponentBase implements ForwardingService {
     static Logger log = LoggerFactory.getLogger(ForwardingServiceImpl.class);
 
     public static final String PROXY_CONF_DIR_PARAM = "proxyConfDir";

@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.epimorphics.server.templates.Lib;
+import com.epimorphics.appbase.templates.Lib;
 
 /**
  * Take a logstore directory and general a shell script

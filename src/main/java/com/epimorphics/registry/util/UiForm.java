@@ -25,10 +25,10 @@ import java.util.List;
 
 import javax.ws.rs.core.MultivaluedMap;
 
+import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.vocab.Ui;
-import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
