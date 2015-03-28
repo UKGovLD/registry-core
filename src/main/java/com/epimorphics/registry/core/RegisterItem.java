@@ -31,7 +31,7 @@ import javax.ws.rs.core.Response;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.vocab.RegistryVocab;
-import com.epimorphics.server.webapi.WebApiException;
+import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;

@@ -28,7 +28,6 @@ import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.ForwardingRecord;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
-import com.epimorphics.server.indexers.LuceneResult;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -210,7 +209,8 @@ public interface StoreAPI {
      * @param maxresults the maximum number of results to return
      * @param fields alternating list of tagname/tagvalue pairs
      */
-    public LuceneResult[] search(String query, int offset, int maxresults, String...fields);
+    // TODO change to a signature we can support with Jena text
+//    public LuceneResult[] search(String query, int offset, int maxresults, String...fields);
 
     /**
      * Tests if the register contains an item with the given notation (relative URI)

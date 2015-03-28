@@ -35,7 +35,7 @@ import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.core.ValidationResponse;
 import com.epimorphics.registry.store.EntityInfo;
 import com.epimorphics.registry.webapi.Parameters;
-import com.epimorphics.server.webapi.WebApiException;
+import com.epimorphics.appbase.webapi.WebApiException;
 
 
 public class CommandValidate extends Command {

@@ -37,8 +37,7 @@ import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.webapi.Parameters;
-import com.epimorphics.server.indexers.LuceneResult;
-import com.epimorphics.server.webapi.WebApiException;
+import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.vocabs.API;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -67,34 +66,36 @@ public class CommandSearch extends Command {
 
     @Override
     public Response doExecute() {
-        String query = parameters.getFirst(Parameters.QUERY);
-        LuceneResult[] hits = store.search(query, length * pagenum, length, extractSearchSpec());
-        List<String> uris = new ArrayList<String>(hits.length);
-        for (LuceneResult hit : hits) {
-            uris.add( hit.getURI() );
-        }
-        Model result = ModelFactory.createDefaultModel();
-        String resultURI = target + "?" + makeParamString(parameters, FIRST_PAGE, PAGE_NUMBER);
-        Resource root = result.createResource( resultURI );
-        RDFNode[] members = new RDFNode[hits.length];
-        int i = 0;
-        for (String uri: uris) {
-            RegisterItem ri = store.getItem(uri, true);
-            Resource entity = ri.getEntity();
-            if (entity == null) {
-                throw new WebApiException(Status.INTERNAL_SERVER_ERROR, "No entity found for search result " + ri.getRoot());
-            }
-            result.add( entity.getModel() );
-            if (withMetadata) {
-                result.add( ri.getRoot().getModel() );
-            }
-            root.addProperty(RDFS.member, entity);
-            members[i++] = entity;
-        }
-        Resource page = injectPagingInformation(result, root, hits.length == length);
-        page.addProperty(API.items, result.createList(members));
-
-        return returnModel(result, resultURI);
+        // TODO port to jena-text
+        return null;
+//        String query = parameters.getFirst(Parameters.QUERY);
+//        LuceneResult[] hits = store.search(query, length * pagenum, length, extractSearchSpec());
+//        List<String> uris = new ArrayList<String>(hits.length);
+//        for (LuceneResult hit : hits) {
+//            uris.add( hit.getURI() );
+//        }
+//        Model result = ModelFactory.createDefaultModel();
+//        String resultURI = target + "?" + makeParamString(parameters, FIRST_PAGE, PAGE_NUMBER);
+//        Resource root = result.createResource( resultURI );
+//        RDFNode[] members = new RDFNode[hits.length];
+//        int i = 0;
+//        for (String uri: uris) {
+//            RegisterItem ri = store.getItem(uri, true);
+//            Resource entity = ri.getEntity();
+//            if (entity == null) {
+//                throw new WebApiException(Status.INTERNAL_SERVER_ERROR, "No entity found for search result " + ri.getRoot());
+//            }
+//            result.add( entity.getModel() );
+//            if (withMetadata) {
+//                result.add( ri.getRoot().getModel() );
+//            }
+//            root.addProperty(RDFS.member, entity);
+//            members[i++] = entity;
+//        }
+//        Resource page = injectPagingInformation(result, root, hits.length == length);
+//        page.addProperty(API.items, result.createList(members));
+//
+//        return returnModel(result, resultURI);
     }
 
     protected String[] extractSearchSpec() {

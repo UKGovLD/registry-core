@@ -49,7 +49,7 @@ import com.epimorphics.registry.util.Util;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
 import com.epimorphics.registry.webapi.Parameters;
-import com.epimorphics.server.webapi.WebApiException;
+import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.vocabs.API;
 import com.epimorphics.vocabs.Time;
 import com.hp.hpl.jena.rdf.model.Model;
