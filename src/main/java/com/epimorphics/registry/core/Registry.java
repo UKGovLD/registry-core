@@ -172,6 +172,8 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
     
     @Override
     public void startup(App app) {
+        super.startup(app);
+
         require(store, STORE_PARAM);
         require(bootFile, BOOT_FILE_PARAM);
         
@@ -186,8 +188,8 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
         if (root == null) {
             // Blank store, need to install a bootstrap root registers
             for(String bootSrc : bootFile.split("\\|")) {
-                log.info("Loading bootstrap file " + bootSrc);
-                store.loadBootstrap( bootSrc );
+                log.info("Loading bootstrap file " + expandFileLocation(bootSrc));
+                store.loadBootstrap( expandFileLocation(bootSrc) );
             }
             if (bootdirs != null) {
                 for (String bootdir : bootdirs.split("\\|")) {
