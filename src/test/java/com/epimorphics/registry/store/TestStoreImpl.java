@@ -30,19 +30,20 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.epimorphics.appbase.core.AppConfig;
+import com.epimorphics.appbase.core.ComponentBase;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Status;
+import com.epimorphics.registry.store.impl.TDBStore;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
@@ -67,20 +68,16 @@ public class TestStoreImpl {
     static final String ROOT_REGISTER = "http://location.data.gov.uk/";
     static final String REG1 = ROOT_REGISTER + "reg1";
 
-    MemStore basestore;
+    Store basestore;
     StoreAPI store;
 
     @Before
     public void setup() {
-        basestore = new MemStore();
-        basestore.init(new HashMap<String, String>(), null);
+        basestore = new TDBStore();
+        ((ComponentBase)basestore).startup(null);
 
-        Map<String, String> config = new HashMap<String, String>();
-        config.put( StoreBaseImpl.STORE_PARAMETER, "basestore");
         StoreBaseImpl store = new StoreBaseImpl();
-        store.init(config, null);
-
-        ServiceConfig.get().initServices("basestore", basestore, "store", store);
+        store.setStore(basestore);
         this.store = store;
         store.loadBootstrap(BOOTSTRAP_FILE);
     }
@@ -89,7 +86,6 @@ public class TestStoreImpl {
     public void tearDown() {
         basestore = null;
         store = null;
-        ServiceConfig.get().clearServices();
     }
 
 
