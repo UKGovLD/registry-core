@@ -24,7 +24,6 @@ package com.epimorphics.registry.store;
 import static com.epimorphics.rdfutil.QueryUtil.createBindings;
 import static com.epimorphics.rdfutil.QueryUtil.selectAll;
 import static com.epimorphics.rdfutil.QueryUtil.selectFirstVar;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -34,18 +33,10 @@ import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.epimorphics.appbase.core.ComponentBase;
 import com.epimorphics.rdfutil.QueryUtil;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.DelegationRecord;
@@ -54,19 +45,11 @@ import com.epimorphics.registry.core.ForwardingRecord;
 import com.epimorphics.registry.core.ForwardingRecord.Type;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
-import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.util.VersionUtil;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
-import com.epimorphics.server.core.Indexer;
-import com.epimorphics.server.core.Service;
-import com.epimorphics.server.core.ServiceBase;
-import com.epimorphics.server.core.Store;
-import com.epimorphics.server.indexers.LuceneIndex;
-import com.epimorphics.server.indexers.LuceneResult;
-import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.vocabs.Time;
 import com.hp.hpl.jena.query.QueryExecution;
@@ -99,25 +82,21 @@ import com.hp.hpl.jena.vocabulary.RDF;
  * </p>
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
-public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
+public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     static final Logger log = LoggerFactory.getLogger( StoreBaseImpl.class );
 
     public static final String STORE_PARAMETER = "store";
     public static final String INDEXER_PARAMETER = "indexer";
 
     protected Store store;
-    protected Indexer indexer;
-//    protected DescriptionCache cache;
-    protected Map<String, Lock> locks = new HashMap<String, Lock>();
-
-    @Override
-    public void postInit() {
-        store = getNamedService( getRequiredParam(STORE_PARAMETER), Store.class);
-        String indexerName = config.get(INDEXER_PARAMETER);
-        if (indexerName != null) {
-            indexer = getNamedService(indexerName, Indexer.class);
-        }
+    
+    public void setStore(Store store) {
+        this.store = store;
     }
+    
+    // TODO add indexer replacement
+
+    protected Map<String, Lock> locks = new HashMap<String, Lock>();
     
     /**
      * Provides access to underlying store implementation for management purposes only.
@@ -133,9 +112,6 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             locks.put(uri, lock);
         }
         lock.lock();
-        if (indexer != null) {
-            indexer.startBatch();
-        }
     }
 
     /**
@@ -152,9 +128,6 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
             storeWriteLocked = false;
         }
         lock.unlock();
-        if (indexer != null) {
-            indexer.endBatch();
-        }
     }
 
 
@@ -637,17 +610,17 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         return newVersion.inModel(st);
     }
 
-    protected void doIndex(Resource root, String graph) {
-        if (indexer != null) {
-            // If use updateGraph then get one entry per entity, which is much more efficient
-            // However, then can't search on older names for entities which have been updated
-            if (Registry.TEXT_INDEX_INCLUDES_HISTORY) {
-                indexer.addGraph(graph, root.getModel());
-            } else {
-                indexer.updateGraph(graph, root.getModel());
-            }
-        }
-    }
+//    protected void doIndex(Resource root, String graph) {
+//        if (indexer != null) {
+//            // If use updateGraph then get one entry per entity, which is much more efficient
+//            // However, then can't search on older names for entities which have been updated
+//            if (Registry.TEXT_INDEX_INCLUDES_HISTORY) {
+//                indexer.addGraph(graph, root.getModel());
+//            } else {
+//                indexer.updateGraph(graph, root.getModel());
+//            }
+//        }
+//    }
 
     @Override
     public String update(RegisterItem item, boolean withEntity, Calendar timestamp) {
@@ -670,7 +643,8 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
 
         Resource newVersion = doUpdate(item.getRoot(), now, RegisterItem.RIGID_PROPS);
 
-        doIndex(item.getRoot(), newVersion.getURI());
+        // TODO port text indexing
+//        doIndex(item.getRoot(), newVersion.getURI());
 
         if (withEntity) {
             Resource entity = item.getEntity();
@@ -750,42 +724,42 @@ public class StoreBaseImpl extends ServiceBase implements StoreAPI, Service {
         return false;
     }
 
-    @Override
-    public LuceneResult[] search(String query, int offset, int maxresults, String... fields) {
-        if (indexer != null) {
-            Analyzer analyzer = new StandardAnalyzer(org.apache.lucene.util.Version.LUCENE_40);
-            QueryParser parser = new QueryParser(org.apache.lucene.util.Version.LUCENE_40, LuceneIndex.FIELD_LABEL, analyzer);
-            Query search;
-            try {
-                search = parser.parse( query );
-            } catch (ParseException e) {
-                throw new WebApiException(BAD_REQUEST, "Could not parse query: " + e.getMessage());
-            }
-            if (fields.length != 0) {
-                BooleanQuery bq = new BooleanQuery();
-                for (int i = 0; i < fields.length;) {
-                    String key = SearchTagname.expandKey(fields[i++]);
-                    if (i >= fields.length) {
-                        throw new EpiException("Odd number of fields in search call");
-                    }
-                    String value = fields[i++];
-                    Term t = new Term(key, value);
-                    bq.add(new TermQuery( t ), BooleanClause.Occur.MUST);
-                }
-                bq.add(search, BooleanClause.Occur.MUST );
-                search = bq;
-            }
-
-            LuceneIndex index = (LuceneIndex) indexer;
-            if (Registry.TEXT_INDEX_INCLUDES_HISTORY) {
-                return SearchFilter.search(index, search, offset, maxresults);
-            } else {
-                return index.search(search, offset, maxresults);
-            }
-        } else {
-            return new LuceneResult[0];
-        }
-    }
+//    @Override
+//    public LuceneResult[] search(String query, int offset, int maxresults, String... fields) {
+//        if (indexer != null) {
+//            Analyzer analyzer = new StandardAnalyzer(org.apache.lucene.util.Version.LUCENE_40);
+//            QueryParser parser = new QueryParser(org.apache.lucene.util.Version.LUCENE_40, LuceneIndex.FIELD_LABEL, analyzer);
+//            Query search;
+//            try {
+//                search = parser.parse( query );
+//            } catch (ParseException e) {
+//                throw new WebApiException(BAD_REQUEST, "Could not parse query: " + e.getMessage());
+//            }
+//            if (fields.length != 0) {
+//                BooleanQuery bq = new BooleanQuery();
+//                for (int i = 0; i < fields.length;) {
+//                    String key = SearchTagname.expandKey(fields[i++]);
+//                    if (i >= fields.length) {
+//                        throw new EpiException("Odd number of fields in search call");
+//                    }
+//                    String value = fields[i++];
+//                    Term t = new Term(key, value);
+//                    bq.add(new TermQuery( t ), BooleanClause.Occur.MUST);
+//                }
+//                bq.add(search, BooleanClause.Occur.MUST );
+//                search = bq;
+//            }
+//
+//            LuceneIndex index = (LuceneIndex) indexer;
+//            if (Registry.TEXT_INDEX_INCLUDES_HISTORY) {
+//                return SearchFilter.search(index, search, offset, maxresults);
+//            } else {
+//                return index.search(search, offset, maxresults);
+//            }
+//        } else {
+//            return new LuceneResult[0];
+//        }
+//    }
 
     // Debug support only
     public void dump() {

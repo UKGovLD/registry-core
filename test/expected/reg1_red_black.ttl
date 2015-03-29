@@ -25,7 +25,7 @@
       <http://purl.org/linked-data/registry#owner>
               <http://example.com/department> ;
       <http://www.w3.org/2002/07/owl#versionInfo>
-              "3"^^<http://www.w3.org/2001/XMLSchema#long> ;
+              "3"^^<http://www.w3.org/2001/XMLSchema#integer> ;
       <http://www.w3.org/2004/02/skos/core#member>
               <http://location.data.gov.uk/reg1/red> , <http://example.com/colours/black> ;
       <http://www.w3.org/ns/ldp#membershipPredicate>

@@ -46,8 +46,6 @@ import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
-import com.epimorphics.server.core.ServiceConfig;
-import com.epimorphics.server.stores.MemStore;
 import com.epimorphics.util.NameUtils;
 import com.epimorphics.util.TestUtil;
 import com.epimorphics.vocabs.SKOS;

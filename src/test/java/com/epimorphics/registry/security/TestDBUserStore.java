@@ -21,15 +21,17 @@
 
 package com.epimorphics.registry.security;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.shiro.authc.SaltedAuthenticationInfo;
@@ -52,12 +54,10 @@ public class TestDBUserStore {
 
     @Before
     public void setUp() {
-        Map<String, String> config = new HashMap<String, String>();
-        config.put("dbfile", "memory:test");
-        config.put("home", "/var/opt/ldregistry");
-
         store = new DBUserStore();
-        store.init(config, null);
+        store.setHome("/var/opt/ldregistry");
+        store.setDbfile("memory:test");
+        store.startup(null);
         BaseRegRealm realm = new BaseRegRealm();
         store.setRealm(realm);
     }
