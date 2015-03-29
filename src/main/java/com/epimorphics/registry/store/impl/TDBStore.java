@@ -59,9 +59,7 @@ public class TDBStore extends StoreBase {
     protected boolean isUnionDefault;
     
     public void setLocation(String loc) {
-        if ( loc.equals(MEMORY_LOCATION) ) {
-            tdbDir = MEMORY_LOCATION;
-        } else {
+        if ( ! loc.equals(MEMORY_LOCATION) ) {
             tdbDir = expandFileLocation(loc);
             FileUtil.ensureDir(tdbDir);
         }
@@ -79,8 +77,14 @@ public class TDBStore extends StoreBase {
     @Override
     public void startup(App app) {
         super.startup(app);
-        
-        dataset = tdbDir.equals(MEMORY_LOCATION) ? TDBFactory.createDataset() :  TDBFactory.createDataset( tdbDir );
+
+        if (tdbDir != null) {
+            log.info("Opening database at tdbDir");
+            dataset = TDBFactory.createDataset( tdbDir );
+        } else {
+            log.warn("Opening in-memory database");
+            dataset = TDBFactory.createDataset( );
+        }
 
         if (isUnionDefault) {
             // Nasty global side effect, in normal implementation this is done per query
