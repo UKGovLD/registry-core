@@ -36,7 +36,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.epimorphics.appbase.core.AppConfig;
 import com.epimorphics.appbase.core.ComponentBase;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Description;
