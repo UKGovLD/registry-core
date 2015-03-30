@@ -31,6 +31,7 @@ import org.apache.jena.query.text.TextDatasetFactory;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.RAMDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,6 +100,7 @@ public abstract class StoreBase extends ComponentBase implements Store {
     @Override
     public void startup(App app) {
         super.startup(app);
+        
         if (qEndpoint != null) {
             String base = AppConfig.getAppConfig().getContext().getContextPath();
             if ( ! base.endsWith("/")) {
@@ -113,9 +115,15 @@ public abstract class StoreBase extends ComponentBase implements Store {
             DatasetRegistry.get().put(base, ds);
             log.info("Installing SPARQL query endpoint at " + base + "/query");
         }
-        if (textIndex != null) {
+        if (textIndex != null || indexSpec != null) {
             try {
-                Directory dir = FSDirectory.open(textIndex);
+                Directory dir = null;
+                if (textIndex == null) {
+                    log.warn("Opening memory based text index, will not preserved across restarts");
+                    dir = new RAMDirectory(); 
+                } else {
+                    dir = FSDirectory.open(textIndex);
+                }
                 EntityDefinition entDef = new EntityDefinition("uri", "text", RDFS.label.asNode()) ;
                 if (indexSpec != null) {
                     for (String spec : indexSpec.split(",")) {
