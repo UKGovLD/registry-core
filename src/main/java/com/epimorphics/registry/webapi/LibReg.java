@@ -53,6 +53,7 @@ import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.util.TypedTemplateIndex;
 import com.epimorphics.registry.vocab.RegistryVocab;
+import com.epimorphics.registry.webapi.facets.FacetResultEntry;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.util.PrefixUtils;
 import com.hp.hpl.jena.query.QuerySolution;

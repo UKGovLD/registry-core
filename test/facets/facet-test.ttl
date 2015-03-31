@@ -1,0 +1,37 @@
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+
+@prefix reg:  <http://purl.org/linked-data/registry#> .
+@prefix : <http://example.com/test#> .
+
+:item1
+    a reg:RegisterItem;
+    rdfs:label "item 1";
+    reg:category :cat1;
+    reg:itemClass :type1;
+    .
+
+:item2
+    a reg:RegisterItem;
+    rdfs:label "item 2";
+    reg:category :cat1;
+    reg:itemClass :type2, :type3;
+    .
+
+:item3
+    a reg:RegisterItem;
+    rdfs:label "item 3";
+    reg:category :cat2;
+    reg:itemClass :type1;
+    .
+
+:item4
+    a reg:RegisterItem;
+    rdfs:label "item 4";
+    reg:category :cat2;
+    reg:itemClass :type2;
+    .

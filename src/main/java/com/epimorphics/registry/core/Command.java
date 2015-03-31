@@ -168,10 +168,10 @@ public abstract class Command {
         // Extract paging parameters, if any
         if (parameters.containsKey(FIRST_PAGE)) {
             paged = true;
-            length = registry.getPageSize();
+            length = (int)registry.getPageSize();
         } else if (parameters.containsKey(PAGE_NUMBER)) {
             paged = true;
-            length = registry.getPageSize();
+            length = (int)registry.getPageSize();
             try {
                 pagenum = Integer.parseInt( parameters.getFirst(PAGE_NUMBER) );
             } catch (NumberFormatException e) {
