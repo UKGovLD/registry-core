@@ -100,7 +100,7 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
     protected StoreAPI store;
     protected long cacheSize = -1;
     protected String baseURI;
-    protected int pageSize = DEFAULT_PAGE_SIZE;
+    protected long pageSize = DEFAULT_PAGE_SIZE;
     protected ForwardingService forwarder;
     protected String logDir;
     protected UserStore userStore;
@@ -112,10 +112,6 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
     protected String bootdirs;
     protected VelocityRender velocity;
     protected String backupDir;
-    
-    public void setPageSize(long size) {
-        pageSize = (int)size;
-    }
     
     public void setBaseUri(String uri) {
         baseURI = uri;
@@ -130,6 +126,10 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
     
     public void setCacheSize(long size) {
         this.cacheSize = size;
+    }
+    
+    public void setPageSize(long size) {
+        this.pageSize = size;
     }
     
     public void setMessageService( MessagingService service ) {
@@ -297,7 +297,7 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
         return store;
     }
 
-    public int getPageSize() {
+    public long getPageSize() {
         return pageSize;
     }
 

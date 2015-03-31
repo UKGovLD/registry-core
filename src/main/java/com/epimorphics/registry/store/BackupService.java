@@ -25,7 +25,6 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.epimorphics.server.core.Store;
 import com.epimorphics.util.FileUtil;
 
 /**

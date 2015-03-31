@@ -1,0 +1,27 @@
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+
+@prefix reg:  <http://purl.org/linked-data/registry#> .
+@prefix facet:   <http://www.epimorphics.com/ontologies/facet#> .
+@prefix ui:      <http://example.com/ui> .
+
+ui:baseFacets
+    facet:facets (ui:typeFacet ui:categoryFacet );
+    facet:query "?item a <http://purl.org/linked-data/registry#RegisterItem> .";
+    .
+
+ui:typeFacet a facet:Facet;
+    rdfs:label "Type";
+    skos:notation "type";
+    facet:query "<http://purl.org/linked-data/registry#itemClass>" ;
+    .
+
+ui:categoryFacet  a facet:Facet;
+    rdfs:label "Category";
+    skos:notation "category";
+    facet:query "<http://purl.org/linked-data/registry#category>" ;
+    .
