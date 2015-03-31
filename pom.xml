@@ -32,17 +32,6 @@
       </snapshots>
     </repository>
 
-<!--
-    <repository>
-      <id>repo-epi</id>
-      <name>Epimorphics repository</name>
-      <layout>default</layout>
-      <url>http://www.epimorphics.com/maven2</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  -->
   
     <repository>
       <releases>
@@ -54,46 +43,9 @@
       <id>epi-public-repo</id>
       <name>Epimorphics Public Repository</name>
       <url>http://repository.epimorphics.com</url>
-    </repository>
-    
-    <repository>  
-     <id>ukgovld-s3-snapshot</id>  
-     <name>UKGovLD snapshot repository</name>  
-     <url>s3://ukgovld/snapshot</url>  
-     <releases>  
-       <enabled>false</enabled>  
-     </releases>  
-     <snapshots>  
-       <enabled>true</enabled>  
-     </snapshots>  
-    </repository>  
-    
-    <repository>  
-     <id>ukgovld-s3-release</id>  
-     <name>UKGovLD release repository</name>  
-     <url>s3://ukgovld/release</url>  
-     <releases>  
-       <enabled>true</enabled>  
-     </releases>  
-     <snapshots>  
-       <enabled>false</enabled>  
-     </snapshots>  
     </repository>  
      
   </repositories>
-
-   <distributionManagement>  
-     <repository>  
-       <id>ukgovld-s3-release</id>  
-       <name>UKGovLD release repository</name>  
-       <url>s3://ukgovld/release</url>  
-     </repository>  
-     <snapshotRepository>  
-       <id>ukgovld-s3-snapshot</id>  
-       <name>UKGovLD snapshot repository</name>  
-       <url>s3://ukgovld/snapshot</url>  
-     </snapshotRepository>  
-   </distributionManagement> 
 
   <pluginRepositories>
     <pluginRepository>
@@ -259,27 +211,6 @@
 
   <build>
     <plugins>
-
-<!-- 
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.4</version>
-        <configuration>
-          <descriptors>
-            <descriptor>src/main/assembly/src.xml</descriptor>
-          </descriptors>
-        </configuration>
-        <executions>
-          <execution>
-            <id>make-assembly</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
- -->
  
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -344,37 +275,6 @@
         </configuration>
       </plugin>
 
-<!--
-      <plugin>
-        <groupId>org.apache.jena.tools</groupId>
-        <artifactId>schemagen</artifactId>
-        <version>0.2-SNAPSHOT</version>
-        <configuration>
-          <includes>
-            <include>src/main/vocabs/*.ttl</include>
-            <include>src/main/vocabs/*.owl</include>
-            <include>src/main/vocabs/*.rdf</include>
-          </includes>
-          <fileOptions>
-            <source>
-              <input>default</input>
-              <package-name>com.epimorphics.registry.vocab</package-name>
-              <ontology>true</ontology>
-              <noStrict>true</noStrict>
-            </source>
-          </fileOptions>
-
-        </configuration>
-        <executions>
-          <execution>
-            <id>schemagen</id>
-            <goals>
-              <goal>translate</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-  -->
   
     </plugins>
 
