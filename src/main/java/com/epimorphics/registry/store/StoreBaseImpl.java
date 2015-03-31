@@ -27,12 +27,14 @@ import static com.epimorphics.rdfutil.QueryUtil.selectFirstVar;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +48,7 @@ import com.epimorphics.registry.core.ForwardingRecord.Type;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Status;
+import com.epimorphics.registry.store.SearchRequest.KeyValuePair;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.util.VersionUtil;
 import com.epimorphics.registry.vocab.RegistryVocab;
@@ -57,6 +60,7 @@ import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.ResultSetFactory;
+import com.hp.hpl.jena.query.ResultSetFormatter;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -69,6 +73,7 @@ import com.hp.hpl.jena.util.FileManager;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDF;
+import com.hp.hpl.jena.vocabulary.RDFS;
 
 /**
  * Implementation of the store API which uses a triple store for persistence
@@ -82,6 +87,9 @@ import com.hp.hpl.jena.vocabulary.RDF;
  * </p>
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
+
+// TODO Replace by SPARQL-based version with underlying SPARQLSource
+
 public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     static final Logger log = LoggerFactory.getLogger( StoreBaseImpl.class );
 
@@ -94,8 +102,6 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         this.store = store;
     }
     
-    // TODO add indexer replacement
-
     protected Map<String, Lock> locks = new HashMap<String, Lock>();
     
     /**
@@ -643,9 +649,6 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
         Resource newVersion = doUpdate(item.getRoot(), now, RegisterItem.RIGID_PROPS);
 
-        // TODO port text indexing
-//        doIndex(item.getRoot(), newVersion.getURI());
-
         if (withEntity) {
             Resource entity = item.getEntity();
             Resource entityRef = newVersion.getPropertyResourceValue(RegistryVocab.definition);
@@ -724,42 +727,82 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         return false;
     }
 
-//    @Override
-//    public LuceneResult[] search(String query, int offset, int maxresults, String... fields) {
-//        if (indexer != null) {
-//            Analyzer analyzer = new StandardAnalyzer(org.apache.lucene.util.Version.LUCENE_40);
-//            QueryParser parser = new QueryParser(org.apache.lucene.util.Version.LUCENE_40, LuceneIndex.FIELD_LABEL, analyzer);
-//            Query search;
-//            try {
-//                search = parser.parse( query );
-//            } catch (ParseException e) {
-//                throw new WebApiException(BAD_REQUEST, "Could not parse query: " + e.getMessage());
-//            }
-//            if (fields.length != 0) {
-//                BooleanQuery bq = new BooleanQuery();
-//                for (int i = 0; i < fields.length;) {
-//                    String key = SearchTagname.expandKey(fields[i++]);
-//                    if (i >= fields.length) {
-//                        throw new EpiException("Odd number of fields in search call");
-//                    }
-//                    String value = fields[i++];
-//                    Term t = new Term(key, value);
-//                    bq.add(new TermQuery( t ), BooleanClause.Occur.MUST);
-//                }
-//                bq.add(search, BooleanClause.Occur.MUST );
-//                search = bq;
-//            }
-//
-//            LuceneIndex index = (LuceneIndex) indexer;
-//            if (Registry.TEXT_INDEX_INCLUDES_HISTORY) {
-//                return SearchFilter.search(index, search, offset, maxresults);
-//            } else {
-//                return index.search(search, offset, maxresults);
-//            }
-//        } else {
-//            return new LuceneResult[0];
-//        }
-//    }
+    @Override
+    public List<String> search(SearchRequest request) {
+        try {
+            // SelectBuilder doesn't support property paths so use brute force string bashing
+            StringBuffer query = new StringBuffer();
+            query.append( "PREFIX text: <http://jena.apache.org/text#>\n" );
+            query.append( String.format( "PREFIX reg:     <%s>\n", RegistryVocab.getURI() ) );
+            query.append( String.format( "PREFIX version: <%s>\n", Version.getURI() ) );
+            query.append( String.format( "PREFIX dct:     <%s>\n", DCTerms.getURI() ) );
+            query.append( String.format( "PREFIX rdfs:    <%s>\n", RDFS.getURI() ) );
+            query.append( "\nSELECT DISTINCT ?item WHERE {\n");
+            query.append( String.format("    ?entity text:query '%s' . \n", safeLiteral( request.getQuery() ) ) );
+            
+            if (request.isSearchVersions()) {
+                query.append( "    ?item ^dct:versionOf/reg:definition/reg:entity ?entity.\n" );
+            } else {
+                query.append( "    ?item version:currentVersion/reg:definition/reg:entity/version:currentVersion? ?entity.\n" );
+            }
+            
+            if ( request.getStatus() != null) {
+                String statusRef = "reg:status" + StringUtils.capitalize( request.getStatus() );
+                query.append( String.format("   ?item version:currentVersion/reg:status %s.\n", statusRef ) );
+            }
+            
+            for (KeyValuePair filter : request.getFilters()) {
+                String value = filter.value;
+                if (value.startsWith("http://") || value.startsWith("https://")) {
+                    query.append( String.format("    ?entity <%s> <%s>.\n", filter.key, safeURI(value)) );
+                } else {
+                    query.append( String.format("    ?entity <%s> '%s'.\n", filter.key, safeLiteral(value)) );
+                }
+            }
+            query.append("} ");
+            
+            if ( request.getLimit() != null) {
+                query.append("LIMIT " + request.getLimit() + " ");
+            }
+            
+            if ( request.getOffset() != null) {
+                query.append("OFFSET " + request.getOffset());
+            }
+            
+//            log.debug("Search query = " + query.toString());
+            
+            lockStore();
+            try {
+                // DEBUG
+                QueryExecution exec = QueryExecutionFactory.create(query.toString(), store.asDataset());
+                try {
+                    ResultSet results = exec.execSelect();
+                    List<String> matches = new ArrayList<String>();
+                    while (results.hasNext()) {
+                        QuerySolution row = results.next();
+                        matches.add( row.getResource("item").getURI() );
+                    }
+                    return matches;
+                } finally {
+                    exec.close();
+                }
+            } finally {
+                unlockStore();
+            }
+            
+        } catch (Exception e) {
+            log.error("Search query failed, misconfigured store?", e);
+            return Collections.emptyList();
+        }
+    }
+    
+    private String safeLiteral(String value) {
+        return value.replace("'", "\\'");
+    }
+    
+    private String safeURI(String value) {
+        return value.replace("<", "&lt;");
+    }
 
     // Debug support only
     public void dump() {

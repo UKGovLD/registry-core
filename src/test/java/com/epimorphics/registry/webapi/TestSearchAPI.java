@@ -81,10 +81,10 @@ public class TestSearchAPI extends TomcatTestBase {
 
         checkSearch("query=collection+item", "item 1", "item 2", "item 3", "A test collection");
 
-        checkSearch("query=collection+item&type=http://www.w3.org/2004/02/skos/core%23Concept", "item 1", "item 2", "item 3");
+        checkSearch("query=collection+item&rdf:type=http://www.w3.org/2004/02/skos/core%23Concept", "item 1", "item 2", "item 3");
 
         assertEquals(204, post(BASE_URL + "collection/_item2?update&status=stable").getStatus());
-        checkSearch("query=collection+item&status=http://purl.org/linked-data/registry%23statusStable", "item 2");
+        checkSearch("query=collection+item&status=stable", "item 2");
 
 //        m.write(System.out, "Turtle");
     }
