@@ -29,7 +29,6 @@ import com.epimorphics.registry.core.ForwardingRecord;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.util.DescriptionCache;
-import com.epimorphics.server.indexers.LuceneResult;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -179,8 +178,8 @@ public class CachingStore implements StoreAPI {
     }
 
     @Override
-    public LuceneResult[] search(String query, int offset, int maxresults, String... fields) {
-        return store.search(query, offset, maxresults, fields);
+    public List<String> search(SearchRequest request) {
+        return store.search(request);
     }
 
     @Override

@@ -204,13 +204,10 @@ public interface StoreAPI {
 
     /**
      * Free text search over the registered items
-     * @param query the text query, supports lucence search syntax
-     * @param offset the number of results to skip (to find desired page)
-     * @param maxresults the maximum number of results to return
-     * @param fields alternating list of tagname/tagvalue pairs
+     * @param query the search parameters
+     * @return list of URIs for the matched RegisterItems
      */
-    // TODO change to a signature we can support with Jena text
-//    public LuceneResult[] search(String query, int offset, int maxresults, String...fields);
+    public List<String> search(SearchRequest query);
 
     /**
      * Tests if the register contains an item with the given notation (relative URI)
@@ -238,6 +235,6 @@ public interface StoreAPI {
     // This breaks the internal goal of hiding sparql, which in turn was to leave
     // open a path to simpler versioning implementations and maybe non-triple store implementations
     // The weasel words in the javadoc are intended to leave the possibility of just using
-    // SPARQL for accessing the graph annotations (for which there's no alterantive anyway)
+    // SPARQL for accessing the graph annotations (for which there's no alternative anyway)
     public ResultSet query(String query);
 }
