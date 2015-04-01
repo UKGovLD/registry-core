@@ -31,7 +31,6 @@ import com.epimorphics.registry.message.MessagingService;
 import com.epimorphics.registry.message.ProcessIfChanges;
 import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.epimorphics.registry.webapi.JsonContext;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.shared.PrefixMapping;
 import com.hp.hpl.jena.util.FileManager;
@@ -128,7 +127,8 @@ public class Prefixes {
         
         Register prefixesRegister = new Register( ResourceFactory.createResource( getPrefixRegisterURI() ) );
         prefixesRegister.setStore( Registry.get().getStore() );
-        PrefixMapping pm = ModelFactory.createDefaultModel();
+        PrefixMapping pm = PrefixMapping.Factory.create();
+        pm.setNsPrefixes( defaultPrefixes );
         for (RegisterEntryInfo info : prefixesRegister.getMembers()) {
             pm.setNsPrefix(info.getNotation(), info.getEntityURI());
         }

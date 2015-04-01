@@ -250,8 +250,7 @@ public abstract class TomcatTestBase {
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    return;
                 }
                 if (count++ > 10) {
                     assertTrue("Too many tries", false);
