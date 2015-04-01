@@ -196,6 +196,7 @@
       <version>7.0.26</version>
       <scope>provided</scope>
      </dependency>
+    <!-- 
     <dependency>
       <groupId>com.github.jsonld-java</groupId>
       <artifactId>jsonld-java</artifactId>
@@ -221,7 +222,7 @@
           <artifactId>jena-arq</artifactId>
         </exclusion>
       </exclusions>
-     </dependency>
+     </dependency>  -->
     <dependency>
         <groupId>com.sun.jersey.contribs</groupId>
         <artifactId>jersey-multipart</artifactId>
