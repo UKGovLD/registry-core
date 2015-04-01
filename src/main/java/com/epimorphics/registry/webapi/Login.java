@@ -368,7 +368,6 @@ public class Login {
             uri = new URI(path);
             return Response.seeOther(uri).build();
         } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             return null;
         }

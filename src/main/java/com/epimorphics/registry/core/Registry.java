@@ -56,6 +56,7 @@ import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.store.StoreBaseImpl;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
+import com.epimorphics.registry.webapi.facets.FacetService;
 import com.epimorphics.util.EpiException;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -105,8 +106,7 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
     protected String logDir;
     protected UserStore userStore;
     protected MessagingService messageService = new LocalMessagingService();
-    // TODO re-enable facet service
-//    protected FacetService facetService;
+    protected FacetService facetService;
     protected BackupService backupService;
     protected String bootFile;
     protected String bootdirs;
@@ -135,8 +135,6 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
     public void setMessageService( MessagingService service ) {
         messageService = service;
     }
-    
-    // TODO setFacetStore
     
     public void setBootSpec(String file) {
         bootFile = file;
@@ -168,6 +166,10 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
     
     public void setBackupDir(String dir) {
         backupDir = expandFileLocation(dir);
+    }
+    
+    public void setFacetService(FacetService service) {
+        this.facetService = service;
     }
     
     @Override
@@ -210,8 +212,7 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
         
         // Configure optional backup service
         if (backupDir != null && baseStore != null && baseStore instanceof StoreBaseImpl) {
-            // TODO sort out backup service
-//            backupService = new BackupService(backupDir, ((StoreBaseImpl)baseStore).getStore());
+            backupService = new BackupService(backupDir, ((StoreBaseImpl)baseStore).getStore());
         } else {
             log.warn("No backup service configured");
         }
@@ -317,10 +318,9 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
         return messageService;
     }
 
-    // TODO - re-enable facet service
-//    public FacetService getFacetService() {
-//        return facetService;
-//    }
+    public FacetService getFacetService() {
+        return facetService;
+    }
     
     public BackupService getBackupService() {
         return backupService;
