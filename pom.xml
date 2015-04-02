@@ -31,18 +31,6 @@
         <enabled>true</enabled>
       </snapshots>
     </repository>
-
-<!--
-    <repository>
-      <id>repo-epi</id>
-      <name>Epimorphics repository</name>
-      <layout>default</layout>
-      <url>http://www.epimorphics.com/maven2</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  -->
   
     <repository>
       <releases>
@@ -131,7 +119,7 @@
     <dependency>
       <groupId>com.epimorphics</groupId>
       <artifactId>appbase</artifactId>
-      <version>0.0.8-SNAPSHOT</version>
+      <version>0.1.1</version>
     </dependency>
     
     <dependency>
