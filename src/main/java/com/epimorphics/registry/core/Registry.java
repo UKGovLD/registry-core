@@ -112,6 +112,7 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
     protected String bootdirs;
     protected VelocityRender velocity;
     protected String backupDir;
+    protected boolean redirectToHttpsOnLogin = false;
     
     public void setBaseUri(String uri) {
         baseURI = uri;
@@ -177,6 +178,14 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
         this.facetService = service;
     }
     
+    public boolean isRedirectToHttpsOnLogin() {
+        return redirectToHttpsOnLogin;
+    }
+
+    public void setRedirectToHttpsOnLogin(boolean redirectToHttpsOnLogin) {
+        this.redirectToHttpsOnLogin = redirectToHttpsOnLogin;
+    }
+
     @Override
     public void startup(App app) {
         super.startup(app);
