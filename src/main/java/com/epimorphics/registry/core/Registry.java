@@ -120,6 +120,11 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
         }
     }
 
+    // Just for backward compatibility
+    public void setBaseURI(String uri) {
+        setBaseUri(uri);
+    }
+
     public void setStore( StoreAPI store ) {
         this.store = store;
     }
