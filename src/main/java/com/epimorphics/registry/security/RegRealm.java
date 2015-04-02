@@ -34,6 +34,7 @@ import org.apache.shiro.authz.Permission;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.apache.shiro.subject.PrincipalCollection;
 
+import com.epimorphics.registry.core.Registry;
 import com.epimorphics.util.EpiException;
 
 /**
@@ -51,6 +52,7 @@ public class RegRealm extends BaseRegRealm {
     public void setUserStore(UserStore store) {
         userstore = store;
         store.setRealm(this);
+        Registry.get().setUserStore(store);
     }
  
     public UserStore getUserStore() {
