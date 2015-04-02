@@ -360,11 +360,11 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
         Operation op = Operation.valueOf(operation);
         URI uri;
         try {
-            uri = new URI(uriTarget);
+            uri = new URI( "/X/" + uriTarget);
         } catch (URISyntaxException e) {
             throw new WebApiException(Status.BAD_REQUEST, "Illegal URI");
         }
-        String encPath = uri.getRawPath();
+        String encPath = uri.getRawPath().replaceFirst("/X/", "");
         String target = UriComponent.decode(encPath, UriComponent.Type.PATH);
         String queries = uriTarget;
         int split = queries.indexOf("?");
@@ -422,4 +422,5 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
     public void shutdown() {
         Prefixes.shutdown();
     }
+    
 }
