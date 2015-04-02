@@ -185,9 +185,16 @@ public class TestAPI extends TomcatTestBase {
         
         // Bug tests
         doBNodeDuplicationBugTest();
+        doSkosLabelTest();
 
 //        System.out.println("Store dump");
 //        ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel().write(System.out, "Turtle");
+    }
+
+    private void doSkosLabelTest() {
+        assertEquals(201, postFileStatus("test/bugs/brown-preflabel.ttl", REG1));
+        checkModelResponse(REG1 + "/brown", ROOT_REGISTER + "reg1/brown", "test/expected/brown.ttl");
+        checkModelResponse(REG1 + "/brown?_view=with_metadata", ROOT_REGISTER + "reg1/brown", "test/expected/brown_metadata.ttl");
     }
 
     private void doInvalidUpdateTest() {

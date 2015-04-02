@@ -22,6 +22,7 @@
 package com.epimorphics.registry.commands;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
 import java.net.URI;
@@ -76,6 +77,9 @@ import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
+
+import static com.epimorphics.rdfutil.RDFUtil.labelProps;
+import static com.epimorphics.rdfutil.RDFUtil.getAPropertyValue;
 
 /**
  * Command processor to handle registering a new entry.
@@ -163,7 +167,7 @@ public class CommandRegister extends Command {
             return new ValidationResponse(BAD_REQUEST, "Missing entity");
         }
 
-        if ( !entity.hasProperty(RDF.type) || !entity.hasProperty(RDFS.label) ) {
+        if ( !entity.hasProperty(RDF.type) || getAPropertyValue(entity, labelProps) == null ) {
             return new ValidationResponse(BAD_REQUEST, "Missing required property (rdf:type or rdfs:label) on " + entity);
         }
 
