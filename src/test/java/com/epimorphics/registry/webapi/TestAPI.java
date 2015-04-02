@@ -221,7 +221,10 @@ public class TestAPI extends TomcatTestBase {
         checkModelResponse(m, ROOT_REGISTER + "reg1/_red", "test/expected/red_item.ttl");
         checkModelResponse(m, ROOT_REGISTER + "reg1/red", "test/expected/red.ttl");
         checkEntity(m, ROOT_REGISTER + "reg1/_red",  ROOT_REGISTER + "reg1/red");
+        
         assertEquals(404, getResponse(REG1 + "/notred").getStatus());
+        assertEquals(404, getResponse(REG1 + "/notred/").getStatus());
+        
         m = getModelResponse(REG1 + "/_red");
         checkModelResponse(m, ROOT_REGISTER + "reg1/_red", "test/expected/red_item.ttl");
         checkModelResponse(m, ROOT_REGISTER + "reg1/red", "test/expected/red.ttl");

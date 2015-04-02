@@ -150,7 +150,9 @@ public abstract class Command {
      */
     public void init(Operation operation, String target,  MultivaluedMap<String, String> parameters, Registry registry) {
         this.operation = operation;
-        this.target = registry.getBaseURI() + (target.isEmpty() ? "/" : "/" + target);
+        String t = target.endsWith("/") ? target.substring(0, target.length()-1) : target;
+        t = t.isEmpty() ? "/" : "/" + t;
+        this.target = registry.getBaseURI() + t;
         this.path = target;
         this.parameters = parameters;
         this.registry = registry;
