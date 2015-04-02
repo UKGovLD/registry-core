@@ -61,6 +61,15 @@ public class TestAPIDebug extends TomcatTestBase {
     @Test
     public void testDebug() throws IOException {
     }
+    
+//    private void doRegisterRegistrationTests() {
+//        // Leaves register reg1 set up
+//        ClientResponse response = postFile("test/reg1.ttl", BASE_URL, "text/turtle");
+//        assertEquals("Register a register", 201, response.getStatus());
+//        assertEquals(TestAPI.REG1_ITEM, response.getLocation().toString());
+//        assertEquals("Register in non-existant location", 404, postFileStatus("test/reg1.ttl", BASE_URL+"foo"));
+//        assertEquals("Register the same again", 403, postFileStatus("test/reg1.ttl", BASE_URL));
+//    }
 
     // Debugging utility only, should not be used while transactions are live
     public static void printResourceState(String...uris) {
