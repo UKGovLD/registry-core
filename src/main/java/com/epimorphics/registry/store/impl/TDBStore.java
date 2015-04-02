@@ -49,7 +49,6 @@ import com.hp.hpl.jena.graph.NodeFactory;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.ReadWrite;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.shared.Lock;
 import com.hp.hpl.jena.tdb.TDB;
 import com.hp.hpl.jena.tdb.TDBFactory;
 import com.hp.hpl.jena.util.FileUtils;
@@ -87,7 +86,6 @@ public class TDBStore  extends ComponentBase implements Store {
 
     protected Dataset dataset;
     protected String logDirectory;
-    protected boolean inWrite = false;
     protected String qEndpoint;
     protected File textIndex;      
     protected String indexSpec = null;
@@ -236,52 +234,33 @@ public class TDBStore  extends ComponentBase implements Store {
     }
 
     /** Lock the dataset for reading */
-    public synchronized void lock() {
-        Dataset dataset = asDataset();
-        if (dataset.supportsTransactions()) {
-            dataset.begin(ReadWrite.READ);
-        } else {
-            dataset.asDatasetGraph().getLock().enterCriticalSection(Lock.READ);
-        }
+    @Override
+    public void lock() {
+        asDataset().begin(ReadWrite.READ);
     }
 
-    /** Lock the dataset for write */
-    public synchronized void lockWrite() {
-        Dataset dataset = asDataset();
-        if (dataset.supportsTransactions()) {
-            dataset.begin(ReadWrite.WRITE);
-            inWrite = true;
-        } else {
-            dataset.asDatasetGraph().getLock().enterCriticalSection(Lock.WRITE);
-        }
+    /** Lock the dataset for reading */
+    @Override
+    public void lockWrite() {
+        asDataset().begin(ReadWrite.WRITE);
     }
 
-    /** Unlock the dataset */
-    public synchronized void unlock() {
-        Dataset dataset = asDataset();
-        if (dataset.supportsTransactions()) {
-            if (inWrite) {
-                dataset.commit();
-                inWrite = false;
-            }
-            dataset.end();
-        } else {
-            dataset.asDatasetGraph().getLock().leaveCriticalSection();
-        }
+    /** Abort the transaction. */
+    @Override
+    public void abort() {
+        asDataset().abort();
     }
-
-    /** Unlock the dataset, aborting the transaction. Only useful if the dataset is transactional */
-    public synchronized void abort() {
-        Dataset dataset = asDataset();
-        if (dataset.supportsTransactions()) {
-            if (inWrite) {
-                dataset.abort();
-                inWrite = false;
-            }
-            dataset.end();
-        } else {
-            dataset.asDatasetGraph().getLock().leaveCriticalSection();
-        }
+    
+    /** Commit the transaction */
+    @Override
+    public void commit() {
+        asDataset().commit();
+    }
+    
+    /** End the transaction, if a write transaction and not commited then abort */
+    @Override
+    public void end() {
+        asDataset().end();
     }
 
     protected
@@ -289,8 +268,9 @@ public class TDBStore  extends ComponentBase implements Store {
         lockWrite();
         try {
             dataset.getNamedModel(graphname).add(graph);
+            commit();
         } finally {
-            unlock();
+            end();
         }
     }
 
@@ -300,8 +280,9 @@ public class TDBStore  extends ComponentBase implements Store {
         try {
             Model store = dataset.getNamedModel(graphname);
             store.removeAll();
+            commit();
         } finally {
-            unlock();
+            end();
         }
     }
 
@@ -314,12 +295,13 @@ public class TDBStore  extends ComponentBase implements Store {
         lockWrite();
         try {
             dataset.getNamedModel(graphname).read(input, graphname, lang.getName());
+            commit();
             try { input.close(); } catch (IOException eio) {}
         } catch (Exception e) {
             abort();
             throw new EpiException(e);
         } finally {
-            unlock();
+            end();
         }
     }
 
@@ -345,11 +327,11 @@ public class TDBStore  extends ComponentBase implements Store {
 
     protected void logNamed(String action, String graphname) {
         if (logDirectory != null) {
-            lockWrite();
+            lock();
             try {
                 logAction(action, graphname, asDataset().getNamedModel(graphname) );
             } finally {
-                unlock();
+                end();
             }
         }
     }

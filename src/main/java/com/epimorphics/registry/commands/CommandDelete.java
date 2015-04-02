@@ -35,7 +35,7 @@ public class CommandDelete extends Command {
 
     @Override
     public Response doExecute() {
-        store.lock(target);
+        store.lock();
         try {
             RegisterItem ri = store.getItem(itemURI(), false);
             if (ri != null) {
@@ -49,12 +49,13 @@ public class CommandDelete extends Command {
                 } else {
                     doDelete(ri);
                 }
+                store.commit();
                 return Response.noContent().build();
             } else {
                 throw new NotFoundException();
             }
         } finally {
-            store.unlock(target);
+            store.end();
         }
     }
 

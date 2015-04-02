@@ -68,7 +68,7 @@ public class CommandStatusUpdate extends Command {
     
     @Override
     public Response doExecute() {
-        store.lock(target);
+        store.lock();
         RegisterItem ri = store.getItem(itemURI(), false);
         try {
             if (ri != null) {
@@ -86,6 +86,7 @@ public class CommandStatusUpdate extends Command {
                     }
                     doStatusUpdate(ri, requestedStatus);
                 }
+                store.commit();
                 
                 // Notify event
                 Message message = new Message(this);
@@ -97,7 +98,7 @@ public class CommandStatusUpdate extends Command {
                 throw new NotFoundException();
             }
         } finally {
-            store.unlock(target);
+            store.end();
         }
     }
 

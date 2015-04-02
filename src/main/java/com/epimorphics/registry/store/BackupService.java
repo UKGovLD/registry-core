@@ -82,7 +82,7 @@ public class BackupService {
                         return false;
                         
                     } finally {
-                        store.unlock();
+                        store.end();
                         try { if (out != null) out.close() ; }
                         catch (IOException e) { /* ignore */ }
                     }

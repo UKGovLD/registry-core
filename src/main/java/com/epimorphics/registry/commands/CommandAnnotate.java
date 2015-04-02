@@ -40,7 +40,7 @@ public class CommandAnnotate extends Command {
     @Override
     public Response doExecute() {
         String graphURI = target + "?annotation=" + parameters.getFirst(Parameters.ANNOTATION);
-        store.lock(target);
+        store.lock();
         try {
             RegisterItem item = store.getItem(target, false);
             if (item == null) {
@@ -49,6 +49,7 @@ public class CommandAnnotate extends Command {
             store.storeGraph(graphURI, getPayload());
             item.getRoot().addProperty(RegistryVocab.annotation, ResourceFactory.createResource(graphURI));
             store.update(item, false);
+            store.commit();
             
             // notify event
             Message message = new Message(this);
@@ -61,7 +62,7 @@ public class CommandAnnotate extends Command {
                 throw new EpiException(e);
             }
         } finally {
-            store.unlock(target);
+            store.end();
         }
     }
 

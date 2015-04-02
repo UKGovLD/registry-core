@@ -28,11 +28,7 @@ import static com.epimorphics.rdfutil.QueryUtil.selectFirstVar;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -96,13 +92,16 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     public static final String INDEXER_PARAMETER = "indexer";
 
     protected Store store;
-    
+    protected ThreadLocal<Boolean> writeLocked = new ThreadLocal<Boolean>() {
+        @Override protected Boolean initialValue() {
+            return false;
+        }
+    }; 
+
     public void setStore(Store store) {
         this.store = store;
     }
-    
-    protected Map<String, Lock> locks = new HashMap<String, Lock>();
-    
+
     /**
      * Provides access to underlying store implementation for management purposes only.
      */
@@ -110,84 +109,90 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         return store;
     }
 
-    public synchronized void lock(String uri) {
-        Lock lock = locks.get(uri);
-        if (lock == null) {
-            lock = new ReentrantLock();
-            locks.put(uri, lock);
-        }
-        lock.lock();
+    // Implementation note: Assumes that the underlying Store, like TDB, has
+    // per-thread transaction status so transaction state and corresponding writeLocked local
+    // are on same thread.
+    
+    /**
+     * Lock the store for an update transaction
+     */
+    public void lock() {
+        store.lockWrite();
+        writeLocked.set(true);
     }
 
     /**
-     * Release the "forupdate" lock on the given URI (should be a Register or RegisterItem).
-     * Throws an error if there is no such lock.
+     * Commit the update transaction
      */
-    public synchronized void unlock(String uri) {
-        Lock lock = locks.remove(uri);
-        if (lock == null) {
-            throw new EpiException("Internal error: tried to unlock a resource which was not locked for update");
-        }
-        if (storeWriteLocked) {
-            store.unlock();
-            storeWriteLocked = false;
-        }
-        lock.unlock();
+    public void commit() {
+        store.commit();
+    }
+    
+    /**
+     * Finish the update transaction, if commit has not been called then abort the transaction
+     */
+    public void end() {
+        store.end();
+        writeLocked.set(false);
     }
 
-
-    // Attempt to maintain store lock through a registry block operation
-    boolean storeWriteLocked = false;
-
-    protected synchronized void unlockStore() {
-        if (!storeWriteLocked) {
-            store.unlock();
+    /**
+     * Check that the store is locked for update
+     */
+    protected void checkWriteLocked() {
+        if (!writeLocked.get()) {
+            throw new EpiException("Failed to lock store before updating");
         }
     }
-
-    protected synchronized void lockStore() {
-        if (!storeWriteLocked) {
+    
+    /**
+     * Lock the store for reading.
+     * If this thread is already in a write transaction then do nothing.
+     */
+    @Override
+    public void lockStoreRead() {
+        if ( ! writeLocked.get() ) {
             store.lock();
         }
     }
-
-    protected synchronized void lockStoreWrite() {
-        if (!storeWriteLocked) {
-            store.lockWrite();
-            storeWriteLocked = true;
+    
+    /**
+     * Unlock the store for reading.
+     * If this thread is in a write transaction then do nothing
+     */
+    @Override
+    public void unlockStoreRead() {
+        if ( ! writeLocked.get() ) {
+            store.end();
         }
-    }
+    }    
 
     @Override
     public void storeGraph(String graphURI, Model model) {
-        lockStoreWrite();
-        try {
-            storeLockedGraph(graphURI, model);
-        } finally {
-            unlockStore();
-        }
+        checkWriteLocked();
+        storeLockedGraph(graphURI, model);
     }
 
     @Override
     public Model getGraph(String graphURI) {
-        lockStore();
+        lockStoreRead();
         try {
             Model result = ModelFactory.createDefaultModel();
             result.add( store.asDataset().getNamedModel(graphURI) );
             return result;
         } finally {
-            unlockStore();
+            unlockStoreRead();
         }
     }
 
     @Override
     public Description getDescription(String uri) {
-        lockStore();
+        lockStoreRead();
         try {
             Description d = asDescription( describe(uri, null) );
             return d;
         } finally {
-            unlockStore();
+            unlockStoreRead();
         }
     }
 
@@ -212,12 +217,12 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public Description getCurrentVersion(String uri) {
-        lockStore();
+        lockStoreRead();
         try {
             Description d = asDescription( doGetCurrentVersion(uri, null) );
             return d;
         } finally {
-            unlockStore();
+            unlockStoreRead();
         }
     }
 
@@ -233,7 +238,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public Description getVersion(String uri, boolean withEntity) {
-        lockStore();
+        lockStoreRead();
         try {
             Description d = doGetVersion(uri, true);
             if (d instanceof RegisterItem && withEntity) {
@@ -241,7 +246,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             }
             return d;
         } finally {
-            unlockStore();
+            unlockStoreRead();
         }
     }
 
@@ -259,7 +264,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public Description getVersionAt(String uri, long time) {
-        lockStore();
+        lockStoreRead();
         try {
             RDFNode version = selectFirstVar("version", getDefaultModel(), VERSION_AT_QUERY, Prefixes.getDefault(),
                     "root", ResourceFactory.createResource(uri), "time", RDFUtil.fromDateTime(time) );
@@ -269,7 +274,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                 return null;
             }
         } finally {
-            unlockStore();
+            unlockStoreRead();
         }
     }
     static String VERSION_AT_QUERY =
@@ -287,7 +292,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public List<VersionInfo> listVersions(String uri) {
-        lockStore();
+        lockStoreRead();
         try {
             ResultSet rs = selectAll(getDefaultModel(), VERSION_LIST_QUERY, Prefixes.getDefault(),
                 createBindings("root", ResourceFactory.createResource(uri)));
@@ -307,7 +312,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             }
             return results;
         } finally {
-            unlockStore();
+            unlockStoreRead();
         }
     }
     static String VERSION_LIST_QUERY =
@@ -322,7 +327,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public long versionStartedAt(String uri) {
-        lockStore();
+        lockStoreRead();
         try {
             Resource root = getDefaultModel().getResource(uri);
             Resource interval = root.getPropertyResourceValue(Version.interval);
@@ -333,14 +338,14 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                         .getProperty(Time.inXSDDateTime)
                         .getObject() );
         } finally {
-            unlockStore();
+            unlockStoreRead();
         }
     }
 
     @Override
     public List<EntityInfo> listEntityOccurences(String uri) {
         Resource entity = ResourceFactory.createResource(uri);
-        lockStore();
+        lockStoreRead();
         try {
             ResultSet matches = QueryUtil.selectAll(getDefaultModel(), ENTITY_FIND_QUERY, Prefixes.getDefault(), "entity", entity);
             List<EntityInfo> results = new ArrayList<EntityInfo>();
@@ -350,7 +355,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             }
             return results;
         } finally {
-            unlockStore();
+            unlockStoreRead();
         }
     }
     static String ENTITY_FIND_QUERY =
@@ -364,7 +369,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public RegisterItem getItem(String uri, boolean withEntity) {
-        lockStore();
+        lockStoreRead();
         try {
             Resource root = doGetCurrentVersion(uri, null);
             if (! root.hasProperty(RDF.type, RegistryVocab.RegisterItem)) {
@@ -376,7 +381,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             }
             return item;
         } finally {
-            unlockStore();
+            unlockStoreRead();
         }
     }
 
@@ -415,17 +420,17 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public Resource getEntity(RegisterItem item) {
-        lockStore();
+        lockStoreRead();
         try {
             return doGetEntity(item, null, true);
         } finally {
-            unlockStore();
+            unlockStoreRead();
         }
     }
 
     @Override
     public List<RegisterItem> fetchAll(List<String> itemURIs, boolean withEntity) {
-        lockStore();
+        lockStoreRead();
         try {
             Model shared = ModelFactory.createDefaultModel();
             List<RegisterItem> results = new ArrayList<RegisterItem>(itemURIs.size());
@@ -439,7 +444,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             }
             return results;
         } finally {
-            unlockStore();
+            unlockStoreRead();
         }
     }
 
@@ -472,7 +477,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public List<RegisterEntryInfo> listMembers(Register register) {
-        lockStore();
+        lockStoreRead();
         try {
             ResultSet rs = selectAll(getDefaultModel(), REGISTER_LIST_QUERY, Prefixes.getDefault(),
                                         createBindings("register", register.getRoot()) );
@@ -499,7 +504,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             }
             return results;
         } finally {
-            unlockStore();
+            unlockStoreRead();
         }
     }
     static String REGISTER_LIST_QUERY =
@@ -516,25 +521,25 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public boolean contains(Register register, String notation) {
-        lockStore();
+        lockStoreRead();
         try {
             String base = RDFUtil.getNamespace( register.getRoot() );
             Resource ri = ResourceFactory.createResource( base + "_" + notation);
             return getDefaultModel().contains(ri, RDF.type, RegistryVocab.RegisterItem);
         } finally {
-            unlockStore();
+            unlockStoreRead();
         }
     }
 
     @Override
     public void loadBootstrap(String filename) {
         Model bootmodel = FileManager.get().loadModel(filename); // Load first in case of errors
-        lock("/");
-        lockStoreWrite();
+        lock();
         try {
             getDefaultModel().add( bootmodel );
+            commit();
         } finally {
-            unlock("/");
+            end();
         }
     }
 
@@ -545,21 +550,17 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public void addToRegister(Register register, RegisterItem item, Calendar now) {
-        lockStoreWrite();
-        try {
-            doUpdateItem(item, true, now);
-            // Don't automatically update register, we want the option to do batch updates
+        checkWriteLocked();
+        doUpdateItem(item, true, now);
+        // Don't automatically update register, we want the option to do batch updates
 //            doUpdate(register.getRoot(), now);
-            mod(item).addProperty(RegistryVocab.register, register.getRoot());
-            Resource entity = item.getEntity();
-            if (entity.hasProperty(RDF.type, RegistryVocab.Register)) {
-                modCurrent(register).addProperty(RegistryVocab.subregister, entity);
-            }
+        mod(item).addProperty(RegistryVocab.register, register.getRoot());
+        Resource entity = item.getEntity();
+        if (entity.hasProperty(RDF.type, RegistryVocab.Register)) {
+            modCurrent(register).addProperty(RegistryVocab.subregister, entity);
+        }
             // Don't automatically update register, we want the option to do batch updates
 //            modCurrent(register).removeAll(DCTerms.modified).addProperty(DCTerms.modified, getDefaultModel().createTypedLiteral(now));
-        } finally {
-            unlockStore();
-        }
     }
 
     private Resource modCurrent(Description d) {
@@ -578,12 +579,8 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public String update(Register register, Calendar timestamp) {
-        lockStoreWrite();
-        try {
-            return doUpdateRegister(register.getRoot(), timestamp).getURI();
-        } finally {
-            unlockStore();
-        }
+        checkWriteLocked();
+        return doUpdateRegister(register.getRoot(), timestamp).getURI();
     }
 
     @Override
@@ -629,12 +626,8 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public String update(RegisterItem item, boolean withEntity, Calendar timestamp) {
-        lockStoreWrite();
-        try {
-            return doUpdateItem(item, withEntity, timestamp);
-        } finally {
-            unlockStore();
-        }
+        checkWriteLocked();
+        return doUpdateItem(item, withEntity, timestamp);
     }
 
     @Override
@@ -770,7 +763,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             
 //            log.debug("Search query = " + query.toString());
             
-            lockStore();
+            lockStoreRead();
             try {
                 // DEBUG
                 QueryExecution exec = QueryExecutionFactory.create(query.toString(), store.asDataset());
@@ -786,7 +779,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                     exec.close();
                 }
             } finally {
-                unlockStore();
+                unlockStoreRead();
             }
             
         } catch (Exception e) {
@@ -805,18 +798,18 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     // Debug support only
     public void dump() {
-        lockStore();
+        lockStoreRead();
         try {
             getDefaultModel().write(System.out, "Turtle");
         } finally {
-            unlockStore();
+            unlockStoreRead();
         }
     }
 
     @Override
     public List<ForwardingRecord> listDelegations() {
         List<ForwardingRecord> results = new ArrayList<>();
-        lockStore();
+        lockStoreRead();
         try {
             Model m = getDefaultModel();
             ResultSet rs = QueryUtil.selectAll(m, DELEGATION_LIST_QUERY, Prefixes.getDefault());
@@ -858,7 +851,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             }
             return results;
         } finally {
-            unlockStore();
+            unlockStoreRead();
         }
     }
     static String DELEGATION_LIST_QUERY =
@@ -886,7 +879,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public ResultSet query(String query) {
-        store.lock();
+        lockStoreRead();
         try {
             QueryExecution exec = QueryExecutionFactory.create(query, store.asDataset());
             try {
@@ -895,7 +888,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                 exec.close();
             }
         } finally {
-            store.unlock();
+            unlockStoreRead();
         }
     }
 

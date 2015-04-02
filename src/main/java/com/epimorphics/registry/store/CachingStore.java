@@ -50,13 +50,28 @@ public class CachingStore implements StoreAPI {
     }
 
     @Override
-    public void lock(String uri) {
-        store.lock(uri);
+    public void lock() {
+        store.lock();
     }
 
     @Override
-    public void unlock(String uri) {
-        store.unlock(uri);
+    public void commit() {
+        store.commit();
+    }
+
+    @Override
+    public void end() {
+        store.end();
+    }
+    
+    @Override
+    public void lockStoreRead() {
+        store.lockStoreRead();
+    }
+    
+    @Override
+    public void unlockStoreRead() {
+        store.unlockStoreRead();
     }
 
     @Override
