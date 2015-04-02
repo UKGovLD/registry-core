@@ -83,24 +83,6 @@
      </snapshotRepository>  
    </distributionManagement> 
 
-  <pluginRepositories>
-    <pluginRepository>
-      <id>repo-epi</id>
-      <name>Epimorphics repository</name>
-      <layout>default</layout>
-      <url>http://www.epimorphics.com/maven2</url>
-      <releases>
-        <updatePolicy>always</updatePolicy>
-        <checksumPolicy>warn</checksumPolicy>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>interval:30</updatePolicy>
-        <checksumPolicy>warn</checksumPolicy>
-      </snapshots>
-    </pluginRepository>
-  </pluginRepositories>
-
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <oltu.oauth2.version>1.0.1-SNAPSHOT</oltu.oauth2.version>
@@ -381,38 +363,6 @@
           <path>/</path>
         </configuration>
       </plugin>
-
-<!--
-      <plugin>
-        <groupId>org.apache.jena.tools</groupId>
-        <artifactId>schemagen</artifactId>
-        <version>0.2-SNAPSHOT</version>
-        <configuration>
-          <includes>
-            <include>src/main/vocabs/*.ttl</include>
-            <include>src/main/vocabs/*.owl</include>
-            <include>src/main/vocabs/*.rdf</include>
-          </includes>
-          <fileOptions>
-            <source>
-              <input>default</input>
-              <package-name>com.epimorphics.registry.vocab</package-name>
-              <ontology>true</ontology>
-              <noStrict>true</noStrict>
-            </source>
-          </fileOptions>
-
-        </configuration>
-        <executions>
-          <execution>
-            <id>schemagen</id>
-            <goals>
-              <goal>translate</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-  -->
   
     </plugins>
 
