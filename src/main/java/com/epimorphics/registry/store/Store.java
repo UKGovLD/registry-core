@@ -47,6 +47,7 @@ public interface Store {
 
     public void lock();
     public void lockWrite();
-    public void unlock();
     public void abort();
+    public void commit();
+    public void end();
 }

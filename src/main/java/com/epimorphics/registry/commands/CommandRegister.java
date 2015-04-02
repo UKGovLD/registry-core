@@ -99,19 +99,14 @@ public class CommandRegister extends Command {
     @Override
     public ValidationResponse validate() {
         boolean isBatch = parameters.containsKey(Parameters.BATCH_MANAGED) || parameters.containsKey(Parameters.BATCH_REFERENCED);
-        store.lock(target);
-        try {
-            Description d = store.getCurrentVersion(target);
-            if (d == null) {
-                return new ValidationResponse(NOT_FOUND, "No such register");
-            }
-            if (!(d instanceof Register)) {
-                return new ValidationResponse(BAD_REQUEST, "Can only register items in a register");
-            }
-            parentRegister = d.asRegister();
-        } finally {
-            store.unlock(target);
+        Description d = store.getCurrentVersion(target);
+        if (d == null) {
+            return new ValidationResponse(NOT_FOUND, "No such register");
         }
+        if (!(d instanceof Register)) {
+            return new ValidationResponse(BAD_REQUEST, "Can only register items in a register");
+        }
+        parentRegister = d.asRegister();
 
         for (Resource validationQuery : RDFUtil.allResourceValues(parentRegister.getRoot(), RegistryVocab.validationQuery)) {
             String query = RDFUtil.getStringValue(validationQuery, RegistryVocab.query);
@@ -197,7 +192,7 @@ public class CommandRegister extends Command {
     @Override
     public Response doExecute() {
 
-        store.lock(target);
+        store.lock();
         try {
             Resource location = null;
             if (parameters.containsKey(Parameters.BATCH_MANAGED) || parameters.containsKey(Parameters.BATCH_REFERENCED)) {
@@ -215,13 +210,14 @@ public class CommandRegister extends Command {
             // Update the register itself only after all the items have been registered
             // TODO could have consistent date stamp across these if we want
             store.update(parentRegister);
+            store.commit();
             try {
                 return Response.created(new URI(location.getURI())).build();
             } catch (URISyntaxException e) {
                 throw new EpiException(e);
             }
         } finally {
-            store.unlock(target);
+            store.end();
         }
     }
 

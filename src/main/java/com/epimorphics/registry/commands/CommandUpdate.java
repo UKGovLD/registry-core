@@ -187,8 +187,7 @@ public class CommandUpdate extends Command {
     @Override
     public Response doExecute() {
         // Current and newitem will have been set and checked by validation step, so just process them
-        String itemURI = newitem.getRoot().getURI();
-        store.lock(itemURI);
+        store.lock();
         try {
             boolean isRegister = currentItem.isRegister();
             Resource entity = newitem.getEntity();
@@ -215,6 +214,7 @@ public class CommandUpdate extends Command {
             }
             String versionURI = store.update(currentItem, withEntity);
             checkDelegation(currentItem);
+            store.commit();
             
             notify( new Message(this, newitem) );
             
@@ -222,7 +222,7 @@ public class CommandUpdate extends Command {
         } catch (URISyntaxException e) {
             throw new WebApplicationException(e);
         } finally {
-            store.unlock(itemURI);
+            store.end();
         }
     }
 

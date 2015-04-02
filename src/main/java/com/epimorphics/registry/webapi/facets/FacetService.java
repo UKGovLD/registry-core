@@ -104,7 +104,7 @@ public class FacetService extends ComponentBase {
 //            return new FacetResult(baseQuery, state, specList, store.getUnionModel());
             return new FacetResult(baseQuery, state, specList, store.asDataset().getDefaultModel());
         } finally {
-            store.unlock();
+            store.end();
         }
     }
 }

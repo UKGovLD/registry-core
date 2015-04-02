@@ -97,7 +97,7 @@ public class TestAPIDebug extends TomcatTestBase {
                 graph.write(System.out, "Turtle");
             }
         } finally {
-            storesvc.unlock();
+            storesvc.end();
         }
     }
 
@@ -118,7 +118,7 @@ public class TestAPIDebug extends TomcatTestBase {
                 graph.write(System.out, "Turtle");
             }
         } finally {
-            storesvc.unlock();
+            storesvc.end();
         }
     }
 

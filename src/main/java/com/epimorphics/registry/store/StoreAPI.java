@@ -43,15 +43,32 @@ import com.hp.hpl.jena.rdf.model.Resource;
 public interface StoreAPI {
 
     /**
-     * Lock a specific resource for updating. Will block until any existing lock is lifted.
+     * Lock the store for an update transaction.
+     * Should be called before an API action that involves a store update.
      */
-    public void lock(String uri);
+    public void lock();
 
     /**
-     * Release the "forupdate" lock on the given URI (should be a Register or RegisterItem).
-     * Throws an error if there is no such lock.
+     * Commit the update transaction
      */
-    public void unlock(String uri);
+    public void commit();
+    
+    /**
+     * Finish the update transaction, if commit has not been called then abort the transaction
+     */
+    public void end();
+
+    /**
+     * Lock the store for reading.
+     * If this thread is already in a write transaction then do nothing.
+     */
+    public void lockStoreRead();
+    
+    /**
+     * Unlock the store for reading.
+     * If this thread is in a write transaction then do nothing
+     */
+    public void unlockStoreRead();
 
     // --- Methods for access versions of resource descriptions ---
 
