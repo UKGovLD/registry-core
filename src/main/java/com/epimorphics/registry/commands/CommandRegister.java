@@ -376,7 +376,7 @@ public class CommandRegister extends Command {
             UserInfo userinfo = (UserInfo) SecurityUtils.getSubject().getPrincipal();
             submitter
             .addProperty(FOAF.name, userinfo.getName())
-            .addProperty(FOAF.openid, m.createResource( userinfo.getOpenid()) );
+            .addProperty(FOAF.accountName, m.createResource( userinfo.getOpenid()) );
         } catch (UnavailableSecurityManagerException e) {
             // Occurs during bootstrap
             submitter.addProperty(FOAF.name, "bootstrap");
