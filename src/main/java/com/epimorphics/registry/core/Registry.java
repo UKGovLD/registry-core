@@ -58,6 +58,7 @@ import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.facets.FacetService;
 import com.epimorphics.util.EpiException;
+import com.epimorphics.util.FileUtil;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.util.FileUtils;
@@ -164,6 +165,7 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
     
     public void setLog(String logdir) {
         this.logDir = expandFileLocation(logdir);
+        FileUtil.ensureDir(this.logDir);
     }
     
     public void setUserStore(UserStore store) {
