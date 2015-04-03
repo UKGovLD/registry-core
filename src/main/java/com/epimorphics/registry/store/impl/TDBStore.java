@@ -176,7 +176,7 @@ public class TDBStore  extends ComponentBase implements Store {
                 EntityDefinition entDef = new EntityDefinition("uri", "text", RDFS.label.asNode()) ;
                 if (indexSpec != null) {
                     for (String spec : indexSpec.split(",")) {
-                        String uri = Prefixes.get().expandPrefix(spec.trim());
+                        String uri = Prefixes.getDefault().expandPrefix(spec.trim());
                         if ( ! uri.equals("default") ) {
                             Node predicate = NodeFactory.createURI(uri);
                             if (!predicate.equals(RDFS.label.asNode())) {
