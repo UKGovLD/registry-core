@@ -41,6 +41,7 @@ import com.epimorphics.appbase.core.App;
 import com.epimorphics.appbase.core.AppConfig;
 import com.epimorphics.appbase.core.ComponentBase;
 import com.epimorphics.registry.store.Store;
+import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.util.FileUtil;
 import com.epimorphics.util.NameUtils;
@@ -175,7 +176,7 @@ public class TDBStore  extends ComponentBase implements Store {
                 EntityDefinition entDef = new EntityDefinition("uri", "text", RDFS.label.asNode()) ;
                 if (indexSpec != null) {
                     for (String spec : indexSpec.split(",")) {
-                        String uri = getApp().getPrefixes().expandPrefix(spec.trim());
+                        String uri = Prefixes.get().expandPrefix(spec.trim());
                         if ( ! uri.equals("default") ) {
                             Node predicate = NodeFactory.createURI(uri);
                             if (!predicate.equals(RDFS.label.asNode())) {
