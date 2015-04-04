@@ -28,6 +28,7 @@ import static com.epimorphics.webapi.marshalling.RDFXMLMarshaller.MIME_RDFXML;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -377,6 +378,20 @@ public class RequestProcessor extends BaseEndpoint {
             Command command = makeCommand( Operation.Register );
             command.setPayload( r.getModel() );
             return command.execute();
+        } else if ( uriInfo.getQueryParameters().containsKey(Parameters.REAL_DELETE) ) {
+            Command command = makeCommand( Operation.RealDelete );
+            Response response = command.execute();
+            if (response.getStatus() == 204) {
+                // For UI level actions then redirect
+                URI uri;
+                try {
+                    uri = new URI("/");
+                    return Response.seeOther(uri).build();
+                } catch (URISyntaxException e) {
+                    // fall through to default return
+                }
+            } 
+            return response;
         } else {
             // Default is to invoke register, e.g. for status update processing
             return register(hh, null);
@@ -385,6 +400,11 @@ public class RequestProcessor extends BaseEndpoint {
 
     @POST
     public Response nullForm(@Context HttpHeaders hh, InputStream body) {
+        MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
+        if ( parameters.containsKey(Parameters.REAL_DELETE) ) {
+            Command command = makeCommand( Operation.RealDelete );
+            return command.execute();
+        }
         // Default is to invoke register, e.g. for status update processing
         return register(hh, body);
     }

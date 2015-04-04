@@ -49,6 +49,7 @@ import com.epimorphics.registry.vocab.Version;
 import com.epimorphics.util.NameUtils;
 import com.epimorphics.util.TestUtil;
 import com.epimorphics.vocabs.SKOS;
+import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.ResIterator;
@@ -66,6 +67,7 @@ public class TestStoreImpl {
     static final String BOOTSTRAP_FILE = "src/test/webapp/WEB-INF/root-register.ttl";
     static final String ROOT_REGISTER = "http://location.data.gov.uk/";
     static final String REG1 = ROOT_REGISTER + "reg1";
+    static final String REG3 = ROOT_REGISTER + "reg1/reg3";
 
     Store basestore;
     StoreAPI store;
@@ -404,6 +406,59 @@ public class TestStoreImpl {
         checkRegisterList(reg1, ts0-1);
     }
 
+    @Test
+    public void testRealDelete() {
+        long baseSize = sizeSig();
+        
+        addEntry("file:test/reg1.ttl", ROOT_REGISTER);
+        addEntry("file:test/blue.ttl", REG1);
+        addEntry("file:test/red.ttl", REG1);
+        addEntry("file:test/reg1.ttl", ROOT_REGISTER);
+
+        String itemURI = ROOT_REGISTER + "reg1/_red";
+        doUpdate(itemURI, "red1");
+
+        addEntry("file:test/reg3.ttl", REG1);
+        addEntry("file:test/green.ttl", REG3);
+        assertTrue( sizeSig() > baseSize);
+        
+        store.lock();
+        store.delete(REG1);
+        store.commit();
+        store.end();
+        
+        assertEquals(baseSize, sizeSig());
+    }
+    
+    private long sizeSig() {
+        long graphs = getCount("SELECT (COUNT(DISTINCT ?G) as ?n) WHERE { GRAPH ?G {}}", "n");
+        long triples = getCount("SELECT (COUNT(1) as ?n) WHERE { ?s ?p ?o }", "n");
+        return graphs * 10000 + triples;
+    }
+    
+    private long getCount(String query, String var) {
+        ResultSet results = store.query(query);
+        return results.next().getLiteral(var).asLiteral().getLong();
+    }
+    
+//    private void printStore() {
+//        basestore.lock();
+//        try {
+//            Dataset ds =  basestore.asDataset();
+//            Model store = ds.getDefaultModel();
+//            System.out.println("Default model:");
+//            store.write(System.out, "Turtle");
+//            for (Iterator<String> i = ds.listNames(); i.hasNext(); ) {
+//                String graphName = i.next();
+//                Model graph = ds.getNamedModel(graphName);
+//                System.out.println("Graph " + graphName + ":");
+//                graph.write(System.out, "Turtle");
+//            }
+//        } finally {
+//            basestore.end();
+//        }
+//    }
+    
     private void checkRegisterList(Register register, long ts, String...labels) {
         List<RegisterItem> members = StoreUtil.fetchMembersAt(store, register, ts, false);
         assertEquals(labels.length, members.size());

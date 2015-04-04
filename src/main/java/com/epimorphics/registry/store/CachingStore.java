@@ -217,4 +217,9 @@ public class CachingStore implements StoreAPI {
         return store.query(query);
     }
 
+    @Override
+    public void delete(String uri) {
+        store.delete(uri);
+    }
+
 }
