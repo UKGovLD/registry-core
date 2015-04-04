@@ -27,7 +27,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 
 /**
  * RDF store abstraction. Obsolete - predates jena support for transactions
- * and designed for now=deprecated component model. Retained here temporarily
+ * and designed for now-deprecated component model. Retained here temporarily
  * as part of porting.
  */
 // TODO replace with SparqSource

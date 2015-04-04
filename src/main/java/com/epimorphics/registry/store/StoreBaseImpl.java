@@ -50,6 +50,7 @@ import com.epimorphics.registry.util.VersionUtil;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
 import com.epimorphics.util.EpiException;
+import com.epimorphics.util.NameUtils;
 import com.epimorphics.vocabs.Time;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
@@ -59,6 +60,7 @@ import com.hp.hpl.jena.query.ResultSetFactory;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -71,48 +73,53 @@ import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
 
 /**
- * Implementation of the store API which uses a triple store for persistence
- * and indexes all registered items as they are registered. In this version
- * all current data is held in the default graph and named graphs are used for
- * each version of each defined entity.
+ * Implementation of the store API which uses a triple store for persistence and
+ * indexes all registered items as they are registered. In this version all
+ * current data is held in the default graph and named graphs are used for each
+ * version of each defined entity.
  * <p>
- * This implementation uses use the ServiceConfig machinery to specify the
- * store to be used ("store" parameter) and the (optional) indexer ("indexer" parameter).
- * The configured store should <strong>not</strong> use union-default.
+ * This implementation uses use the ServiceConfig machinery to specify the store
+ * to be used ("store" parameter) and the (optional) indexer ("indexer"
+ * parameter). The configured store should <strong>not</strong> use
+ * union-default.
  * </p>
+ * 
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 
 // TODO Replace by SPARQL-based version with underlying SPARQLSource
 
 public class StoreBaseImpl extends ComponentBase implements StoreAPI {
-    static final Logger log = LoggerFactory.getLogger( StoreBaseImpl.class );
+    static final Logger log = LoggerFactory.getLogger(StoreBaseImpl.class);
 
     public static final String STORE_PARAMETER = "store";
     public static final String INDEXER_PARAMETER = "indexer";
 
     protected Store store;
     protected ThreadLocal<Boolean> writeLocked = new ThreadLocal<Boolean>() {
-        @Override protected Boolean initialValue() {
+        @Override
+        protected Boolean initialValue() {
             return false;
         }
-    }; 
+    };
 
     public void setStore(Store store) {
         this.store = store;
     }
 
     /**
-     * Provides access to underlying store implementation for management purposes only.
+     * Provides access to underlying store implementation for management
+     * purposes only.
      */
     public Store getStore() {
         return store;
     }
 
     // Implementation note: Assumes that the underlying Store, like TDB, has
-    // per-thread transaction status so transaction state and corresponding writeLocked local
+    // per-thread transaction status so transaction state and corresponding
+    // writeLocked local
     // are on same thread.
-    
+
     /**
      * Lock the store for an update transaction
      */
@@ -127,9 +134,10 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     public void commit() {
         store.commit();
     }
-    
+
     /**
-     * Finish the update transaction, if commit has not been called then abort the transaction
+     * Finish the update transaction, if commit has not been called then abort
+     * the transaction
      */
     public void end() {
         store.end();
@@ -144,28 +152,28 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             throw new EpiException("Failed to lock store before updating");
         }
     }
-    
+
     /**
-     * Lock the store for reading.
-     * If this thread is already in a write transaction then do nothing.
+     * Lock the store for reading. If this thread is already in a write
+     * transaction then do nothing.
      */
     @Override
     public void lockStoreRead() {
-        if ( ! writeLocked.get() ) {
+        if (!writeLocked.get()) {
             store.lock();
         }
     }
-    
+
     /**
-     * Unlock the store for reading.
-     * If this thread is in a write transaction then do nothing
+     * Unlock the store for reading. If this thread is in a write transaction
+     * then do nothing
      */
     @Override
     public void unlockStoreRead() {
-        if ( ! writeLocked.get() ) {
+        if (!writeLocked.get()) {
             store.end();
         }
-    }    
+    }
 
     @Override
     public void storeGraph(String graphURI, Model model) {
@@ -178,7 +186,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         lockStoreRead();
         try {
             Model result = ModelFactory.createDefaultModel();
-            result.add( store.asDataset().getNamedModel(graphURI) );
+            result.add(store.asDataset().getNamedModel(graphURI));
             return result;
         } finally {
             unlockStoreRead();
@@ -189,7 +197,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     public Description getDescription(String uri) {
         lockStoreRead();
         try {
-            Description d = asDescription( describe(uri, null) );
+            Description d = asDescription(describe(uri, null));
             return d;
         } finally {
             unlockStoreRead();
@@ -219,7 +227,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     public Description getCurrentVersion(String uri) {
         lockStoreRead();
         try {
-            Description d = asDescription( doGetCurrentVersion(uri, null) );
+            Description d = asDescription(doGetCurrentVersion(uri, null));
             return d;
         } finally {
             unlockStoreRead();
@@ -228,7 +236,8 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     protected Resource doGetCurrentVersion(String uri, Model dest) {
         Resource root = describe(uri, dest);
-        Resource version = root.getPropertyResourceValue(Version.currentVersion);
+        Resource version = root
+                .getPropertyResourceValue(Version.currentVersion);
         if (version != null) {
             Closure.closure(mod(version), false, root.getModel());
             VersionUtil.flatten(root, version);
@@ -242,7 +251,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         try {
             Description d = doGetVersion(uri, true);
             if (d instanceof RegisterItem && withEntity) {
-                doGetEntity((RegisterItem)d, null, false);
+                doGetEntity((RegisterItem) d, null, false);
             }
             return d;
         } finally {
@@ -255,9 +264,11 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         Resource root = version.getPropertyResourceValue(DCTerms.isVersionOf);
         if (root != null) {
             Closure.closure(mod(root), false, version.getModel());
-            if (flatten) VersionUtil.flatten(root, version);
+            if (flatten)
+                VersionUtil.flatten(root, version);
         } else {
-            throw new EpiException("Version requested on resource with no isVersionOf root");
+            throw new EpiException(
+                    "Version requested on resource with no isVersionOf root");
         }
         return asDescription(root);
     }
@@ -266,10 +277,12 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     public Description getVersionAt(String uri, long time) {
         lockStoreRead();
         try {
-            RDFNode version = selectFirstVar("version", getDefaultModel(), VERSION_AT_QUERY, Prefixes.getDefault(),
-                    "root", ResourceFactory.createResource(uri), "time", RDFUtil.fromDateTime(time) );
+            RDFNode version = selectFirstVar("version", getDefaultModel(),
+                    VERSION_AT_QUERY, Prefixes.getDefault(), "root",
+                    ResourceFactory.createResource(uri), "time",
+                    RDFUtil.fromDateTime(time));
             if (version != null && version.isURIResource()) {
-                return doGetVersion( version.asResource().getURI(), true );
+                return doGetVersion(version.asResource().getURI(), true);
             } else {
                 return null;
             }
@@ -277,53 +290,49 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             unlockStoreRead();
         }
     }
-    static String VERSION_AT_QUERY =
-                    "SELECT ?version WHERE \n" +
-                    "{  \n" +
-                    "    ?version dct:isVersionOf ?root; \n" +
-                    "             version:interval [ time:hasBeginning [time:inXSDDateTime ?start] ]. \n" +
-                    "    FILTER (?start <= ?time) \n" +
-                    "    FILTER NOT EXISTS { \n" +
-                    "        ?version version:interval [ time:hasEnd [time:inXSDDateTime ?end] ]. \n" +
-                    "        FILTER (?end <= ?time) \n" +
-                    "    } \n" +
-                    "} \n";
 
+    static String VERSION_AT_QUERY = "SELECT ?version WHERE \n"
+            + "{  \n"
+            + "    ?version dct:isVersionOf ?root; \n"
+            + "             version:interval [ time:hasBeginning [time:inXSDDateTime ?start] ]. \n"
+            + "    FILTER (?start <= ?time) \n"
+            + "    FILTER NOT EXISTS { \n"
+            + "        ?version version:interval [ time:hasEnd [time:inXSDDateTime ?end] ]. \n"
+            + "        FILTER (?end <= ?time) \n" + "    } \n" + "} \n";
 
     @Override
     public List<VersionInfo> listVersions(String uri) {
         lockStoreRead();
         try {
-            ResultSet rs = selectAll(getDefaultModel(), VERSION_LIST_QUERY, Prefixes.getDefault(),
-                createBindings("root", ResourceFactory.createResource(uri)));
+            ResultSet rs = selectAll(getDefaultModel(), VERSION_LIST_QUERY,
+                    Prefixes.getDefault(),
+                    createBindings("root", ResourceFactory.createResource(uri)));
             List<VersionInfo> results = new ArrayList<VersionInfo>();
             while (rs.hasNext()) {
                 QuerySolution soln = rs.next();
-                VersionInfo vi = new VersionInfo(
-                        soln.getResource("version"),
-                        soln.getLiteral("info"),
-                        soln.getLiteral("from"),
-                        soln.getLiteral("to")      );
+                VersionInfo vi = new VersionInfo(soln.getResource("version"),
+                        soln.getLiteral("info"), soln.getLiteral("from"),
+                        soln.getLiteral("to"));
                 Resource replaces = soln.getResource("replaces");
                 if (replaces != null) {
                     vi.setReplaces(replaces.getURI());
                 }
-                results.add( vi );
+                results.add(vi);
             }
             return results;
         } finally {
             unlockStoreRead();
         }
     }
-    static String VERSION_LIST_QUERY =
-            "SELECT ?version ?info ?from ?to ?replaces WHERE \n" +
-            "{  \n" +
-            "    ?version dct:isVersionOf ?root; \n" +
-            "             owl:versionInfo ?info . \n" +
-            "   OPTIONAL {?version version:interval [time:hasBeginning [time:inXSDDateTime ?from]].} \n" +
-            "   OPTIONAL {?version version:interval [time:hasEnd [time:inXSDDateTime ?to]].} \n" +
-            "   OPTIONAL {?version dct:replaces ?replaces.} \n" +
-            "} ORDER BY ?info \n";
+
+    static String VERSION_LIST_QUERY = "SELECT ?version ?info ?from ?to ?replaces WHERE \n"
+            + "{  \n"
+            + "    ?version dct:isVersionOf ?root; \n"
+            + "             owl:versionInfo ?info . \n"
+            + "   OPTIONAL {?version version:interval [time:hasBeginning [time:inXSDDateTime ?from]].} \n"
+            + "   OPTIONAL {?version version:interval [time:hasEnd [time:inXSDDateTime ?to]].} \n"
+            + "   OPTIONAL {?version dct:replaces ?replaces.} \n"
+            + "} ORDER BY ?info \n";
 
     @Override
     public long versionStartedAt(String uri) {
@@ -331,12 +340,11 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         try {
             Resource root = getDefaultModel().getResource(uri);
             Resource interval = root.getPropertyResourceValue(Version.interval);
-            if (interval == null) return -1;
-            return RDFUtil.asTimestamp(
-                    interval
-                        .getPropertyResourceValue(Time.hasBeginning)
-                        .getProperty(Time.inXSDDateTime)
-                        .getObject() );
+            if (interval == null)
+                return -1;
+            return RDFUtil.asTimestamp(interval
+                    .getPropertyResourceValue(Time.hasBeginning)
+                    .getProperty(Time.inXSDDateTime).getObject());
         } finally {
             unlockStoreRead();
         }
@@ -347,32 +355,33 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         Resource entity = ResourceFactory.createResource(uri);
         lockStoreRead();
         try {
-            ResultSet matches = QueryUtil.selectAll(getDefaultModel(), ENTITY_FIND_QUERY, Prefixes.getDefault(), "entity", entity);
+            ResultSet matches = QueryUtil.selectAll(getDefaultModel(),
+                    ENTITY_FIND_QUERY, Prefixes.getDefault(), "entity", entity);
             List<EntityInfo> results = new ArrayList<EntityInfo>();
             while (matches.hasNext()) {
                 QuerySolution soln = matches.next();
-                results.add( new EntityInfo(entity, soln.getResource("item"), soln.getResource("register"), soln.getResource("status") ) );
+                results.add(new EntityInfo(entity, soln.getResource("item"),
+                        soln.getResource("register"), soln
+                                .getResource("status")));
             }
             return results;
         } finally {
             unlockStoreRead();
         }
     }
-    static String ENTITY_FIND_QUERY =
-            "SELECT * WHERE { " +
-                    "?item reg:register ?register; " +
-                    "      version:currentVersion ?itemVer . " +
-                    "?itemVer reg:status ?status; " +
-                    "         reg:definition [reg:entity ?entity] . " +
-            "}";
 
+    static String ENTITY_FIND_QUERY = "SELECT * WHERE { "
+            + "?item reg:register ?register; "
+            + "      version:currentVersion ?itemVer . "
+            + "?itemVer reg:status ?status; "
+            + "         reg:definition [reg:entity ?entity] . " + "}";
 
     @Override
     public RegisterItem getItem(String uri, boolean withEntity) {
         lockStoreRead();
         try {
             Resource root = doGetCurrentVersion(uri, null);
-            if (! root.hasProperty(RDF.type, RegistryVocab.RegisterItem)) {
+            if (!root.hasProperty(RDF.type, RegistryVocab.RegisterItem)) {
                 return null;
             }
             RegisterItem item = new RegisterItem(root);
@@ -385,28 +394,36 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         }
     }
 
-    protected Resource doGetEntity(RegisterItem item, Model dest, boolean getCurrent) {
+    protected Resource doGetEntity(RegisterItem item, Model dest,
+            boolean getCurrent) {
         Resource root = item.getRoot();
         if (dest == null) {
             dest = ModelFactory.createDefaultModel();
         }
-        Resource entityRef = root.getPropertyResourceValue(RegistryVocab.definition);
+        Resource entityRef = root
+                .getPropertyResourceValue(RegistryVocab.definition);
         if (entityRef != null) {
-            Resource entity = entityRef.getPropertyResourceValue(RegistryVocab.entity);
-            Resource srcGraph = entityRef.getPropertyResourceValue(RegistryVocab.sourceGraph);
+            Resource entity = entityRef
+                    .getPropertyResourceValue(RegistryVocab.entity);
+            Resource srcGraph = entityRef
+                    .getPropertyResourceValue(RegistryVocab.sourceGraph);
             if (srcGraph != null) {
-                dest.add( store.asDataset().getNamedModel(srcGraph.getURI()) );
+                dest.add(store.asDataset().getNamedModel(srcGraph.getURI()));
                 entity = entity.inModel(dest);
             } else {
                 // Occurs for versioned things i.e. Registers
                 if (getCurrent) {
-                    entity = doGetCurrentVersion( entity.getURI(),  dest );
+                    entity = doGetCurrentVersion(entity.getURI(), dest);
                 } else {
-                    Resource regversion = entityRef.getPropertyResourceValue(RegistryVocab.entityVersion);
+                    Resource regversion = entityRef
+                            .getPropertyResourceValue(RegistryVocab.entityVersion);
                     if (regversion != null) {
-                        entity = doGetVersion(regversion.getURI(), true).getRoot();
+                        entity = doGetVersion(regversion.getURI(), true)
+                                .getRoot();
                     } else {
-                        throw new EpiException("Illegal state of item for a Resgister, could not find entityVersion: " + root);
+                        throw new EpiException(
+                                "Illegal state of item for a Resgister, could not find entityVersion: "
+                                        + root);
                     }
                 }
             }
@@ -433,8 +450,9 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         lockStoreRead();
         try {
             Model shared = ModelFactory.createDefaultModel();
-            List<RegisterItem> results = new ArrayList<RegisterItem>(itemURIs.size());
-            for ( String uri : itemURIs ) {
+            List<RegisterItem> results = new ArrayList<RegisterItem>(
+                    itemURIs.size());
+            for (String uri : itemURIs) {
                 Resource itemRoot = doGetCurrentVersion(uri, shared);
                 RegisterItem item = new RegisterItem(itemRoot);
                 if (withEntity) {
@@ -448,39 +466,43 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         }
     }
 
-
-//    public  List<RegisterItem>  doFetchMembers(Register register, boolean withEntity) {
-//        lockStore();
-//        try {
-//            // A shared model would save having 2N models around but makes filtering painful
-////            Model shared = ModelFactory.createDefaultModel();
-//            List<RDFNode> items = selectAllVar("ri", getDefaultModel(), REGISTER_ENUM_QUERY, Prefixes.getDefault(),
-//                    "register", register.getRoot() );
-//            List<RegisterItem> results = new ArrayList<RegisterItem>(items.size());
-//            for ( RDFNode itemR : items) {
-//                if (itemR.isURIResource()) {
-//                    Resource itemRoot = doGetCurrentVersion(itemR.asResource().getURI(), null);
-//                    RegisterItem item = new RegisterItem(itemRoot);
-//                    doGetEntity(item,  null);
-//                    results.add(item);
-//                } else {
-//                    throw new EpiException("Found item which isn't a resource");
-//                }
-//            }
-//            return results;
-//        } finally {
-//            unlockStore();
-//        }
-//    }
-//    static String REGISTER_ENUM_QUERY =
-//            "SELECT ?ri WHERE { ?ri reg:register ?register. }";
+    // public List<RegisterItem> doFetchMembers(Register register, boolean
+    // withEntity) {
+    // lockStore();
+    // try {
+    // // A shared model would save having 2N models around but makes filtering
+    // painful
+    // // Model shared = ModelFactory.createDefaultModel();
+    // List<RDFNode> items = selectAllVar("ri", getDefaultModel(),
+    // REGISTER_ENUM_QUERY, Prefixes.getDefault(),
+    // "register", register.getRoot() );
+    // List<RegisterItem> results = new ArrayList<RegisterItem>(items.size());
+    // for ( RDFNode itemR : items) {
+    // if (itemR.isURIResource()) {
+    // Resource itemRoot = doGetCurrentVersion(itemR.asResource().getURI(),
+    // null);
+    // RegisterItem item = new RegisterItem(itemRoot);
+    // doGetEntity(item, null);
+    // results.add(item);
+    // } else {
+    // throw new EpiException("Found item which isn't a resource");
+    // }
+    // }
+    // return results;
+    // } finally {
+    // unlockStore();
+    // }
+    // }
+    // static String REGISTER_ENUM_QUERY =
+    // "SELECT ?ri WHERE { ?ri reg:register ?register. }";
 
     @Override
     public List<RegisterEntryInfo> listMembers(Register register) {
         lockStoreRead();
         try {
-            ResultSet rs = selectAll(getDefaultModel(), REGISTER_LIST_QUERY, Prefixes.getDefault(),
-                                        createBindings("register", register.getRoot()) );
+            ResultSet rs = selectAll(getDefaultModel(), REGISTER_LIST_QUERY,
+                    Prefixes.getDefault(),
+                    createBindings("register", register.getRoot()));
             List<RegisterEntryInfo> results = new ArrayList<RegisterEntryInfo>();
             Resource priorItem = null;
             RegisterEntryInfo prior = null;
@@ -488,18 +510,15 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                 QuerySolution soln = rs.next();
                 Resource item = soln.getResource("item");
                 if (item.equals(priorItem)) {
-                    prior.addLabel( soln.getLiteral("label") );
-                    prior.addType( soln.getResource("type") );
+                    prior.addLabel(soln.getLiteral("label"));
+                    prior.addType(soln.getResource("type"));
                 } else {
-                    prior = new RegisterEntryInfo(
-                            soln.getResource("status"),
-                            item,
-                            soln.getResource("entity"),
-                            soln.getLiteral("label"),
-                            soln.getResource("type"),
-                            soln.getLiteral("notation") );
+                    prior = new RegisterEntryInfo(soln.getResource("status"),
+                            item, soln.getResource("entity"),
+                            soln.getLiteral("label"), soln.getResource("type"),
+                            soln.getLiteral("notation"));
                     priorItem = item;
-                    results.add( prior );
+                    results.add(prior);
                 }
             }
             return results;
@@ -507,25 +526,23 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             unlockStoreRead();
         }
     }
-    static String REGISTER_LIST_QUERY =
-            "SELECT * WHERE { " +
-                    "?item reg:register ?register; " +
-                    "      version:currentVersion ?itemVer; " +
-                    "      reg:notation ?notation; " +
-                    "      reg:itemClass ?type ." +
-                    "?itemVer reg:status ?status; " +
-                    "         reg:definition [reg:entity ?entity]; " +
-                    "         rdfs:label ?label . " +
-            "} ORDER BY ?notation";
 
+    static String REGISTER_LIST_QUERY = "SELECT * WHERE { "
+            + "?item reg:register ?register; "
+            + "      version:currentVersion ?itemVer; "
+            + "      reg:notation ?notation; " + "      reg:itemClass ?type ."
+            + "?itemVer reg:status ?status; "
+            + "         reg:definition [reg:entity ?entity]; "
+            + "         rdfs:label ?label . " + "} ORDER BY ?notation";
 
     @Override
     public boolean contains(Register register, String notation) {
         lockStoreRead();
         try {
-            String base = RDFUtil.getNamespace( register.getRoot() );
-            Resource ri = ResourceFactory.createResource( base + "_" + notation);
-            return getDefaultModel().contains(ri, RDF.type, RegistryVocab.RegisterItem);
+            String base = RDFUtil.getNamespace(register.getRoot());
+            Resource ri = ResourceFactory.createResource(base + "_" + notation);
+            return getDefaultModel().contains(ri, RDF.type,
+                    RegistryVocab.RegisterItem);
         } finally {
             unlockStoreRead();
         }
@@ -533,10 +550,12 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public void loadBootstrap(String filename) {
-        Model bootmodel = FileManager.get().loadModel(filename); // Load first in case of errors
+        Model bootmodel = FileManager.get().loadModel(filename); // Load first
+                                                                 // in case of
+                                                                 // errors
         lock();
         try {
-            getDefaultModel().add( bootmodel );
+            getDefaultModel().add(bootmodel);
             commit();
         } finally {
             end();
@@ -552,15 +571,18 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     public void addToRegister(Register register, RegisterItem item, Calendar now) {
         checkWriteLocked();
         doUpdateItem(item, true, now);
-        // Don't automatically update register, we want the option to do batch updates
-//            doUpdate(register.getRoot(), now);
+        // Don't automatically update register, we want the option to do batch
+        // updates
+        // doUpdate(register.getRoot(), now);
         mod(item).addProperty(RegistryVocab.register, register.getRoot());
         Resource entity = item.getEntity();
         if (entity.hasProperty(RDF.type, RegistryVocab.Register)) {
             modCurrent(register).addProperty(RegistryVocab.subregister, entity);
         }
-            // Don't automatically update register, we want the option to do batch updates
-//            modCurrent(register).removeAll(DCTerms.modified).addProperty(DCTerms.modified, getDefaultModel().createTypedLiteral(now));
+        // Don't automatically update register, we want the option to do batch
+        // updates
+        // modCurrent(register).removeAll(DCTerms.modified).addProperty(DCTerms.modified,
+        // getDefaultModel().createTypedLiteral(now));
     }
 
     private Resource modCurrent(Description d) {
@@ -588,44 +610,51 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         return update(register, Calendar.getInstance());
     }
 
-    protected Resource doUpdateRegister(Resource root, Calendar cal, Property... rigids) {
+    protected Resource doUpdateRegister(Resource root, Calendar cal,
+            Property... rigids) {
         root.removeAll(RegistryVocab.subregister);
         Resource current = getDefaultModel().getResource(root.getURI());
-        Resource temp= current.getPropertyResourceValue(Version.currentVersion);
+        Resource temp = current
+                .getPropertyResourceValue(Version.currentVersion);
         if (temp != null) {
             current = temp;
         }
-        // doUpdate call will need current versionInfo to be able to allocate next version correctly
-        RDFUtil.copyProperty( current, root, OWL.versionInfo );
+        // doUpdate call will need current versionInfo to be able to allocate
+        // next version correctly
+        RDFUtil.copyProperty(current, root, OWL.versionInfo);
         // Preserve subregister - could this just be added to rigids
-        RDFUtil.copyProperty( current, root, RegistryVocab.subregister );
-        root.removeAll(DCTerms.modified).addProperty(DCTerms.modified, getDefaultModel().createTypedLiteral(cal));
+        RDFUtil.copyProperty(current, root, RegistryVocab.subregister);
+        root.removeAll(DCTerms.modified).addProperty(DCTerms.modified,
+                getDefaultModel().createTypedLiteral(cal));
         return doUpdate(root, cal, rigids);
     }
-
 
     protected Resource doUpdate(Resource root, Calendar cal, Property... rigids) {
         Resource newVersion = VersionUtil.nextVersion(root, cal, rigids);
         Model st = getDefaultModel();
-        root.inModel(st).removeAll(OWL.versionInfo).removeAll(Version.currentVersion);
-        st.add( newVersion.getModel() );
+        root.inModel(st).removeAll(OWL.versionInfo)
+                .removeAll(Version.currentVersion);
+        st.add(newVersion.getModel());
         return newVersion.inModel(st);
     }
 
-//    protected void doIndex(Resource root, String graph) {
-//        if (indexer != null) {
-//            // If use updateGraph then get one entry per entity, which is much more efficient
-//            // However, then can't search on older names for entities which have been updated
-//            if (Registry.TEXT_INDEX_INCLUDES_HISTORY) {
-//                indexer.addGraph(graph, root.getModel());
-//            } else {
-//                indexer.updateGraph(graph, root.getModel());
-//            }
-//        }
-//    }
+    // protected void doIndex(Resource root, String graph) {
+    // if (indexer != null) {
+    // // If use updateGraph then get one entry per entity, which is much more
+    // efficient
+    // // However, then can't search on older names for entities which have been
+    // updated
+    // if (Registry.TEXT_INDEX_INCLUDES_HISTORY) {
+    // indexer.addGraph(graph, root.getModel());
+    // } else {
+    // indexer.updateGraph(graph, root.getModel());
+    // }
+    // }
+    // }
 
     @Override
-    public String update(RegisterItem item, boolean withEntity, Calendar timestamp) {
+    public String update(RegisterItem item, boolean withEntity,
+            Calendar timestamp) {
         checkWriteLocked();
         return doUpdateItem(item, withEntity, timestamp);
     }
@@ -635,35 +664,44 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         return update(item, withEntity, Calendar.getInstance());
     }
 
-    private String doUpdateItem(RegisterItem item, boolean withEntity, Calendar now) {
+    private String doUpdateItem(RegisterItem item, boolean withEntity,
+            Calendar now) {
         Model storeModel = getDefaultModel();
-        Resource oldVersion = mod(item).getPropertyResourceValue(Version.currentVersion);
+        Resource oldVersion = mod(item).getPropertyResourceValue(
+                Version.currentVersion);
 
-        Resource newVersion = doUpdate(item.getRoot(), now, RegisterItem.RIGID_PROPS);
+        Resource newVersion = doUpdate(item.getRoot(), now,
+                RegisterItem.RIGID_PROPS);
 
         if (withEntity) {
             Resource entity = item.getEntity();
-            Resource entityRef = newVersion.getPropertyResourceValue(RegistryVocab.definition);
+            Resource entityRef = newVersion
+                    .getPropertyResourceValue(RegistryVocab.definition);
             if (entityRef == null) {
                 entityRef = storeModel.createResource();
                 entityRef.addProperty(RegistryVocab.entity, entity);
                 newVersion.addProperty(RegistryVocab.definition, entityRef);
             } else {
-                Resource oldEntity = entityRef.getPropertyResourceValue(RegistryVocab.entity);
+                Resource oldEntity = entityRef
+                        .getPropertyResourceValue(RegistryVocab.entity);
                 if (!entity.equals(oldEntity)) {
-                    // Legality checks must be performed by API not by the store layer
+                    // Legality checks must be performed by API not by the store
+                    // layer
                     entityRef.removeAll(RegistryVocab.entity);
                     entityRef.addProperty(RegistryVocab.entity, entity);
                 }
             }
             if (entity.hasProperty(RDF.type, RegistryVocab.Register)) {
-                doUpdateRegister( entity, now );
-                Resource currentRegVersion = entity.inModel(storeModel).getPropertyResourceValue(Version.currentVersion);
+                doUpdateRegister(entity, now);
+                Resource currentRegVersion = entity.inModel(storeModel)
+                        .getPropertyResourceValue(Version.currentVersion);
                 if (currentRegVersion != null) {
                     entityRef.removeAll(RegistryVocab.entityVersion);
-                    entityRef.addProperty(RegistryVocab.entityVersion, currentRegVersion);
+                    entityRef.addProperty(RegistryVocab.entityVersion,
+                            currentRegVersion);
                 } else {
-                    log.warn("Possible internal inconsistency. No version information available for register: "  + entity);
+                    log.warn("Possible internal inconsistency. No version information available for register: "
+                            + entity);
                 }
             } else {
                 if (oldVersion != null) {
@@ -673,8 +711,10 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                 }
                 String graphURI = newVersion.getURI() + "#graph";
                 Model entityModel = null;
-                if (entity.getModel().contains(null, RDF.type, RegistryVocab.RegisterItem)) {
-                    // register item mixed in with entity graph, separate out for storage
+                if (entity.getModel().contains(null, RDF.type,
+                        RegistryVocab.RegisterItem)) {
+                    // register item mixed in with entity graph, separate out
+                    // for storage
                     log.debug("Mixed entity and item");
                     entityModel = Closure.closure(entity, false);
                 } else {
@@ -683,9 +723,9 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                 storeLockedGraph(graphURI, entityModel);
 
                 if (!item.isGraph()) {
-                    getDefaultModel().add( entityModel );
+                    getDefaultModel().add(entityModel);
                 }
-                Resource graph = ResourceFactory.createResource( graphURI );
+                Resource graph = ResourceFactory.createResource(graphURI);
                 entityRef.removeAll(RegistryVocab.sourceGraph);
                 entityRef.addProperty(RegistryVocab.sourceGraph, graph);
             }
@@ -703,16 +743,18 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         } else {
             graphModel.removeAll();
         }
-        graphModel.add( entityModel );
+        graphModel.add(entityModel);
     }
 
     private boolean removeGraphFor(Resource oldVersion) {
         Model st = getDefaultModel();
-        Resource definition = mod(oldVersion).getPropertyResourceValue(RegistryVocab.definition);
+        Resource definition = mod(oldVersion).getPropertyResourceValue(
+                RegistryVocab.definition);
         if (definition != null) {
-            Resource graph = definition.getPropertyResourceValue(RegistryVocab.sourceGraph);
+            Resource graph = definition
+                    .getPropertyResourceValue(RegistryVocab.sourceGraph);
             if (graph != null) {
-                st.remove( store.asDataset().getNamedModel(graph.getURI()));
+                st.remove(store.asDataset().getNamedModel(graph.getURI()));
                 return true;
             }
         }
@@ -722,57 +764,68 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     @Override
     public List<String> search(SearchRequest request) {
         try {
-            // SelectBuilder doesn't support property paths so use brute force string bashing
+            // SelectBuilder doesn't support property paths so use brute force
+            // string bashing
             StringBuffer query = new StringBuffer();
-            query.append( "PREFIX text: <http://jena.apache.org/text#>\n" );
-            query.append( String.format( "PREFIX reg:     <%s>\n", RegistryVocab.getURI() ) );
-            query.append( String.format( "PREFIX version: <%s>\n", Version.getURI() ) );
-            query.append( String.format( "PREFIX dct:     <%s>\n", DCTerms.getURI() ) );
-            query.append( String.format( "PREFIX rdfs:    <%s>\n", RDFS.getURI() ) );
-            query.append( "\nSELECT DISTINCT ?item WHERE {\n");
-            query.append( String.format("    ?entity text:query '%s' . \n", safeLiteral( request.getQuery() ) ) );
-            
+            query.append("PREFIX text: <http://jena.apache.org/text#>\n");
+            query.append(String.format("PREFIX reg:     <%s>\n",
+                    RegistryVocab.getURI()));
+            query.append(String.format("PREFIX version: <%s>\n",
+                    Version.getURI()));
+            query.append(String.format("PREFIX dct:     <%s>\n",
+                    DCTerms.getURI()));
+            query.append(String.format("PREFIX rdfs:    <%s>\n", RDFS.getURI()));
+            query.append("\nSELECT DISTINCT ?item WHERE {\n");
+            query.append(String.format("    ?entity text:query '%s' . \n",
+                    safeLiteral(request.getQuery())));
+
             if (request.isSearchVersions()) {
-                query.append( "    ?item ^dct:versionOf/reg:definition/reg:entity ?entity.\n" );
+                query.append("    ?item ^dct:versionOf/reg:definition/reg:entity ?entity.\n");
             } else {
-                query.append( "    ?item version:currentVersion/reg:definition/reg:entity/version:currentVersion? ?entity.\n" );
+                query.append("    ?item version:currentVersion/reg:definition/reg:entity/version:currentVersion? ?entity.\n");
             }
-            
-            if ( request.getStatus() != null) {
-                String statusRef = "reg:status" + StringUtils.capitalize( request.getStatus() );
-                query.append( String.format("   ?item version:currentVersion/reg:status %s.\n", statusRef ) );
+
+            if (request.getStatus() != null) {
+                String statusRef = "reg:status"
+                        + StringUtils.capitalize(request.getStatus());
+                query.append(String.format(
+                        "   ?item version:currentVersion/reg:status %s.\n",
+                        statusRef));
             }
-            
+
             for (KeyValuePair filter : request.getFilters()) {
                 String value = filter.value;
                 if (value.startsWith("http://") || value.startsWith("https://")) {
-                    query.append( String.format("    ?entity <%s> <%s>.\n", filter.key, safeURI(value)) );
+                    query.append(String.format("    ?entity <%s> <%s>.\n",
+                            filter.key, safeURI(value)));
                 } else {
-                    query.append( String.format("    ?entity <%s> '%s'.\n", filter.key, safeLiteral(value)) );
+                    query.append(String.format("    ?entity <%s> '%s'.\n",
+                            filter.key, safeLiteral(value)));
                 }
             }
             query.append("} ");
-            
-            if ( request.getLimit() != null) {
+
+            if (request.getLimit() != null) {
                 query.append("LIMIT " + request.getLimit() + " ");
             }
-            
-            if ( request.getOffset() != null) {
+
+            if (request.getOffset() != null) {
                 query.append("OFFSET " + request.getOffset());
             }
-            
-//            log.debug("Search query = " + query.toString());
-            
+
+            // log.debug("Search query = " + query.toString());
+
             lockStoreRead();
             try {
                 // DEBUG
-                QueryExecution exec = QueryExecutionFactory.create(query.toString(), store.asDataset());
+                QueryExecution exec = QueryExecutionFactory.create(
+                        query.toString(), store.asDataset());
                 try {
                     ResultSet results = exec.execSelect();
                     List<String> matches = new ArrayList<String>();
                     while (results.hasNext()) {
                         QuerySolution row = results.next();
-                        matches.add( row.getResource("item").getURI() );
+                        matches.add(row.getResource("item").getURI());
                     }
                     return matches;
                 } finally {
@@ -781,17 +834,17 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             } finally {
                 unlockStoreRead();
             }
-            
+
         } catch (Exception e) {
             log.error("Search query failed, misconfigured store?", e);
             return Collections.emptyList();
         }
     }
-    
+
     private String safeLiteral(String value) {
         return value.replace("'", "\\'");
     }
-    
+
     private String safeURI(String value) {
         return value.replace("<", "&lt;");
     }
@@ -812,41 +865,52 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         lockStoreRead();
         try {
             Model m = getDefaultModel();
-            ResultSet rs = QueryUtil.selectAll(m, DELEGATION_LIST_QUERY, Prefixes.getDefault());
+            ResultSet rs = QueryUtil.selectAll(m, DELEGATION_LIST_QUERY,
+                    Prefixes.getDefault());
             while (rs.hasNext()) {
                 QuerySolution soln = rs.nextSolution();
                 try {
-                    Status status = Status.forResource( soln.getResource("status") );
+                    Status status = Status.forResource(soln
+                            .getResource("status"));
                     if (status.isAccepted()) {
                         Resource record = soln.getResource("record").inModel(m);
                         ForwardingRecord.Type type = Type.FORWARD;
-                        if (record.hasProperty(RDF.type, RegistryVocab.FederatedRegister)) {
+                        if (record.hasProperty(RDF.type,
+                                RegistryVocab.FederatedRegister)) {
                             type = Type.FEDERATE;
-                        } else if (record.hasProperty(RDF.type, RegistryVocab.DelegatedRegister)) {
+                        } else if (record.hasProperty(RDF.type,
+                                RegistryVocab.DelegatedRegister)) {
                             type = Type.DELEGATE;
                         }
                         String target = soln.getResource("target").getURI();
                         ForwardingRecord fr = null;
                         if (type == Type.DELEGATE) {
-                            DelegationRecord dr = new DelegationRecord(record.getURI(), target, type);
+                            DelegationRecord dr = new DelegationRecord(
+                                    record.getURI(), target, type);
                             Resource s = soln.getResource("subject");
-                            if (s != null) dr.setSubject(s);
+                            if (s != null)
+                                dr.setSubject(s);
                             Resource p = soln.getResource("predicate");
-                            if (p != null) dr.setPredicate(p);
+                            if (p != null)
+                                dr.setPredicate(p);
                             Resource o = soln.getResource("object");
-                            if (o != null) dr.setObject(o);
+                            if (o != null)
+                                dr.setObject(o);
                             fr = dr;
                         } else {
-                            fr = new ForwardingRecord(record.getURI(), target, type);
+                            fr = new ForwardingRecord(record.getURI(), target,
+                                    type);
                             Literal code = soln.getLiteral("code");
                             if (code != null) {
-                                fr.setForwardingCode( code.getInt() );
+                                fr.setForwardingCode(code.getInt());
                             }
                         }
                         results.add(fr);
                     }
                 } catch (Exception e) {
-                    log.error("Bad delegation record for " + soln.get("record"), e);
+                    log.error(
+                            "Bad delegation record for " + soln.get("record"),
+                            e);
                 }
             }
             return results;
@@ -854,36 +918,38 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             unlockStoreRead();
         }
     }
-    static String DELEGATION_LIST_QUERY =
-            "SELECT * WHERE {" +
-            "   { " +                              // DelegatedRegister case, registers are managed, hence additional versioning
-            "      ?record a reg:DelegatedRegister ; version:currentVersion ?ver ." +
-            "      ?ver reg:delegationTarget ?target. " +
-            "      ?item reg:status ?status; reg:definition [reg:entity ?record] . " +
-            "      [] version:currentVersion ?item. " +
-            "      OPTIONAL {?ver reg:forwardingCode ?code. } " +
-            "      OPTIONAL {?ver reg:enumerationSubject ?subject. } " +
-            "      OPTIONAL {?ver reg:enumerationPredicate ?predicate. } " +
-            "      OPTIONAL {?ver reg:enumerationObject ?object. } " +
-            "   } UNION {" +                        // Typical entity case
-            "      ?record a reg:Delegated ; reg:delegationTarget ?target. " +
-            "      ?item reg:status ?status; reg:definition [reg:entity ?record] . " +
-            "      [] version:currentVersion ?item. " +
-            "      OPTIONAL {?record reg:forwardingCode ?code. } " +
-            "      OPTIONAL {?record reg:enumerationSubject ?subject. } " +
-            "      OPTIONAL {?record reg:enumerationPredicate ?predicate. } " +
-            "      OPTIONAL {?record reg:enumerationObject ?object. } " +
-            "   } " +
-            "}";
 
+    static String DELEGATION_LIST_QUERY = "SELECT * WHERE {"
+            + "   { "
+            + // DelegatedRegister case, registers are managed, hence additional
+              // versioning
+            "      ?record a reg:DelegatedRegister ; version:currentVersion ?ver ."
+            + "      ?ver reg:delegationTarget ?target. "
+            + "      ?item reg:status ?status; reg:definition [reg:entity ?record] . "
+            + "      [] version:currentVersion ?item. "
+            + "      OPTIONAL {?ver reg:forwardingCode ?code. } "
+            + "      OPTIONAL {?ver reg:enumerationSubject ?subject. } "
+            + "      OPTIONAL {?ver reg:enumerationPredicate ?predicate. } "
+            + "      OPTIONAL {?ver reg:enumerationObject ?object. } "
+            + "   } UNION {"
+            + // Typical entity case
+            "      ?record a reg:Delegated ; reg:delegationTarget ?target. "
+            + "      ?item reg:status ?status; reg:definition [reg:entity ?record] . "
+            + "      [] version:currentVersion ?item. "
+            + "      OPTIONAL {?record reg:forwardingCode ?code. } "
+            + "      OPTIONAL {?record reg:enumerationSubject ?subject. } "
+            + "      OPTIONAL {?record reg:enumerationPredicate ?predicate. } "
+            + "      OPTIONAL {?record reg:enumerationObject ?object. } "
+            + "   } " + "}";
 
     @Override
     public ResultSet query(String query) {
         lockStoreRead();
         try {
-            QueryExecution exec = QueryExecutionFactory.create(query, store.asDataset());
+            QueryExecution exec = QueryExecutionFactory.create(query,
+                    store.asDataset());
             try {
-                return ResultSetFactory.copyResults( exec.execSelect() );
+                return ResultSetFactory.copyResults(exec.execSelect());
             } finally {
                 exec.close();
             }
@@ -892,4 +958,64 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         }
     }
 
+    @Override
+    public void delete(String uri) {
+        String id = NameUtils.splitAfterLast(uri, "/");
+        if ( ! id.startsWith("_") ) {
+            // Ensure we start with an item URI
+            uri = NameUtils.splitBeforeLast(uri, "/") + "/_" + id;
+        }
+        delete( getCurrentVersion(uri).asRegisterItem() );
+    }
+    
+    protected void delete(RegisterItem item) {
+        if ( item.isRegister() ) {
+            Register register = item.getAsRegister(this);
+            for (RegisterEntryInfo ei : listMembers(register )) {
+                delete( getCurrentVersion(ei.getItemURI()).asRegisterItem() );
+            }
+        }
+    
+        Model toDelete = ModelFactory.createDefaultModel();
+        addAllVersions(item.getRoot(), toDelete);
+        getDefaultModel().remove(toDelete);
+    }
+    
+    private void addAllVersions(Resource root, Model toDelete) {
+        addRefClosure(toDelete, root);
+        for (Resource version : getDefaultModel().listSubjectsWithProperty(DCTerms.isVersionOf, root).toList()) {
+            addRefClosure(toDelete, version);
+            addRefClosure(toDelete, getResourceValue(toDelete, version, Version.interval));
+            Resource definition = getResourceValue(toDelete, version, RegistryVocab.definition);
+            if (definition != null) {
+                Resource graph = getResourceValue(toDelete, definition, RegistryVocab.sourceGraph);
+                if (graph != null) {
+                    store.asDataset().removeNamedModel( graph.getURI() );
+                }
+                Resource entity = getResourceValue(toDelete, definition, RegistryVocab.entity);
+                if (entity != null) {
+                    addAllVersions(entity, toDelete);
+                }
+            }
+            Resource graph = getResourceValue(toDelete, version, RegistryVocab.annotation);
+            if (graph != null) {
+                store.asDataset().removeNamedModel( graph.getURI() );
+            }
+        }
+    }
+    
+    private void addRefClosure(Model accumulator, Resource root) {
+        if (root == null) return;
+        accumulator.add( getDefaultModel().listStatements(null, null, root) );
+        Closure.closure(root.inModel(getDefaultModel()), false, accumulator);
+    }
+    
+    private Resource getResourceValue(Model toDelete, Resource root, Property prop) {
+        NodeIterator ni = toDelete.listObjectsOfProperty(root, prop);
+        if (ni.hasNext()) {
+            return ni.next().asResource();
+        } else {
+            return null;
+        }
+    }
 }

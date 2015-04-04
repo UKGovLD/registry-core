@@ -53,6 +53,7 @@ import com.epimorphics.registry.commands.CommandAnnotate;
 import com.epimorphics.registry.commands.CommandDelete;
 import com.epimorphics.registry.commands.CommandGraphRegister;
 import com.epimorphics.registry.commands.CommandRead;
+import com.epimorphics.registry.commands.CommandRealDelete;
 import com.epimorphics.registry.commands.CommandRegister;
 import com.epimorphics.registry.commands.CommandSearch;
 import com.epimorphics.registry.commands.CommandStatusUpdate;
@@ -94,7 +95,8 @@ public abstract class Command {
         Validate(CommandValidate.class),
         Search(CommandSearch.class),
         Tag(CommandTag.class, RegAction.StatusUpdate),
-        Annotate(CommandAnnotate.class, RegAction.Update);
+        Annotate(CommandAnnotate.class, RegAction.Update),
+        RealDelete(CommandRealDelete.class, RegAction.RealDelete);
 
         protected RegAction action;
         protected Class<?> implementation;

@@ -88,6 +88,7 @@ public class TestAPI extends TomcatTestBase {
         // Puts red in reg1/red
         doItemRegistrationTests();
 
+        
         // Adds external resource reg1/black
         doExternalRegistrationTests();
 
@@ -186,6 +187,9 @@ public class TestAPI extends TomcatTestBase {
         // Bug tests
         doBNodeDuplicationBugTest();
         doSkosLabelTest();
+        
+        // Deletion
+        doTestRealDelete();
 
 //        System.out.println("Store dump");
 //        ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel().write(System.out, "Turtle");
@@ -863,6 +867,20 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(version + 1, RDFUtil.getIntValue(reg, OWL.versionInfo, -1));        
     }
 
+    /**
+     * Test case for real delete, assumes reg1 and reg1/red exist before hand
+     */
+    private void doTestRealDelete() {
+        assertEquals(200, getResponse(REG1).getStatus());
+        assertEquals(200, getResponse(REG1 + "/red").getStatus());
+        
+        assertEquals(204, post(REG1 + "?real_delete").getStatus());
+        
+        assertEquals(404, getResponse(REG1).getStatus());
+        assertEquals(404, getResponse(REG1 + "/red").getStatus());
+    }
+    
+    
     private void checkPageResponse(Model m, String nextpage, int length) {
         ResIterator ri = m.listSubjectsWithProperty(RDF.type, Ldbp.Page);
         assertTrue(ri.hasNext());

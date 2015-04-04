@@ -254,4 +254,11 @@ public interface StoreAPI {
     // The weasel words in the javadoc are intended to leave the possibility of just using
     // SPARQL for accessing the graph annotations (for which there's no alternative anyway)
     public ResultSet query(String query);
+    
+    /**
+     * Delete all versions of an entry from the store.
+     * For an item it deletes the associated entity (including it's graph).
+     * For a register it recursively deletes all the register members as well.
+     */
+    public void delete(String uri);
 }
