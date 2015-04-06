@@ -1,0 +1,2 @@
+@dummy,@id,eg:blank,eg:decimal,eg:multiline,eg:number,eg:string,eg:typed,rdf:type,rdfs:label
+"",r,"[ rdfs:label  ""blank"" ; eg:number   1 ] ",3.14,'a longer\\nstring',42,'a plain \\' string','abc'^^<http://localhost/example#type>,eg:Thing,'a thing'@en
