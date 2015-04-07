@@ -18,10 +18,6 @@
 
 package com.epimorphics.registry.csv;
 
-import static com.epimorphics.registry.csv.CSVBaseWriter.QUOTE;
-import static com.epimorphics.registry.csv.CSVBaseWriter.QUOTED_QUOTE;
-import static com.epimorphics.registry.csv.CSVBaseWriter.QUOTED_VALUE_SEP;
-import static com.epimorphics.registry.csv.CSVBaseWriter.QUOTE_CHAR;
 import static com.epimorphics.registry.csv.CSVBaseWriter.VALUE_SEP;
 import static com.epimorphics.registry.csv.CSVBaseWriter.VALUE_SEP_CHAR;
 
@@ -33,7 +29,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.jena.riot.RDFLanguages;
-import org.apache.jena.riot.out.NodeFmtLib;
 
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -54,31 +49,41 @@ public class RDFCSVUtil {
         if (value.isResource()) {
             Resource r = value.asResource();
             if (value.isURIResource()) {
-                String uri = r.getURI();
-                String prefixed = prefixes.shortForm(uri);
-                if (uri.equals(prefixed)) {
-                    return "<" + uri + ">";
-                } else {
-                    return prefixed;
-                }
+                return asPrefixOrURI( r.getURI(), prefixes);
             } else {
                 return serializeBnode(r, prefixes);
             }
         } else {
             Literal l = value.asLiteral();
+            String lex = l.getLexicalForm().replace("'", "\\'");
             if (l.getLanguage() == null || l.getLanguage().isEmpty()) {
-                if (l.getDatatype() != null) {
+                if (l.getDatatype() == null) {
+                    if (lex.contains("\n")) {
+                        return "'''" + lex + "'''";
+                    } else {
+                        return "'" + lex + "'";
+                    }
+                } else {
                     String dt = l.getDatatypeURI();
                     for (String nt : NUMERIC_TYPES) {
                         if (dt.equals(nt)) {
                             return l.getLexicalForm();   // Treat numbers as plain, means round trip isn't safe TODO Review this 
                         }
                     }
+                    return String.format("'%s'^^%s", lex, asPrefixOrURI(dt, prefixes));
                 }
+            } else {
+                return String.format("'%s'@%s", lex, l.getLanguage());
             }
-            String fmt = NodeFmtLib.str( value.asNode() );
-            // Use ' instead of " otherwise excel goes mad
-            return fmt.replace("'", "\\'").replace('"', '\'');
+        }
+    }
+    
+    private static String asPrefixOrURI(String uri, PrefixMapping prefixes) {
+        String prefixed = prefixes.shortForm(uri);
+        if (uri.equals(prefixed)) {
+            return "<" + uri + ">";
+        } else {
+            return prefixed;
         }
     }
     
@@ -89,43 +94,38 @@ public class RDFCSVUtil {
      * Takes a cell value (already parsed by a CSV reader) and unpacks it 
      * into possibly multiple values
      */
-    public static List<String> unpackageMultiValues(String value) {
+    public static List<String> unpackMultiValues(String value) {
         if (value.contains(VALUE_SEP)) {
             List<String> values = new ArrayList<>();
             String remainder = value;
+            String nextValue = "";
             while ( ! remainder.isEmpty()) {
-                int split = nextSpit(remainder);
-                if (split == -1) {
-                    values.add( unquote(remainder) );
-                    break;
-                } else {
-                    values.add( unquote(remainder.substring(0, split)) );
-                    remainder = remainder.substring(split+1);
+                int sofar = -1;
+                while (true) {
+                    int split = remainder.indexOf(VALUE_SEP_CHAR, sofar);
+                    if (split < 0) {
+                        nextValue = remainder;
+                        remainder = "";
+                        break;
+                    } else if (split == remainder.length() - 1) {
+                        nextValue = remainder.substring(0, remainder.length() - 1);
+                        remainder = "";
+                        break;
+                    } else if (remainder.charAt(split+1) == VALUE_SEP_CHAR) {
+                        remainder = remainder.substring(0, split) + remainder.substring(split + 1);
+                        sofar = split + 1;
+                    } else {
+                        nextValue = remainder.substring(0, split);
+                        remainder = remainder.substring(split + 1);
+                        break;
+                    }
                 }
+                values.add( nextValue );
             }
             return values;
         } else {
             return Collections.singletonList(value);
         }
-    }
-    
-    private static int nextSpit(String value) {
-        int sofar = -1;
-        while (true) {
-            int split = value.indexOf(VALUE_SEP_CHAR, sofar);
-            if (split <= 0) {
-                return split;
-            } else {
-                if (value.charAt(split-1) != QUOTE_CHAR) {
-                    return split;
-                }
-                sofar = split+1;
-            }
-        }
-    }
-    
-    private static String unquote(String value) {
-        return value.replace(QUOTED_VALUE_SEP, VALUE_SEP).replace(QUOTED_QUOTE, QUOTE);
     }
     
     private static String MARKER_URI = "http://donotuse/donotuse";

@@ -9,11 +9,6 @@
 
 :r a eg:Thing;
     rdfs:label "a thing"@en;
-    eg:number 42 ;
-    eg:decimal 3.14 ;
-    eg:string "a plain ' \" string";
-    eg:multiline """a longer
-string""";
-    eg:typed "abc"^^eg:type;
-    eg:blank [eg:number 1; rdfs:label "blank"];
+    eg:number 1, 2, 3 ;
+    eg:string "a", "b", "c|d", "e||f", "|g", "h|";
     .

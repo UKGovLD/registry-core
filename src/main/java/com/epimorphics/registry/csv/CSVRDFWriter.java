@@ -44,17 +44,11 @@ public class CSVRDFWriter extends CSVBaseWriter {
     protected Set<String> headers = new HashSet<>();
     protected boolean started = false;
     
-    public CSVRDFWriter(OutputStream out) {
+    public CSVRDFWriter(OutputStream out, PrefixMapping mapping) {
         super(out);
-    }
-    
-    /**
-     * Provide a prefix mapping to be used for shortening URIs
-     */
-    public void setPrefixes(PrefixMapping mapping) {
         this.prefixes = mapping;
     }
-
+    
     /**
      * Provide an optional baseURI to which all resource URIs will be relativised.
      */
@@ -64,13 +58,15 @@ public class CSVRDFWriter extends CSVBaseWriter {
     
     /**
      * Register an additional header to be included in the CSV.
+     * Non-RDF headers should start with "@".
      */
     public void addHeader(String header) {
         headers.add(header);
     }
     
     /**
-     * Register a set of additional header to be included in the CSV
+     * Register a set of additional header to be included in the CSV.
+     * Non-RDF headers should start with "@".
      */
     public void addHeader(String[] headers) {
         for (String header: headers) addHeader(header);
@@ -123,7 +119,7 @@ public class CSVRDFWriter extends CSVBaseWriter {
                 uri = uri.substring(baseURI.length());
             }
         }
-        write(ID_COL, uri);
+        write(ID_COL, "<" + uri + ">");
         for (StmtIterator i = r.listProperties(); i.hasNext();) {
             Statement s = i.next();
             String header = RDFCSVUtil.encode(s.getPredicate(), prefixes);
