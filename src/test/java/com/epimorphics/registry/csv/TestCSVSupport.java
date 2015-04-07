@@ -18,8 +18,9 @@
 
 package com.epimorphics.registry.csv;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -69,40 +70,64 @@ public class TestCSVSupport {
         TestUtil.testArray(actual, new String[]{
                  "first,second",
                  "1,2",
-                 "a|b|c,f\\|g",
-                 "\"foo, bar\",\"\"\" and \\\\ and \\| are special\"" });
+                 "a|b|c,f||g",
+                 "\"foo, bar\",\"\"\" and \\ and || are special\"" });
         Files.delete(path);
     }
     
     @Test
     public void testUnpack() {
-        String source = "first|foo \\\\ bar \\| baz|third";
-        List<String> values = RDFCSVUtil.unpackageMultiValues(source);
+        String source = "first|foo \\ bar || baz|third";
+        List<String> values = RDFCSVUtil.unpackMultiValues(source);
         TestUtil.testArray(values, new String[]{"first", "foo \\ bar | baz", "third"});
     }
     
     @Test
     public void testRDFSerialize() throws IOException {
         Model model = RDFDataMgr.loadModel("test/csv/testResource.ttl");
-        String baseURI = "http://localhost/test#";
-        Resource r = model.getResource(baseURI + "r");
-        
-        Path path = Files.createTempFile("rdfTest", ".csv");
-        System.out.println(path.toString());
-        FileOutputStream out = new FileOutputStream( path.toFile() );
-        CSVRDFWriter writer = new CSVRDFWriter(out);
-        
-        writer.setBaseURI(baseURI);
-        writer.setPrefixes( model );
-        writer.addHeader("@dummy");
-        writer.addHeader( r );
-        writer.write(r);
-        writer.finishRow();
-        writer.close();
-        
+        Path path = writeCSV(model);        
         String csv = FileManager.get().readWholeFileAsUTF8( path.toString() );
         String expected = FileManager.get().readWholeFileAsUTF8( "test/csv/testResource.csv" );
         assertEquals(expected, csv);
         Files.delete(path);
+    }
+    
+    private Path writeCSV(Model model) throws IOException {
+        String baseURI = "http://localhost/test/";
+        Resource r = model.getResource(baseURI + "r");
+        
+        Path path = Files.createTempFile("rdfTest", ".csv");
+        FileOutputStream out = new FileOutputStream( path.toFile() );
+        CSVRDFWriter writer = new CSVRDFWriter(out, model);
+        
+        writer.setBaseURI(baseURI);
+        writer.addHeader("@dummy");
+        writer.addHeader(r);
+        writer.write(r);
+        writer.finishRow();
+        writer.close();
+
+        return path;
+    }
+    
+    @Test
+    public void testRDFRead() throws IOException {
+        testRoundTrip("test/csv/testResource.ttl" );
+        testRoundTrip("test/csv/testResource2.ttl" );
+    }
+    
+    private void testRoundTrip(String file) throws IOException {
+        Model model = RDFDataMgr.loadModel(file);
+        String baseURI = "http://localhost/test/";
+        Path path = writeCSV(model);        
+        
+        FileInputStream in = new FileInputStream( path.toFile() );
+        CSVRDFReader reader = new CSVRDFReader(in, model);
+        reader.setBaseURI(baseURI);
+        
+        Resource r = reader.nextResource();
+        assertNotNull(r);
+        r.getModel().write(System.out, "Turtle");
+        assertTrue( model.isIsomorphicWith( r.getModel() ));
     }
 }

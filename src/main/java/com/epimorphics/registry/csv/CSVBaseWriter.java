@@ -38,10 +38,10 @@ public class CSVBaseWriter {
     protected static final String SEP = "," ;
     protected static final String VALUE_SEP = "|" ;
     protected static final char   VALUE_SEP_CHAR = '|' ;
-    protected static final String QUOTED_VALUE_SEP = "\\|" ;
-    protected static final String QUOTE = "\\" ;
-    protected static final char   QUOTE_CHAR = '\\';
-    protected static final String QUOTED_QUOTE = "\\\\" ;
+    protected static final String QUOTED_VALUE_SEP = "||" ;  // Don't use \ because CSV processors handle then specially
+//    protected static final String QUOTE = "\\" ;
+//    protected static final char   QUOTE_CHAR = '\\';
+//    protected static final String QUOTED_QUOTE = "\\\\" ;
     protected static final Charset ENC = StandardCharsets.UTF_8;
     
     protected List<String> headers;
@@ -135,7 +135,8 @@ public class CSVBaseWriter {
     }
     
     protected String quoteValueSep(String value) {
-        return value.replace(QUOTE, QUOTED_QUOTE).replace(VALUE_SEP, QUOTED_VALUE_SEP);
+//        return value.replace(QUOTE, QUOTED_QUOTE).replace(VALUE_SEP, QUOTED_VALUE_SEP);
+        return value.replace(VALUE_SEP, QUOTED_VALUE_SEP);
     }
     
     protected void writeHeaders() throws IOException {
