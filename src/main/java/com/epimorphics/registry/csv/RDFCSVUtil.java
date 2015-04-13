@@ -21,23 +21,19 @@ package com.epimorphics.registry.csv;
 import static com.epimorphics.registry.csv.CSVBaseWriter.VALUE_SEP;
 import static com.epimorphics.registry.csv.CSVBaseWriter.VALUE_SEP_CHAR;
 
-import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import org.apache.jena.riot.RDFLanguages;
-
+import com.epimorphics.util.EpiException;
 import com.hp.hpl.jena.rdf.model.Literal;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
+import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.shared.PrefixMapping;
-import com.hp.hpl.jena.sparql.util.Closure;
 import com.hp.hpl.jena.vocabulary.XSD;
 
 public class RDFCSVUtil {
@@ -46,12 +42,16 @@ public class RDFCSVUtil {
      * Encode an RDF value as a cell value
      */
     public static String encode(RDFNode value, PrefixMapping prefixes) {
+        return encode(value, prefixes, new HashSet<Resource>());
+    }
+    
+    public static String encode(RDFNode value, PrefixMapping prefixes, Set<Resource> seen) {
         if (value.isResource()) {
             Resource r = value.asResource();
             if (value.isURIResource()) {
                 return asPrefixOrURI( r.getURI(), prefixes);
             } else {
-                return serializeBnode(r, prefixes);
+                return serializeBnode(r, prefixes, seen);
             }
         } else {
             Literal l = value.asLiteral();
@@ -77,6 +77,7 @@ public class RDFCSVUtil {
             }
         }
     }
+    
     
     private static String asPrefixOrURI(String uri, PrefixMapping prefixes) {
         String prefixed = prefixes.shortForm(uri);
@@ -128,44 +129,24 @@ public class RDFCSVUtil {
         }
     }
     
-    private static String MARKER_URI = "http://donotuse/donotuse";
-    private static String MARKER_SER = "<" + MARKER_URI + ">";
-    private static Property MARKER_PROP = ResourceFactory.createProperty(MARKER_URI);
-    
-    private static String serializeBnode(Resource r, PrefixMapping prefixes) {
-        Model closure = Closure.closure(r, false);
-        closure.createResource(MARKER_URI).addProperty(MARKER_PROP, r);
-        closure.setNsPrefixes(prefixes);
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        closure.write(buffer, RDFLanguages.strLangTurtle);
-        try {
-            String serialization = buffer.toString(StandardCharsets.UTF_8.name());
-            String[] lines= serialization.split("\n");
-            int i = 0;
-            StringBuffer result = new StringBuffer();
-            while (i < lines.length) {
-                String line = lines[i++].trim();
-                if (line.isEmpty() || line.contains("@prefix")) {
-                    continue;
-                } else {
-                    result.append(line.replace(MARKER_SER, ""));
-                    break;
-                }
-            }
-            while (i < lines.length) {
-                result.append( " " + lines[i++].trim().replace(MARKER_SER, "") );
-            }
-            String ser = result.toString().trim();
-            if (ser.endsWith(".")) {
-                // This should always be the case.
-                ser = ser.substring(0, ser.length()-1);
-            }
-            return ser;
-        } catch (UnsupportedEncodingException e) {
-            // Can't happen, UTF-8 always supported
-            e.printStackTrace();
-            return "";
+    // Direct implementation rather than use turtle serializer 
+    // because we have to force use of ' rather than " to avoid upsetting poor dumb little excel
+    private static String serializeBnode(Resource r, PrefixMapping prefixes, Set<Resource> seen) {
+        if (seen.contains(r)) {
+            throw new EpiException("Circular reference, can only serialize tree-shaped bNodes");
         }
+        seen.add(r);
         
+        StringBuffer ser = new StringBuffer();
+        ser.append("[" );
+        for (StmtIterator si = r.listProperties(); si.hasNext(); ) {
+            Statement s = si.next();
+            ser.append( encode(s.getPredicate(), prefixes, seen) );
+            ser.append(" ");
+            ser.append( encode(s.getObject(), prefixes, seen) );
+            ser.append("; ");
+        }
+        ser.append("]");
+        return ser.toString();
     }
 }

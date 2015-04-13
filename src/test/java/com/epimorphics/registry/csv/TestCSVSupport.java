@@ -127,7 +127,6 @@ public class TestCSVSupport {
         
         Resource r = reader.nextResource();
         assertNotNull(r);
-        r.getModel().write(System.out, "Turtle");
         assertTrue( model.isIsomorphicWith( r.getModel() ));
     }
 }
