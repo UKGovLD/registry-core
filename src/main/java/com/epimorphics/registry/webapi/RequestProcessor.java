@@ -102,7 +102,7 @@ public class RequestProcessor extends BaseEndpoint {
 
     @GET
     @Produces("text/html")
-    public Response htmlrender() {
+    public Response htmlrender() {        
         String path = uriInfo.getPath();
         if (path.startsWith(UI_PATH) ) {
             String template = path.substring(UI_PATH.length()+1) + ".vm";
@@ -115,6 +115,11 @@ public class RequestProcessor extends BaseEndpoint {
         } else if (path.startsWith(SYSTEM_QUERY) || path.equals("favicon.ico")) {
             // Pass to the generic velocity handler, which in turn falls through to file serving
             throw new NotFoundException();
+        }
+        
+        if (uriInfo.getQueryParameters().containsKey(Parameters.EXPORT)) {
+            // Export only supports a specific return type
+            return makeCommand( Operation.Export ).execute();
         }
 
         PassThroughResult result = checkForPassThrough();
@@ -215,6 +220,10 @@ public class RequestProcessor extends BaseEndpoint {
 
     @GET
     public Response defaultRead() {
+        if (uriInfo.getQueryParameters().containsKey(Parameters.EXPORT)) {
+            // Export only supports a specific return type
+            return makeCommand( Operation.Export ).execute();
+        }
         // Default to text/html case which in turn will default to file serving for image files etc
         return htmlrender();
     }

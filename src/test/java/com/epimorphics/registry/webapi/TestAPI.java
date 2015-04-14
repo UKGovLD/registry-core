@@ -176,6 +176,9 @@ public class TestAPI extends TomcatTestBase {
 
         // Check tagging
         doTaggingTest();
+        
+        // Export
+        doTestExport();
 
         // Graph entities and annotations
         doGraphEntityTest();
@@ -777,6 +780,19 @@ public class TestAPI extends TomcatTestBase {
         assertTrue( members.contains( model.getResource(ROOT_REGISTER + "reg3/_blue:2") ) );
         assertEquals(2, members.size());
     }
+    
+    /**
+     * Test export to CSV, assumes a particular state for reg3 so has
+     * be run after tagging test
+     */
+    private void doTestExport() {
+        ClientResponse response = getResponse(BASE_URL + "reg3?export", "text/csv");
+        assertEquals(200, response.getStatus());
+        assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3.csv"), response.getEntity(String.class).replace("\r", ""));
+        response = getResponse(BASE_URL + "reg3/red?export", "text/csv");
+        assertEquals(200, response.getStatus());
+        assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3-red.csv"), response.getEntity(String.class).replace("\r", ""));
+    }
 
     /**
      * Check support for graph entities
@@ -866,7 +882,7 @@ public class TestAPI extends TomcatTestBase {
         reg = m.getResource("http://location.data.gov.uk/RiverBasinDistrict"); 
         assertEquals(version + 1, RDFUtil.getIntValue(reg, OWL.versionInfo, -1));        
     }
-
+ 
     /**
      * Test case for real delete, assumes reg1 and reg1/red exist before hand
      */

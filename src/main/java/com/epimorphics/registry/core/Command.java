@@ -51,6 +51,7 @@ import org.slf4j.LoggerFactory;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.commands.CommandAnnotate;
 import com.epimorphics.registry.commands.CommandDelete;
+import com.epimorphics.registry.commands.CommandExport;
 import com.epimorphics.registry.commands.CommandGraphRegister;
 import com.epimorphics.registry.commands.CommandRead;
 import com.epimorphics.registry.commands.CommandRealDelete;
@@ -96,6 +97,7 @@ public abstract class Command {
         Search(CommandSearch.class),
         Tag(CommandTag.class, RegAction.StatusUpdate),
         Annotate(CommandAnnotate.class, RegAction.Update),
+        Export(CommandExport.class),
         RealDelete(CommandRealDelete.class, RegAction.RealDelete);
 
         protected RegAction action;
@@ -146,7 +148,6 @@ public abstract class Command {
     /**
      * Initialize a command instance
      * @param operation   operation request, as determined by HTTP verb
-     * @param targetType  type of thing to act on, may be amended or set later after more analysis
      * @param target      the URI to which the operation was targeted, omits the assumed base URI
      * @param parameters  the query parameters
      */
