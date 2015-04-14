@@ -43,7 +43,8 @@ import com.sun.jersey.api.NotFoundException;
 
 /**
  * Export an item or register to CSV.
- * Not streaming, builds entire resonse in memory.
+ * This is a simplified version of read which doesn't handle metadata or versioning.
+ * Not streaming, builds entire response in memory.
  */
 public class CommandExport extends Command {
     public static final String STATUS_HEADER = "@status";
