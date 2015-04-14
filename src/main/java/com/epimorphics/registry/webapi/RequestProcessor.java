@@ -117,11 +117,6 @@ public class RequestProcessor extends BaseEndpoint {
             throw new NotFoundException();
         }
         
-        if (uriInfo.getQueryParameters().containsKey(Parameters.EXPORT)) {
-            // Export only supports a specific return type
-            return makeCommand( Operation.Export ).execute();
-        }
-
         PassThroughResult result = checkForPassThrough();
         if (result != null && result.isDone()) {
             return result.getResponse();
@@ -137,6 +132,8 @@ public class RequestProcessor extends BaseEndpoint {
             } else if (format.equals("jsonld")) {
                 mime = JSONLDSupport.FULL_MIME_JSONLD;
                 extension = "json";
+            } else if (format.equals("csv")) {
+                return makeCommand( Operation.Export ).execute();
             }
             return readAsRDF(result, mime, extension);
         } if (parameters.containsKey(Parameters.ANNOTATION)) {
@@ -219,11 +216,13 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     @GET
+    @Produces({"text/csv"})
+    public Response exportCSV() {
+        return makeCommand( Operation.Export ).execute();
+    }
+    
+    @GET
     public Response defaultRead() {
-        if (uriInfo.getQueryParameters().containsKey(Parameters.EXPORT)) {
-            // Export only supports a specific return type
-            return makeCommand( Operation.Export ).execute();
-        }
         // Default to text/html case which in turn will default to file serving for image files etc
         return htmlrender();
     }
