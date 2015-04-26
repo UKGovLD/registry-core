@@ -27,6 +27,7 @@ import java.util.List;
 import javax.ws.rs.core.Response;
 
 import com.epimorphics.rdfutil.QueryUtil;
+import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
@@ -48,6 +49,7 @@ import com.sun.jersey.api.NotFoundException;
  */
 public class CommandExport extends Command {
     public static final String STATUS_HEADER = "@status";
+    public static final String NOTATION_HEADER = "@notation";
     
     protected Model view = ModelFactory.createDefaultModel();
     protected List<Resource> members = new ArrayList<>();
@@ -89,13 +91,18 @@ public class CommandExport extends Command {
         CSVRDFWriter writer = new CSVRDFWriter(out, Prefixes.get());
         writer.addHeader(members);
         writer.addHeader(STATUS_HEADER);
+        writer.addHeader(NOTATION_HEADER);
         for (Resource member : members) {
             writer.write(member);
-            List<Resource> statusL = QueryUtil.connectedResources(member, statusPath);
-            if ( !statusL.isEmpty() ) {
-                Status status = Status.forResource( statusL.get(0) );
-                writer.write(STATUS_HEADER, status.name().toLowerCase());
+            List<Resource> itemL = QueryUtil.connectedResources(member, itemPath);
+            if (itemL.size() != 1) {
+                throw new EpiException("Internal inconsistency, can't find register item for extracted member");
             }
+            Resource item = itemL.get(0);
+            Status status = Status.forResource( RDFUtil.getResourceValue(item, RegistryVocab.status) );
+            writer.write(STATUS_HEADER, status.name().toLowerCase());
+            String notation = RDFUtil.getStringValue(item, RegistryVocab.notation);
+            writer.write(NOTATION_HEADER, notation);
             writer.finishRow();
         }
         writer.close();
@@ -109,6 +116,6 @@ public class CommandExport extends Command {
         }
     }
     
-    protected static final String statusPath = String.format("^<%s>/^<%s>/<%s>", RegistryVocab.entity, RegistryVocab.definition, RegistryVocab.status);
+    protected static final String itemPath = String.format("^<%s>/^<%s>", RegistryVocab.entity, RegistryVocab.definition);
 
 }

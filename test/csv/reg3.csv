@@ -1,3 +1,3 @@
-@id,@status,dct:description,rdf:type,rdfs:label
-<http://location.data.gov.uk/reg3/blue>,stable,'A concept for the colour blue',skos:Concept,'blue'
-<http://location.data.gov.uk/reg3/red>,stable,'A concept for the colour red',skos:Concept,'red1b'
+@id,@notation,@status,dct:description,rdf:type,rdfs:label
+<http://location.data.gov.uk/reg3/blue>,blue,stable,'A concept for the colour blue',skos:Concept,'blue'
+<http://location.data.gov.uk/reg3/red>,red,stable,'A concept for the colour red',skos:Concept,'red1b'
