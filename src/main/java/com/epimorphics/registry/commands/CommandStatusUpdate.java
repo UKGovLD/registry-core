@@ -54,8 +54,8 @@ public class CommandStatusUpdate extends Command {
     }
 
     @Override
-    public RegPermission permissionRequried() {
-        RegPermission required = super.permissionRequried();
+    public RegPermission permissionRequired() {
+        RegPermission required = super.permissionRequired();
         if (isForce) {
             required.addAction(RegAction.Force);
         }

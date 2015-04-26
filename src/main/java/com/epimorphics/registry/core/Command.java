@@ -318,7 +318,7 @@ public abstract class Command {
      * Returns the permissions that will be required to authorize this
      * operation or null if no permissions are needed.
      */
-    public RegPermission permissionRequried() {
+    public RegPermission permissionRequired() {
         RegAction action = operation.getAuthorizationAction();
         if (action == null) {
             return null;
@@ -331,7 +331,7 @@ public abstract class Command {
      * Test if the user of authorized to execute this command
      */
     public boolean isAuthorized() {
-        RegPermission required = permissionRequried();
+        RegPermission required = permissionRequired();
         if (required != null) {
             try {
                 Subject subject = SecurityUtils.getSubject();

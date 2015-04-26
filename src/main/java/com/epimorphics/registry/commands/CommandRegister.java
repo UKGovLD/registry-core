@@ -181,8 +181,8 @@ public class CommandRegister extends Command {
     }
 
     @Override
-    public RegPermission permissionRequried() {
-        RegPermission required = super.permissionRequried();
+    public RegPermission permissionRequired() {
+        RegPermission required = super.permissionRequired();
         if (needStatusPermission) {
             required.addAction(RegAction.StatusUpdate);
         }
