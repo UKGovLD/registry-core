@@ -25,7 +25,6 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Calendar;
 import java.util.List;
 
 import javax.ws.rs.WebApplicationException;
@@ -39,7 +38,6 @@ import com.epimorphics.registry.core.ValidationResponse;
 import com.epimorphics.registry.message.Message;
 import com.epimorphics.registry.security.RegAction;
 import com.epimorphics.registry.security.RegPermission;
-import com.epimorphics.registry.util.PatchUtil;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.Parameters;
 import com.hp.hpl.jena.rdf.model.Property;
@@ -189,31 +187,7 @@ public class CommandUpdate extends Command {
         // Current and newitem will have been set and checked by validation step, so just process them
         store.lock();
         try {
-            boolean isRegister = currentItem.isRegister();
-            Resource entity = newitem.getEntity();
-            boolean withEntity = entity != null;
-            if (withEntity) {
-                if (isPatch){
-                    if (isRegister) {
-                        PatchUtil.patch(entity, currentItem.getEntity(), RegistryVocab.subregister);
-                    } else {
-                        PatchUtil.patch(entity, currentItem.getEntity());
-                    }
-                } else {
-                    currentItem.setEntity(entity);
-                }
-                currentItem.updateForEntity(false, Calendar.getInstance());
-            }
-
-            if (!isEntityUpdate) {
-                if (isPatch) {
-                    PatchUtil.patch(newitem.getRoot(), currentItem.getRoot(), RegisterItem.RIGID_PROPS);
-                } else {
-                    PatchUtil.update(newitem.getRoot(), currentItem.getRoot(), RegisterItem.RIGID_PROPS, RegisterItem.REQUIRED_PROPS);
-                }
-            }
-            String versionURI = store.update(currentItem, withEntity);
-            checkDelegation(currentItem);
+            String versionURI = applyUpdate(currentItem, newitem, isPatch, !isEntityUpdate);
             store.commit();
             
             notify( new Message(this, newitem) );
