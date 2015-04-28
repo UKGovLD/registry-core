@@ -32,6 +32,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -67,6 +68,7 @@ import com.epimorphics.registry.security.RegAction;
 import com.epimorphics.registry.security.RegPermission;
 import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.store.StoreAPI;
+import com.epimorphics.registry.util.PatchUtil;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.RegistryVocab;
@@ -484,4 +486,44 @@ public abstract class Command {
             }
         }
     }
+        
+    /**
+     * Perform an update operation - updating an entity (if present) and optional the item metadata as well.
+     * Caller is expected to lock/commit the store.
+     *  
+     * @param currentItem the currently RegisterItem which is the target of the update
+     * @param newitem a RegisterItem representing the new item to be applied, may or may not have an associated entity
+     * @param isPatch  if true both item and entity updates should be treated as patches, otherwise they replace the existing entity
+     * @param updateItem if true the item itself should be updated, otherwise only the entity is updated 
+     * @return the URI for the new version of the item
+     */
+    protected String applyUpdate(RegisterItem currentItem, RegisterItem newitem, boolean isPatch, boolean updateItem) {
+        boolean isRegister = currentItem.isRegister();
+        Resource entity = newitem.getEntity();
+        boolean withEntity = entity != null;
+        if (withEntity) {
+            if (isPatch){
+                if (isRegister) {
+                    PatchUtil.patch(entity, currentItem.getEntity(), RegistryVocab.subregister);
+                } else {
+                    PatchUtil.patch(entity, currentItem.getEntity());
+                }
+            } else {
+                currentItem.setEntity(entity);
+            }
+            currentItem.updateForEntity(false, Calendar.getInstance());
+        }
+
+        if (updateItem) {
+            if (isPatch) {
+                PatchUtil.patch(newitem.getRoot(), currentItem.getRoot(), RegisterItem.RIGID_PROPS);
+            } else {
+                PatchUtil.update(newitem.getRoot(), currentItem.getRoot(), RegisterItem.RIGID_PROPS, RegisterItem.REQUIRED_PROPS);
+            }
+        }
+        String versionURI = store.update(currentItem, withEntity);
+        checkDelegation(currentItem);
+        return versionURI;
+    }
+    
 }
