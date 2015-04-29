@@ -396,7 +396,6 @@ reg:representationOf a owl:ObjectProperty;
 reg:Delegated a owl:Class;
     rdfs:label "Delegated"@en;
     rdfs:comment "A registerable entity which represents some form of delegation"@en;
-#    rdfs:subClassOf reg:Register;
     rdfs:subClassOf [owl:onProperty reg:delegationTarget;     owl:cardinality    1];
     .
 
@@ -424,7 +423,7 @@ reg:forwardingCode a owl:DatatypeProperty;
 reg:FederatedRegister a owl:Class;
     rdfs:label "Federated Register"@en;
     rdfs:comment "A registerable entity which forwards all requests to a remote register. Queries which traverse the register hierarchy such as entity search will also be forwarded"@en;
-    rdfs:subClassOf reg:Delegated;
+    rdfs:subClassOf reg:Delegated, reg:Register;
     .
 
 reg:DelegatedRegister a owl:Class;
