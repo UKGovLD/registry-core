@@ -20,12 +20,13 @@
 <http://purl.org/linked-data/registry>  a owl:Ontology;
     rdfs:label "Registry ontology"@en;
     rdfs:comment "Core ontology for linked data registry services. Based on ISO19135 but heavily modified to suit Linked Data representations and applications."@en;
-    dc:creator  "Dave Reynolds";     # As a string to enable documentation tool to work
-    dc:date     "2012-11-11"^^xsd:date;
-    owl:versionInfo "0.3";
+    dct:creator  "Dave Reynolds";     # As a string to enable documentation tool to work
+    dct:date     "2012-11-11"^^xsd:date;
+    dct:modified "2015-04-29"^^xsd:date;
+    owl:versionInfo "0.4";
     # For documentation tools
-    dc:description"Core ontology for linked data registry services. Based on ISO19135 but heavily modified to suit Linked Data representations and applications."@en;
-    dc:description <https://github.com/der/ukl-registry-poc/wiki/images/registry-diagram.png> ;
+    dct:description "Core ontology for linked data registry services. Based on ISO19135 but heavily modified to suit Linked Data representations and applications."@en;
+    dct:description <https://github.com/ukgovld/registry-core/wiki/images/registry-diagram.png> ;
     .
 
 # -- Registers ------------------------------------------------------
