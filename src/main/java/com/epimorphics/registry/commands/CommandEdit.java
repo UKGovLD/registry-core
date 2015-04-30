@@ -38,6 +38,7 @@ import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.util.NameUtils;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -51,7 +52,6 @@ import com.hp.hpl.jena.vocabulary.RDF;
  * already exists in the register then it is patched to match the request,
  * otherwise it is added to the register.
  */
-// TODO review validation
 public class CommandEdit extends Command {
     
     Register parentRegister;
@@ -114,6 +114,14 @@ public class CommandEdit extends Command {
         Model view = ModelFactory.createDefaultModel();
         List<Resource> members = new ArrayList<>();
         parentRegister.constructView(view, true, null, 0, -1, -1, members);
+        
+        // Remove any materialized membership links
+        Resource reg = parentRegister.getRoot();
+        Resource im = RDFUtil.getResourceValue(reg, RegistryVocab.inverseMembershipPredicate);
+        if (im != null) {
+            Property imp = view.createProperty(im.getURI());
+            view.remove( view.listStatements(null, imp, reg).toList() );
+        }
         
         store.lock();
         try {

@@ -70,14 +70,14 @@ public class TestCSVSupport {
         TestUtil.testArray(actual, new String[]{
                  "first,second",
                  "1,2",
-                 "a|b|c,f||g",
-                 "\"foo, bar\",\"\"\" and \\ and || are special\"" });
+                 "a|b|c,f|g",
+                 "\"foo, bar\",\"\"\" and \\ and | are special\"" });
         Files.delete(path);
     }
     
     @Test
     public void testUnpack() {
-        String source = "first|foo \\ bar || baz|third";
+        String source = "first|'foo \\ bar | baz'|third";
         List<String> values = RDFCSVUtil.unpackMultiValues(source);
         TestUtil.testArray(values, new String[]{"first", "foo \\ bar | baz", "third"});
     }
@@ -119,7 +119,7 @@ public class TestCSVSupport {
     private void testRoundTrip(String file) throws IOException {
         Model model = RDFDataMgr.loadModel(file);
         String baseURI = "http://localhost/test/";
-        Path path = writeCSV(model);        
+        Path path = writeCSV(model);
         
         FileInputStream in = new FileInputStream( path.toFile() );
         CSVRDFReader reader = new CSVRDFReader(in, model);
@@ -128,5 +128,7 @@ public class TestCSVSupport {
         Resource r = reader.nextResource();
         assertNotNull(r);
         assertTrue( model.isIsomorphicWith( r.getModel() ));
+        
+        Files.delete(path);
     }
 }
