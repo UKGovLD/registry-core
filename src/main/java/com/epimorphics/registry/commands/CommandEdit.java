@@ -1,0 +1,149 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.epimorphics.registry.commands;
+
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.ws.rs.core.Response;
+
+import com.epimorphics.rdfutil.RDFUtil;
+import com.epimorphics.registry.core.Command;
+import com.epimorphics.registry.core.Description;
+import com.epimorphics.registry.core.Register;
+import com.epimorphics.registry.core.RegisterItem;
+import com.epimorphics.registry.core.ValidationResponse;
+import com.epimorphics.registry.security.RegAction;
+import com.epimorphics.registry.security.RegPermission;
+import com.epimorphics.registry.vocab.RegistryVocab;
+import com.epimorphics.util.NameUtils;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.ResIterator;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
+import com.hp.hpl.jena.vocabulary.RDF;
+
+/**
+ * Import provides a bulk update/patch capability.
+ * Payload expected to contain a set of register items for a register.
+ * For each item if it
+ * already exists in the register then it is patched to match the request,
+ * otherwise it is added to the register.
+ */
+// TODO review validation
+public class CommandEdit extends Command {
+    
+    Register parentRegister;
+    List<RegisterItem> newItems = new ArrayList<>();
+
+    @Override
+    public ValidationResponse validate() {
+        Description d = store.getCurrentVersion(target);
+        if (d == null) {
+            return new ValidationResponse(NOT_FOUND, "No such register");
+        }
+        if (!(d instanceof Register)) {
+            return new ValidationResponse(BAD_REQUEST, "Can only bulk edit a register");
+        }
+        parentRegister = d.asRegister();
+        
+        for (ResIterator ri = payload.listSubjectsWithProperty(RDF.type, RegistryVocab.RegisterItem); ri.hasNext();) {
+            Resource itemSpec = ri.next();
+            StmtIterator i = itemSpec.listProperties(RegistryVocab.status);
+            while (i.hasNext()) {
+                RDFNode status = i.next().getObject();
+                if (!status.isResource()) {
+                    return new ValidationResponse(BAD_REQUEST, "reg:status value which is not a resource " + status);
+                }
+            }
+
+            String parentURI = NameUtils.stripLastSlash( parentRegister.getRoot().getURI() );
+            // String stripLastSlash needed to cope with the out-of-pattern URI for the root register
+            RegisterItem item = RegisterItem.fromRIRequest(itemSpec, parentURI, true);
+            ValidationResponse entityValid = validateEntity(parentRegister, item.getEntity() );
+            if (!entityValid.isOk()) {
+                return entityValid;
+            }
+            newItems.add( item );
+        }
+        if (newItems.isEmpty()) {
+            return new ValidationResponse(BAD_REQUEST, "No items found in request");
+        }
+        
+        return ValidationResponse.OK;
+    }
+    
+    /**
+     * Returns the permissions that will be required to authorize this
+     * operation or null if no permissions are needed.
+     */
+    public RegPermission permissionRequired() {
+        RegPermission permission = new RegPermission(RegAction.Update, "/" + path);
+        permission.addAction( RegAction.Register );
+        // TODO this isn't always required could be less restrictive depending on request specifics
+        permission.addAction( RegAction.StatusUpdate );
+        return permission;
+    }
+
+
+    
+    @Override
+    public Response doExecute() {
+        // Extract the current members as a batch (performance/scaling tradeoff)
+        Model view = ModelFactory.createDefaultModel();
+        List<Resource> members = new ArrayList<>();
+        parentRegister.constructView(view, true, null, 0, -1, -1, members);
+        
+        store.lock();
+        try {
+            for (RegisterItem importItem : newItems) {
+                Resource itemR = importItem.getRoot();
+                if (view.contains(importItem.getRoot(), RDF.type)) {
+                    // An existing item
+                    RegisterItem currentItem = new RegisterItem( itemR.inModel(view) );
+                    currentItem.setEntity( getEntity(itemR) );
+                    applyUpdate(currentItem, importItem, true, true);
+                    
+                } else {
+                    addToRegister(parentRegister, importItem);
+                }
+            }
+            store.commit();
+            
+            return Response.noContent().build();
+        } finally {
+            store.end();
+        }
+    }
+
+    private static Resource getEntity(Resource item) {
+        Resource def = RDFUtil.getResourceValue(item, RegistryVocab.definition);
+        if (def != null) {
+            return RDFUtil.getResourceValue(def, RegistryVocab.entity);
+        } else {
+            return null;
+        }
+    }
+
+}

@@ -191,6 +191,9 @@ public class TestAPI extends TomcatTestBase {
         doBNodeDuplicationBugTest();
         doSkosLabelTest();
         
+        // Edit
+        doEditTest();
+        
         // Deletion
         doTestRealDelete();
 
@@ -896,6 +899,19 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(404, getResponse(REG1 + "/red").getStatus());
     }
     
+    /**
+     * Basic edit test cases
+     */
+    private void doEditTest() {
+        final String REGE = BASE_URL + "rege";
+        assertEquals(201, postFileStatus("test/edit/rege.ttl", BASE_URL));
+        assertEquals(204, postFileStatus("test/edit/edit1.ttl", REGE + "?edit"));
+        checkModelResponse(REGE + "?_view=with_metadata&status=any", ROOT_REGISTER + "rege", "test/edit/expected1.ttl", 
+                DCTerms.dateSubmitted, DCTerms.modified);
+        assertEquals(204, postFileStatus("test/edit/edit2.ttl", REGE + "?edit"));
+        checkModelResponse(REGE + "?_view=with_metadata&status=any", ROOT_REGISTER + "rege", "test/edit/expected2.ttl", 
+                DCTerms.dateSubmitted, DCTerms.modified);
+    }
     
     private void checkPageResponse(Model m, String nextpage, int length) {
         ResIterator ri = m.listSubjectsWithProperty(RDF.type, Ldbp.Page);
