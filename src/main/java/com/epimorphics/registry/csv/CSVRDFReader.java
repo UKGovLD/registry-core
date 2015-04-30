@@ -83,7 +83,7 @@ public class CSVRDFReader {
             if (currentRow == null) {
                 return null;
             }
-            // Unsubtle approach but performance is not really the issue here
+            // Unsubtle approach but performance is not really the issue here, and this way we can handle embedded bnodes with no effort
             StringBuffer src = new StringBuffer();
             if (baseURI != null) {
                 src.append( String.format("@base <%s> .\n", baseURI) );
@@ -105,7 +105,7 @@ public class CSVRDFReader {
                         } else {
                             started = true;
                         }
-                        src.append(value);
+                        src.append( RDFCSVUtil.toTurtle(value) );
                     }
                     src.append(";\n");
                 }

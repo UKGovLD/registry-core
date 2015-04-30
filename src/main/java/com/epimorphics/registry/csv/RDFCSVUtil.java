@@ -19,13 +19,15 @@
 package com.epimorphics.registry.csv;
 
 import static com.epimorphics.registry.csv.CSVBaseWriter.VALUE_SEP;
-import static com.epimorphics.registry.csv.CSVBaseWriter.VALUE_SEP_CHAR;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang.text.StrTokenizer;
 
 import com.epimorphics.util.EpiException;
 import com.hp.hpl.jena.rdf.model.Literal;
@@ -42,10 +44,10 @@ public class RDFCSVUtil {
      * Encode an RDF value as a cell value
      */
     public static String encode(RDFNode value, PrefixMapping prefixes) {
-        return encode(value, prefixes, new HashSet<Resource>());
+        return encode(value, prefixes, false, new HashSet<Resource>());
     }
     
-    public static String encode(RDFNode value, PrefixMapping prefixes, Set<Resource> seen) {
+    public static String encode(RDFNode value, PrefixMapping prefixes, boolean embedded, Set<Resource> seen) {
         if (value.isResource()) {
             Resource r = value.asResource();
             if (value.isURIResource()) {
@@ -58,10 +60,19 @@ public class RDFCSVUtil {
             String lex = l.getLexicalForm().replace("'", "\\'");
             if (l.getLanguage() == null || l.getLanguage().isEmpty()) {
                 if (l.getDatatype() == null) {
-                    if (lex.contains("\n")) {
-                        return "'''" + lex + "'''";
+                    if (embedded) {
+                        if (lex.contains("\n")) {
+                            return "'''" + lex + "'''";
+                        } else {
+                            return "'" + lex + "'";
+                        }
                     } else {
-                        return "'" + lex + "'";
+                        if (TRAP_PATTERN.matcher(lex).matches() || lex.contains(VALUE_SEP)) {
+                            // String that looks like a number or boolean so quote it
+                            return "'" + lex + "'";
+                        } else {
+                            return lex;
+                        }
                     }
                 } else {
                     String dt = l.getDatatypeURI();
@@ -78,6 +89,26 @@ public class RDFCSVUtil {
         }
     }
     
+    /**
+     * Package a value read back from a CSV into Turtle syntax for building up parsable description.
+     * Most of the serialization is already Turtle
+     */
+    public static String toTurtle(String value) {
+        if (value.startsWith("'") || value.startsWith("<") || value.startsWith("[")) {
+            // Looks like a wrapped value so let through
+            return value;
+        } else if (TRAP_PATTERN.matcher(value).matches()) {
+            // boolean or number, let through
+            return value;
+        }
+        if (value.contains("\n")) {
+            return "'''" + value + "'''";
+        } else {
+            return "'" + value + "'";
+        }
+    }
+    protected static final Pattern NUMBER_PATTERN = Pattern.compile("(-\\s*)?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+(\\.[0-9]+)?)?");
+    protected static final Pattern TRAP_PATTERN = Pattern.compile("(-\\s*)?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+(\\.[0-9]+)?)?|true|TRUE|false|FALSE|\\w+:.*");
     
     private static String asPrefixOrURI(String uri, PrefixMapping prefixes) {
         String prefixed = prefixes.shortForm(uri);
@@ -89,7 +120,7 @@ public class RDFCSVUtil {
     }
     
     private static final String[] NUMERIC_TYPES = new String[]{XSD.xint.getURI(), XSD.xlong.getURI(), 
-        XSD.integer.getURI(), XSD.decimal.getURI(), XSD.xfloat.getURI(), XSD.xdouble.getURI()};
+        XSD.integer.getURI(), XSD.decimal.getURI(), XSD.xfloat.getURI(), XSD.xdouble.getURI(), XSD.xboolean.getURI()};
 
     /**
      * Takes a cell value (already parsed by a CSV reader) and unpacks it 
@@ -98,30 +129,12 @@ public class RDFCSVUtil {
     public static List<String> unpackMultiValues(String value) {
         if (value.contains(VALUE_SEP)) {
             List<String> values = new ArrayList<>();
-            String remainder = value;
-            String nextValue = "";
-            while ( ! remainder.isEmpty()) {
-                int sofar = -1;
-                while (true) {
-                    int split = remainder.indexOf(VALUE_SEP_CHAR, sofar);
-                    if (split < 0) {
-                        nextValue = remainder;
-                        remainder = "";
-                        break;
-                    } else if (split == remainder.length() - 1) {
-                        nextValue = remainder.substring(0, remainder.length() - 1);
-                        remainder = "";
-                        break;
-                    } else if (remainder.charAt(split+1) == VALUE_SEP_CHAR) {
-                        remainder = remainder.substring(0, split) + remainder.substring(split + 1);
-                        sofar = split + 1;
-                    } else {
-                        nextValue = remainder.substring(0, split);
-                        remainder = remainder.substring(split + 1);
-                        break;
-                    }
-                }
-                values.add( nextValue );
+            String lex = value.replace("\\'", "''");        // Mangle quoted quotes to compatible with StrTokenizer
+            StrTokenizer tokenizer = new StrTokenizer(lex, '|', '\'');
+            while(tokenizer.hasNext()) {
+                String token = tokenizer.nextToken();
+                token = token.replace("''", "\\'");         // unmangle
+                values.add(token);
             }
             return values;
         } else {
@@ -141,9 +154,9 @@ public class RDFCSVUtil {
         ser.append("[" );
         for (StmtIterator si = r.listProperties(); si.hasNext(); ) {
             Statement s = si.next();
-            ser.append( encode(s.getPredicate(), prefixes, seen) );
+            ser.append( encode(s.getPredicate(), prefixes, true, seen) );
             ser.append(" ");
-            ser.append( encode(s.getObject(), prefixes, seen) );
+            ser.append( encode(s.getObject(), prefixes, true, seen) );
             ser.append("; ");
         }
         ser.append("]");

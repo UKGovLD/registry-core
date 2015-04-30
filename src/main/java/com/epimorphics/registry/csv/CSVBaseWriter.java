@@ -135,8 +135,9 @@ public class CSVBaseWriter {
     }
     
     protected String quoteValueSep(String value) {
-//        return value.replace(QUOTE, QUOTED_QUOTE).replace(VALUE_SEP, QUOTED_VALUE_SEP);
-        return value.replace(VALUE_SEP, QUOTED_VALUE_SEP);
+//        return value.replace(VALUE_SEP, QUOTED_VALUE_SEP);
+        // Quoting now done by string quotes 
+        return value;
     }
     
     protected void writeHeaders() throws IOException {
