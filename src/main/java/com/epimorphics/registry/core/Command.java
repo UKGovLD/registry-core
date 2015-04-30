@@ -21,8 +21,11 @@
 
 package com.epimorphics.registry.core;
 
+import static com.epimorphics.rdfutil.RDFUtil.getAPropertyValue;
+import static com.epimorphics.rdfutil.RDFUtil.labelProps;
 import static com.epimorphics.registry.webapi.Parameters.FIRST_PAGE;
 import static com.epimorphics.registry.webapi.Parameters.PAGE_NUMBER;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -52,6 +55,7 @@ import org.slf4j.LoggerFactory;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.commands.CommandAnnotate;
 import com.epimorphics.registry.commands.CommandDelete;
+import com.epimorphics.registry.commands.CommandEdit;
 import com.epimorphics.registry.commands.CommandExport;
 import com.epimorphics.registry.commands.CommandGraphRegister;
 import com.epimorphics.registry.commands.CommandRead;
@@ -76,12 +80,17 @@ import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.util.NameUtils;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 /**
  * Wraps up a registry request as a command object to modularize
  * processing such as authorization and audit trails.
+ * <p>
+ * Contains some processing utilities that are reused across multiple comamnd instances.
+ * </p>
  *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
@@ -98,8 +107,9 @@ public abstract class Command {
         Validate(CommandValidate.class),
         Search(CommandSearch.class),
         Tag(CommandTag.class, RegAction.StatusUpdate),
-        Annotate(CommandAnnotate.class, RegAction.Update),
+        Annotate(CommandAnnotate.class),
         Export(CommandExport.class),
+        Edit(CommandEdit.class, RegAction.Update),
         RealDelete(CommandRealDelete.class, RegAction.RealDelete);
 
         protected RegAction action;
@@ -309,6 +319,9 @@ public abstract class Command {
     /**
      * Notify the command event out to message listeners
      */
+    // TODO these will currently go out as actions are performed even it the transaction is subsequently aborted
+    // Options include (a) batch up messages until commit happens, (b) include transaction start/abort/commit message, (c) scrap this
+    // version of the notification system and rethink
     public void notify(Message message) {
         MessagingService ms = registry.getMessagingService();
         if (ms != null) {
@@ -488,7 +501,7 @@ public abstract class Command {
     }
         
     /**
-     * Perform an update operation - updating an entity (if present) and optional the item metadata as well.
+     * Perform an update operation - updating an entity (if present) and optionally the item metadata as well.
      * Caller is expected to lock/commit the store.
      *  
      * @param currentItem the currently RegisterItem which is the target of the update
@@ -515,6 +528,7 @@ public abstract class Command {
         }
 
         if (updateItem) {
+            // TODO filter container membership property values from 
             if (isPatch) {
                 PatchUtil.patch(newitem.getRoot(), currentItem.getRoot(), RegisterItem.RIGID_PROPS);
             } else {
@@ -523,7 +537,97 @@ public abstract class Command {
         }
         String versionURI = store.update(currentItem, withEntity);
         checkDelegation(currentItem);
+        
+        notify( new Message(this, newitem) );
         return versionURI;
+    }
+    
+    /**
+     * Validate an entity for registration in a given register
+     */
+    protected ValidationResponse validateEntity(Register parent, Resource entity) {
+        if (entity == null) {
+            return new ValidationResponse(BAD_REQUEST, "Missing entity");
+        }
+
+        if ( !entity.hasProperty(RDF.type) || getAPropertyValue(entity, labelProps) == null ) {
+            return new ValidationResponse(BAD_REQUEST, "Missing required property (rdf:type or rdfs:label) on " + entity);
+        }
+
+        List<Resource> itemClasses = RDFUtil.allResourceValues(parent.getRoot(), RegistryVocab.containedItemClass);
+        boolean foundLegalType = itemClasses.isEmpty();
+        for (Resource itemClass : itemClasses) {
+            if (entity.hasProperty(RDF.type, itemClass)) {
+                foundLegalType = true;
+                break;
+            }
+        }
+        if (!foundLegalType) {
+            return new ValidationResponse(BAD_REQUEST, "Entity does not have one of the types required by this register: " + entity);
+        }
+        return ValidationResponse.OK;
+    }
+        
+    /**
+     * Add an item to a register. It is up to the caller to lock/commit the store.
+     */
+    protected Resource addToRegister(Register parent, RegisterItem item) {
+
+        if (store.getDescription(item.getRoot().getURI()) != null) {
+            // Item already exists
+            throw new WebApiException(Response.Status.FORBIDDEN, "Item already registered at request location: " + item.getRoot());
+        }
+
+        ValidationResponse entityValid = validateEntity(parent, item.getEntity() );
+        if (!entityValid.isOk()) {
+            throw new WebApiException(entityValid.getStatus(), entityValid.getMessage());
+        }
+        item.skolemize();
+
+        // Santization
+        for (Property p : RegisterItem.INTERNAL_PROPS) {
+            item.getRoot().removeAll(p);
+        }
+
+        // Submitter
+        Model m = item.getRoot().getModel();
+        Resource submitter = m.createResource();
+        try {
+            UserInfo userinfo = (UserInfo) SecurityUtils.getSubject().getPrincipal();
+            submitter
+            .addProperty(FOAF.name, userinfo.getName())
+            .addProperty(FOAF.accountName, m.createResource( userinfo.getOpenid()) );
+        } catch (UnavailableSecurityManagerException e) {
+            // Occurs during bootstrap
+            submitter.addProperty(FOAF.name, "bootstrap");
+        }
+        item.getRoot().addProperty(RegistryVocab.submitter, submitter);
+
+        Resource entity = item.getEntity();
+        // Normalization closures
+        // TODO factor these out as SPARQL constructs in an external file?
+        if( entity.hasProperty(RDF.type, RegistryVocab.Register) ) {
+            // TODO fill in void description
+            entity.addProperty(RDF.type, Ldbp.Container);
+            log.info("Created new sub-register: " + item.getNotation());
+        }
+        if (entity.hasProperty(RDF.type, RegistryVocab.FederatedRegister)
+                || entity.hasProperty(RDF.type, RegistryVocab.NamespaceForward)
+                || entity.hasProperty(RDF.type, RegistryVocab.DelegatedRegister)) {
+            entity.addProperty(RDF.type, RegistryVocab.Delegated);
+            item.getRoot().addProperty(RegistryVocab.itemClass, RegistryVocab.Delegated);
+            if (entity.hasProperty(RDF.type, RegistryVocab.DelegatedRegister)) {
+                entity.addProperty(RDF.type, RegistryVocab.Register);
+                item.getRoot().addProperty(RegistryVocab.itemClass, RegistryVocab.Register);
+            }
+        }
+        store.addToRegister(parent, item);
+        checkDelegation(item);
+
+        notify( new Message(this, item) );
+
+        return item.getRoot();
+
     }
     
 }

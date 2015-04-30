@@ -39,7 +39,7 @@ public class PatchUtil {
     /**
      * Install the src data over the top of the dest data.
      * Any rigid properties will not be changed.
-     * Any preserved properties which are missing from the src will be preserved by if present on the source they will be updated.
+     * Any preserved properties which are missing from the src will be preserved but if present on the source they will be updated.
      */
     public static void update(Resource src, Resource dest, Property[] rigidProps, Property[] preserveProps) {
         Set<Property> toCopy = allPropertiesOf(src);

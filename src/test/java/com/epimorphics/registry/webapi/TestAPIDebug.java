@@ -21,6 +21,7 @@
 
 package com.epimorphics.registry.webapi;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -39,6 +40,7 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.sparql.util.Closure;
+import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.sun.jersey.api.client.ClientResponse;
 
 /**
@@ -50,7 +52,6 @@ import com.sun.jersey.api.client.ClientResponse;
  */
 public class TestAPIDebug extends TomcatTestBase {
 
-    static final String EXT_BLACK = "http://example.com/colours/black";
     static final String REG1 = BASE_URL + "reg1";
     static final String REG1_URI = ROOT_REGISTER + "reg1";
 

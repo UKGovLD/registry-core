@@ -311,10 +311,13 @@ public class RequestProcessor extends BaseEndpoint {
         if ( parameters.get(Parameters.VALIDATE) != null ) {
             return validate(hh , body);
         } else if ( parameters.get(Parameters.TAG) != null ) {
-            // TODO to support tagging delegated regsiter would need a checkForPassThrough here
+            // TODO to support tagging delegated register would need a checkForPassThrough here
             command = makeCommand(Operation.Tag);
         } else if ( parameters.get(Parameters.STATUS_UPDATE) != null ) {
             command = makeCommand(Operation.StatusUpdate);
+        } else if (parameters.get(Parameters.EDIT) != null && body != null) {
+            command = makeCommand(Operation.Edit);
+            setPayload(command, hh, body, true);
         } else if (body != null) {
             command = makeCommand(Operation.Register);
             setPayload(command, hh, body, true);

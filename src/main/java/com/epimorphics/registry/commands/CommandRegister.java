@@ -22,7 +22,6 @@
 package com.epimorphics.registry.commands;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
 import java.net.URI;
@@ -35,11 +34,10 @@ import java.util.Set;
 
 import javax.ws.rs.core.Response;
 
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.UnavailableSecurityManagerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.rdfutil.QueryUtil;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Command;
@@ -48,16 +46,13 @@ import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.core.ValidationResponse;
-import com.epimorphics.registry.message.Message;
 import com.epimorphics.registry.security.RegAction;
 import com.epimorphics.registry.security.RegPermission;
-import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.store.EntityInfo;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.Parameters;
-import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.util.NameUtils;
 import com.epimorphics.util.PrefixUtils;
@@ -73,13 +68,9 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.sparql.util.Closure;
-import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
-
-import static com.epimorphics.rdfutil.RDFUtil.labelProps;
-import static com.epimorphics.rdfutil.RDFUtil.getAPropertyValue;
 
 /**
  * Command processor to handle registering a new entry.
@@ -154,29 +145,6 @@ public class CommandRegister extends Command {
             }
         }
 
-        return ValidationResponse.OK;
-    }
-
-    private ValidationResponse validateEntity(Register parent, Resource entity) {
-        if (entity == null) {
-            return new ValidationResponse(BAD_REQUEST, "Missing entity");
-        }
-
-        if ( !entity.hasProperty(RDF.type) || getAPropertyValue(entity, labelProps) == null ) {
-            return new ValidationResponse(BAD_REQUEST, "Missing required property (rdf:type or rdfs:label) on " + entity);
-        }
-
-        List<Resource> itemClasses = RDFUtil.allResourceValues(parent.getRoot(), RegistryVocab.containedItemClass);
-        boolean foundLegalType = itemClasses.isEmpty();
-        for (Resource itemClass : itemClasses) {
-            if (entity.hasProperty(RDF.type, itemClass)) {
-                foundLegalType = true;
-                break;
-            }
-        }
-        if (!foundLegalType) {
-            return new ValidationResponse(BAD_REQUEST, "Entity does not have one of the types required by this register: " + entity);
-        }
         return ValidationResponse.OK;
     }
 
@@ -348,65 +316,12 @@ public class CommandRegister extends Command {
         }
         ri.setAsGraph(asGraph);
 
-        if (store.getDescription(ri.getRoot().getURI()) != null) {
-            // Item already exists
-            throw new WebApiException(Response.Status.FORBIDDEN, "Item already registered at request location: " + ri.getRoot());
-        }
-
-        ValidationResponse entityValid = validateEntity(parent, ri.getEntity() );
-        if (!entityValid.isOk()) {
-            throw new WebApiException(entityValid.getStatus(), entityValid.getMessage());
-        }
-        ri.skolemize();
-
         if (statusOverride != null) {
             ri.getRoot().removeAll(RegistryVocab.status);
             ri.getRoot().addProperty(RegistryVocab.status, statusOverride.getResource());
         }
-
-        // Santization
-        for (Property p : RegisterItem.INTERNAL_PROPS) {
-            ri.getRoot().removeAll(p);
-        }
-
-        // Submitter
-        Model m = ri.getRoot().getModel();
-        Resource submitter = m.createResource();
-        try {
-            UserInfo userinfo = (UserInfo) SecurityUtils.getSubject().getPrincipal();
-            submitter
-            .addProperty(FOAF.name, userinfo.getName())
-            .addProperty(FOAF.accountName, m.createResource( userinfo.getOpenid()) );
-        } catch (UnavailableSecurityManagerException e) {
-            // Occurs during bootstrap
-            submitter.addProperty(FOAF.name, "bootstrap");
-        }
-        ri.getRoot().addProperty(RegistryVocab.submitter, submitter);
-
-        Resource entity = ri.getEntity();
-        // Normalization closures
-        // TODO factor these out as SPARQL constructs in an external file?
-        if( entity.hasProperty(RDF.type, RegistryVocab.Register) ) {
-            // TODO fill in void description
-            entity.addProperty(RDF.type, Ldbp.Container);
-            log.info("Created new sub-register: " + ri.getNotation());
-        }
-        if (entity.hasProperty(RDF.type, RegistryVocab.FederatedRegister)
-                || entity.hasProperty(RDF.type, RegistryVocab.NamespaceForward)
-                || entity.hasProperty(RDF.type, RegistryVocab.DelegatedRegister)) {
-            entity.addProperty(RDF.type, RegistryVocab.Delegated);
-            ri.getRoot().addProperty(RegistryVocab.itemClass, RegistryVocab.Delegated);
-            if (entity.hasProperty(RDF.type, RegistryVocab.DelegatedRegister)) {
-                entity.addProperty(RDF.type, RegistryVocab.Register);
-                ri.getRoot().addProperty(RegistryVocab.itemClass, RegistryVocab.Register);
-            }
-        }
-        store.addToRegister(parent, ri);
-        checkDelegation(ri);
-
-        notify( new Message(this, ri) );
-
-        return ri.getRoot();
+        
+        return addToRegister(parent, ri);
     }
 
 
