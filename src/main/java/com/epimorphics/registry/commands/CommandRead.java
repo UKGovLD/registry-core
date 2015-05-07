@@ -199,7 +199,7 @@ public class CommandRead extends Command {
             for (int i = 0; i < members.size(); i++) {
                 members.set(i, members.get(i).inModel(m));
             }
-            return serializeToCSV(members, withMetadata);
+            return serializeToCSV(members, d.getRoot().getURI(), withMetadata);
         } else {
             return returnModel(m, d.getRoot().getURI() );
         }

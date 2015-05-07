@@ -646,7 +646,7 @@ public abstract class Command {
 
     
     // This part part could stream but little point given we are working from an in-memory model
-    protected Response serializeToCSV(List<Resource> members, boolean withMetadata) {
+    protected Response serializeToCSV(List<Resource> members, String location, boolean withMetadata) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CSVRDFWriter writer = new CSVRDFWriter(out, Prefixes.get());
         writer.addHeader(members);
@@ -674,7 +674,13 @@ public abstract class Command {
         try {
             csv = out.toString(StandardCharsets.UTF_8.name());
             String disposition = String.format("attachment; filename=\"%s.csv\"", lastSegment.startsWith("_") ? lastSegment.substring(1) : lastSegment);
-            return Response.ok(csv, "text/csv").header(RequestProcessor.CONTENT_DISPOSITION_HEADER, disposition).build();
+            URI uri;
+            try {
+                uri = new URI( location );
+            } catch (URISyntaxException e) {
+                throw new WebApplicationException(e);
+            }
+            return Response.ok(csv, "text/csv").location(uri).header("Vary", "Accept").header(RequestProcessor.CONTENT_DISPOSITION_HEADER, disposition).build();
         } catch (UnsupportedEncodingException e) {
             throw new EpiException("Internal error accessing UTF-8", e);
         }
