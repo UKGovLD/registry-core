@@ -12,4 +12,5 @@
     eg:number 1, 2, 3 ;
     eg:boolean true;
     eg:string "a", "b", "c|d", "e||f", "|g", "h|";
+    eg:bug "foo'|bar", "i|'j";
     .
