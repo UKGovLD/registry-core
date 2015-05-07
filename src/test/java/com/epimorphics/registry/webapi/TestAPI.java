@@ -789,12 +789,15 @@ public class TestAPI extends TomcatTestBase {
      * be run after tagging test
      */
     private void doTestExport() {
-        ClientResponse response = getResponse(BASE_URL + "reg3?export", "text/csv");
+        ClientResponse response = getResponse(BASE_URL + "reg3?_view=with_metadata", "text/csv");
         assertEquals(200, response.getStatus());
         assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3.csv"), response.getEntity(String.class).replace("\r", ""));
-        response = getResponse(BASE_URL + "reg3/red?export", "text/csv");
+        response = getResponse(BASE_URL + "reg3/red?_view=with_metadata", "text/csv");
         assertEquals(200, response.getStatus());
         assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3-red.csv"), response.getEntity(String.class).replace("\r", ""));
+        response = getResponse(BASE_URL + "reg3/red", "text/csv");
+        assertEquals(200, response.getStatus());
+        assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3-red-no-metadata.csv"), response.getEntity(String.class).replace("\r", ""));
     }
 
     /**

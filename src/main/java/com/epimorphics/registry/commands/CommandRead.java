@@ -35,6 +35,7 @@ import java.util.List;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
+import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.DelegationRecord;
@@ -43,13 +44,13 @@ import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
+import com.epimorphics.registry.csv.RDFCSVUtil;
 import com.epimorphics.registry.store.EntityInfo;
 import com.epimorphics.registry.store.VersionInfo;
 import com.epimorphics.registry.util.Util;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
 import com.epimorphics.registry.webapi.Parameters;
-import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.vocabs.API;
 import com.epimorphics.vocabs.Time;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -168,26 +169,40 @@ public class CommandRead extends Command {
                 m.add( ri.getEntity().getModel() );
             }
         }
+        
+        List<Resource> members = (paged) ? new ArrayList<Resource>(length) : new ArrayList<Resource>() ;
         if (entityWithMetadata) {
-            d = Description.descriptionFrom(d.asRegisterItem().getEntity(), store);
-        }
-        if (!parameters.containsKey(COLLECTION_METADATA_ONLY)) {
-            if (d instanceof Register) {
-                // add this way round so as not to put members in the cached copy of the register description
-                m = registerRead(d.asRegister()).add(m);
-            } else if (d instanceof RegisterItem) {
-                Resource entity = d.asRegisterItem().getEntity();
-                if (entity != null && entity.hasProperty(RDF.type, RegistryVocab.Register)) {
-                    m.add( registerRead( Description.descriptionFrom(entity, store).asRegister() ) );
-                }
-            }
+            Resource entity = d.asRegisterItem().getEntity();
+            d = Description.descriptionFrom(entity, store);
         }
 
         if (d == null) {
             throw new WebApiException(Response.Status.INTERNAL_SERVER_ERROR, "Failed to reconstruct description, possible damaged repository");
         }
+        
+        if (d instanceof Register) {
+            // add this way round so as not to put members in the cached copy of the register description
+            m = registerRead(d.asRegister(), members).add(m);
+        } else if (d instanceof RegisterItem) {
+            Resource entity = d.asRegisterItem().getEntity();
+            if (entity != null && entity.hasProperty(RDF.type, RegistryVocab.Register)) {
+                m.add( registerRead( Description.descriptionFrom(entity, store).asRegister(), members ) );
+            } else {
+                members.add( entity );
+            }
+        } else {
+            members.add( d.getRoot() );
+        }
 
-        return returnModel(m, d.getRoot().getURI() );
+        if (RDFCSVUtil.MEDIA_TYPE.equals(getMediaType())) {
+            // Special case serialization for CSVs, doesn't handle arbitrary models
+            for (int i = 0; i < members.size(); i++) {
+                members.set(i, members.get(i).inModel(m));
+            }
+            return serializeToCSV(members, withMetadata);
+        } else {
+            return returnModel(m, d.getRoot().getURI() );
+        }
     }
 
     private void injectVersionHistory(Description d) {
@@ -259,15 +274,11 @@ public class CommandRead extends Command {
         return returnModel(result, target);
     }
 
-    Model registerRead(Register register) {
+    Model registerRead(Register register, List<Resource> members) {
         if (parameters.containsKey(COLLECTION_METADATA_ONLY)) {
             return register.getRoot().getModel();
         } else {
             Model view = ModelFactory.createDefaultModel();
-            List<Resource> members = (paged) ? new ArrayList<Resource>(length) : null;
-            if (!paged && withMetadata) {
-                members = new ArrayList<Resource>();
-            }
             boolean complete = false;
 
             if (delegation != null && delegation instanceof DelegationRecord) {

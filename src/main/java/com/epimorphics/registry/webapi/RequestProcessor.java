@@ -69,6 +69,7 @@ import com.epimorphics.registry.core.ForwardingRecord.Type;
 import com.epimorphics.registry.core.ForwardingService;
 import com.epimorphics.registry.core.MatchResult;
 import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.csv.RDFCSVUtil;
 import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.util.JSONLDSupport;
 import com.epimorphics.registry.util.PATCH;
@@ -133,7 +134,8 @@ public class RequestProcessor extends BaseEndpoint {
                 mime = JSONLDSupport.FULL_MIME_JSONLD;
                 extension = "json";
             } else if (format.equals("csv")) {
-                return makeCommand( Operation.Export ).execute();
+                mime = RDFCSVUtil.MEDIA_TYPE;
+                extension = "csv";
             }
             return readAsRDF(result, mime, extension);
         } if (parameters.containsKey(Parameters.ANNOTATION)) {
@@ -144,7 +146,7 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     private Response readAsRDF(PassThroughResult ptr, String mime, String ext) {
-        Response response = doRead(ptr);
+        Response response = doRead(ptr, mime);
         Object location = response.getMetadata().getFirst(HttpHeaders.LOCATION);
         ResponseBuilder builder = Response.ok().type(mime).entity(response.getEntity());
         if (location != null) {
@@ -211,14 +213,19 @@ public class RequestProcessor extends BaseEndpoint {
         if (result != null && result.isDone()) {
             return result.getResponse();
         } else {
-            return doRead(result);
+            return doRead(result, null);
         }
     }
 
     @GET
-    @Produces({"text/csv"})
-    public Response exportCSV() {
-        return makeCommand( Operation.Export ).execute();
+    @Produces({RDFCSVUtil.MEDIA_TYPE})
+    public Response readCSV() {
+        PassThroughResult result = checkForPassThrough();
+        if (result != null && result.isDone()) {
+            return result.getResponse();
+        } else {
+            return doRead(result, RDFCSVUtil.MEDIA_TYPE);
+        }
     }
     
     @GET
@@ -228,7 +235,7 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
 
-    private Response doRead(PassThroughResult ptr) {
+    private Response doRead(PassThroughResult ptr, String mediaType) {
         String path = uriInfo.getPath();
         if (path.startsWith(SYSTEM_QUERY) || path.startsWith(UI_PATH) ) {
             // Will chain through to file serving/fuseki
@@ -242,6 +249,9 @@ public class RequestProcessor extends BaseEndpoint {
             command = makeCommand( Operation.Read );
             if (ptr != null) {
                 command.setDelegation(ptr.getRecord());
+            }
+            if (mediaType != null) {
+                command.setMediaType(mediaType);
             }
         }
         return command.execute();
