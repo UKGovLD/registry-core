@@ -39,6 +39,9 @@ import com.hp.hpl.jena.shared.PrefixMapping;
 import com.hp.hpl.jena.vocabulary.XSD;
 
 public class RDFCSVUtil {
+    public static final String STATUS_HEADER = "@status";
+    public static final String NOTATION_HEADER = "@notation";
+    public static final String MEDIA_TYPE = "text/csv";
     
     /**
      * Encode an RDF value as a cell value

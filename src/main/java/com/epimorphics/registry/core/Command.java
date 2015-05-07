@@ -27,6 +27,7 @@ import static com.epimorphics.registry.webapi.Parameters.FIRST_PAGE;
 import static com.epimorphics.registry.webapi.Parameters.PAGE_NUMBER;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -34,6 +35,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -52,11 +54,12 @@ import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.epimorphics.appbase.webapi.WebApiException;
+import com.epimorphics.rdfutil.QueryUtil;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.commands.CommandAnnotate;
 import com.epimorphics.registry.commands.CommandDelete;
 import com.epimorphics.registry.commands.CommandEdit;
-import com.epimorphics.registry.commands.CommandExport;
 import com.epimorphics.registry.commands.CommandGraphRegister;
 import com.epimorphics.registry.commands.CommandRead;
 import com.epimorphics.registry.commands.CommandRealDelete;
@@ -66,6 +69,8 @@ import com.epimorphics.registry.commands.CommandStatusUpdate;
 import com.epimorphics.registry.commands.CommandTag;
 import com.epimorphics.registry.commands.CommandUpdate;
 import com.epimorphics.registry.commands.CommandValidate;
+import com.epimorphics.registry.csv.CSVRDFWriter;
+import com.epimorphics.registry.csv.RDFCSVUtil;
 import com.epimorphics.registry.message.Message;
 import com.epimorphics.registry.message.MessagingService;
 import com.epimorphics.registry.security.RegAction;
@@ -76,7 +81,7 @@ import com.epimorphics.registry.util.PatchUtil;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.RegistryVocab;
-import com.epimorphics.appbase.webapi.WebApiException;
+import com.epimorphics.registry.webapi.RequestProcessor;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.util.NameUtils;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -108,7 +113,6 @@ public abstract class Command {
         Search(CommandSearch.class),
         Tag(CommandTag.class, RegAction.StatusUpdate),
         Annotate(CommandAnnotate.class),
-        Export(CommandExport.class),
         Edit(CommandEdit.class, RegAction.Update),
         RealDelete(CommandRealDelete.class, RegAction.RealDelete);
 
@@ -143,6 +147,7 @@ public abstract class Command {
     protected String path;              // The relative request path
     protected MultivaluedMap<String, String> parameters;
     protected Model payload;
+    protected String mediaType;         // The requested media type, may only be set for specific types like CSV
 
     protected String requestor;
 
@@ -235,6 +240,15 @@ public abstract class Command {
 
     public void setDelegation(ForwardingRecord delegation) {
         this.delegation = delegation;
+    }
+       
+
+    public String getMediaType() {
+        return mediaType;
+    }
+
+    public void setMediaType(String mediaType) {
+        this.mediaType = mediaType;
     }
 
     @Override
@@ -629,5 +643,43 @@ public abstract class Command {
         return item.getRoot();
 
     }
+
+    
+    // This part part could stream but little point given we are working from an in-memory model
+    protected Response serializeToCSV(List<Resource> members, boolean withMetadata) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CSVRDFWriter writer = new CSVRDFWriter(out, Prefixes.get());
+        writer.addHeader(members);
+        if (withMetadata) {
+            writer.addHeader(RDFCSVUtil.STATUS_HEADER);
+            writer.addHeader(RDFCSVUtil.NOTATION_HEADER);
+        }
+        for (Resource member : members) {
+            writer.write(member);
+            if (withMetadata){
+                List<Resource> itemL = QueryUtil.connectedResources(member, itemPath);
+                if (itemL.size() != 1) {
+                    throw new EpiException("Internal inconsistency, can't find register item for extracted member");
+                }
+                Resource item = itemL.get(0);
+                Status status = Status.forResource( RDFUtil.getResourceValue(item, RegistryVocab.status) );
+                writer.write(RDFCSVUtil.STATUS_HEADER, status.name().toLowerCase());
+                String notation = RDFUtil.getStringValue(item, RegistryVocab.notation);
+                writer.write(RDFCSVUtil.NOTATION_HEADER, notation);
+            }
+            writer.finishRow();
+        }
+        writer.close();
+        String csv;
+        try {
+            csv = out.toString(StandardCharsets.UTF_8.name());
+            String disposition = String.format("attachment; filename=\"%s.csv\"", lastSegment.startsWith("_") ? lastSegment.substring(1) : lastSegment);
+            return Response.ok(csv, "text/csv").header(RequestProcessor.CONTENT_DISPOSITION_HEADER, disposition).build();
+        } catch (UnsupportedEncodingException e) {
+            throw new EpiException("Internal error accessing UTF-8", e);
+        }
+    }
+    
+    protected static final String itemPath = String.format("^<%s>/^<%s>", RegistryVocab.entity, RegistryVocab.definition);
     
 }
