@@ -38,7 +38,7 @@ public class CSVBaseWriter {
     protected static final String SEP = "," ;
     protected static final String VALUE_SEP = "|" ;
     protected static final char   VALUE_SEP_CHAR = '|' ;
-    protected static final String QUOTED_VALUE_SEP = "||" ;  // Don't use \ because CSV processors handle then specially
+//    protected static final String QUOTED_VALUE_SEP = "||" ;  // Don't use \ because CSV processors handle then specially
 //    protected static final String QUOTE = "\\" ;
 //    protected static final char   QUOTE_CHAR = '\\';
 //    protected static final String QUOTED_QUOTE = "\\\\" ;

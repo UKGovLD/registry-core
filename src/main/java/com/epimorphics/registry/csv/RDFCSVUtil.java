@@ -133,7 +133,7 @@ public class RDFCSVUtil {
             StrTokenizer tokenizer = new StrTokenizer(lex, '|', '\'');
             while(tokenizer.hasNext()) {
                 String token = tokenizer.nextToken();
-                token = token.replace("''", "\\'");         // unmangle
+                token = token.replace("'", "\\'");         // unmangle
                 values.add(token);
             }
             return values;
