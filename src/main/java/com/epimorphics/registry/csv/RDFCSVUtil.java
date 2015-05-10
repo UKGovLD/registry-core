@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.text.StrTokenizer;
+import org.apache.jena.riot.system.IRIResolver;
 
 import com.epimorphics.util.EpiException;
 import com.hp.hpl.jena.rdf.model.Literal;
@@ -93,6 +94,21 @@ public class RDFCSVUtil {
     }
     
     /**
+     * Decode a URI value from a csv
+     */
+    public static String asURI(String colValue, PrefixMapping prefixes, String baseURI) {
+        colValue = colValue.trim();
+        if (colValue.startsWith("<") && colValue.endsWith(">")) {
+            String uri = colValue.substring(1, colValue.length()-1);
+            return IRIResolver.resolve(uri, baseURI).toString();
+        } else if (QNAME_PATTERN.matcher(colValue).matches()) {
+            return prefixes.expandPrefix(colValue);
+        } else {
+            throw new EpiException("Not a legal URI encoding in CSV cell: " + colValue);
+        }
+    }
+    
+    /**
      * Package a value read back from a CSV into Turtle syntax for building up parsable description.
      * Most of the serialization is already Turtle
      */
@@ -111,7 +127,8 @@ public class RDFCSVUtil {
         }
     }
     protected static final Pattern NUMBER_PATTERN = Pattern.compile("(-\\s*)?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+(\\.[0-9]+)?)?");
-    protected static final Pattern TRAP_PATTERN = Pattern.compile("(-\\s*)?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+(\\.[0-9]+)?)?|true|TRUE|false|FALSE|\\w+:.*");
+    protected static final Pattern TRAP_PATTERN = Pattern.compile("(-\\s*)?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+(\\.[0-9]+)?)?|true|TRUE|false|FALSE|\\w+:\\S*");
+    protected static final Pattern QNAME_PATTERN = Pattern.compile("\\w+:\\S*");
     
     private static String asPrefixOrURI(String uri, PrefixMapping prefixes) {
         String prefixed = prefixes.shortForm(uri);

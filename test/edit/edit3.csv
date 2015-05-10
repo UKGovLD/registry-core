@@ -1,0 +1,3 @@
+@id,@notation,@status,dct:description,rdf:type,rdfs:label
+<item3>,item3,stable,Entity 3 updated,skos:Concept,entity 3
+<item4>,item4,experimental,Entity 4,skos:Concept,entity 4
