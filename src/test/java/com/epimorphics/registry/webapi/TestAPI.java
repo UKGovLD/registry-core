@@ -26,6 +26,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -33,9 +34,11 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.jena.riot.RDFDataMgr;
 import org.junit.Test;
 
 import com.epimorphics.rdfutil.RDFUtil;
+import com.epimorphics.registry.csv.CSVPayloadRead;
 import com.epimorphics.registry.util.JSONLDSupport;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.Ldbp;
@@ -190,10 +193,15 @@ public class TestAPI extends TomcatTestBase {
         // Bug tests
         doBNodeDuplicationBugTest();
         doSkosLabelTest();
+
+        // CSV parsing, needs runtime registry to access prefixes register
+        doTestPayloadRead("test/csv/reg3-red.csv", "test/csv/reg3-red.ttl");
+        doTestPayloadRead("test/csv/reg3-red-no-metadata.csv", "test/csv/reg3-red-no-metadata.ttl");
+        doTestPayloadRead("test/edit/edit3.csv", "test/csv/edit3.ttl");
         
         // Edit
         doEditTest();
-        
+
         // Deletion
         doTestRealDelete();
 
@@ -914,6 +922,9 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(204, postFileStatus("test/edit/edit2.ttl", REGE + "?edit"));
         checkModelResponse(REGE + "?_view=with_metadata&status=any", ROOT_REGISTER + "rege", "test/edit/expected2.ttl", 
                 DCTerms.dateSubmitted, DCTerms.modified);
+        assertEquals(204, postFileStatus("test/edit/edit3.csv", REGE + "?edit", "text/csv"));
+        checkModelResponse(REGE + "?_view=with_metadata&status=any", ROOT_REGISTER + "rege", "test/edit/expected3.ttl", 
+                DCTerms.dateSubmitted, DCTerms.modified);
     }
     
     private void checkPageResponse(Model m, String nextpage, int length) {
@@ -952,6 +963,13 @@ public class TestAPI extends TomcatTestBase {
                     .addProperty(RDF.type, SKOS.Concept);
             assertEquals(201, postModel(m, REGL_URL).getStatus());
         }
+    }
+        
+    private void doTestPayloadRead(String csv, String expected) throws IOException {
+        InputStream ins = new FileInputStream(csv);
+        String baseURI = "http://location.data.gov.uk/reg3/";
+        Model payload = CSVPayloadRead.readCSVStream(ins, baseURI);
+        assertTrue( payload.isIsomorphicWith( RDFDataMgr.loadModel(expected) ) );
     }
 
 }

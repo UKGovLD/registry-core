@@ -27,15 +27,14 @@ import java.util.Map;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFLanguages;
 
-import com.epimorphics.rdfutil.RDFUtil;
+import au.com.bytecode.opencsv.CSVParser;
+import au.com.bytecode.opencsv.CSVReader;
+
 import com.epimorphics.util.EpiException;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.shared.PrefixMapping;
-
-import au.com.bytecode.opencsv.CSVParser;
-import au.com.bytecode.opencsv.CSVReader;
 
 /**
  * Support for reading back a CSV exported by CSVRDFWriter.
@@ -75,7 +74,8 @@ public class CSVRDFReader {
     }    
     
     /**
-     * Fetch the next row, decode it as a resource, store the resource in the given model
+     * Fetch the next row, decode it as a resource, store the resource in the given model.
+     * Return null if there are no more rows
      */
     public Resource nextResource(Model model) {
         try {
@@ -91,7 +91,8 @@ public class CSVRDFReader {
             for (String prefix : prefixes.getNsPrefixMap().keySet()) {
                 src.append( String.format("@prefix %s: <%s> .\n", prefix, prefixes.getNsPrefixURI(prefix)) );
             }
-            src.append( getColumnValue(CSVRDFWriter.ID_COL)  + "\n");
+            String id = getColumnValue(CSVRDFWriter.ID_COL);
+            src.append( id  + "\n");
             for (int i = 0; i < headers.length; i++) {
                 String prop = headers[i];
                 if (! prop.startsWith("@") ) {
@@ -112,9 +113,11 @@ public class CSVRDFReader {
             }
             src.append(".\n");
             
-            InputStream isrc = new ByteArrayInputStream( src.toString().getBytes() );
+            InputStream isrc = new ByteArrayInputStream( src.toString().getBytes() );            
             RDFDataMgr.read(model, isrc, RDFLanguages.TURTLE);
-            return RDFUtil.findRoot(model);
+            
+            return model.getResource( RDFCSVUtil.asURI(id, prefixes, baseURI) );
+
         } catch (IOException e) {
             throw new EpiException("Problem reading CSV", e);
         }
@@ -125,6 +128,10 @@ public class CSVRDFReader {
      */
     public Resource nextResource() {
         return nextResource( ModelFactory.createDefaultModel() );
+    }
+    
+    public boolean hasColumn(String columnName) {
+        return headerIndex.containsKey(columnName);
     }
     
     /**

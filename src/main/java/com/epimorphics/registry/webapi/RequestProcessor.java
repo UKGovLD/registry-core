@@ -69,6 +69,7 @@ import com.epimorphics.registry.core.ForwardingRecord.Type;
 import com.epimorphics.registry.core.ForwardingService;
 import com.epimorphics.registry.core.MatchResult;
 import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.csv.CSVPayloadRead;
 import com.epimorphics.registry.csv.RDFCSVUtil;
 import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.util.JSONLDSupport;
@@ -314,7 +315,7 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     @POST
-    @Consumes({MIME_TURTLE, MIME_RDFXML, JSONLDSupport.MIME_JSONLD})
+    @Consumes({MIME_TURTLE, MIME_RDFXML, JSONLDSupport.MIME_JSONLD, RDFCSVUtil.MEDIA_TYPE})
     public Response register(@Context HttpHeaders hh, InputStream body) {
         MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
         Command command = null;
@@ -350,7 +351,7 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     @PUT
-    @Consumes({MIME_TURTLE, MIME_RDFXML, JSONLDSupport.MIME_JSONLD})
+    @Consumes({MIME_TURTLE, MIME_RDFXML, JSONLDSupport.MIME_JSONLD, RDFCSVUtil.MEDIA_TYPE})
     public Response update(@Context HttpHeaders hh, InputStream body) {
         MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
         Command command = null;
@@ -374,7 +375,7 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     @PATCH
-    @Consumes({MIME_TURTLE, MIME_RDFXML, JSONLDSupport.MIME_JSONLD})
+    @Consumes({MIME_TURTLE, MIME_RDFXML, JSONLDSupport.MIME_JSONLD, RDFCSVUtil.MEDIA_TYPE})
     public Response updatePatch(@Context HttpHeaders hh, InputStream body) {
         Command command = makeCommand( Operation.Update );
         ((CommandUpdate)command).setToPatch();
@@ -511,6 +512,9 @@ public class RequestProcessor extends BaseEndpoint {
 
         if (mime.equals(JSONLDSupport.MIME_JSONLD)) {
             return JSONLDSupport.readModel(baseURI(isPOST), body);
+            
+        } else if (mime.equals(RDFCSVUtil.MEDIA_TYPE)) {
+            return CSVPayloadRead.readCSVStream(body, baseURI(isPOST));
 
         } else {
             String lang = null;

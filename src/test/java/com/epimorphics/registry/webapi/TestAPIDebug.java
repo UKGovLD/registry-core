@@ -21,7 +21,6 @@
 
 package com.epimorphics.registry.webapi;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -40,7 +39,6 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.sparql.util.Closure;
-import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.sun.jersey.api.client.ClientResponse;
 
 /**
@@ -62,7 +60,7 @@ public class TestAPIDebug extends TomcatTestBase {
     @Test
     public void testDebug() throws IOException {
     }
-
+    
     // Debugging utility only, should not be used while transactions are live
     public static void printResourceState(String...uris) {
         Store storesvc = AppConfig.getApp().getComponentAs("basestore", Store.class);

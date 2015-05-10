@@ -1,0 +1,128 @@
+@prefix dc:    <http://purl.org/dc/elements/1.1/> .
+@prefix prov:  <http://www.w3.org/ns/prov#> .
+@prefix ssd:   <http://www.w3.org/ns/sparql-service-description#> .
+@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
+@prefix vann:  <http://purl.org/vocab/vann/> .
+@prefix void:  <http://rdfs.org/ns/void#> .
+@prefix vs:    <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+@prefix version: <http://purl.org/linked-data/version#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix time:  <http://www.w3.org/2006/time#> .
+@prefix reg:   <http://purl.org/linked-data/registry#> .
+@prefix dct:   <http://purl.org/dc/terms/> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix api:   <http://purl.org/linked-data/api/vocab#> .
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+@prefix ldp:   <http://www.w3.org/ns/ldp#> .
+@prefix xyz:   <http://example.com/xyz> .
+
+<http://location.data.gov.uk/_rege>
+        a                  reg:RegisterItem ;
+        rdfs:label         "register e"@en ;
+        dct:dateSubmitted  "2015-05-10T11:06:04.081Z"^^xsd:dateTime ;
+        dct:description    "Example register e"@en ;
+        reg:definition     [ reg:entity         <http://location.data.gov.uk/rege> ;
+                             reg:entityVersion  <http://location.data.gov.uk/rege:1>
+                           ] ;
+        reg:itemClass      skos:Collection , reg:Register ;
+        reg:notation       "rege" ;
+        reg:register       <http://location.data.gov.uk/> ;
+        reg:status         reg:statusSubmitted ;
+        reg:submitter      [ foaf:name  "bootstrap" ] ;
+        owl:versionInfo    1 .
+        
+<http://location.data.gov.uk/rege>
+        a                        skos:Collection , reg:Register , ldp:Container ;
+        rdfs:label               "register e"@en ;
+        dct:description          "Example register e"@en ;
+        dct:modified             "2015-05-10T11:06:04.081Z"^^xsd:dateTime ;
+        reg:manager              <http://example.com/registryManagementLtd> ;
+        reg:owner                <http://example.com/department> ;
+        owl:versionInfo          1 ;
+        skos:member              <http://location.data.gov.uk/rege/item4> , <http://location.data.gov.uk/rege/item2> , <http://location.data.gov.uk/rege/item3> , <http://location.data.gov.uk/rege/item1> ;
+        ldp:membershipPredicate  skos:member .
+
+<http://location.data.gov.uk/rege/_item1>
+        a                  reg:RegisterItem ;
+        rdfs:label         "entity 1" ;
+        dct:dateSubmitted  "2015-05-10T11:06:04.091Z"^^xsd:dateTime ;
+        dct:description    "A test entity 1" ;
+        reg:definition     [ reg:entity       <http://location.data.gov.uk/rege/item1> ;
+                             reg:sourceGraph  <http://location.data.gov.uk/rege/_item1:1#graph>
+                           ] ;
+        reg:itemClass      skos:Concept ;
+        reg:notation       "item1" ;
+        reg:register       <http://location.data.gov.uk/rege> ;
+        reg:status         reg:statusSubmitted ;
+        reg:submitter      [ foaf:name  "bootstrap" ] ;
+        owl:versionInfo    1 .
+
+<http://location.data.gov.uk/rege/item1>
+        a                skos:Concept ;
+        rdfs:label       "entity 1" ;
+        dct:description  "A test entity 1" .
+
+<http://location.data.gov.uk/rege/_item2>
+        a                  reg:RegisterItem ;
+        rdfs:label         "entity 2 - updated" ;
+        dct:dateSubmitted  "2015-05-10T11:06:04.091Z"^^xsd:dateTime ;
+        dct:description    "A test entity 2 - updated" ;
+        dct:modified       "2015-05-10T11:06:04.125Z"^^xsd:dateTime ;
+        reg:definition     [ reg:entity       <http://location.data.gov.uk/rege/item2> ;
+                             reg:sourceGraph  <http://location.data.gov.uk/rege/_item2:2#graph>
+                           ] ;
+        reg:itemClass      skos:Concept ;
+        reg:notation       "item2" ;
+        reg:register       <http://location.data.gov.uk/rege> ;
+        reg:status         reg:statusExperimental ;
+        reg:submitter      [ foaf:name  "bootstrap" ] ;
+        owl:versionInfo    2 .
+
+
+<http://location.data.gov.uk/rege/item2>
+        a                skos:Concept ;
+        rdfs:label       "entity 2 - updated" ;
+        dct:description  "A test entity 2 - updated" .
+
+<http://location.data.gov.uk/rege/_item3>
+        a                  reg:RegisterItem ;
+        rdfs:label         "entity 3" ;
+        dct:dateSubmitted  "2015-05-10T11:06:04.118Z"^^xsd:dateTime ;
+        dct:description    "Entity 3 updated" ;
+        dct:modified       "2015-05-10T11:06:04.161Z"^^xsd:dateTime ;
+        reg:definition     [ reg:entity       <http://location.data.gov.uk/rege/item3> ;
+                             reg:sourceGraph  <http://location.data.gov.uk/rege/_item3:2#graph>
+                           ] ;
+        reg:itemClass      skos:Concept ;
+        reg:notation       "item3" ;
+        reg:register       <http://location.data.gov.uk/rege> ;
+        reg:status         reg:statusStable ;
+        reg:submitter      [ foaf:name  "bootstrap" ] ;
+        owl:versionInfo    2 .
+
+<http://location.data.gov.uk/rege/item3>
+        a                skos:Concept ;
+        rdfs:label       "entity 3" ;
+        dct:description  "Entity 3 updated" .
+
+<http://location.data.gov.uk/rege/_item4>
+        a                  reg:RegisterItem ;
+        rdfs:label         "entity 4" ;
+        dct:dateSubmitted  "2015-05-10T11:06:04.156Z"^^xsd:dateTime ;
+        dct:description    "Entity 4" ;
+        reg:definition     [ reg:entity       <http://location.data.gov.uk/rege/item4> ;
+                             reg:sourceGraph  <http://location.data.gov.uk/rege/_item4:1#graph>
+                           ] ;
+        reg:itemClass      skos:Concept ;
+        reg:notation       "item4" ;
+        reg:register       <http://location.data.gov.uk/rege> ;
+        reg:status         reg:statusExperimental ;
+        reg:submitter      [ foaf:name  "bootstrap" ] ;
+        owl:versionInfo    1 .
+
+<http://location.data.gov.uk/rege/item4>
+        a                skos:Concept ;
+        rdfs:label       "entity 4" ;
+        dct:description  "Entity 4" .
