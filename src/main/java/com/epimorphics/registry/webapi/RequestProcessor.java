@@ -456,6 +456,8 @@ public class RequestProcessor extends BaseEndpoint {
                 payload.read(uploadedInputStream, base, FileUtils.langTurtle);
             } else if (filename.endsWith(".jsonld") || filename.endsWith(".json")) {
                 payload = JSONLDSupport.readModel(base, uploadedInputStream);
+            } else if (filename.endsWith(".csv")) {
+                payload = CSVPayloadRead.readCSVStream(uploadedInputStream, base);
             } else {
                 payload.read(uploadedInputStream, base, FileUtils.langXML);
             }
