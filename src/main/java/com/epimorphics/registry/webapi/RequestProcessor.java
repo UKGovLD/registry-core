@@ -391,12 +391,6 @@ public class RequestProcessor extends BaseEndpoint {
             String target = uriInfo.getPath();
             target = Registry.get().getBaseURI() + (target.isEmpty() ? "/" : "/" + target + "/");
             Resource r = UiForm.create(form, target);
-
-//            // TEMP debug
-//            System.out.println("Form created resource:");
-//            r.getModel().setNsPrefixes(Prefixes.get());
-//            r.getModel().write(System.out, "Turtle");
-
             Command command = makeCommand( Operation.Register );
             command.setPayload( r.getModel() );
             return command.execute();
@@ -442,6 +436,7 @@ public class RequestProcessor extends BaseEndpoint {
         List<String> successfullyProcessed = new ArrayList<>();
         int success = 0;
         int failure = 0;
+        Response response = null;
         StringBuffer errorMessages = new StringBuffer();
         for(FormDataBodyPart field : fields){
             InputStream uploadedInputStream       = field.getValueAs(InputStream.class);
@@ -466,13 +461,15 @@ public class RequestProcessor extends BaseEndpoint {
                 command = makeCommand( Operation.Register );
             } else if (action.equals("annotate")) {
                 command = makeCommand( Operation.Annotate );
+            } else if (action.equals("edit")) {
+                command = makeCommand( Operation.Edit );
             }
             if (command == null) {
                 throw new WebApiException(Response.Status.BAD_REQUEST, "Action " + action + " not recognized");
             }
             command.setPayload(payload);
             try {
-                Response response = command.execute();
+                response = command.execute();
                 if (response.getStatus() >= 400) {
                     failure++;
                     errorMessages.append("<p>" + filename + " - " + response.getEntity() + "</p>");
@@ -503,6 +500,13 @@ public class RequestProcessor extends BaseEndpoint {
         }
         if (success == 0) {
             throw new WebApiException(Response.Status.BAD_REQUEST, "No file uploaded");
+        }
+        if (action.equals("edit")) {
+            try {
+                return Response.seeOther(new URI(uriInfo.getPath())).build();
+            } catch (URISyntaxException e) {
+                // Fall through to default
+            }
         }
         return Response.ok().build();
     }
