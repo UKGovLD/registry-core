@@ -21,6 +21,8 @@ package com.epimorphics.registry.commands;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -139,6 +141,8 @@ public class CommandEdit extends Command {
             }
             store.commit();
             
+            return Response.noContent().location(new URI(path)).build();
+        } catch (URISyntaxException e) {
             return Response.noContent().build();
         } finally {
             store.end();
