@@ -413,7 +413,6 @@ public class TestStoreImpl {
         addEntry("file:test/reg1.ttl", ROOT_REGISTER);
         addEntry("file:test/blue.ttl", REG1);
         addEntry("file:test/red.ttl", REG1);
-        addEntry("file:test/reg1.ttl", ROOT_REGISTER);
 
         String itemURI = ROOT_REGISTER + "reg1/_red";
         doUpdate(itemURI, "red1");

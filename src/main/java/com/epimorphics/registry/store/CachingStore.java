@@ -24,6 +24,8 @@ package com.epimorphics.registry.store;
 import java.util.Calendar;
 import java.util.List;
 
+import org.apache.jena.riot.system.StreamRDF;
+
 import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.ForwardingRecord;
 import com.epimorphics.registry.core.Register;
@@ -220,6 +222,16 @@ public class CachingStore implements StoreAPI {
     @Override
     public void delete(String uri) {
         store.delete(uri);
+    }
+
+    @Override
+    public void exportTree(String uri, StreamRDF out) {
+        store.exportTree(uri, out);
+    }
+
+    @Override
+    public void importTree(String uri, StreamRDF in) {
+        store.importTree(uri, in);
     }
 
 }

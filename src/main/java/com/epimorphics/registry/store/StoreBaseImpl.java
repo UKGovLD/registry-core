@@ -27,10 +27,14 @@ import static com.epimorphics.rdfutil.QueryUtil.selectFirstVar;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.jena.riot.system.StreamRDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +56,8 @@ import com.epimorphics.registry.vocab.Version;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.util.NameUtils;
 import com.epimorphics.vocabs.Time;
+import com.hp.hpl.jena.graph.Node;
+import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.QuerySolution;
@@ -65,6 +71,8 @@ import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
+import com.hp.hpl.jena.sparql.core.Quad;
 import com.hp.hpl.jena.sparql.util.Closure;
 import com.hp.hpl.jena.util.FileManager;
 import com.hp.hpl.jena.vocabulary.DCTerms;
@@ -960,15 +968,20 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public void delete(String uri) {
+        delete( asItem(uri) );
+    }
+    
+    private RegisterItem asItem(String uri) {
         String id = NameUtils.splitAfterLast(uri, "/");
         if ( ! id.startsWith("_") ) {
             // Ensure we start with an item URI
             uri = NameUtils.splitBeforeLast(uri, "/") + "/_" + id;
         }
-        delete( getCurrentVersion(uri).asRegisterItem() );
+        return getCurrentVersion(uri).asRegisterItem();
     }
     
     protected void delete(RegisterItem item) {
+        checkWriteLocked();
         if ( item.isRegister() ) {
             Register register = item.getAsRegister(this);
             for (RegisterEntryInfo ei : listMembers(register )) {
@@ -977,45 +990,99 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         }
     
         Model toDelete = ModelFactory.createDefaultModel();
-        addAllVersions(item.getRoot(), toDelete);
+        Collection<Resource>graphs = scanAllVersions(item.getRoot(), toModel(toDelete));
         getDefaultModel().remove(toDelete);
-    }
-    
-    private void addAllVersions(Resource root, Model toDelete) {
-        addRefClosure(toDelete, root);
-        for (Resource version : getDefaultModel().listSubjectsWithProperty(DCTerms.isVersionOf, root).toList()) {
-            addRefClosure(toDelete, version);
-            addRefClosure(toDelete, getResourceValue(toDelete, version, Version.interval));
-            Resource definition = getResourceValue(toDelete, version, RegistryVocab.definition);
-            if (definition != null) {
-                Resource graph = getResourceValue(toDelete, definition, RegistryVocab.sourceGraph);
-                if (graph != null) {
-                    store.asDataset().removeNamedModel( graph.getURI() );
-                }
-                Resource entity = getResourceValue(toDelete, definition, RegistryVocab.entity);
-                if (entity != null) {
-                    addAllVersions(entity, toDelete);
-                }
-            }
-            Resource graph = getResourceValue(toDelete, version, RegistryVocab.annotation);
-            if (graph != null) {
-                store.asDataset().removeNamedModel( graph.getURI() );
-            }
+        for (Resource graph : graphs) {
+            store.asDataset().removeNamedModel( graph.getURI() );
         }
     }
     
-    private void addRefClosure(Model accumulator, Resource root) {
-        if (root == null) return;
-        accumulator.add( getDefaultModel().listStatements(null, null, root) );
-        Closure.closure(root.inModel(getDefaultModel()), false, accumulator);
+    private StreamRDF toModel(final Model model) {
+        return new StreamRDF() {
+            @Override public void triple(Triple triple) { model.add( model.asStatement(triple) ); }
+            @Override public void start() { }
+            @Override public void quad(Quad quad) { throw new UnsupportedOperationException();  }
+            @Override public void prefix(String prefix, String iri) {  model.setNsPrefix(prefix, iri); }
+            @Override public void finish() {}
+            @Override public void base(String base) { throw new UnsupportedOperationException(); }
+        };
     }
     
-    private Resource getResourceValue(Model toDelete, Resource root, Property prop) {
-        NodeIterator ni = toDelete.listObjectsOfProperty(root, prop);
+    /**
+     * Scan the tree streaming all the triples in the default graph to the given stream
+     * and return a collection of the associated named graphs (entity definitions and annotations)
+     */
+    private Collection<Resource> scanAllVersions(Resource root, StreamRDF stream) {
+        return scanAllVersions(root, stream, new HashSet<Resource>());
+    }
+    
+    private Collection<Resource> scanAllVersions(Resource root, StreamRDF stream, Collection<Resource> sofar) {
+        addRefClosure(stream, root);
+        for (Resource version : getDefaultModel().listSubjectsWithProperty(DCTerms.isVersionOf, root).toList()) {
+            addRefClosure(stream, version);
+            addRefClosure(stream, getResourceValue(version, Version.interval));
+            Resource definition = getResourceValue(version, RegistryVocab.definition);
+            if (definition != null) {
+                Resource graph = getResourceValue(definition, RegistryVocab.sourceGraph);
+                if (graph != null) {
+                    sofar.add(graph);
+                }
+                Resource entity = getResourceValue(definition, RegistryVocab.entity);
+                if (entity != null) {
+                    scanAllVersions(entity, stream, sofar);
+                }
+            }
+            Resource graph = getResourceValue(version, RegistryVocab.annotation);
+            if (graph != null) {
+                sofar.add(graph);
+            }
+        }
+        return sofar;
+    }
+    
+    private void addRefClosure(StreamRDF accumulator, Resource root) {
+        if (root == null) return;
+        emitAll(accumulator, getDefaultModel().listStatements(null, null, root) );
+        emitAll(accumulator, Closure.closure(root.inModel(getDefaultModel()), false).listStatements() );
+    }
+    
+    private void emitAll(StreamRDF stream, StmtIterator si) {
+        while (si.hasNext()) {
+            stream.triple( si.nextStatement().asTriple() );
+        }
+    }
+    
+    private Resource getResourceValue( Resource root, Property prop) {
+        NodeIterator ni = getDefaultModel().listObjectsOfProperty(root, prop);
         if (ni.hasNext()) {
             return ni.next().asResource();
         } else {
             return null;
         }
+    }
+    
+    @Override
+    public void exportTree(String uri, StreamRDF out) {
+        lockStoreRead();
+        try {
+            Collection<Resource> graphs = scanAllVersions( asItem(uri).getRoot(), out);
+            for (Resource g : graphs) {
+                Iterator<Quad> i = store.asDataset().asDatasetGraph().findNG(g.asNode(), Node.ANY, Node.ANY, Node.ANY);
+                while (i.hasNext()){
+                    out.quad( i.next() );
+                }
+                
+            }
+        } finally {
+            unlockStoreRead();
+        }
+    }
+    
+    @Override
+    public void importTree(String uri, StreamRDF in) {
+        checkWriteLocked();
+        RegisterItem item = asItem(uri);
+        delete(item);
+        // TODO implement import!
     }
 }
