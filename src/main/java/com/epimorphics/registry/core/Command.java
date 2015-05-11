@@ -563,7 +563,9 @@ public abstract class Command {
         if (entity == null) {
             return new ValidationResponse(BAD_REQUEST, "Missing entity");
         }
-
+        if (!entity.listProperties().hasNext()) {
+            return new ValidationResponse(BAD_REQUEST, "No properties for entity, incorrect URI? " + entity);
+        }
         if ( !entity.hasProperty(RDF.type) || getAPropertyValue(entity, labelProps) == null ) {
             return new ValidationResponse(BAD_REQUEST, "Missing required property (rdf:type or rdfs:label) on " + entity);
         }
