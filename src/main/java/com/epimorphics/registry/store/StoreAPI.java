@@ -24,6 +24,8 @@ package com.epimorphics.registry.store;
 import java.util.Calendar;
 import java.util.List;
 
+import org.apache.jena.riot.system.StreamRDF;
+
 import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.ForwardingRecord;
 import com.epimorphics.registry.core.Register;
@@ -35,11 +37,15 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
  * Abstract interface onto the underlying versioned RDF storage and
- * indexing system. Should support non-RDF storage options as well as
- * straight triple stores.
+ * indexing system. 
  *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
+
+// TODO review this - it has accreted operations as they extensions have demanded them and is now
+//                    rather unwieldy. Is there a useful set of core operations somewhere between 
+//                    raw RDF storage and this application-centred API?
+
 public interface StoreAPI {
 
     /**
@@ -261,4 +267,15 @@ public interface StoreAPI {
      * For a register it recursively deletes all the register members as well.
      */
     public void delete(String uri);
+    
+    /**
+     * Generate an export of the complete registry state for some tree of registers
+     */
+    public void exportTree(String uri, StreamRDF out);
+    
+    /**
+     * Import a complete registry state, deletes the existing state
+     */
+    public void importTree(String uri, StreamRDF in);
+    
 }
