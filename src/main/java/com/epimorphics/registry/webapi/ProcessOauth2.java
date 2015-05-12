@@ -7,7 +7,6 @@ import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.security.UserStore;
 import com.epimorphics.registry.util.OAuthParams;
 import com.epimorphics.registry.util.Oauth2Util;
-import com.epimorphics.registry.util.OpenIdConnectDiscovery;
 import com.epimorphics.server.webapi.WebApiException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,6 +20,7 @@ import org.apache.oltu.oauth2.client.response.OAuthJSONAccessTokenResponse;
 import org.apache.oltu.oauth2.client.response.OAuthResourceResponse;
 import org.apache.oltu.oauth2.common.message.types.GrantType;
 import org.apache.oltu.oauth2.common.message.types.ResponseType;
+import org.apache.oltu.oauth2.common.OAuthProviderType;
 import org.apache.oltu.oauth2.jwt.JWT;
 import org.apache.oltu.oauth2.jwt.io.JWTClaimsSetWriter;
 import org.apache.oltu.oauth2.jwt.io.JWTHeaderWriter;
@@ -71,15 +71,6 @@ public class ProcessOauth2 {
     public static final String RS_ALREADY_REGISTERED = "already";
     public static final String RS_LOGIN = "login";
 
-    private static OpenIdConnectDiscovery discovery = null;
-    static {
-        try {
-            discovery = new OpenIdConnectDiscovery(OPENID_CONNECT_DISCOVERY_LOC);
-        } catch (Exception e) {
-            log.error("Failed to initialize openid subsystem", e);
-        }
-    }
-
     protected UriInfo uriInfo;
     protected ServletContext servletContext;
 
@@ -127,7 +118,7 @@ public class ProcessOauth2 {
         {
             // obtain a AuthRequest message to be sent to the OpenID provider
             OAuthClientRequest oauthRequest = OAuthClientRequest
-                    .authorizationLocation(discovery.getAuthzEndpoint())
+                    .authorizationProvider(OAuthProviderType.GOOGLE)
                     .setClientId(Oauth2Util.getClientId())
                     .setRedirectURI(responseURL)
                     .setResponseType(ResponseType.CODE.toString())
@@ -150,9 +141,8 @@ public class ProcessOauth2 {
 
         try {
             oauthParams.setClientId(Oauth2Util.getClientId());
-            oauthParams.setTokenEndpoint(discovery.getTokenEndpoint());
-            oauthParams.setResourceUrl(discovery.getUserInfoEndpoint());
-
+	    oauthParams.setTokenEndpoint(OAuthProviderType.GOOGLE.getTokenEndpoint());
+	    oauthParams.setResourceUrl("https://www.googleapis.com/oauth2/v3/userinfo");
             HttpSession session = request.getSession();
 
 
@@ -171,7 +161,7 @@ public class ProcessOauth2 {
 //            String accessToken = oar.getAccessToken();
 
             OAuthClientRequest authzRequest = OAuthClientRequest
-                    .tokenLocation(discovery.getTokenEndpoint())
+                    .tokenProvider(OAuthProviderType.GOOGLE)
                     .setClientId(Oauth2Util.getClientId())
                     .setClientSecret(Oauth2Util.getClientSecret())
                     .setRedirectURI(responseUrl)
