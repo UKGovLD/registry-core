@@ -32,7 +32,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -451,6 +450,7 @@ public class TestStoreImpl {
 
         addEntry("file:test/reg3.ttl", REG1);
         addEntry("file:test/green.ttl", REG3);
+
     }
     
     private long sizeSig() {
