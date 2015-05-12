@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.jena.riot.system.StreamRDF;
@@ -110,6 +111,8 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             return false;
         }
     };
+    
+    protected AtomicInteger readLockCount = new AtomicInteger(0);
 
     public void setStore(Store store) {
         this.store = store;
@@ -125,8 +128,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     // Implementation note: Assumes that the underlying Store, like TDB, has
     // per-thread transaction status so transaction state and corresponding
-    // writeLocked local
-    // are on same thread.
+    // writeLocked local are on same thread.
 
     /**
      * Lock the store for an update transaction
@@ -163,12 +165,14 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     /**
      * Lock the store for reading. If this thread is already in a write
-     * transaction then do nothing.
+     * transaction then do nothing. Otherwise maintain a count of read lock nesting level
      */
     @Override
-    public void lockStoreRead() {
+    public synchronized void lockStoreRead() {
         if (!writeLocked.get()) {
-            store.lock();
+            if (readLockCount.getAndIncrement() == 0) {
+                store.lock();
+            }
         }
     }
 
@@ -179,7 +183,9 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     @Override
     public void unlockStoreRead() {
         if (!writeLocked.get()) {
-            store.end();
+            if (readLockCount.decrementAndGet() == 0) {
+                store.end();
+            }
         }
     }
 
@@ -1063,18 +1069,31 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     
     @Override
     public void exportTree(String uri, StreamRDF out) {
+        RegisterItem item = asItem(uri);
         lockStoreRead();
+        out.start();
         try {
-            Collection<Resource> graphs = scanAllVersions( asItem(uri).getRoot(), out);
-            for (Resource g : graphs) {
-                Iterator<Quad> i = store.asDataset().asDatasetGraph().findNG(g.asNode(), Node.ANY, Node.ANY, Node.ANY);
-                while (i.hasNext()){
-                    out.quad( i.next() );
-                }
-                
-            }
+            doExportTree(item, out);
         } finally {
             unlockStoreRead();
+            out.finish();
+        }
+    }
+    
+    private void doExportTree(RegisterItem item, StreamRDF out) {
+        if ( item.isRegister() ) {
+            Register register = item.getAsRegister(this);
+            for (RegisterEntryInfo ei : listMembers(register )) {
+                doExportTree( getCurrentVersion(ei.getItemURI()).asRegisterItem(), out );
+            }
+        }
+        
+        Collection<Resource> graphs = scanAllVersions(item.getRoot(), out);
+        for (Resource g : graphs) {
+            Iterator<Quad> i = store.asDataset().asDatasetGraph().findNG(g.asNode(), Node.ANY, Node.ANY, Node.ANY);
+            while (i.hasNext()){
+                out.quad( i.next() );
+            }
         }
     }
     

@@ -28,10 +28,18 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.system.StreamRDF;
+import org.apache.jena.riot.system.StreamRDFWriter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,6 +54,7 @@ import com.epimorphics.registry.store.impl.TDBStore;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
+import com.epimorphics.util.FileUtil;
 import com.epimorphics.util.NameUtils;
 import com.epimorphics.util.TestUtil;
 import com.epimorphics.vocabs.SKOS;
@@ -408,8 +417,31 @@ public class TestStoreImpl {
 
     @Test
     public void testRealDelete() {
-        long baseSize = sizeSig();
+        long baseSize = sizeSig();     
+        createTestTree();
+        assertTrue( sizeSig() > baseSize);
         
+        store.lock();
+        store.delete(REG1);
+        store.commit();
+        store.end();
+        
+        assertEquals(baseSize, sizeSig());
+    }
+    
+    @Test
+    public void testExport() throws IOException {
+        createTestTree();
+        File exportFile = File.createTempFile("reg-export", "nq");
+        OutputStream output = new FileOutputStream(exportFile);
+        StreamRDF out = StreamRDFWriter.getWriterStream(output, Lang.NQUADS);
+        store.exportTree(REG1, out);
+        System.out.println("Export is:");
+        FileUtil.copyResource(exportFile, System.out);
+        exportFile.delete();
+    }
+
+    private void createTestTree() {
         addEntry("file:test/reg1.ttl", ROOT_REGISTER);
         addEntry("file:test/blue.ttl", REG1);
         addEntry("file:test/red.ttl", REG1);
@@ -419,14 +451,6 @@ public class TestStoreImpl {
 
         addEntry("file:test/reg3.ttl", REG1);
         addEntry("file:test/green.ttl", REG3);
-        assertTrue( sizeSig() > baseSize);
-        
-        store.lock();
-        store.delete(REG1);
-        store.commit();
-        store.end();
-        
-        assertEquals(baseSize, sizeSig());
     }
     
     private long sizeSig() {
