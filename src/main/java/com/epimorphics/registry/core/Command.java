@@ -31,6 +31,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -60,7 +61,9 @@ import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.commands.CommandAnnotate;
 import com.epimorphics.registry.commands.CommandDelete;
 import com.epimorphics.registry.commands.CommandEdit;
+import com.epimorphics.registry.commands.CommandExport;
 import com.epimorphics.registry.commands.CommandGraphRegister;
+import com.epimorphics.registry.commands.CommandImport;
 import com.epimorphics.registry.commands.CommandRead;
 import com.epimorphics.registry.commands.CommandRealDelete;
 import com.epimorphics.registry.commands.CommandRegister;
@@ -114,6 +117,8 @@ public abstract class Command {
         Tag(CommandTag.class, RegAction.StatusUpdate),
         Annotate(CommandAnnotate.class),
         Edit(CommandEdit.class, RegAction.Update),
+        Export(CommandExport.class),
+        Import(CommandImport.class),
         RealDelete(CommandRealDelete.class, RegAction.RealDelete);
 
         protected RegAction action;
@@ -147,6 +152,7 @@ public abstract class Command {
     protected String path;              // The relative request path
     protected MultivaluedMap<String, String> parameters;
     protected Model payload;
+    protected InputStream payloadStream;
     protected String mediaType;         // The requested media type, may only be set for specific types like CSV
 
     protected String requestor;
@@ -209,6 +215,10 @@ public abstract class Command {
 
     public void setPayload(Model payload) {
         this.payload = payload;
+    }
+    
+    public void setPayloadStream(InputStream stream) {
+        this.payloadStream = stream;
     }
 
     public Operation getOperation() {

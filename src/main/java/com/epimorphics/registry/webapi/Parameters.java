@@ -35,7 +35,8 @@ public class Parameters {
     public static final String GRAPH = "graph";
     public static final String ANNOTATION = "annotation";
     public static final String REAL_DELETE = "real_delete";
-    public static final String EXPORT_TREE = "exportTree";
+    public static final String EXPORT_TREE = "export";
+    public static final String IMPORT_TREE = "import";
     public static final String EDIT = "edit";
 
     public static final String VIEW = "_view";

@@ -139,8 +139,10 @@ public class RequestProcessor extends BaseEndpoint {
                 extension = "csv";
             }
             return readAsRDF(result, mime, extension);
-        } if (parameters.containsKey(Parameters.ANNOTATION)) {
+        } else if (parameters.containsKey(Parameters.ANNOTATION)) {
             return readAsRDF(result, FULL_MIME_TURTLE, "ttl");
+        } else if (parameters.containsKey(Parameters.EXPORT_TREE)) {
+            return export();
         } else {
             return render("main.vm", uriInfo, context, request);
         }
@@ -216,6 +218,26 @@ public class RequestProcessor extends BaseEndpoint {
         } else {
             return doRead(result, null);
         }
+    }
+    
+    @GET
+    @Produces({"application/n-quads"})
+    public Response export() {
+        if (uriInfo.getQueryParameters().containsKey(Parameters.EXPORT_TREE)) {
+            return makeCommand( Operation.Export ).execute();
+        }
+        return Response.status(Status.NOT_ACCEPTABLE).entity("Can n-quads only supported for export").build();
+    }
+    
+    @PUT
+    @Consumes({"application/n-quads"})
+    public Response importTree( InputStream body ) {
+        if (uriInfo.getQueryParameters().containsKey(Parameters.IMPORT_TREE)) {
+            Command command = makeCommand( Operation.Import );
+            command.setPayloadStream( body );
+            return command.execute();
+        }
+        return Response.status(Status.NOT_ACCEPTABLE).entity("Can n-quads only supported for import").build();
     }
 
     @GET
@@ -453,21 +475,26 @@ public class RequestProcessor extends BaseEndpoint {
                 payload = JSONLDSupport.readModel(base, uploadedInputStream);
             } else if (filename.endsWith(".csv")) {
                 payload = CSVPayloadRead.readCSVStream(uploadedInputStream, base);
-            } else {
+            } else if (!action.equals("import")) {
                 payload.read(uploadedInputStream, base, FileUtils.langXML);
             }
             Command command = null;
             if (action.equals("register")) {
                 command = makeCommand( Operation.Register );
+                command.setPayload(payload);
             } else if (action.equals("annotate")) {
                 command = makeCommand( Operation.Annotate );
+                command.setPayload(payload);
             } else if (action.equals("edit")) {
                 command = makeCommand( Operation.Edit );
+                command.setPayload(payload);
+            } else if (action.equals("import")) {
+                command = makeCommand( Operation.Import );
+                command.setPayloadStream( uploadedInputStream );
             }
             if (command == null) {
                 throw new WebApiException(Response.Status.BAD_REQUEST, "Action " + action + " not recognized");
             }
-            command.setPayload(payload);
             try {
                 response = command.execute();
                 if (response.getStatus() >= 400) {
@@ -501,7 +528,7 @@ public class RequestProcessor extends BaseEndpoint {
         if (success == 0) {
             throw new WebApiException(Response.Status.BAD_REQUEST, "No file uploaded");
         }
-        if (action.equals("edit")) {
+        if (action.equals("edit") || action.equals("import")) {
             try {
                 return Response.seeOther(new URI(uriInfo.getPath())).build();
             } catch (URISyntaxException e) {
