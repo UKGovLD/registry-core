@@ -73,6 +73,7 @@ import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
+import com.hp.hpl.jena.sparql.core.DatasetGraph;
 import com.hp.hpl.jena.sparql.core.Quad;
 import com.hp.hpl.jena.sparql.util.Closure;
 import com.hp.hpl.jena.util.FileManager;
@@ -1098,10 +1099,40 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     }
     
     @Override
-    public void importTree(String uri, StreamRDF in) {
+    public StreamRDF importTree(String uri) {
         checkWriteLocked();
         RegisterItem item = asItem(uri);
         delete(item);
-        // TODO implement import!
+        
+        final DatasetGraph dsg = store.asDataset().asDatasetGraph();
+        
+        return new StreamRDF() {
+            @Override
+            public void start() {
+            }
+
+            @Override
+            public void triple(Triple triple) {
+                dsg.add(Quad.defaultGraphIRI, triple.getSubject(), triple.getPredicate(), triple.getObject());
+            }
+
+            @Override
+            public void quad(Quad quad) {
+                dsg.add(quad);
+            }
+
+            @Override
+            public void base(String base) {
+            }
+
+            @Override
+            public void prefix(String prefix, String iri) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public void finish() {
+            }
+        };
     }
 }

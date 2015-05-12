@@ -276,6 +276,6 @@ public interface StoreAPI {
     /**
      * Import a complete registry state, deletes the existing state
      */
-    public void importTree(String uri, StreamRDF in);
+    public StreamRDF importTree(String uri);
     
 }

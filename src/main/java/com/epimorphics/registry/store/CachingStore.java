@@ -230,8 +230,8 @@ public class CachingStore implements StoreAPI {
     }
 
     @Override
-    public void importTree(String uri, StreamRDF in) {
-        store.importTree(uri, in);
+    public StreamRDF importTree(String uri) {
+        return store.importTree(uri);
     }
 
 }

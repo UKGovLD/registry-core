@@ -29,6 +29,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -37,6 +38,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWriter;
 import org.junit.After;
@@ -53,10 +55,10 @@ import com.epimorphics.registry.store.impl.TDBStore;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
-import com.epimorphics.util.FileUtil;
 import com.epimorphics.util.NameUtils;
 import com.epimorphics.util.TestUtil;
 import com.epimorphics.vocabs.SKOS;
+import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -431,15 +433,59 @@ public class TestStoreImpl {
     @Test
     public void testExport() throws IOException {
         createTestTree();
+        
         File exportFile = File.createTempFile("reg-export", "nq");
-        OutputStream output = new FileOutputStream(exportFile);
-        StreamRDF out = StreamRDFWriter.getWriterStream(output, Lang.NQUADS);
-        store.exportTree(REG1, out);
-        System.out.println("Export is:");
-        FileUtil.copyResource(exportFile, System.out);
+        exportTo(REG1, exportFile);
+        
+        Dataset ds = RDFDataMgr.loadDataset(exportFile.getPath(), Lang.NQUADS);
+        assertTrue( ds.getDefaultModel().size() > 100);
+        for (String graph : new String[]{
+                "http://location.data.gov.uk/reg1/_blue:1#graph",
+                "http://location.data.gov.uk/reg1/_red:1#graph",
+                "http://location.data.gov.uk/reg1/_red:2#graph",
+                "http://location.data.gov.uk/reg1/reg3/_green:1#graph",
+        }) {
+            assertTrue( ds.getNamedModel(graph).size() >= 3 );
+        }
+
+        exportFile.delete();
+    }
+    
+    @Test
+    public void testImport() throws IOException {
+        long baseSize = sizeSig();     
+        createTestTree();
+        long testSize = sizeSig();
+        assertTrue( testSize > baseSize);
+        
+        File exportFile = File.createTempFile("reg-export", "nq");
+        exportTo(REG1, exportFile);
+        
+        store.lock();
+        store.delete(REG1 + "/reg3");
+        store.commit();
+        store.end();
+        
+        assertTrue( sizeSig() < testSize );
+        
+        store.lock();
+        StreamRDF stream = store.importTree(REG1);
+        FileInputStream in = new FileInputStream(exportFile);
+        RDFDataMgr.parse(stream, in, Lang.NQUADS);
+        store.commit();
+        store.end();
+        
+        assertEquals( testSize, sizeSig() );
+        
         exportFile.delete();
     }
 
+    private void exportTo(String register, File exportFile) throws IOException {
+        OutputStream output = new FileOutputStream(exportFile);
+        StreamRDF out = StreamRDFWriter.getWriterStream(output, Lang.NQUADS);
+        store.exportTree(register, out);
+    }
+    
     private void createTestTree() {
         addEntry("file:test/reg1.ttl", ROOT_REGISTER);
         addEntry("file:test/blue.ttl", REG1);
