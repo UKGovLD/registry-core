@@ -26,6 +26,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -78,6 +79,8 @@ public class TestAPI extends TomcatTestBase {
     static final String REG1_URI = ROOT_REGISTER + "reg1";
     static final String REG1_ITEM = ROOT_REGISTER + "_reg1";
     static final String REGL_URL = BASE_URL + "regL";
+    
+    protected File exportFile;
 
     String getWebappRoot() {
         return "src/test/webapp";
@@ -181,7 +184,7 @@ public class TestAPI extends TomcatTestBase {
         doTaggingTest();
         
         // Export
-        doTestExport();
+        doTestCSVOut();
 
         // Graph entities and annotations
         doGraphEntityTest();
@@ -202,12 +205,19 @@ public class TestAPI extends TomcatTestBase {
         // Edit
         doEditTest();
 
+        exportFile = File.createTempFile("export", "nq");
+        doExport();
+        
         // Deletion
         doTestRealDelete();
 
+        // Reimport from before delete
+        doImportTest();
+        
 //        System.out.println("Store dump");
 //        ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel().write(System.out, "Turtle");
     }
+
 
     private void doSkosLabelTest() {
         assertEquals(201, postFileStatus("test/bugs/brown-preflabel.ttl", REG1));
@@ -796,7 +806,7 @@ public class TestAPI extends TomcatTestBase {
      * Test export to CSV, assumes a particular state for reg3 so has
      * be run after tagging test
      */
-    private void doTestExport() {
+    private void doTestCSVOut() {
         ClientResponse response = getResponse(BASE_URL + "reg3?_view=with_metadata", "text/csv");
         assertEquals(200, response.getStatus());
         assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3.csv"), response.getEntity(String.class).replace("\r", ""));
@@ -908,6 +918,23 @@ public class TestAPI extends TomcatTestBase {
         
         assertEquals(404, getResponse(REG1).getStatus());
         assertEquals(404, getResponse(REG1 + "/red").getStatus());
+    }
+
+    /**
+     * Export Reg1 for later import test
+     */
+    private void doExport() {
+        ClientResponse response = getResponse(REG1, "application/n-quads");
+        assertEquals(200, response.getStatus());
+        // TODO working here
+//        InputStream response.getEntity(InputStream.class);
+    }    
+    
+    /**
+     * Reimport the earlier export and test REG1 is back
+     */
+    private void doImportTest() {
+        // TODO working here
     }
     
     /**
