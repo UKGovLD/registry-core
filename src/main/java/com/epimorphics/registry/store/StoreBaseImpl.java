@@ -984,7 +984,12 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             // Ensure we start with an item URI
             uri = NameUtils.splitBeforeLast(uri, "/") + "/_" + id;
         }
-        return getCurrentVersion(uri).asRegisterItem();
+        Description d = getCurrentVersion(uri);
+        if (d != null) {
+            return d.asRegisterItem();
+        } else {
+            return null;
+        }
     }
     
     protected void delete(RegisterItem item) {
@@ -1102,7 +1107,9 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     public StreamRDF importTree(String uri) {
         checkWriteLocked();
         RegisterItem item = asItem(uri);
-        delete(item);
+        if (item != null) {
+            delete(item);
+        }
         
         final DatasetGraph dsg = store.asDataset().asDatasetGraph();
         

@@ -29,6 +29,7 @@ import org.apache.jena.riot.system.StreamRDFWriter;
 
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.webapi.RequestProcessor;
+import com.sun.jersey.api.NotFoundException;
 
 /**
  * Return an n-quad serialization of the entire internal RDF structure describing a register tree.
@@ -39,12 +40,17 @@ public class CommandExport extends Command {
 
     @Override
     public Response doExecute() {
+        final String itemURI = lastSegment.startsWith("_") ? target : parent +"/_" + lastSegment;
+        if (store.getItem(itemURI, false) == null) {
+            throw new NotFoundException();
+        }
+        
         StreamingOutput stream = new StreamingOutput() {
             @Override
             public void write(OutputStream output) throws IOException,
                     WebApplicationException {
                 StreamRDF rdfstream = StreamRDFWriter.getWriterStream(output, Lang.NQUADS);
-                store.exportTree(target, rdfstream);
+                store.exportTree(itemURI, rdfstream);
             }
         };
         

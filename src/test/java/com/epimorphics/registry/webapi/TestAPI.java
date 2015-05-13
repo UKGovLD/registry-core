@@ -28,6 +28,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ import com.epimorphics.registry.vocab.Ldbp;
 import com.epimorphics.registry.vocab.Prov;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
+import com.epimorphics.util.FileUtil;
 import com.epimorphics.util.TestUtil;
 import com.epimorphics.vocabs.API;
 import com.epimorphics.vocabs.SKOS;
@@ -923,18 +925,24 @@ public class TestAPI extends TomcatTestBase {
     /**
      * Export Reg1 for later import test
      */
-    private void doExport() {
-        ClientResponse response = getResponse(REG1, "application/n-quads");
+    private void doExport() throws IOException {
+        ClientResponse response = getResponse(REG1+"?export", "application/n-quads");
         assertEquals(200, response.getStatus());
-        // TODO working here
-//        InputStream response.getEntity(InputStream.class);
+        InputStream in = response.getEntity(InputStream.class);
+        FileOutputStream out = new FileOutputStream(exportFile);
+        FileUtil.copyResource(in, out);
+        out.close();
     }    
     
     /**
-     * Reimport the earlier export and test REG1 is back
+     * Reimport the earlier export and test REG1 is back after the delete
      */
-    private void doImportTest() {
-        // TODO working here
+    private void doImportTest() throws IOException {
+        ClientResponse response = invoke("PUT", exportFile.getPath(), REG1+"?import", "application/n-quads");
+        assertEquals(204, response.getStatus());
+        
+        assertEquals(200, getResponse(REG1).getStatus());
+        assertEquals(200, getResponse(REG1 + "/red").getStatus());
     }
     
     /**

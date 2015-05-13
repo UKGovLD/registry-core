@@ -274,7 +274,7 @@ public interface StoreAPI {
     public void exportTree(String uri, StreamRDF out);
     
     /**
-     * Import a complete registry state, deletes the existing state
+     * Import a complete registry state, deletes the existing state if any
      */
     public StreamRDF importTree(String uri);
     
