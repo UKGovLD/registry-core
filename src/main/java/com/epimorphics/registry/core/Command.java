@@ -39,9 +39,12 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -421,26 +424,19 @@ public abstract class Command {
         }
     }
 
-    protected Resource findSingletonRoot() {
-        List<Resource> roots = RDFUtil.findRoots(payload);
-        if (roots.size() == 1) {
-            // Single tree root, use that
-            return roots.get(0);
-        }
-        if (roots.size() == 0) {
-            // Might be a a circular graph, so check for single non-anony typed resource
-            roots = payload.listSubjectsWithProperty(RDF.type).toList();
-            for (Iterator<Resource> i = roots.iterator(); i.hasNext();) {
-                Resource root = i.next();
-                if (root.isAnon()) {
-                    i.remove();
-                }
-            }
-            if (roots.size() == 1) {
-                return roots.get(0);
+    // Locate a set of entities within a payload - all non-anonymous typed resources or root resources
+    protected Collection<Resource> findEntities() {
+        Set<Resource> roots = new HashSet<Resource>();
+        
+        roots.addAll( RDFUtil.findRoots(payload) );
+        roots.addAll( payload.listSubjectsWithProperty(RDF.type).toList() );
+        for (Iterator<Resource> i = roots.iterator(); i.hasNext();) {
+            Resource root = i.next();
+            if (root.isAnon()) {
+                i.remove();
             }
         }
-        throw new WebApiException(Response.Status.BAD_REQUEST, "Could not find unique entity root to register");
+        return roots;
     }
 
     protected String makeParamString(MultivaluedMap<String, String> parameters, String...omit) {

@@ -172,7 +172,9 @@ public class CommandRegister extends Command {
                         location = register(parentRegister, itemSpec, true, false);
                     }
                 } else {
-                    location = register(parentRegister, findSingletonRoot(), false, false);
+                    for (Resource entity : findEntities()) {
+                        location = register(parentRegister, entity, false, false);
+                    }
                 }
             }
             // Update the register itself only after all the items have been registered
