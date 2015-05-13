@@ -36,6 +36,7 @@ import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.ValidationResponse;
 import com.epimorphics.registry.security.RegAction;
 import com.epimorphics.registry.security.RegPermission;
+import com.epimorphics.registry.util.PatchUtil;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.util.NameUtils;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -45,6 +46,8 @@ import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
+import com.hp.hpl.jena.vocabulary.DCTerms;
+import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 /**
@@ -132,9 +135,12 @@ public class CommandEdit extends Command {
                 if (view.contains(importItem.getRoot(), RDF.type)) {
                     // An existing item
                     RegisterItem currentItem = new RegisterItem( itemR.inModel(view) );
-                    currentItem.setEntity( getEntity(itemR) );
-                    applyUpdate(currentItem, importItem, true, true);
+                    currentItem.setEntity( getEntity(itemR).inModel(view) );
                     
+                    if ( PatchUtil.willChange(itemR, currentItem.getRoot(), RIGID_ITEM_PROPS)
+                      || PatchUtil.willChange(importItem.getEntity(), currentItem.getEntity(), RegistryVocab.subregister) ) {
+                        applyUpdate(currentItem, importItem, true, true);
+                    }
                 } else {
                     addToRegister(parentRegister, importItem);
                 }
@@ -157,5 +163,11 @@ public class CommandEdit extends Command {
             return null;
         }
     }
-
+    
+    private static final Property[] RIGID_ITEM_PROPS = new Property[] {
+        RegistryVocab.register, RegistryVocab.notation,
+        RegistryVocab.itemClass, RegistryVocab.predecessor,
+        RegistryVocab.submitter, RDF.type,
+        DCTerms.dateSubmitted, OWL.versionInfo,
+        RegistryVocab.definition};
 }

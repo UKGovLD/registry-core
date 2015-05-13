@@ -21,8 +21,10 @@
 
 package com.epimorphics.registry.util;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.apache.jena.riot.RDFDataMgr;
 import org.junit.Test;
 
 import com.epimorphics.util.TestUtil;
@@ -30,6 +32,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.ResourceFactory;
 
 public class TestPatchUtil {
 
@@ -65,6 +68,15 @@ public class TestPatchUtil {
         assertTrue( destR.getModel().isIsomorphicWith( makeTest(new String[]{ "a", "c", "d"}, new String[]{"b", "e"}).getModel() ) );
 
     }
+    
+    @Test
+    public void testWillChange() {
+        assertTrue ( willChange("test/patch/src1.ttl", "test/patch/dest.ttl") );
+        assertTrue ( willChange("test/patch/src1.ttl", "test/patch/dest.ttl", "p2") );
+        assertFalse( willChange("test/patch/src1.ttl", "test/patch/dest.ttl", "p1") );
+        assertTrue ( willChange("test/patch/src2.ttl", "test/patch/dest.ttl") );
+        assertFalse( willChange("test/patch/src2.ttl", "test/patch/dest.ttl", "p3") );
+    }
 
     private Property[] propSet(String...names) {
         Property[] set = new Property[ names.length ];
@@ -88,5 +100,16 @@ public class TestPatchUtil {
             }
         }
         return result;
+    }
+    
+    private boolean willChange(String srcFile, String destFile, String...rigid) {
+        String BASE = "http://localhost/test#";
+        Resource src  = RDFDataMgr.loadModel(srcFile).getResource(BASE + "r");
+        Resource dest = RDFDataMgr.loadModel(destFile).getResource(BASE + "r");
+        Property[] rigidProps = new Property[ rigid.length ];
+        for (int i = 0; i < rigid.length; i++) {
+            rigidProps[i] = ResourceFactory.createProperty(BASE + rigid[i]);
+        }
+        return PatchUtil.willChange(src, dest, rigidProps);
     }
 }

@@ -59,8 +59,10 @@ public class TestAPIDebug extends TomcatTestBase {
 
     @Test
     public void testDebug() throws IOException {
+
     }
     
+
     // Debugging utility only, should not be used while transactions are live
     public static void printResourceState(String...uris) {
         Store storesvc = AppConfig.getApp().getComponentAs("basestore", Store.class);
