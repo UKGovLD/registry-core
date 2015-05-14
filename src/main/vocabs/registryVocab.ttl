@@ -277,6 +277,22 @@ reg:statusRetired a skos:Concept, reg:Status;
     .
 
 
+# -- Lifecycle customization ------------------------------------------------------
+
+reg:nextState a owl:DatatypeProperty;
+    rdfs:label "next state"@en;
+    rdfs:comment "Gives the label of state which can follow from this state"@en;
+    rdfs:domain reg:Status;
+    rdfs:range xsd:string;
+    .
+
+reg:presentation a owl:DatatypeProperty;
+    rdfs:label "presentation"@en;
+    rdfs:comment "Presentational hint for showing items with this status"@en;
+    rdfs:domain reg:Status;
+    rdfs:range xsd:string;
+    .
+
 # -- EntityReference ------------------------------------------------------
 
 reg:EntityReference a owl:Class;
@@ -464,4 +480,3 @@ reg:sourceDataset a owl:ObjectProperty;
     rdfs:domain void:Linkset;
     rdfs:range void:Dataset;
     .
-

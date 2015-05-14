@@ -22,7 +22,9 @@
 package com.epimorphics.registry.core;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -32,49 +34,115 @@ import com.hp.hpl.jena.rdf.model.Resource;
  *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
-public enum Status {
-    NotAccepted(RegistryVocab.statusNotAccepted),
-    Submitted(RegistryVocab.statusSubmitted),
-    Reserved(RegistryVocab.statusReserved),
-    Invalid(RegistryVocab.statusInvalid),
-    Accepted(RegistryVocab.statusAccepted),
-    Valid(RegistryVocab.statusValid),
-    Experimental(RegistryVocab.statusExperimental),
-    Stable(RegistryVocab.statusStable),
-    Deprecated(RegistryVocab.statusDeprecated),
-    Superseded(RegistryVocab.statusSuperseded),
-    Retired(RegistryVocab.statusRetired),
-    Any(RegistryVocab.Status)
-    ;
+public class Status {
+    public static final String PRES_DEFAULT = "default";
+    public static final String PRES_SUCCESS = "success";
+    public static final String PRES_WARNING = "warning";
+    public static final String PRES_DANGER  = "danger";
+    
+    public static Status Any          = new Status(RegistryVocab.Status,             "any");
+    
+    public static Status NotAccepted  = new Status(RegistryVocab.statusNotAccepted,  "notaccepted", PRES_DEFAULT, Any);
+    public static Status Submitted    = new Status(RegistryVocab.statusSubmitted,    "submitted",   PRES_DEFAULT, NotAccepted);
+    public static Status Reserved     = new Status(RegistryVocab.statusReserved,     "reserved",    PRES_DEFAULT, NotAccepted, Submitted);
+    public static Status Invalid      = new Status(RegistryVocab.statusInvalid,      "invalid",     PRES_DANGER,  NotAccepted);
+    
+    public static Status Accepted     = new Status(RegistryVocab.statusAccepted,     "accepted",    PRES_DEFAULT, Any);
+    public static Status Valid        = new Status(RegistryVocab.statusValid,        "valid",       PRES_DEFAULT, Accepted);
+    public static Status Deprecated   = new Status(RegistryVocab.statusDeprecated,   "deprecated",  PRES_DANGER,  Valid);
+    public static Status Superseded   = new Status(RegistryVocab.statusSuperseded,   "superseded",  PRES_DANGER,  Deprecated);
+    public static Status Retired      = new Status(RegistryVocab.statusRetired,      "retired",     PRES_DANGER,  Deprecated);
+    
+    public static Status Stable       = new Status(RegistryVocab.statusStable,       "stable",       PRES_SUCCESS, Valid, Retired, Superseded);
+    public static Status Experimental = new Status(RegistryVocab.statusExperimental, "experimental", PRES_WARNING, Valid, Stable, Retired, Superseded);
 
-    Resource resource;
-
-    Status(Resource resource) {
+    protected static Map<String, Status> statusIndex;
+    
+    // TODO Temporary
+    static {
+        statusIndex = new HashMap<String, Status>();
+        for (Status s : new Status[]{Any, NotAccepted, Submitted, Reserved, Invalid, Accepted, Valid, Deprecated, Superseded, Retired, Stable, Experimental}) {
+            statusIndex.put(s.getLabel(), s);
+            s.addSuccessor(Invalid);
+        }
+        Submitted.addSuccessor(Stable);
+        Submitted.addSuccessor(Experimental);
+    }
+    
+    protected Resource resource;
+    protected String label;
+    protected List<Status> successors = new ArrayList<>();
+    protected Status parent;
+    protected String presentation = "";
+    
+    protected Status(Resource resource, String label) {
+        this(resource, label, PRES_DEFAULT, null);
+    }
+    
+    protected Status(Resource resource, String label, String presentation, Status parent, Status...successors) {
         this.resource = resource;
+        this.label = label.toLowerCase();
+        this.parent = parent;
+        this.presentation = presentation;
+        for (Status successor : successors) {
+            this.successors.add( successor );
+        }
+    }
+    
+    public void addSuccessor(Status successor) {
+        successors.add(successor);
+    }
+    
+    public String getPresentation() {
+        return presentation;
     }
 
-    public static Status forResource(Resource r) {
-        return r == null ? NotAccepted : Status.valueOf(r.getLocalName().substring(6));
+    public void setPresentation(String presentation) {
+        this.presentation = presentation;
     }
 
-    public static Status forString(String param, Status deflt) {
-        if (param == null) {
-            return deflt;
-        }
-        for (Status s : Status.values()) {
-            if (s.name().equalsIgnoreCase(param)) {
-                return s;
-            }
-        }
-        return deflt;
+    public String getLabel() {
+        return label;
+    }
+
+    public List<Status> nextStates() {
+        return successors;
+    }
+
+    public void setParent(Status parent) {
+        this.parent = parent;
     }
 
     public Resource getResource() {
         return resource;
     }
+    
+    @Override
+    public boolean equals(Object other) {
+        return other instanceof Status && this.resource.equals( ((Status)other).resource );
+    }
+    
+    @Override
+    final public int hashCode() {
+        return resource.hashCode();
+    }
+
+    public static Status forResource(Resource r) {
+        for (Status s : statusIndex.values()) {
+            if (s.getResource().equals(r)) {
+                return s;
+            }
+        }
+        return NotAccepted;
+    }
+
+    public static Status forString(String param, Status deflt) {
+        Status s = statusIndex.get(param);
+        return s == null ? deflt : s;
+    }
 
     public boolean isNotAccepted() {
-        return this == Submitted || this == Invalid || this == NotAccepted || this == Reserved ;
+        return isA( NotAccepted );
     }
 
     public boolean isAccepted() {
@@ -89,20 +157,15 @@ public enum Status {
      * Return true if this status is an instance of the target status category
      */
     public boolean isA(Status target) {
-        if (target == null || target == this) return true;
-        switch (target) {
-        case NotAccepted:
-            return this == Submitted || this == Invalid || this == Reserved;
-        case Accepted:
-            return isA(Valid) || isA(Deprecated);
-        case Valid:
-            return this == Experimental || this == Stable;
-        case Deprecated:
-            return this == Superseded || this == Retired;
-        case Any:
+        if (target == null) return true;
+        if (this.equals(target)) {
             return true;
-        default:
-            return false;
+        } else {
+            if (parent != null) {
+                return parent.isA(target);
+            } else {
+                return false;
+            }
         }
     }
 
@@ -111,36 +174,13 @@ public enum Status {
      * The target should be a concrete (leaf) status, otherwise will return false.
      */
     public boolean legalNextState(Status target) {
-        if (target == null) return false;
-        if (target == this) return true;
-        switch (target) {
-        case Experimental:
-            return this == Submitted;
-        case Stable:
-            return this == Submitted || this == Experimental;
-        case Retired:
-        case Superseded:
-            return this == Experimental || this == Stable || this == Accepted || this == Valid;
-        case Invalid:
-            return true;
-        case Submitted:
-            return this == Reserved;
-        default:
-            return false;
-        }
-    }
-    
-    /**
-     * Return a list of all status values which are legal successors to this one
-     */
-    public List<Status> nextStates() {
-        List<Status> results = new ArrayList<Status>();
-        for (Status s : Status.values()) {
-            if (legalNextState(s)) {
-                results.add(s);
+        if (this.equals(target)) return true;
+        for (Status n : successors) {
+            if ( n.equals(target) ) {
+                return true;
             }
         }
-        return results;
+        return false;
     }
 
 }

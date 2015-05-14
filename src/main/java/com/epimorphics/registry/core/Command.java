@@ -671,7 +671,7 @@ public abstract class Command {
                 }
                 Resource item = itemL.get(0);
                 Status status = Status.forResource( RDFUtil.getResourceValue(item, RegistryVocab.status) );
-                writer.write(RDFCSVUtil.STATUS_HEADER, status.name().toLowerCase());
+                writer.write(RDFCSVUtil.STATUS_HEADER, status.getLabel());
                 String notation = RDFUtil.getStringValue(item, RegistryVocab.notation);
                 writer.write(RDFCSVUtil.NOTATION_HEADER, notation);
             }
