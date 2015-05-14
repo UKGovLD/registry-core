@@ -22,6 +22,7 @@
 package com.epimorphics.registry.webapi;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -149,11 +150,11 @@ public class LibReg extends ComponentBase implements LibPlugin {
     /**
      * List the legal next states after this state.
      */
-    public List<Status> nextStates(RDFNodeWrapper state) {
+    public Collection<Status> nextStates(RDFNodeWrapper state) {
         Status current = asStatus(state);
         if (current == null) return new ArrayList<Status>();
-        List<Status> next = current.nextStates();
-        next.remove(current);
+        Collection<Status> next = current.nextStates();
+//        next.remove(current);
         return next;
     }
 

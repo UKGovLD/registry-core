@@ -22,12 +22,22 @@
 package com.epimorphics.registry.core;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.vocab.RegistryVocab;
+import com.epimorphics.vocabs.SKOS;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 /**
  * The set of status values which a RegisterItem can have.
@@ -56,22 +66,14 @@ public class Status {
     public static Status Stable       = new Status(RegistryVocab.statusStable,       "stable",       PRES_SUCCESS, Valid, Retired, Superseded);
     public static Status Experimental = new Status(RegistryVocab.statusExperimental, "experimental", PRES_WARNING, Valid, Stable, Retired, Superseded);
 
+    public static final String LIFECYCLE_REGISTER = "/system/lifecycle";
+
     protected static Map<String, Status> statusIndex;
-    
-    // TODO Temporary
-    static {
-        statusIndex = new HashMap<String, Status>();
-        for (Status s : new Status[]{Any, NotAccepted, Submitted, Reserved, Invalid, Accepted, Valid, Deprecated, Superseded, Retired, Stable, Experimental}) {
-            statusIndex.put(s.getLabel(), s);
-            s.addSuccessor(Invalid);
-        }
-        Submitted.addSuccessor(Stable);
-        Submitted.addSuccessor(Experimental);
-    }
+    protected static boolean needsReload = true;
     
     protected Resource resource;
     protected String label;
-    protected List<Status> successors = new ArrayList<>();
+    protected Set<Status> successors = new HashSet<>();
     protected Status parent;
     protected String presentation = "";
     
@@ -105,7 +107,7 @@ public class Status {
         return label;
     }
 
-    public List<Status> nextStates() {
+    public Collection<Status> nextStates() {
         return successors;
     }
 
@@ -128,6 +130,7 @@ public class Status {
     }
 
     public static Status forResource(Resource r) {
+        reload();
         for (Status s : statusIndex.values()) {
             if (s.getResource().equals(r)) {
                 return s;
@@ -137,6 +140,7 @@ public class Status {
     }
 
     public static Status forString(String param, Status deflt) {
+        reload();
         Status s = statusIndex.get(param);
         return s == null ? deflt : s;
     }
@@ -183,4 +187,77 @@ public class Status {
         return false;
     }
 
+    public synchronized static void reset() {
+        needsReload = true;
+    }
+    
+    /**
+     * Update the status set based on the status register
+     */
+    public synchronized static void reload() {
+        if (needsReload) {
+            // Reset back to just builtins
+            statusIndex = new HashMap<String, Status>();
+            for (Status s : new Status[]{Any, NotAccepted, Submitted, Reserved, Invalid, Accepted, Valid, Deprecated, Superseded, Retired}) {
+                addStatus(s);
+                s.addSuccessor(Invalid);
+            }
+    
+            String registerURI = Registry.get().getBaseURI() + LIFECYCLE_REGISTER;
+            Description d = Registry.get().getStore().getDescription(registerURI);
+            if (d instanceof Register) {
+                Register register = (Register) d;
+            
+                Model view = ModelFactory.createDefaultModel();
+                List<Resource> members = new ArrayList<>();
+                register.constructView(view, false, null, 0, -1, -1, members);
+            
+                for (Resource member : members) {
+                    Status s = new Status(member, RDFUtil.getLabel(member));
+                    addStatus(s);
+                    Resource parent = RDFUtil.getResourceValue(member, SKOS.broader);
+                    if (parent != null) {
+                        s.setParent( forResource(parent) );
+                    }
+                    s.setPresentation( RDFUtil.getStringValue(member, RegistryVocab.presentation, PRES_DEFAULT) );
+                    for (Status suc : getStatusValues(member, RegistryVocab.nextState)) {
+                        s.addSuccessor(suc);
+                    }
+                    for (Status p : getStatusValues(member, RegistryVocab.priorState)) {
+                        p.addSuccessor(s);
+                    }
+               }
+            } else {
+                // No custom lifecycle 
+                for (Status s : new Status[]{Stable, Experimental}) {
+                    addStatus(s);
+                    s.addSuccessor(Invalid);
+                }
+                Submitted.addSuccessor(Stable);
+                Submitted.addSuccessor(Experimental);
+            }
+            needsReload = false;
+        }
+    }
+    
+    protected static List<Status> getStatusValues(Resource root, Property p) {
+        List<Status> results = new ArrayList<>();
+        for (StmtIterator i = root.listProperties(p); i.hasNext();) {
+            RDFNode value = i.next().getObject();
+            Status s = null;
+            if (value.isLiteral()) {
+                s = forString(value.asLiteral().getLexicalForm(), null);
+            } else if (value.isURIResource()) {
+                s = forResource(value.asResource());
+            }
+            if (s != null) {
+                results.add( s );
+            }
+        }
+        return results;
+    }
+    
+    protected static void addStatus(Status s) {
+        statusIndex.put(s.getLabel(), s);
+    }
 }

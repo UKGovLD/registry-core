@@ -47,7 +47,9 @@ import com.epimorphics.rdfutil.ModelWrapper;
 import com.epimorphics.registry.core.Command.Operation;
 import com.epimorphics.registry.core.ForwardingRecord.Type;
 import com.epimorphics.registry.message.LocalMessagingService;
+import com.epimorphics.registry.message.Message;
 import com.epimorphics.registry.message.MessagingService;
+import com.epimorphics.registry.message.ProcessIfChanges;
 import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.security.UserStore;
 import com.epimorphics.registry.store.BackupService;
@@ -64,6 +66,7 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.util.FileUtils;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.sun.jersey.api.uri.UriComponent;
+import static com.epimorphics.registry.core.Status.LIFECYCLE_REGISTER;
 
 /**
  * This the primary configuration point for the Registry.
@@ -225,6 +228,16 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
             }
             forwarder.updateConfig();
         }
+        
+        // Monitor the status register
+        MessagingService.Process reload = new MessagingService.Process(){
+            @Override
+            public void processMessage(Message message) {
+                com.epimorphics.registry.core.Status.reset();
+            }
+        };
+        String target = getBaseURI() + LIFECYCLE_REGISTER;
+        getMessagingService().processMessages( new ProcessIfChanges(reload, target) );
         
         // Configure optional backup service
         if (backupDir != null && baseStore != null && baseStore instanceof StoreBaseImpl) {

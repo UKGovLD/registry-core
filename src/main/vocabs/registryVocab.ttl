@@ -281,7 +281,14 @@ reg:statusRetired a skos:Concept, reg:Status;
 
 reg:nextState a owl:DatatypeProperty;
     rdfs:label "next state"@en;
-    rdfs:comment "Gives the label of state which can follow from this state"@en;
+    rdfs:comment "Gives the label of a state which can follow from this state"@en;
+    rdfs:domain reg:Status;
+    rdfs:range xsd:string;
+    .
+
+reg:priorState a owl:DatatypeProperty;
+    rdfs:label "next state"@en;
+    rdfs:comment "Gives the label of a state which can precede this state"@en;
     rdfs:domain reg:Status;
     rdfs:range xsd:string;
     .
