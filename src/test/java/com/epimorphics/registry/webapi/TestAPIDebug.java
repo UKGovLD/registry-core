@@ -61,6 +61,24 @@ public class TestAPIDebug extends TomcatTestBase {
 
     @Test
     public void testDebug() throws IOException {
+        final String REGE = BASE_URL + "rege";
+        assertEquals(201, postFileStatus("test/edit/rege.ttl", BASE_URL));
+        assertEquals(204, postFileStatus("test/edit/edit1.ttl", REGE + "?edit"));
+        checkModelResponse(REGE + "?_view=with_metadata&status=any", "test/edit/expected1.ttl", 
+                DCTerms.dateSubmitted, DCTerms.modified);
+        assertEquals(204, postFileStatus("test/edit/edit2.ttl", REGE + "?edit"));
+        checkModelResponse(REGE + "?_view=with_metadata&status=any", "test/edit/expected2.ttl", 
+                DCTerms.dateSubmitted, DCTerms.modified);
+        // Re-apply same edit which should not change versions
+        assertEquals(204, postFileStatus("test/edit/edit2.ttl", REGE + "?edit"));
+        checkModelResponse(REGE + "?_view=with_metadata&status=any", "test/edit/expected2.ttl", 
+                DCTerms.dateSubmitted, DCTerms.modified);
+        assertEquals(204, postFileStatus("test/edit/edit3.csv", REGE + "?edit", "text/csv"));
+        checkModelResponse(REGE + "?_view=with_metadata&status=any", "test/edit/expected3.ttl", 
+                DCTerms.dateSubmitted, DCTerms.modified);
+        assertEquals(204, postFileStatus("test/edit/edit4.ttl", REGE + "?edit"));
+        checkModelResponse(REGE + "?_view=with_metadata&status=any", "test/edit/expected4.ttl", 
+                DCTerms.dateSubmitted, DCTerms.modified);
     }
     
 

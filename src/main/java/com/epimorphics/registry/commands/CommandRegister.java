@@ -27,6 +27,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -117,6 +118,7 @@ public class CommandRegister extends Command {
 
         needStatusPermission = statusOverride != null;
 
+        boolean foundEntries = false;
         for (ResIterator ri = payload.listSubjectsWithProperty(RDF.type, RegistryVocab.RegisterItem); ri.hasNext();) {
             Resource itemSpec = ri.next();
             StmtIterator i = itemSpec.listProperties(RegistryVocab.status);
@@ -143,8 +145,22 @@ public class CommandRegister extends Command {
                     return entityValid;
                 }
             }
+            foundEntries = true;
+        }
+        if (!isBatch && !foundEntries) {
+            // Check for direct registration of entities
+            for (Resource entity : findEntities()) {
+                ValidationResponse entityValid = validateEntity(parentRegister, entity );
+                if (!entityValid.isOk()) {
+                    return entityValid;
+                }
+                foundEntries = true;
+            }
         }
 
+        if (!isBatch && !foundEntries) {
+            return new ValidationResponse(BAD_REQUEST, "No items found in request");
+        }
         return ValidationResponse.OK;
     }
 
@@ -172,7 +188,11 @@ public class CommandRegister extends Command {
                         location = register(parentRegister, itemSpec, true, false);
                     }
                 } else {
-                    for (Resource entity : findEntities()) {
+                    Collection<Resource> entities = findEntities();
+                    if (entities.isEmpty()) {
+                        throw new WebApiException(Response.Status.BAD_REQUEST, "No items or entities found");
+                    }
+                    for (Resource entity : entities) {
                         location = register(parentRegister, entity, false, false);
                     }
                 }

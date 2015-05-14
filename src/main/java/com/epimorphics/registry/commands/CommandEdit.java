@@ -72,6 +72,8 @@ public class CommandEdit extends Command {
             return new ValidationResponse(BAD_REQUEST, "Can only bulk edit a register");
         }
         parentRegister = d.asRegister();
+        String parentURI = NameUtils.stripLastSlash( parentRegister.getRoot().getURI() );
+        // String stripLastSlash needed to cope with the out-of-pattern URI for the root register
         
         for (ResIterator ri = payload.listSubjectsWithProperty(RDF.type, RegistryVocab.RegisterItem); ri.hasNext();) {
             Resource itemSpec = ri.next();
@@ -83,14 +85,23 @@ public class CommandEdit extends Command {
                 }
             }
 
-            String parentURI = NameUtils.stripLastSlash( parentRegister.getRoot().getURI() );
-            // String stripLastSlash needed to cope with the out-of-pattern URI for the root register
             RegisterItem item = RegisterItem.fromRIRequest(itemSpec, parentURI, true);
             ValidationResponse entityValid = validateEntity(parentRegister, item.getEntity() );
             if (!entityValid.isOk()) {
                 return entityValid;
             }
             newItems.add( item );
+        }
+        if (newItems.isEmpty()) {
+            // Check for direct registration of entities
+            for (Resource entity : findEntities()) {
+                RegisterItem item = RegisterItem.fromEntityRequest(entity, parentURI, true); 
+                ValidationResponse entityValid = validateEntity(parentRegister, entity );
+                if (!entityValid.isOk()) {
+                    return entityValid;
+                }
+                newItems.add( item );
+            }
         }
         if (newItems.isEmpty()) {
             return new ValidationResponse(BAD_REQUEST, "No items found in request");
@@ -135,7 +146,7 @@ public class CommandEdit extends Command {
                 if (view.contains(importItem.getRoot(), RDF.type)) {
                     // An existing item
                     RegisterItem currentItem = new RegisterItem( itemR.inModel(view) );
-                    currentItem.setEntity( getEntity(itemR).inModel(view) );
+                    currentItem.setEntity( importItem.getEntity().inModel(view) );
                     
                     if ( PatchUtil.willChange(itemR, currentItem.getRoot(), RIGID_ITEM_PROPS)
                       || PatchUtil.willChange(importItem.getEntity(), currentItem.getEntity(), RegistryVocab.subregister) ) {
@@ -152,15 +163,6 @@ public class CommandEdit extends Command {
             return Response.noContent().build();
         } finally {
             store.end();
-        }
-    }
-
-    private static Resource getEntity(Resource item) {
-        Resource def = RDFUtil.getResourceValue(item, RegistryVocab.definition);
-        if (def != null) {
-            return RDFUtil.getResourceValue(def, RegistryVocab.entity);
-        } else {
-            return null;
         }
     }
     

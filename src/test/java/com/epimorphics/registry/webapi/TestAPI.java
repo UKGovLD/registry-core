@@ -966,6 +966,9 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(204, postFileStatus("test/edit/edit3.csv", REGE + "?edit", "text/csv"));
         checkModelResponse(REGE + "?_view=with_metadata&status=any", "test/edit/expected3.ttl", 
                 DCTerms.dateSubmitted, DCTerms.modified);
+        assertEquals(204, postFileStatus("test/edit/edit4.ttl", REGE + "?edit"));
+        checkModelResponse(REGE + "?_view=with_metadata&status=any", "test/edit/expected4.ttl", 
+                DCTerms.dateSubmitted, DCTerms.modified);
     }
     
     /**
