@@ -69,7 +69,7 @@ public class Status {
     public static final String LIFECYCLE_REGISTER = "/system/lifecycle";
 
     protected static Map<String, Status> statusIndex;
-    protected static boolean needsReload = true;
+    protected static boolean needsLoad = true;
     
     protected Resource resource;
     protected String label;
@@ -129,6 +129,11 @@ public class Status {
         return resource.hashCode();
     }
 
+    @Override
+    public String toString() {
+        return label;
+    }
+    
     public static Status forResource(Resource r) {
         reload();
         for (Status s : statusIndex.values()) {
@@ -186,19 +191,16 @@ public class Status {
         }
         return false;
     }
-
-    public synchronized static void reset() {
-        needsReload = true;
-    }
     
     /**
      * Update the status set based on the status register
      */
     public synchronized static void reload() {
-        if (needsReload) {
+        if (needsLoad) {
+            needsLoad = false;
             // Reset back to just builtins
             statusIndex = new HashMap<String, Status>();
-            for (Status s : new Status[]{Any, NotAccepted, Submitted, Reserved, Invalid, Accepted, Valid, Deprecated, Superseded, Retired}) {
+            for (Status s : new Status[]{Any, NotAccepted, Submitted, Reserved, Invalid, Accepted, Valid, Deprecated, Superseded, Retired,Stable, Experimental}) {
                 addStatus(s);
                 s.addSuccessor(Invalid);
             }
@@ -229,14 +231,9 @@ public class Status {
                }
             } else {
                 // No custom lifecycle 
-                for (Status s : new Status[]{Stable, Experimental}) {
-                    addStatus(s);
-                    s.addSuccessor(Invalid);
-                }
                 Submitted.addSuccessor(Stable);
                 Submitted.addSuccessor(Experimental);
             }
-            needsReload = false;
         }
     }
     

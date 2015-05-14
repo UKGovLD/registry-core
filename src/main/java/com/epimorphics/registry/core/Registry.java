@@ -233,7 +233,7 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
         MessagingService.Process reload = new MessagingService.Process(){
             @Override
             public void processMessage(Message message) {
-                com.epimorphics.registry.core.Status.reset();
+                com.epimorphics.registry.core.Status.reload();
             }
         };
         String target = getBaseURI() + LIFECYCLE_REGISTER;

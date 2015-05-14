@@ -1,0 +1,4 @@
+@id,@notation,@status,rdfs:label,rdf:type,skos:broader,reg:nextState,reg:priorState,reg:presentation
+<validation>,validation,operational,validation,reg:Status,reg:statusAccepted,preoperational,submitted,warning
+<preoperational>,preoperational,operational,preoperational,reg:Status,reg:statusAccepted,operational,,warning
+<operational>,operational,operational,operational,reg:Status,reg:statusAccepted,superseded|retired,,success
