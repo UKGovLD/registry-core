@@ -82,8 +82,6 @@ public class TestAPI extends TomcatTestBase {
     static final String REG1_ITEM = ROOT_REGISTER + "_reg1";
     static final String REGL_URL = BASE_URL + "regL";
     
-    protected File exportFile;
-
     String getWebappRoot() {
         return "src/test/webapp";
     }
@@ -185,7 +183,7 @@ public class TestAPI extends TomcatTestBase {
         // Check tagging
         doTaggingTest();
         
-        // Export
+        // CSV output
         doTestCSVOut();
 
         // Graph entities and annotations
@@ -207,14 +205,18 @@ public class TestAPI extends TomcatTestBase {
         // Edit
         doEditTest();
 
-        exportFile = File.createTempFile("export", "nq");
-        doExport();
+        File exportFile = File.createTempFile("export", "nq");
+        doExport(exportFile);
         
         // Deletion
         doTestRealDelete();
 
         // Reimport from before delete
-        doImportTest();
+        doImportTest(exportFile);
+        exportFile.delete();
+        
+        // Registration of multiple entities in a single payload
+        doTestMultipleEntities();
         
 //        System.out.println("Store dump");
 //        ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel().write(System.out, "Turtle");
@@ -925,7 +927,7 @@ public class TestAPI extends TomcatTestBase {
     /**
      * Export Reg1 for later import test
      */
-    private void doExport() throws IOException {
+    private void doExport(File exportFile) throws IOException {
         ClientResponse response = getResponse(REG1+"?export", "application/n-quads");
         assertEquals(200, response.getStatus());
         InputStream in = response.getEntity(InputStream.class);
@@ -937,7 +939,7 @@ public class TestAPI extends TomcatTestBase {
     /**
      * Reimport the earlier export and test REG1 is back after the delete
      */
-    private void doImportTest() throws IOException {
+    private void doImportTest(File exportFile) throws IOException {
         ClientResponse response = invoke("PUT", exportFile.getPath(), REG1+"?import", "application/n-quads");
         assertEquals(204, response.getStatus());
         
@@ -963,6 +965,17 @@ public class TestAPI extends TomcatTestBase {
                 DCTerms.dateSubmitted, DCTerms.modified);
         assertEquals(204, postFileStatus("test/edit/edit3.csv", REGE + "?edit", "text/csv"));
         checkModelResponse(REGE + "?_view=with_metadata&status=any", "test/edit/expected3.ttl", 
+                DCTerms.dateSubmitted, DCTerms.modified);
+    }
+    
+    /**
+     * Test registration of multiple entities in a single payload
+     */
+    private void doTestMultipleEntities() {
+        final String REGF = BASE_URL + "regf";
+        assertEquals(201, postFileStatus("test/multiload/regf.ttl", BASE_URL));
+        assertEquals(201, postFileStatus("test/multiload/load123.ttl", REGF));
+        checkModelResponse(REGF + "?status=any", "test/multiload/expected.ttl", 
                 DCTerms.dateSubmitted, DCTerms.modified);
     }
     
