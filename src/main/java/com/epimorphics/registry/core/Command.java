@@ -558,7 +558,6 @@ public abstract class Command {
         String versionURI = store.update(currentItem, withEntity);
         checkDelegation(currentItem);
         
-        notify( new Message(this, newitem) );
         return versionURI;
     }
     
@@ -646,10 +645,7 @@ public abstract class Command {
         store.addToRegister(parent, item);
         checkDelegation(item);
 
-        notify( new Message(this, item) );
-
         return item.getRoot();
-
     }
 
     

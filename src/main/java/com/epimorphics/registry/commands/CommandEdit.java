@@ -34,6 +34,7 @@ import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.ValidationResponse;
+import com.epimorphics.registry.message.Message;
 import com.epimorphics.registry.security.RegAction;
 import com.epimorphics.registry.security.RegPermission;
 import com.epimorphics.registry.util.PatchUtil;
@@ -60,7 +61,7 @@ import com.hp.hpl.jena.vocabulary.RDF;
 public class CommandEdit extends Command {
     
     Register parentRegister;
-    List<RegisterItem> newItems = new ArrayList<>();
+    List<RegisterItem> requestItems = new ArrayList<>();
 
     @Override
     public ValidationResponse validate() {
@@ -90,9 +91,9 @@ public class CommandEdit extends Command {
             if (!entityValid.isOk()) {
                 return entityValid;
             }
-            newItems.add( item );
+            requestItems.add( item );
         }
-        if (newItems.isEmpty()) {
+        if (requestItems.isEmpty()) {
             // Check for direct registration of entities
             for (Resource entity : findEntities()) {
                 RegisterItem item = RegisterItem.fromEntityRequest(entity, parentURI, true); 
@@ -100,10 +101,10 @@ public class CommandEdit extends Command {
                 if (!entityValid.isOk()) {
                     return entityValid;
                 }
-                newItems.add( item );
+                requestItems.add( item );
             }
         }
-        if (newItems.isEmpty()) {
+        if (requestItems.isEmpty()) {
             return new ValidationResponse(BAD_REQUEST, "No items found in request");
         }
         
@@ -141,7 +142,7 @@ public class CommandEdit extends Command {
         
         store.lock();
         try {
-            for (RegisterItem importItem : newItems) {
+            for (RegisterItem importItem : requestItems) {
                 Resource itemR = importItem.getRoot();
                 if (view.contains(importItem.getRoot(), RDF.type)) {
                     // An existing item
@@ -157,6 +158,10 @@ public class CommandEdit extends Command {
                 }
             }
             store.commit();
+            
+            for (RegisterItem item : requestItems) {
+                notify( new Message(this, item) );
+            }
             
             return Response.noContent().location(new URI(path)).build();
         } catch (URISyntaxException e) {

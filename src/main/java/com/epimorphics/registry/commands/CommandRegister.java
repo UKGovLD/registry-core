@@ -47,6 +47,7 @@ import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.core.ValidationResponse;
+import com.epimorphics.registry.message.Message;
 import com.epimorphics.registry.security.RegAction;
 import com.epimorphics.registry.security.RegPermission;
 import com.epimorphics.registry.store.EntityInfo;
@@ -87,6 +88,7 @@ public class CommandRegister extends Command {
     boolean needStatusPermission = false;
 
     Register parentRegister;
+    List<RegisterItem> notifications = new ArrayList<>();
 
     @Override
     public ValidationResponse validate() {
@@ -201,6 +203,11 @@ public class CommandRegister extends Command {
             // TODO could have consistent date stamp across these if we want
             store.update(parentRegister);
             store.commit();
+            
+            for (RegisterItem item : notifications) {
+                notify( new Message(this, item) );
+            }
+
             try {
                 return Response.created(new URI(location.getURI())).build();
             } catch (URISyntaxException e) {
@@ -343,6 +350,7 @@ public class CommandRegister extends Command {
             ri.getRoot().addProperty(RegistryVocab.status, statusOverride.getResource());
         }
         
+        notifications.add(ri);
         return addToRegister(parent, ri);
     }
 

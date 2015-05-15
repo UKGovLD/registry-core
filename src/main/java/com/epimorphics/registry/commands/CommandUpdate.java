@@ -35,6 +35,7 @@ import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.core.ValidationResponse;
+import com.epimorphics.registry.message.Message;
 import com.epimorphics.registry.security.RegAction;
 import com.epimorphics.registry.security.RegPermission;
 import com.epimorphics.registry.vocab.RegistryVocab;
@@ -189,6 +190,7 @@ public class CommandUpdate extends Command {
             String versionURI = applyUpdate(currentItem, newitem, isPatch, !isEntityUpdate);
             store.commit();
             
+            notify( new Message(this, newitem) );
             return Response.noContent().location(new URI(versionURI)).build();
         } catch (URISyntaxException e) {
             throw new WebApplicationException(e);

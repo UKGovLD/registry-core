@@ -48,6 +48,7 @@ import com.hp.hpl.jena.vocabulary.RDF;
 public class Message {
 
     String target;
+    String entity;
     String operation;
     String[] types;
     Object message;

@@ -151,10 +151,20 @@ public class LibReg extends ComponentBase implements LibPlugin {
      * List the legal next states after this state.
      */
     public Collection<Status> nextStates(RDFNodeWrapper state) {
+        List<Status> next = new ArrayList<>();
         Status current = asStatus(state);
-        if (current == null) return new ArrayList<Status>();
-        Collection<Status> next = current.nextStates();
-//        next.remove(current);
+        if (current != null) {
+            next.addAll( current.nextStates() );
+            // Crude topological sort to put dead ends like Invalid last
+            Collections.sort(next, new Comparator<Status>() {
+                @Override
+                public int compare(Status o1, Status o2) {
+                    Integer succ1 = o1.nextStates().size();
+                    Integer succ2 = o2.nextStates().size();
+                    return succ2.compareTo(succ1);
+                }
+            });
+        }
         return next;
     }
 

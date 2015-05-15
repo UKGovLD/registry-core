@@ -29,6 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.vocabs.SKOS;
@@ -45,6 +48,8 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public class Status {
+    static final Logger log = LoggerFactory.getLogger( Status.class );
+    
     public static final String PRES_DEFAULT = "default";
     public static final String PRES_SUCCESS = "success";
     public static final String PRES_WARNING = "warning";
@@ -54,7 +59,7 @@ public class Status {
     
     public static Status NotAccepted  = new Status(RegistryVocab.statusNotAccepted,  "notaccepted", PRES_DEFAULT, Any);
     public static Status Submitted    = new Status(RegistryVocab.statusSubmitted,    "submitted",   PRES_DEFAULT, NotAccepted);
-    public static Status Reserved     = new Status(RegistryVocab.statusReserved,     "reserved",    PRES_DEFAULT, NotAccepted, Submitted);
+    public static Status Reserved     = new Status(RegistryVocab.statusReserved,     "reserved",    PRES_DEFAULT, NotAccepted);
     public static Status Invalid      = new Status(RegistryVocab.statusInvalid,      "invalid",     PRES_DANGER,  NotAccepted);
     
     public static Status Accepted     = new Status(RegistryVocab.statusAccepted,     "accepted",    PRES_DEFAULT, Any);
@@ -63,8 +68,8 @@ public class Status {
     public static Status Superseded   = new Status(RegistryVocab.statusSuperseded,   "superseded",  PRES_DANGER,  Deprecated);
     public static Status Retired      = new Status(RegistryVocab.statusRetired,      "retired",     PRES_DANGER,  Deprecated);
     
-    public static Status Stable       = new Status(RegistryVocab.statusStable,       "stable",       PRES_SUCCESS, Valid, Retired, Superseded);
-    public static Status Experimental = new Status(RegistryVocab.statusExperimental, "experimental", PRES_WARNING, Valid, Stable, Retired, Superseded);
+    public static Status Stable       = new Status(RegistryVocab.statusStable,       "stable",       PRES_SUCCESS, Valid);
+    public static Status Experimental = new Status(RegistryVocab.statusExperimental, "experimental", PRES_WARNING, Valid);
 
     public static final String LIFECYCLE_REGISTER = "/system/lifecycle";
 
@@ -119,6 +124,13 @@ public class Status {
         return resource;
     }
     
+    public void reset() {
+        successors.clear();
+        if (Invalid != null) {
+            successors.add(Invalid);
+        }
+    }
+    
     @Override
     public boolean equals(Object other) {
         return other instanceof Status && this.resource.equals( ((Status)other).resource );
@@ -135,7 +147,7 @@ public class Status {
     }
     
     public static Status forResource(Resource r) {
-        reload();
+        load();
         for (Status s : statusIndex.values()) {
             if (s.getResource().equals(r)) {
                 return s;
@@ -145,7 +157,7 @@ public class Status {
     }
 
     public static Status forString(String param, Status deflt) {
-        reload();
+        load();
         Status s = statusIndex.get(param);
         return s == null ? deflt : s;
     }
@@ -193,23 +205,34 @@ public class Status {
     }
     
     /**
-     * Update the status set based on the status register
+     * Force reload of the status register
      */
     public synchronized static void reload() {
+        needsLoad = true;
+        load();
+    }
+    
+    /**
+     * Update the status set based on the status register
+     */
+    public synchronized static void load() {
         if (needsLoad) {
             needsLoad = false;
+
             // Reset back to just builtins
             statusIndex = new HashMap<String, Status>();
             for (Status s : new Status[]{Any, NotAccepted, Submitted, Reserved, Invalid, Accepted, Valid, Deprecated, Superseded, Retired,Stable, Experimental}) {
+                s.reset();
                 addStatus(s);
-                s.addSuccessor(Invalid);
             }
+            Reserved.addSuccessor(Submitted);
     
             String registerURI = Registry.get().getBaseURI() + LIFECYCLE_REGISTER;
             Description d = Registry.get().getStore().getDescription(registerURI);
             if (d instanceof Register) {
                 Register register = (Register) d;
-            
+                log.info("Loading custom status lifecycle");
+        
                 Model view = ModelFactory.createDefaultModel();
                 List<Resource> members = new ArrayList<>();
                 register.constructView(view, false, null, 0, -1, -1, members);
@@ -222,20 +245,46 @@ public class Status {
                         s.setParent( forResource(parent) );
                     }
                     s.setPresentation( RDFUtil.getStringValue(member, RegistryVocab.presentation, PRES_DEFAULT) );
+                    s.addSuccessor(Invalid);
                     for (Status suc : getStatusValues(member, RegistryVocab.nextState)) {
                         s.addSuccessor(suc);
                     }
                     for (Status p : getStatusValues(member, RegistryVocab.priorState)) {
                         p.addSuccessor(s);
                     }
-               }
+                }
             } else {
-                // No custom lifecycle 
+                log.info("Setting default status lifecycle");
+                // No custom lifecycle found
                 Submitted.addSuccessor(Stable);
                 Submitted.addSuccessor(Experimental);
+                
+                Stable.addSuccessor(Retired);
+                Stable.addSuccessor(Superseded);
+                
+                Experimental.addSuccessor(Stable);
+                Experimental.addSuccessor(Retired);
+                Experimental.addSuccessor(Superseded);
+            }
+            printLifecycle(Reserved, new HashSet<Status>());
+        }
+    }
+    
+    // Log lifecycle summary, mostly for debugging
+    private static void printLifecycle(Status start, Set<Status> seen) {
+        if ( seen.add(start) ) {
+            String message = "   " + start + " -> [";
+            for (Status s : start.nextStates()) {
+                message += s.toString() + " ";
+            }
+            message += "]";
+            log.info(message);
+            for (Status s : start.nextStates()) {
+                printLifecycle(s, seen);
             }
         }
     }
+    
     
     protected static List<Status> getStatusValues(Resource root, Property p) {
         List<Status> results = new ArrayList<>();

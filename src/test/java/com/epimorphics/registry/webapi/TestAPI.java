@@ -40,6 +40,7 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.junit.Test;
 
 import com.epimorphics.rdfutil.RDFUtil;
+import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.csv.CSVPayloadRead;
 import com.epimorphics.registry.util.JSONLDSupport;
 import com.epimorphics.registry.util.Prefixes;
@@ -217,6 +218,9 @@ public class TestAPI extends TomcatTestBase {
         
         // Registration of multiple entities in a single payload
         doTestMultipleEntities();
+        
+        // Status lifecycle
+        doLifecycleTest();
         
 //        System.out.println("Store dump");
 //        ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel().write(System.out, "Turtle");
@@ -980,6 +984,35 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(201, postFileStatus("test/multiload/load123.ttl", REGF));
         checkModelResponse(REGF + "?status=any", "test/multiload/expected.ttl", 
                 DCTerms.dateSubmitted, DCTerms.modified);
+    }
+
+    /**
+     * Test custom status life cycle
+     */
+    private void doLifecycleTest() throws IOException {
+        // Some default lifecycle elements
+        checkStatus("submitted", "experimental");
+        checkStatus("experimental", "stable");
+        
+        // Load a custom lifecycle
+        assertEquals(201, postFileStatus("test/lifecycle/lifecycle-reg.ttl", BASE_URL + "system"));
+        assertEquals(201, postFileStatus("test/lifecycle/wmo-cycle.csv", BASE_URL + "system/lifecycle", "text/csv"));
+        checkStatus("submitted", "validation");
+        checkStatus("validation", "preoperational");
+        checkStatus("preoperational", "operational");
+    }
+
+    private void checkStatus(String status, String successor) {
+        Status s = Status.forString(status, null);
+        assertNotNull(s);
+        boolean foundSuccessor = false;
+        for (Status n : s.nextStates()) {
+            if (n.getLabel().equals(successor)) {
+                foundSuccessor = true;
+                break;
+            }
+        }
+        assertTrue( foundSuccessor );
     }
     
     private void checkPageResponse(Model m, String nextpage, int length) {
