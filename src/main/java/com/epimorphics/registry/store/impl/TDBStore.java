@@ -47,6 +47,7 @@ import com.epimorphics.util.FileUtil;
 import com.epimorphics.util.NameUtils;
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.NodeFactory;
+import com.hp.hpl.jena.query.ARQ;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.ReadWrite;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -80,6 +81,7 @@ public class TDBStore  extends ComponentBase implements Store {
     protected String tdbDir;
     protected File backupDir;
     protected boolean isUnionDefault;
+    protected String timeout;
 
     public static final String ADD_ACTION = "ADD";
     public static final String UPDATE_ACTION = "UPDATE";
@@ -132,6 +134,13 @@ public class TDBStore  extends ComponentBase implements Store {
     public void setUnionDefault(boolean flag) {
         isUnionDefault = flag;
     }
+    
+    /**
+     * Set global timeout to "f,t" where f is the time till first result and t is the total time allowed. Both in ms.
+     */
+    public void setTimeout(String timeout) {
+        this.timeout = timeout;
+    }
 
     @Override
     public void startup(App app) {
@@ -164,6 +173,11 @@ public class TDBStore  extends ComponentBase implements Store {
             DatasetRegistry.get().put(base, ds);
             log.info("Installing SPARQL query endpoint at " + base + "/query");
         }
+        
+        if (timeout != null) {
+            ARQ.getContext().set(ARQ.queryTimeout, timeout);
+        }
+        
         if (textIndex != null || indexSpec != null) {
             try {
                 Directory dir = null;
