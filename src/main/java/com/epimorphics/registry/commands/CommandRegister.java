@@ -223,10 +223,14 @@ public class CommandRegister extends Command {
         Resource type = null;
         RegisterItem bulkItem = null;
         while (types.hasNext()) {
-            type = types.next().getResource("type");
-            bulkItem = getBulkType(type);
-            if (bulkItem != null) {
-                break;
+            Resource ty = types.next().getResource("type");
+            RegisterItem bt = getBulkType(ty);
+            if (bt != null) {
+                if (type == null || type.equals(RegistryVocab.Register) ) {
+                    // Allow more specific bulk items to take precedence over reg:Register
+                    type = ty;
+                    bulkItem = bt;
+                }
             }
         }
         if (bulkItem == null) {
