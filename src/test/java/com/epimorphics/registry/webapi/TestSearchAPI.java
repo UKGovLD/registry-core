@@ -29,7 +29,7 @@ import java.util.List;
 import org.junit.Test;
 
 import com.epimorphics.rdfutil.RDFUtil;
-import com.epimorphics.registry.vocab.Ldbp;
+import com.epimorphics.registry.vocab.Ldbp_orig;
 import com.epimorphics.util.TestUtil;
 import com.epimorphics.vocabs.API;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -91,7 +91,7 @@ public class TestSearchAPI extends TomcatTestBase {
 
     protected Model checkSearch(String query, String...members) {
         Model m = getModelResponse(BASE_URL + "?" + query);
-        List<RDFNode> roots = m.listObjectsOfProperty(Ldbp.pageOf).toList();
+        List<RDFNode> roots = m.listObjectsOfProperty(Ldbp_orig.pageOf).toList();
         assertEquals(1, roots.size());
         Resource result = roots.get(0).asResource();
         List<String> actual = new ArrayList<String>();

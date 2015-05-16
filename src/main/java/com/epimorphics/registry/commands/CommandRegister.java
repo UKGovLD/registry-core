@@ -52,7 +52,7 @@ import com.epimorphics.registry.security.RegAction;
 import com.epimorphics.registry.security.RegPermission;
 import com.epimorphics.registry.store.EntityInfo;
 import com.epimorphics.registry.util.Prefixes;
-import com.epimorphics.registry.vocab.Ldbp;
+import com.epimorphics.registry.vocab.Ldp;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.Parameters;
 import com.epimorphics.util.EpiException;
@@ -243,9 +243,10 @@ public class CommandRegister extends Command {
 
         // Find membership property
         boolean isInverse = false;
-        Property memberProp = RDFUtil.asProperty( bulkItem.getRoot().getPropertyResourceValue(Ldbp.membershipPredicate) );
+        Resource rt = bulkItem.getRoot();
+        Property memberProp = Register.getMembershipPredicate( rt );
         if (memberProp == null) {
-            memberProp = RDFUtil.asProperty( bulkItem.getRoot().getPropertyResourceValue(RegistryVocab.inverseMembershipPredicate) );
+            memberProp = Register.getInvMembershipPredicate(rt);
             if (memberProp == null) {
                 memberProp = RDFS.member;
             } else {
@@ -295,7 +296,7 @@ public class CommandRegister extends Command {
                 // TODO make it the submitter
             }
         }
-        root.addProperty(isInverse ? RegistryVocab.inverseMembershipPredicate : Ldbp.membershipPredicate, memberProp);
+        root.addProperty(isInverse ? Ldp.isMemberOfRelation : Ldp.hasMemberRelation, memberProp);
         Resource item = register(parent, root, false, false);
         String registerURI = item.getURI().replaceAll("/_([^/]*)$", "/$1");
         Register newReg = store.getCurrentVersion(registerURI).asRegister();

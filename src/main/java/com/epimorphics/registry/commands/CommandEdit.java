@@ -28,7 +28,6 @@ import java.util.List;
 
 import javax.ws.rs.core.Response;
 
-import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
@@ -134,9 +133,8 @@ public class CommandEdit extends Command {
         
         // Remove any materialized membership links
         Resource reg = parentRegister.getRoot();
-        Resource im = RDFUtil.getResourceValue(reg, RegistryVocab.inverseMembershipPredicate);
-        if (im != null) {
-            Property imp = view.createProperty(im.getURI());
+        Property imp = parentRegister.getInvMembershipPredicate();
+        if (imp != null) {
             view.remove( view.listStatements(null, imp, reg).toList() );
         }
         

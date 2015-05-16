@@ -44,7 +44,7 @@ import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.csv.CSVPayloadRead;
 import com.epimorphics.registry.util.JSONLDSupport;
 import com.epimorphics.registry.util.Prefixes;
-import com.epimorphics.registry.vocab.Ldbp;
+import com.epimorphics.registry.vocab.Ldbp_orig;
 import com.epimorphics.registry.vocab.Prov;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
@@ -1016,18 +1016,18 @@ public class TestAPI extends TomcatTestBase {
     }
     
     private void checkPageResponse(Model m, String nextpage, int length) {
-        ResIterator ri = m.listSubjectsWithProperty(RDF.type, Ldbp.Page);
+        ResIterator ri = m.listSubjectsWithProperty(RDF.type, Ldbp_orig.Page);
         assertTrue(ri.hasNext());
         Resource page = ri.next();
         assertFalse(ri.hasNext());
         if (nextpage != null) {
-            Resource next = page.getPropertyResourceValue(Ldbp.nextPage);
+            Resource next = page.getPropertyResourceValue(Ldbp_orig.nextPage);
             assertNotNull(next);
             assertTrue(next.getURI().contains("_page=" + nextpage));
         } else {
-            assertFalse(page.hasProperty(Ldbp.nextPage));
+            assertFalse(page.hasProperty(Ldbp_orig.nextPage));
         }
-        Resource reg = page.getPropertyResourceValue(Ldbp.pageOf);
+        Resource reg = page.getPropertyResourceValue(Ldbp_orig.pageOf);
         int count = 0;
         for (StmtIterator si = reg.listProperties(RDFS.member); si.hasNext();) {
             si.next();

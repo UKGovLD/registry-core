@@ -85,7 +85,7 @@ import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.util.PatchUtil;
 import com.epimorphics.registry.util.Prefixes;
-import com.epimorphics.registry.vocab.Ldbp;
+import com.epimorphics.registry.vocab.Ldbp_orig;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.RequestProcessor;
 import com.epimorphics.util.EpiException;
@@ -493,15 +493,15 @@ public abstract class Command {
     protected Resource injectPagingInformation(Model m, Resource root,  boolean more) {
         String url = target + "?" + makeParamString(parameters);
         Resource page = m.createResource(url)
-            .addProperty(RDF.type, Ldbp.Page)
-            .addProperty(Ldbp.pageOf, root);
+            .addProperty(RDF.type, Ldbp_orig.Page)
+            .addProperty(Ldbp_orig.pageOf, root);
         if (more) {
             String pageParams = "?" + PAGE_NUMBER + "=" + (pagenum+1);
             String otherParams = makeParamString(parameters, FIRST_PAGE, PAGE_NUMBER);
             if (!otherParams.isEmpty()) {
                 pageParams += "&" + otherParams;
             }
-            page.addProperty(Ldbp.nextPage, m.createResource( target + pageParams ));
+            page.addProperty(Ldbp_orig.nextPage, m.createResource( target + pageParams ));
         }
         return page;
     }
@@ -629,7 +629,7 @@ public abstract class Command {
         // TODO factor these out as SPARQL constructs in an external file?
         if( entity.hasProperty(RDF.type, RegistryVocab.Register) ) {
             // TODO fill in void description
-            entity.addProperty(RDF.type, Ldbp.Container);
+            entity.addProperty(RDF.type, Ldbp_orig.Container);
             log.info("Created new sub-register: " + item.getNotation());
         }
         if (entity.hasProperty(RDF.type, RegistryVocab.FederatedRegister)
