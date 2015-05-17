@@ -148,6 +148,7 @@ reg:successor a owl:ObjectProperty;
     rdfs:comment "Indicates the replacement for a superseded item."@en;
     rdfs:domain  reg:RegisterItem;
     rdfs:range   reg:RegisterItem;
+    owl:inverseOf reg:predecessor;
   .
 
 reg:category a owl:ObjectProperty;
