@@ -88,7 +88,7 @@ public class TestAPI extends TomcatTestBase {
     }
 
     @Test
-    public void testBasics() throws IOException {
+    public void testAll() throws IOException {
         // Create reg1
         doRegisterRegistrationTests();
 

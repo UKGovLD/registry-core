@@ -288,8 +288,9 @@ public class CommandRead extends Command {
                 }
                 if (withMetadata) {
                     // No item information so add a consistent way to enumerate members
+                    Resource reg = register.getRoot().inModel(view);
                     for (Resource member : members) {
-                        member.addProperty(RDFS.member, register.getRoot());
+                        reg.addProperty(RDFS.member, member);
                     }
                 }
 
