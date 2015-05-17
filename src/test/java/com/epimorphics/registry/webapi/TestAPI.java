@@ -1011,6 +1011,9 @@ public class TestAPI extends TomcatTestBase {
         checkStatus("submitted", "validation");
         checkStatus("validation", "preoperational");
         checkStatus("preoperational", "operational");
+        
+        assertEquals(204, post(BASE_URL + "system/lifecycle?real_delete").getStatus());
+        checkStatus("submitted", "stable");
     }
 
     private void checkStatus(String status, String successor) {
