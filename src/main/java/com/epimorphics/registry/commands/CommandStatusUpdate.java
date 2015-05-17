@@ -57,8 +57,12 @@ public class CommandStatusUpdate extends Command {
         if (requestedStatus == null) {
             return new ValidationResponse(BAD_REQUEST,  "Could not determine status to update to");
         }
-        if ( Status.forString(requestedStatus, null).equals(Status.Superseded) ) {
-            if ( ! parameters.containsKey(Parameters.SUCCESSOR) ) {
+        Status s = Status.forString(requestedStatus, null);
+        if (s == null) {
+            return new ValidationResponse(BAD_REQUEST, "Did not recognize status");
+        }
+        if ( s.equals(Status.Superseded) ) {
+            if ( ! parameters.containsKey(Parameters.SUCCESSOR) || parameters.getFirst(Parameters.SUCCESSOR).isEmpty() ) {
                 return new ValidationResponse(BAD_REQUEST,  "Must specify successor when superseding an item");
             }
         }
