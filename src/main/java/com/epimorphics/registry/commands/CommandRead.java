@@ -61,6 +61,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.vocabulary.DCTerms;
+import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
 import com.sun.jersey.api.NotFoundException;
@@ -216,7 +217,8 @@ public class CommandRead extends Command {
                 .addProperty(DCTerms.isVersionOf, d.getRoot())
                 .addProperty(RDF.type, RegistryVocab.RegisterItem)
                 .addProperty(RDF.type, Version.Version)
-                .addProperty(Version.interval, interval);
+                .addProperty(Version.interval, interval)
+                .addLiteral(OWL.versionInfo, vi.getVersion());
             if (vi.getReplaces() != null) {
                 ver.addProperty(DCTerms.replaces, m.createResource(vi.getReplaces()));
             }

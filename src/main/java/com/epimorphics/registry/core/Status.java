@@ -226,9 +226,13 @@ public class Status {
                 addStatus(s);
             }
             Reserved.addSuccessor(Submitted);
-    
-            String registerURI = Registry.get().getBaseURI() + LIFECYCLE_REGISTER;
-            Description d = Registry.get().getStore().getDescription(registerURI);
+
+            Description d = null;
+            
+            if (Registry.get() != null) { // Guard for test cases
+                String registerURI = Registry.get().getBaseURI() + LIFECYCLE_REGISTER;
+                d = Registry.get().getStore().getDescription(registerURI);
+            }
             if (d instanceof Register) {
                 Register register = (Register) d;
                 log.info("Loading custom status lifecycle");

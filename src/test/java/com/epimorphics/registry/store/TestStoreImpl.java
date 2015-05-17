@@ -129,8 +129,8 @@ public class TestStoreImpl {
         assertTrue(versions.size() >= 2);
         VersionInfo vi1 = versions.get(0);
         VersionInfo vi2 = versions.get(1);
-        assertEquals("1", vi1.getVersion());
-        assertEquals("2", vi2.getVersion());
+        assertEquals(1, vi1.getVersion());
+        assertEquals(2, vi2.getVersion());
         assertEquals(vi1.getToTime(), vi2.getFromTime());
         assertNotSame(-1, vi1.getToTime());
 
