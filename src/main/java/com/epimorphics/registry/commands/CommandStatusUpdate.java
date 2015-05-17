@@ -26,9 +26,11 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.RegisterItem;
+import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.core.ValidationResponse;
 import com.epimorphics.registry.message.Message;
 import com.epimorphics.registry.security.RegAction;
@@ -36,7 +38,6 @@ import com.epimorphics.registry.security.RegPermission;
 import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.Parameters;
-import com.epimorphics.appbase.webapi.WebApiException;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.sun.jersey.api.NotFoundException;
@@ -46,10 +47,21 @@ public class CommandStatusUpdate extends Command {
     public static final String STATUS_PARAM = "status";
 
     protected boolean isForce = false;
+    protected String requestedStatus;
 
     @Override
     public ValidationResponse validate() {
         isForce = parameters.containsKey(Parameters.FORCE);
+        
+        requestedStatus = getRequestedStatus();
+        if (requestedStatus == null) {
+            return new ValidationResponse(BAD_REQUEST,  "Could not determine status to update to");
+        }
+        if ( Status.forString(requestedStatus, null).equals(Status.Superseded) ) {
+            if ( ! parameters.containsKey(Parameters.SUCCESSOR) ) {
+                return new ValidationResponse(BAD_REQUEST,  "Must specify successor when superseding an item");
+            }
+        }
         return ValidationResponse.OK;
     }
 
@@ -73,9 +85,6 @@ public class CommandStatusUpdate extends Command {
         try {
             if (ri != null) {
                 String requestedStatus = getRequestedStatus();
-                if (requestedStatus == null) {
-                    throw new WebApiException(BAD_REQUEST, "Could not determine status to update to");
-                }
                 if (ri.isRegister() && !lastSegment.startsWith("_")) {
                     for (RegisterEntryInfo member : store.listMembers( ri.getAsRegister(store) )) {
                         doStatusUpdate(store.getItem(member.getItemURI(), false), requestedStatus);
@@ -110,6 +119,9 @@ public class CommandStatusUpdate extends Command {
         }
         if (status.equals(RegistryVocab.statusExperimental) || status.equals(RegistryVocab.statusStable)) {
             RDFUtil.timestamp(ri.getRoot(), DCTerms.dateAccepted);
+        }
+        if ( parameters.containsKey(Parameters.SUCCESSOR) ) {
+            setSuccessor(ri, parameters.getFirst(Parameters.SUCCESSOR) );
         }
         store.update(ri, false);
         checkDelegation(ri);

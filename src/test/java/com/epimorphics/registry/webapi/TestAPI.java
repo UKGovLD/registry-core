@@ -504,12 +504,23 @@ public class TestAPI extends TomcatTestBase {
     // Assumes reg1/blue exists, leaves it in "invalid" status
     private void doStatusTransitionsTest() {
         assertEquals(403, post(REG1 + "/_blue?update&status=retired").getStatus());
-        assertEquals(403, post(REG1 + "/_blue?update&status=superseded").getStatus());
+        assertEquals(400, post(REG1 + "/_blue?update&status=superseded").getStatus());
+        assertEquals(403, post(REG1 + "/_blue?update&status=superseded&successor=http://example.com/next").getStatus());
         assertEquals(204, post(REG1 + "/_blue?update&status=experimental").getStatus());
         assertEquals(204, post(REG1 + "/_blue?update&status=stable").getStatus());
         assertEquals(403, post(REG1 + "/_blue?update&status=experimental").getStatus());
         assertEquals(403, post(REG1 + "/_blue?update&status=submitted").getStatus());
-        assertEquals(204, post(REG1 + "/_blue?update&status=superseded").getStatus());
+        assertEquals(204, post(REG1 + "/_blue?update&status=superseded&successor="+REG1_URI+"/_red").getStatus());
+        Model m = getModelResponse(REG1 + "/_blue?status=any&_view=with_metadata");
+        assertTrue( m.contains(
+                ResourceFactory.createResource(REG1_URI + "/_blue"),
+                RegistryVocab.successor,
+                ResourceFactory.createResource(REG1_URI + "/_red") ) );
+        m = getModelResponse(REG1 + "/_red?status=any&_view=with_metadata");
+        assertTrue( m.contains(
+                ResourceFactory.createResource(REG1_URI + "/_red"),
+                RegistryVocab.predecessor,
+                ResourceFactory.createResource(REG1_URI + "/_blue") ) );
         assertEquals(204, post(REG1 + "/_blue?update&status=invalid").getStatus());
     }
 

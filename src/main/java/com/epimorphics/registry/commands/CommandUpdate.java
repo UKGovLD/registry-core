@@ -140,6 +140,11 @@ public class CommandUpdate extends Command {
                     if (!oldstatus.legalNextState(newstatus)) {
                         needStatusForce = true;
                     }
+                    if (newstatus.equals(Status.Superseded)) {
+                        if (! newitem.getRoot().hasProperty(RegistryVocab.successor)) {
+                            return new ValidationResponse(BAD_REQUEST,  "Must specify successor when superseding an item");
+                        }
+                    }
                 }
             }
 

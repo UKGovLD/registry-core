@@ -143,6 +143,13 @@ reg:predecessor a owl:ObjectProperty;
     rdfs:range   reg:RegisterItem;
   .
 
+reg:successor a owl:ObjectProperty;
+    rdfs:label "successor"@en;
+    rdfs:comment "Indicates the replacement for a superseded item."@en;
+    rdfs:domain  reg:RegisterItem;
+    rdfs:range   reg:RegisterItem;
+  .
+
 reg:category a owl:ObjectProperty;
     rdfs:label "category"@en;
     rdfs:comment "Optional classification for a registered item within one or more SKOS classification schemes to support navigation and discovery. Orthogonal to the structure provided by the register hierarchy which is about governance."@en;

@@ -82,6 +82,7 @@ import com.epimorphics.registry.message.MessagingService;
 import com.epimorphics.registry.security.RegAction;
 import com.epimorphics.registry.security.RegPermission;
 import com.epimorphics.registry.security.UserInfo;
+import com.epimorphics.registry.store.EntityInfo;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.util.PatchUtil;
 import com.epimorphics.registry.util.Prefixes;
@@ -93,6 +94,7 @@ import com.epimorphics.util.NameUtils;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.vocabulary.RDF;
 
@@ -692,4 +694,26 @@ public abstract class Command {
     
     protected static final String itemPath = String.format("^<%s>/^<%s>", RegistryVocab.entity, RegistryVocab.definition);
     
+    /**
+     * Set a successor relation from a register item to another URI which may be a register item.
+     * It is up to the caller to manage a surrounding write transaction and to save the updated version of the olditem.
+     */
+    protected void setSuccessor(RegisterItem olditem, String newuri) {
+        RegisterItem newitem = store.getItem(newuri, false);
+        if (newitem == null) {
+            // See if we have been given an entity instead
+            for (EntityInfo ei : store.listEntityOccurences(newuri)) {
+                if (ei.getItemURI() != null) {
+                    newitem = store.getItem(ei.getItemURI(), false);
+                    break;
+                }
+            }
+        }
+        if (newitem != null) {
+            newitem.setProperty(RegistryVocab.predecessor, olditem.getRoot());
+            store.update(newitem, false);
+        }
+        Resource newr = newitem == null ? ResourceFactory.createResource(newuri) : newitem.getRoot();
+        olditem.setProperty(RegistryVocab.successor, newr);
+    }
 }
