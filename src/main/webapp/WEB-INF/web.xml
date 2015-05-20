@@ -47,12 +47,10 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
     <url-pattern>/*</url-pattern>
   </filter-mapping>
 
-<!-- 
   <filter-mapping>
     <filter-name>VelocityFilter</filter-name>
     <url-pattern>/ui/*</url-pattern>
   </filter-mapping>
- -->
  
   <context-param>
     <param-name>AppConfig.app</param-name>

@@ -103,7 +103,7 @@ public class RequestProcessor extends BaseEndpoint {
     private static final String SYSTEM_QUERY = "system/query";
 
     @GET
-    @Produces("text/html")
+    @Produces("text/html;qs=2.0")
     public Response htmlrender() {        
         String path = uriInfo.getPath();
         if (path.startsWith(UI_PATH) ) {
@@ -221,12 +221,12 @@ public class RequestProcessor extends BaseEndpoint {
     }
     
     @GET
-    @Produces({"application/n-quads"})
+    @Produces({"application/n-quads;qs=0.3"})
     public Response export() {
         if (uriInfo.getQueryParameters().containsKey(Parameters.EXPORT_TREE)) {
             return makeCommand( Operation.Export ).execute();
         }
-        return Response.status(Status.NOT_ACCEPTABLE).entity("Can n-quads only supported for export").build();
+        return Response.status(Status.NOT_ACCEPTABLE).entity("n-quads only supported for export").build();
     }
     
     @PUT
@@ -237,7 +237,7 @@ public class RequestProcessor extends BaseEndpoint {
             command.setPayloadStream( body );
             return command.execute();
         }
-        return Response.status(Status.NOT_ACCEPTABLE).entity("Can n-quads only supported for import").build();
+        return Response.status(Status.NOT_ACCEPTABLE).entity("n-quads only supported for import").build();
     }
 
     @GET
