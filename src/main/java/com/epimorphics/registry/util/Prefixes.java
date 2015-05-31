@@ -24,13 +24,21 @@ package com.epimorphics.registry.util;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.xerces.util.XMLChar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.epimorphics.rdfutil.RDFUtil;
+import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.message.Message;
 import com.epimorphics.registry.message.MessagingService;
 import com.epimorphics.registry.message.ProcessIfChanges;
 import com.epimorphics.registry.store.RegisterEntryInfo;
+import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.webapi.JsonContext;
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.shared.PrefixMapping;
 import com.hp.hpl.jena.util.FileManager;
@@ -41,6 +49,8 @@ import com.hp.hpl.jena.util.FileManager;
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public class Prefixes {
+    static final Logger log = LoggerFactory.getLogger( Prefixes.class );
+            
     // Only used for bootstrapping
     public static final String PREFIXES_FILE = "prefixes.ttl";
 
@@ -112,6 +122,8 @@ public class Prefixes {
         jsonldContext = null;
     }
     
+    protected static Property vann_prefix = ResourceFactory.createProperty("http://purl.org/vocab/vann/preferredNamespacePrefix");
+    
     private static PrefixMapping loadPrefixes() {
         if (!listeningForChanges) {
             MessagingService.Process reset = new MessagingService.Process(){
@@ -126,11 +138,22 @@ public class Prefixes {
         }
         
         Register prefixesRegister = new Register( ResourceFactory.createResource( getPrefixRegisterURI() ) );
-        prefixesRegister.setStore( Registry.get().getStore() );
+        StoreAPI store = Registry.get().getStore();
+        prefixesRegister.setStore( store );
         PrefixMapping pm = PrefixMapping.Factory.create();
         pm.setNsPrefixes( defaultPrefixes );
         for (RegisterEntryInfo info : prefixesRegister.getMembers()) {
-            pm.setNsPrefix(info.getNotation(), info.getEntityURI());
+            String prefix = info.getNotation();
+            if ( ! XMLChar.isValidNCName( prefix ) ) {
+                // Fall back on explicit prefix if available
+                Description defn = store.getCurrentVersion( info.getEntityURI() );
+                prefix = RDFUtil.getStringValue(defn.getRoot(), vann_prefix);
+                if (prefix == null || prefix.isEmpty() || ! XMLChar.isValidNCName( prefix ) ) {
+                    log.error("Can't find legal prefix for " + info.getEntityURI());
+                    continue;
+                }
+            }
+            pm.setNsPrefix(prefix, info.getEntityURI());
         }
         return pm;
    }

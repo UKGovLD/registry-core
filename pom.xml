@@ -103,6 +103,12 @@
       <artifactId>appbase</artifactId>
       <version>0.1.1</version>
     </dependency>
+     
+    <dependency>
+      <groupId>com.epimorphics</groupId>
+      <artifactId>lib</artifactId>
+      <version>0.1.2</version>
+    </dependency>
     
     <dependency>
       <groupId>org.apache.jena</groupId>
