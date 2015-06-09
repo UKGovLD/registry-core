@@ -37,6 +37,7 @@ import org.apache.shiro.authz.Permission;
 import org.apache.shiro.subject.Subject;
 
 import com.epimorphics.appbase.core.ComponentBase;
+import com.epimorphics.rdfutil.PropertyValue;
 import com.epimorphics.appbase.templates.LibPlugin;
 import com.epimorphics.rdfutil.ModelWrapper;
 import com.epimorphics.rdfutil.QueryUtil;
@@ -57,14 +58,17 @@ import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.facets.FacetResultEntry;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.util.PrefixUtils;
+import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.shared.PrefixMapping;
+import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDFS;
@@ -557,4 +561,75 @@ public class LibReg extends ComponentBase implements LibPlugin {
             return stripped;
         }
     }
+    
+    /**
+     * Enrich the model behind an entity with labels for 
+     * the given set of linked resources.
+     * Assumes the model is a simple, local in-memory model with no locking requirements.
+     */
+    public void addLabelsFor(RDFNodeWrapper entity, Collection<RDFNodeWrapper> links) {
+        if (!entity.isResource()) return;   // No enrichment possible
+        StringBuffer list = new StringBuffer();
+        for (RDFNodeWrapper link : links) {
+            if (link.isResource()) {
+                list.append("<" + link.getURI() + ">\n");
+            }
+        }
+        String query = LABEL_QUERY.replace("$LIST$", list.toString());
+        query = PrefixUtils.expandQuery(query, Prefixes.get());
+        StoreAPI store = Registry.get().getStore();
+        ResultSet results = store.query(query);
+        Model model = entity.getModelW().getModel();
+        while (results.hasNext()) {
+            QuerySolution row = results.next();
+            RDFNode rv = row.get("resource");
+            if (rv.isResource()) {
+                Resource r = rv.asResource();
+                for (int i = 0; i < VARS.length; i++) {
+                    String var = VARS[i];
+                    RDFNode value = row.get(var);
+                    if (value != null) {
+                        model.add(r, PROPS[i], value);
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    /**
+     * Enrich the model behind an entity with labels for 
+     * all resources linked to the entity.
+     * Assumes the model is a simple, local in-memory model with no locking requirements.
+     */
+    public void addLabels(RDFNodeWrapper entity) {
+        Set<RDFNodeWrapper> links = new HashSet<>();
+        findResources(entity, links);
+        links.remove(entity);
+        addLabelsFor(entity, links);
+    }
+    
+    private void findResources(RDFNodeWrapper base, Set<RDFNodeWrapper> links) {
+        if ( links.add(base) ) {
+            for (PropertyValue pv : base.listProperties()) {
+                for (RDFNodeWrapper link : pv.getValues()) {
+                    if (link.isResource() && !links.contains(link)) {
+                        findResources(link, links);
+                    }
+                }
+            }
+        }
+    }
+    
+    static final String LABEL_QUERY =
+              "SELECT * WHERE {\n"
+              + "    VALUES ?resource {$LIST$}\n"
+              + "    OPTIONAL {?resource rdfs:label ?label}\n"
+              + "    OPTIONAL {?resource foaf:name  ?name}\n"
+              + "    OPTIONAL {?resource skos:prefLabel ?pref}\n"
+              + "    OPTIONAL {?resource skos:altLabel  ?alt}\n"
+              + "    OPTIONAL {?resource dct:title  ?title}\n"
+              + "}";
+    static final String[] VARS = new String[]{"label", "name", "pref", "alt", "title"};
+    static final Property[] PROPS = new Property[]{RDFS.label, FOAF.name, SKOS.prefLabel, SKOS.altLabel, DCTerms.title};
 }
