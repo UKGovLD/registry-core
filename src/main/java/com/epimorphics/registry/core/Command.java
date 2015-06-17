@@ -120,28 +120,42 @@ public abstract class Command {
         Validate(CommandValidate.class),
         Search(CommandSearch.class),
         Tag(CommandTag.class, RegAction.StatusUpdate),
-        Annotate(CommandAnnotate.class),
+        Annotate(CommandAnnotate.class, true),
         Edit(CommandEdit.class, RegAction.Update),
         Export(CommandExport.class),
-        Import(CommandImport.class),
+        Import(CommandImport.class, true),
         RealDelete(CommandRealDelete.class, RegAction.RealDelete);
 
         protected RegAction action;
         protected Class<?> implementation;
+        protected boolean isUpdate;
 
-        private Operation(Class<?> implementation, RegAction action) {
+        private Operation(Class<?> implementation,  boolean isUpdate, RegAction action) {
             this.action = action;
             this.implementation = implementation;
+            this.isUpdate = isUpdate;
         }
+        
+        private Operation(Class<?> implementation, boolean isUpdate) {
+            this(implementation, isUpdate, null);
+        }
+        
+        private Operation(Class<?> implementation,  RegAction action) {
+            this(implementation, true, action);
+        }
+        
         private Operation(Class<?> implementation) {
-            this.implementation = implementation;
-            this.action = null;
+            this(implementation, false, null);
         }
 
         public RegAction getAuthorizationAction() {
             return action;
         }
 
+        public boolean isUpdate() {
+            return isUpdate;
+        }
+        
         public Command makeCommandInstance() {
             try {
                 return (Command) implementation.newInstance();
@@ -299,9 +313,14 @@ public abstract class Command {
     }
 
     protected void performValidate() {
-        ValidationResponse validity = validate();
-        if (!validity.isOk()) {
-            throw new WebApiException(validity.getStatus(), validity.getMessage());
+        store.beginRead();
+        try {
+            ValidationResponse validity = validate();
+            if (!validity.isOk()) {
+                throw new WebApiException(validity.getStatus(), validity.getMessage());
+            }
+        } finally {
+            store.end();
         }
     }
 
@@ -309,13 +328,27 @@ public abstract class Command {
     protected Response performExecute() {
         Response response = null;
         try {
+            if (operation.isUpdate()) {
+                store.beginWrite();
+            } else {
+                store.beginRead();
+            }
             response = doExecute();
         } catch (WebApplicationException wae) {
+            if (operation.isUpdate) {
+                store.abort();
+            }
             response =  wae.getResponse();
         } catch (Exception e) {
             log.error("Internal error", e);
+            if (operation.isUpdate) {
+                store.abort();
+            }
             response = Response.serverError().entity(e.getMessage()).build();
+        } finally {
+            store.end();
         }
+        
 
         Date now = new Date(System.currentTimeMillis());
         log.info(String.format("%s [%s] %s \"%s?%s\"%s %d",

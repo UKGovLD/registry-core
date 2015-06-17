@@ -30,16 +30,14 @@ public class CommandRealDelete extends Command {
 
     @Override
     public Response doExecute() {
-        store.lock();
         try {
             store.delete(target);
             store.commit();
+            
             notify( new Message(this) );
             return Response.noContent().location(new URI("/")).build();
         } catch (URISyntaxException e) {
             return Response.noContent().build();
-        } finally {
-            store.end();
         }
     }
 }

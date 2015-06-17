@@ -81,7 +81,6 @@ public class CommandGraphRegister extends CommandRegister {
 
     @Override
     public Response doExecute() {
-        store.lock();
         try {
             // Check if this entity is already registered
             RegisterItem item = store.getItem(parent +"/_" + lastSegment, false);
@@ -103,8 +102,6 @@ public class CommandGraphRegister extends CommandRegister {
             }
         } catch (URISyntaxException e) {
             throw new WebApplicationException(e);
-        } finally {
-            store.end();
         }
     }
 

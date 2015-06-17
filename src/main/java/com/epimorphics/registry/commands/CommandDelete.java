@@ -35,27 +35,22 @@ public class CommandDelete extends Command {
 
     @Override
     public Response doExecute() {
-        store.lock();
-        try {
-            RegisterItem ri = store.getItem(itemURI(), false);
-            if (ri != null) {
-                if (ri.isRegister()) {
-                    Register register = ri.getAsRegister(store);
-                    for (RegisterEntryInfo entry : store.listMembers(register)) {
-                        RegisterItem i = store.getItem(entry.getItemURI(), false);
-                        doDelete(i);
-                    }
-                    doDelete(ri);
-                } else {
-                    doDelete(ri);
+        RegisterItem ri = store.getItem(itemURI(), false);
+        if (ri != null) {
+            if (ri.isRegister()) {
+                Register register = ri.getAsRegister(store);
+                for (RegisterEntryInfo entry : store.listMembers(register)) {
+                    RegisterItem i = store.getItem(entry.getItemURI(), false);
+                    doDelete(i);
                 }
-                store.commit();
-                return Response.noContent().build();
+                doDelete(ri);
             } else {
-                throw new NotFoundException();
+                doDelete(ri);
             }
-        } finally {
-            store.end();
+            store.commit();
+            return Response.noContent().build();
+        } else {
+            throw new NotFoundException();
         }
     }
 

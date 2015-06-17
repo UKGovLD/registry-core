@@ -223,21 +223,33 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
 
         // Initialize the forwarding service from the stored forwarding records
         if (forwarder != null) {
-            for (ForwardingRecord fr : store.listDelegations()) {
-                forwarder.register(fr);
+            store.beginRead();
+            try {
+                for (ForwardingRecord fr : store.listDelegations()) {
+                    forwarder.register(fr);
+                }
+            } finally {
+                store.end();
             }
             forwarder.updateConfig();
+                
         }
         
         // Monitor the status register
         MessagingService.Process reload = new MessagingService.Process(){
             @Override
             public void processMessage(Message message) {
-                com.epimorphics.registry.core.Status.reload();
+                com.epimorphics.registry.core.Status.needsReload();
             }
         };
         String target = getBaseURI() + LIFECYCLE_REGISTER;
         getMessagingService().processMessages( new ProcessIfChanges(reload, target) );
+        store.beginRead();
+        try {
+            com.epimorphics.registry.core.Status.load();
+        } finally {
+            store.end();
+        }
         
         // Configure optional backup service
         if (backupDir != null && baseStore != null && baseStore instanceof StoreBaseImpl) {

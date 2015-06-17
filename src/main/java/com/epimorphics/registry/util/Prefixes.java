@@ -139,23 +139,29 @@ public class Prefixes {
         
         Register prefixesRegister = new Register( ResourceFactory.createResource( getPrefixRegisterURI() ) );
         StoreAPI store = Registry.get().getStore();
-        prefixesRegister.setStore( store );
-        PrefixMapping pm = PrefixMapping.Factory.create();
-        pm.setNsPrefixes( defaultPrefixes );
-        for (RegisterEntryInfo info : prefixesRegister.getMembers()) {
-            String prefix = info.getNotation();
-            if ( ! XMLChar.isValidNCName( prefix ) ) {
-                // Fall back on explicit prefix if available
-                Description defn = store.getCurrentVersion( info.getEntityURI() );
-                prefix = RDFUtil.getStringValue(defn.getRoot(), vann_prefix);
-                if (prefix == null || prefix.isEmpty() || ! XMLChar.isValidNCName( prefix ) ) {
-                    log.error("Can't find legal prefix for " + info.getEntityURI());
-                    continue;
+        
+        store.beginSafeRead();
+        try {
+            prefixesRegister.setStore( store );
+            PrefixMapping pm = PrefixMapping.Factory.create();
+            pm.setNsPrefixes( defaultPrefixes );
+            for (RegisterEntryInfo info : prefixesRegister.getMembers()) {
+                String prefix = info.getNotation();
+                if ( ! XMLChar.isValidNCName( prefix ) ) {
+                    // Fall back on explicit prefix if available
+                    Description defn = store.getCurrentVersion( info.getEntityURI() );
+                    prefix = RDFUtil.getStringValue(defn.getRoot(), vann_prefix);
+                    if (prefix == null || prefix.isEmpty() || ! XMLChar.isValidNCName( prefix ) ) {
+                        log.error("Can't find legal prefix for " + info.getEntityURI());
+                        continue;
+                    }
                 }
+                pm.setNsPrefix(prefix, info.getEntityURI());
             }
-            pm.setNsPrefix(prefix, info.getEntityURI());
+            return pm;
+        } finally {
+            store.endSafeRead();
         }
-        return pm;
    }
     
    /**

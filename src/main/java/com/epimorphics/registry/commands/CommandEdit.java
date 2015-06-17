@@ -138,34 +138,31 @@ public class CommandEdit extends Command {
             view.remove( view.listStatements(null, imp, reg).toList() );
         }
         
-        store.lock();
-        try {
-            for (RegisterItem importItem : requestItems) {
-                Resource itemR = importItem.getRoot();
-                if (view.contains(importItem.getRoot(), RDF.type)) {
-                    // An existing item
-                    RegisterItem currentItem = new RegisterItem( itemR.inModel(view) );
-                    currentItem.setEntity( importItem.getEntity().inModel(view) );
-                    
-                    if ( PatchUtil.willChange(itemR, currentItem.getRoot(), RIGID_ITEM_PROPS)
-                      || PatchUtil.willChange(importItem.getEntity(), currentItem.getEntity(), RegistryVocab.subregister) ) {
-                        applyUpdate(currentItem, importItem, true, true);
-                    }
-                } else {
-                    addToRegister(parentRegister, importItem);
+        for (RegisterItem importItem : requestItems) {
+            Resource itemR = importItem.getRoot();
+            if (view.contains(importItem.getRoot(), RDF.type)) {
+                // An existing item
+                RegisterItem currentItem = new RegisterItem( itemR.inModel(view) );
+                currentItem.setEntity( importItem.getEntity().inModel(view) );
+                
+                if ( PatchUtil.willChange(itemR, currentItem.getRoot(), RIGID_ITEM_PROPS)
+                  || PatchUtil.willChange(importItem.getEntity(), currentItem.getEntity(), RegistryVocab.subregister) ) {
+                    applyUpdate(currentItem, importItem, true, true);
                 }
+            } else {
+                addToRegister(parentRegister, importItem);
             }
-            store.commit();
-            
-            for (RegisterItem item : requestItems) {
-                notify( new Message(this, item) );
-            }
-            
+        }
+        store.commit();
+        
+        for (RegisterItem item : requestItems) {
+            notify( new Message(this, item) );
+        }
+
+        try {
             return Response.noContent().location(new URI(path)).build();
         } catch (URISyntaxException e) {
             return Response.noContent().build();
-        } finally {
-            store.end();
         }
     }
     

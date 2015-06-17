@@ -45,7 +45,6 @@ public class CommandImport extends Command {
 
     @Override
     public Response doExecute() {
-        store.lock();
         try {
             StreamRDF stream = store.importTree(target);
             RDFDataMgr.parse(stream, payloadStream, Lang.NQUADS);
@@ -54,8 +53,6 @@ public class CommandImport extends Command {
             return Response.noContent().location(new URI(path)).build();
         } catch (URISyntaxException e) {
             return Response.noContent().build();
-        } finally {
-            store.end();
         }
     }
 

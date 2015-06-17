@@ -91,10 +91,14 @@ public class TestStoreImpl {
         store.setStore(basestore);
         this.store = store;
         store.loadBootstrap(BOOTSTRAP_FILE);
+        
+        store.beginWrite();
     }
 
     @After
     public void tearDown() {
+        store.commit();
+        store.end();
         basestore = null;
         store = null;
     }
@@ -114,10 +118,8 @@ public class TestStoreImpl {
     public void testMetadataUpdate() {
         Register rootreg = (Register)store.getCurrentVersion(ROOT_REGISTER);
         rootreg.setProperty(RDFS.label, ResourceFactory.createPlainLiteral("new root"));
-        store.lock();
+        
         store.update(rootreg);
-        store.commit();
-        store.end();
 
         Resource updatedroot = store.getDescription(ROOT_REGISTER).getRoot();
         assertTrue( TestUtil.isOnlyValue(updatedroot, Version.currentVersion, null) );
@@ -172,8 +174,6 @@ public class TestStoreImpl {
     }
 
     private long addEntry(String defFile, String parentURI) {
-        store.lock();
-        
         Register parent = store.getCurrentVersion(parentURI).asRegister();
         String target = NameUtils.stripLastSlash(parentURI);
         String base = NameUtils.ensureLastSlash(parentURI);
@@ -185,9 +185,6 @@ public class TestStoreImpl {
         RegisterItem subregItem = RegisterItem.fromEntityRequest(subregR, target, true, now);
 
         store.addToRegister(parent, subregItem, now);
-        
-        store.commit();
-        store.end();
         return now.getTimeInMillis();
     }
 
@@ -216,11 +213,9 @@ public class TestStoreImpl {
         }
 
         // Update item metadata
-        store.lock();
         ri = store.getItem(ROOT_REGISTER + "reg1/_red", false);
         ri.setProperty(RegistryVocab.status, RegistryVocab.statusAccepted);
         store.update(ri, false);
-        store.commit(); store.end();
 
         ri = store.getItem(ROOT_REGISTER + "reg1/_red", true);
         assertTrue(ri.getRoot().hasProperty(RegistryVocab.status, RegistryVocab.statusAccepted));
@@ -249,29 +244,23 @@ public class TestStoreImpl {
         String base = NameUtils.ensureLastSlash(REG1);
         Model m = ModelFactory.createDefaultModel();
         m.read("file:test/red-submitter-test.ttl", base, FileUtils.langTurtle);
-
-        store.lock();
+        
         Calendar now = Calendar.getInstance();
         for (ResIterator i = m.listResourcesWithProperty(RDF.type, RegistryVocab.RegisterItem); i.hasNext();) {
             RegisterItem item = RegisterItem.fromRIRequest(i.next(), REG1, true, now);
             store.addToRegister(parent, item);
         }
-        store.commit(); store.end();
-
 
         RegisterItem ri = store.getItem(REG1 + "/_red", true);
         List<Statement> submitters = ri.getRoot().listProperties(RegistryVocab.submitter).toList();
         assertEquals(1, submitters.size());
 
-        store.lock();
         ri.getEntity().addProperty(RDFS.comment, "Updated");
         store.update(ri, true);
-        store.commit(); store.end();
 
         ri = store.getItem(REG1 + "/_red", true);
         submitters = ri.getRoot().listProperties(RegistryVocab.submitter).toList();
         assertEquals(1, submitters.size());
-
     }
 
     private List<RegisterItem> members(Register reg, boolean withEntity) {
@@ -288,6 +277,7 @@ public class TestStoreImpl {
         long ts0 = Calendar.getInstance().getTimeInMillis();
         Thread.sleep(5);
         addEntry("file:test/red.ttl", REG1);
+        
         String itemURI = ROOT_REGISTER + "reg1/_red";
         String entity = ROOT_REGISTER + "reg1/red";
         checkLiveVersion("red", entity);
@@ -316,14 +306,11 @@ public class TestStoreImpl {
     }
 
     private void checkLiveVersion(String label, String uri) {
-        store.lockStoreRead();
         Resource current = basestore.asDataset().getDefaultModel().getResource(uri);
         assertEquals(label, RDFUtil.getStringValue(current, RDFS.label));
-        store.unlockStoreRead();
     }
 
     private long doUpdate(String item, String label) {
-        store.lock();
         try {
             Thread.sleep(10, 0);
         } catch (InterruptedException e) {
@@ -336,7 +323,6 @@ public class TestStoreImpl {
         ri.updateForEntity(false, now);
         store.update(ri, true, now);
         
-        store.commit(); store.end();
         return now.getTimeInMillis();
     }
 
@@ -372,11 +358,9 @@ public class TestStoreImpl {
         Model m = ModelFactory.createDefaultModel();
         m.read("file:test/absolute-black.ttl", REG1 + "/", FileUtils.langTurtle);
         Resource ri = m.listSubjectsWithProperty(RDF.type, RegistryVocab.RegisterItem).next();
-
+        
         RegisterItem item = RegisterItem.fromRIRequest(ri, REG1, true);
-        store.lock();
         store.addToRegister(parent, item);
-        store.commit(); store.end();
 
         item = store.getItem(ROOT_REGISTER + "reg1/_black", true);
         assertEquals(ROOT_REGISTER + "reg1/_black", item.getRoot().getURI());
@@ -422,10 +406,7 @@ public class TestStoreImpl {
         createTestTree();
         assertTrue( sizeSig() > baseSize);
         
-        store.lock();
         store.delete(REG1);
-        store.commit();
-        store.end();
         
         assertEquals(baseSize, sizeSig());
     }
@@ -461,19 +442,13 @@ public class TestStoreImpl {
         File exportFile = File.createTempFile("reg-export", "nq");
         exportTo(REG1, exportFile);
         
-        store.lock();
         store.delete(REG1 + "/reg3");
-        store.commit();
-        store.end();
         
         assertTrue( sizeSig() < testSize );
         
-        store.lock();
         StreamRDF stream = store.importTree(REG1);
         FileInputStream in = new FileInputStream(exportFile);
         RDFDataMgr.parse(stream, in, Lang.NQUADS);
-        store.commit();
-        store.end();
         
         assertEquals( testSize, sizeSig() );
         

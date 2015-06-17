@@ -80,7 +80,6 @@ public class CommandTag extends Command {
         Model collectionModel = ModelFactory.createDefaultModel();
         Resource collection = collectionModel.createResource(target + "?tag=" + tag)
                 .addProperty(RDF.type, Prov.Collection);
-        store.lock();
         try {
             now = Calendar.getInstance();
             long regVersion = RDFUtil.getLongValue(register.getRoot(), OWL.versionInfo);
@@ -102,11 +101,10 @@ public class CommandTag extends Command {
             register.getRoot().addProperty(RegistryVocab.release, collection);
             store.update(register);
             store.commit();
+            
             return Response.created( new URI(collection.getURI()) ).build();
         } catch (URISyntaxException e) {
             throw new WebApiException(Response.Status.INTERNAL_SERVER_ERROR, "Illegal URL generated for tagged collection: " + collection);
-        } finally {
-            store.end();
         }
     }
 

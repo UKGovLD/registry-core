@@ -84,34 +84,29 @@ public class CommandStatusUpdate extends Command {
     
     @Override
     public Response doExecute() {
-        store.lock();
         RegisterItem ri = store.getItem(itemURI(), false);
-        try {
-            if (ri != null) {
-                String requestedStatus = getRequestedStatus();
-                if (ri.isRegister() && !lastSegment.startsWith("_")) {
-                    for (RegisterEntryInfo member : store.listMembers( ri.getAsRegister(store) )) {
-                        doStatusUpdate(store.getItem(member.getItemURI(), false), requestedStatus);
-                    }
-                } else {
-                    if (!lastSegment.startsWith("_")) {
-                        throw new WebApiException(BAD_REQUEST, "Can only update the status of a register item or whole register");
-                    }
-                    doStatusUpdate(ri, requestedStatus);
+        if (ri != null) {
+            String requestedStatus = getRequestedStatus();
+            if (ri.isRegister() && !lastSegment.startsWith("_")) {
+                for (RegisterEntryInfo member : store.listMembers( ri.getAsRegister(store) )) {
+                    doStatusUpdate(store.getItem(member.getItemURI(), false), requestedStatus);
                 }
-                store.commit();
-                
-                // Notify event
-                Message message = new Message(this);
-                message.setMessage( getRequestedStatus() );
-                notify(message);
-                
-                return Response.noContent().build();
             } else {
-                throw new NotFoundException();
+                if (!lastSegment.startsWith("_")) {
+                    throw new WebApiException(BAD_REQUEST, "Can only update the status of a register item or whole register");
+                }
+                doStatusUpdate(ri, requestedStatus);
             }
-        } finally {
-            store.end();
+            store.commit();
+            
+            // Notify event
+            Message message = new Message(this);
+            message.setMessage( getRequestedStatus() );
+            notify(message);
+            
+            return Response.noContent().build();
+        } else {
+            throw new NotFoundException();
         }
     }
 

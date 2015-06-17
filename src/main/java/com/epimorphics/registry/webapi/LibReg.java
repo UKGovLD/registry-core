@@ -87,18 +87,29 @@ public class LibReg extends ComponentBase implements LibPlugin {
         return Registry.get().getStore();
     }
 
+    private StoreAPI beginRead() {
+        StoreAPI store = getStore();
+        store.beginRead();
+        return store;
+    }
+    
     /**
      * Return a resource known to the store, wrapped for scripting
      */
     public RDFNodeWrapper getResource(String uri) {
-        if ( ! uri.startsWith("http") ) {
-            uri = Registry.get().getBaseURI() + uri;
+        StoreAPI store = beginRead();
+        try {
+            if ( ! uri.startsWith("http") ) {
+                uri = Registry.get().getBaseURI() + uri;
+            }
+            Description d = getStore().getCurrentVersion(uri);
+            if (d == null) {
+                return null;
+            }
+            return wrapNode( d.getRoot() );
+        } finally {
+            store.end();
         }
-        Description d = getStore().getCurrentVersion(uri);
-        if (d == null) {
-            return null;
-        }
-        return wrapNode( d.getRoot() );
     }
 
     private ModelWrapper wrapModel(Model m) {
@@ -114,26 +125,31 @@ public class LibReg extends ComponentBase implements LibPlugin {
      * Helper to list members of a register
      */
     public List<RegisterEntryInfo> listMembers(Object arg) {
-        Register reg = null;;
-        if (arg instanceof String) {
-            String uri = (String)arg;
-            if ( ! uri.startsWith("http") ) {
-                uri = Registry.get().getBaseURI() + uri;
-            }
-            Description d = getStore().getCurrentVersion(uri);
-            if (d != null) {
-                reg = d.asRegister();
+        StoreAPI store = beginRead();
+        try {
+            Register reg = null;;
+            if (arg instanceof String) {
+                String uri = (String)arg;
+                if ( ! uri.startsWith("http") ) {
+                    uri = Registry.get().getBaseURI() + uri;
+                }
+                Description d = getStore().getCurrentVersion(uri);
+                if (d != null) {
+                    reg = d.asRegister();
+                } else {
+                    return null;
+                }
+            } else if (arg instanceof RDFNodeWrapper) {
+                reg = new Register( ((RDFNodeWrapper)arg).asResource() );
+            } else if (arg instanceof Register) {
+                reg = (Register) arg;
             } else {
                 return null;
             }
-        } else if (arg instanceof RDFNodeWrapper) {
-            reg = new Register( ((RDFNodeWrapper)arg).asResource() );
-        } else if (arg instanceof Register) {
-            reg = (Register) arg;
-        } else {
-            return null;
+            return getStore().listMembers(reg);
+        } finally {
+            store.end();
         }
-        return getStore().listMembers(reg);
     }
 
     /**
@@ -345,7 +361,7 @@ public class LibReg extends ComponentBase implements LibPlugin {
     public List<Map<String, RDFNodeWrapper>> query(String query, Object... params) {
         String expandedQuery = PrefixUtils.expandQuery(query, Prefixes.get());
         expandedQuery = QueryUtil.substituteInQuery(expandedQuery, params);
-        ResultSet rs = Registry.get().getStore().query(expandedQuery);
+        ResultSet rs = performQuery(expandedQuery);
 
         ModelWrapper mw = new ModelWrapper( ModelFactory.createDefaultModel() );
         List<Map<String, RDFNodeWrapper>> result = new ArrayList<Map<String,RDFNodeWrapper>>();
@@ -369,10 +385,9 @@ public class LibReg extends ComponentBase implements LibPlugin {
      * its description with its entity description and return the aggregate as a wrapped model 
      */
     public ModelWrapper describeAll(String query, Object... params) {
-        StoreAPI store = Registry.get().getStore();
         String expandedQuery = PrefixUtils.expandQuery(query, Prefixes.get());
         expandedQuery = QueryUtil.substituteInQuery(expandedQuery, params);
-        ResultSet rs = store.query(expandedQuery);
+        ResultSet rs = performQuery(expandedQuery);
 
         List<String> itemURIs = new ArrayList<>();
         while (rs.hasNext()) {
@@ -381,11 +396,20 @@ public class LibReg extends ComponentBase implements LibPlugin {
         }
         
         Model aggregate = ModelFactory.createDefaultModel();
-        for (RegisterItem ri : store.fetchAll(itemURIs, true)) {
+        for (RegisterItem ri : fetchItems(itemURIs, true)) {
             aggregate.add( ri.getRoot().getModel() );
             aggregate.add( ri.getEntity().getModel() );
         }
         return new ModelWrapper(aggregate);
+    }
+    
+    private List<RegisterItem> fetchItems(List<String> itemURIs, boolean withEntity) {
+        StoreAPI store = beginRead();
+        try {
+            return store.fetchAll(itemURIs, withEntity);
+        } finally {
+            store.end();
+        }
     }
     
     /**
@@ -393,10 +417,9 @@ public class LibReg extends ComponentBase implements LibPlugin {
      * its description with its entity description and return as a sorted list of ItemMembers 
      */
     public List<ItemMember> describeAsItems(String query, Object... params) {
-        StoreAPI store = Registry.get().getStore();
         String expandedQuery = PrefixUtils.expandQuery(query, Prefixes.get());
         expandedQuery = QueryUtil.substituteInQuery(expandedQuery, params);
-        ResultSet rs = store.query(expandedQuery);
+        ResultSet rs = performQuery(expandedQuery);
 
         List<String> itemURIs = new ArrayList<>();
         while (rs.hasNext()) {
@@ -410,7 +433,7 @@ public class LibReg extends ComponentBase implements LibPlugin {
         aggregate.setNsPrefixes( Prefixes.get() );
         ModelWrapper mw = new ModelWrapper(aggregate);
         List<ItemMember> results = new ArrayList<>(itemURIs.size());
-        for (RegisterItem ri : store.fetchAll(itemURIs, true)) {
+        for (RegisterItem ri : fetchItems(itemURIs, true)) {
             aggregate.add( ri.getRoot().getModel() );
             aggregate.add( ri.getEntity().getModel() );
             
@@ -519,35 +542,44 @@ public class LibReg extends ComponentBase implements LibPlugin {
     }
 
     private String templateForResource(Resource r) {
-        if (typedTemplateIndex == null) {
-            typedTemplateIndex = new TypedTemplateIndex();
+        StoreAPI store = beginRead();
+        try {
+            if (typedTemplateIndex == null) {
+                typedTemplateIndex = new TypedTemplateIndex();
+            }
+            return typedTemplateIndex.templateFor(r);
+        } finally {
+            store.end();
         }
-        return typedTemplateIndex.templateFor(r);
     }
 
     /**
-     * Take a of facet search results (assumed over register items), fetches
+     * Take a list of facet search results (assumed over register items), fetches
      * the corresponding register items to a local model and returns a list of wrapped nodes
      * over that model.
      */
     public List<RDFNodeWrapper> wrap(List<FacetResultEntry> results) {
-        List<RDFNodeWrapper> wrappedResults = new ArrayList<>(results.size());
-        StoreAPI store = Registry.get().getStore();
-        Model model = ModelFactory.createDefaultModel();
-        ModelWrapper modelw = new ModelWrapper(model);
-        model.setNsPrefixes( Prefixes.get() );
-        for (FacetResultEntry result : results) {
-            RDFNode value = result.getItem();
-            if (value.isResource()) {
-                Resource valueR = value.asResource();
-                RegisterItem item = store.getItem(valueR.getURI(), true);
-                Resource root = item.getRoot();
-                model.add( root.getModel() );
-                model.add( item.getEntity().getModel() );
-                wrappedResults.add( new RDFNodeWrapper(modelw, root.inModel(model)) );
+        StoreAPI store = beginRead();
+        try {
+            List<RDFNodeWrapper> wrappedResults = new ArrayList<>(results.size());
+            Model model = ModelFactory.createDefaultModel();
+            ModelWrapper modelw = new ModelWrapper(model);
+            model.setNsPrefixes( Prefixes.get() );
+            for (FacetResultEntry result : results) {
+                RDFNode value = result.getItem();
+                if (value.isResource()) {
+                    Resource valueR = value.asResource();
+                    RegisterItem item = store.getItem(valueR.getURI(), true);
+                    Resource root = item.getRoot();
+                    model.add( root.getModel() );
+                    model.add( item.getEntity().getModel() );
+                    wrappedResults.add( new RDFNodeWrapper(modelw, root.inModel(model)) );
+                }
             }
+            return wrappedResults;
+        } finally {
+            store.end();
         }
-        return wrappedResults;
     }
     
     /**
@@ -577,8 +609,7 @@ public class LibReg extends ComponentBase implements LibPlugin {
         }
         String query = LABEL_QUERY.replace("$LIST$", list.toString());
         query = PrefixUtils.expandQuery(query, Prefixes.get());
-        StoreAPI store = Registry.get().getStore();
-        ResultSet results = store.query(query);
+        ResultSet results = performQuery(query);
         Model model = entity.getModelW().getModel();
         while (results.hasNext()) {
             QuerySolution row = results.next();
@@ -632,4 +663,14 @@ public class LibReg extends ComponentBase implements LibPlugin {
               + "}";
     static final String[] VARS = new String[]{"label", "name", "pref", "alt", "title"};
     static final Property[] PROPS = new Property[]{RDFS.label, FOAF.name, SKOS.prefLabel, SKOS.altLabel, DCTerms.title};
+    
+    private ResultSet performQuery(String q) {
+        StoreAPI store = Registry.get().getStore();
+        store.beginRead();
+        try {
+            return store.query(q);
+        } finally {
+            store.end();
+        }
+    }
 }

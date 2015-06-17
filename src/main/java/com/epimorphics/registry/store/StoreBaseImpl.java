@@ -32,7 +32,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.jena.riot.system.StreamRDF;
@@ -83,7 +82,7 @@ import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
 
 /**
- * Implementation of the store API which uses a triple store for persistence and
+ * Implementation of the store API which uses a local triple store for persistence and
  * indexes all registered items as they are registered. In this version all
  * current data is held in the default graph and named graphs are used for each
  * version of each defined entity.
@@ -106,117 +105,91 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     public static final String INDEXER_PARAMETER = "indexer";
 
     protected Store store;
-    protected ThreadLocal<Boolean> writeLocked = new ThreadLocal<Boolean>() {
-        @Override
-        protected Boolean initialValue() {
-            return false;
-        }
-    };
-    
-    protected AtomicInteger readLockCount = new AtomicInteger(0);
+    protected boolean inTransaction = false;
+    protected int safeBlockCount = 0;
 
-    public void setStore(Store store) {
-        this.store = store;
+    @Override
+    public synchronized void beginRead() {
+        store.lock();
+        inTransaction = true;
+    }
+    
+    @Override
+    public synchronized void beginWrite() {
+        store.lockWrite();
+        inTransaction = true;
     }
 
-    /**
-     * Provides access to underlying store implementation for management
-     * purposes only.
-     */
+    @Override
+    public void commit() {
+        store.commit();
+    }
+    
+    @Override
+    public void abort() {
+        store.abort();
+    }
+    
+    @Override
+    public synchronized void end() {
+        store.end();
+        inTransaction = false;
+    }
+    
+    @Override
+    public synchronized void beginSafeRead() {
+        if (!inTransaction) {
+            beginRead();
+            safeBlockCount++;
+        } else if (safeBlockCount > 0) {
+            safeBlockCount++;
+        }
+    }
+    
+    @Override
+    public synchronized void endSafeRead() {
+        if (safeBlockCount > 0) {
+            safeBlockCount --;
+            if (safeBlockCount == 0) {
+                end();
+            }
+        }
+    }
+
     public Store getStore() {
         return store;
     }
 
-    // Implementation note: Assumes that the underlying Store, like TDB, has
-    // per-thread transaction status so transaction state and corresponding
-    // writeLocked local are on same thread.
-
-    /**
-     * Lock the store for an update transaction
-     */
-    public void lock() {
-        store.lockWrite();
-        writeLocked.set(true);
+    // Support for testing
+    public void setStore(Store store) {
+        this.store = store;
     }
-
-    /**
-     * Commit the update transaction
-     */
-    public void commit() {
-        store.commit();
-    }
-
-    /**
-     * Finish the update transaction, if commit has not been called then abort
-     * the transaction
-     */
-    public void end() {
-        store.end();
-        writeLocked.set(false);
-    }
-
-    /**
-     * Check that the store is locked for update
-     */
-    protected void checkWriteLocked() {
-        if (!writeLocked.get()) {
-            throw new EpiException("Failed to lock store before updating");
-        }
-    }
-
-    /**
-     * Lock the store for reading. If this thread is already in a write
-     * transaction then do nothing. Otherwise maintain a count of read lock nesting level
-     */
+    
     @Override
-    public synchronized void lockStoreRead() {
-        if (!writeLocked.get()) {
-            if (readLockCount.getAndIncrement() == 0) {
-                store.lock();
-            }
+    public void storeGraph(String graphURI,Model entityModel) {
+        // Avoids Store.updateGraph because we are already in a transaction
+        Model graphModel = store.asDataset().getNamedModel(graphURI);
+        if (graphModel == null) {
+            // Probably an in-memory test store
+            graphModel = ModelFactory.createDefaultModel();
+            store.asDataset().addNamedModel(graphURI, graphModel);
+        } else {
+            graphModel.removeAll();
         }
-    }
-
-    /**
-     * Unlock the store for reading. If this thread is in a write transaction
-     * then do nothing
-     */
-    @Override
-    public void unlockStoreRead() {
-        if (!writeLocked.get()) {
-            if (readLockCount.decrementAndGet() == 0) {
-                store.end();
-            }
-        }
-    }
-
-    @Override
-    public void storeGraph(String graphURI, Model model) {
-        checkWriteLocked();
-        storeLockedGraph(graphURI, model);
+        graphModel.add(entityModel);
     }
 
     @Override
     public Model getGraph(String graphURI) {
-        lockStoreRead();
-        try {
-            Model result = ModelFactory.createDefaultModel();
-            result.add(store.asDataset().getNamedModel(graphURI));
-            return result;
-        } finally {
-            unlockStoreRead();
-        }
+        Model result = ModelFactory.createDefaultModel();
+        result.add(store.asDataset().getNamedModel(graphURI));
+        return result;
     }
 
     @Override
     public Description getDescription(String uri) {
-        lockStoreRead();
-        try {
-            Description d = asDescription(describe(uri, null));
-            return d;
-        } finally {
-            unlockStoreRead();
-        }
+        Description d = asDescription(describe(uri, null));
+        return d;
     }
 
     // Assumes store is locked
@@ -240,13 +213,8 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public Description getCurrentVersion(String uri) {
-        lockStoreRead();
-        try {
-            Description d = asDescription(doGetCurrentVersion(uri, null));
-            return d;
-        } finally {
-            unlockStoreRead();
-        }
+        Description d = asDescription(doGetCurrentVersion(uri, null));
+        return d;
     }
 
     protected Resource doGetCurrentVersion(String uri, Model dest) {
@@ -262,16 +230,11 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public Description getVersion(String uri, boolean withEntity) {
-        lockStoreRead();
-        try {
-            Description d = doGetVersion(uri, true);
-            if (d instanceof RegisterItem && withEntity) {
-                doGetEntity((RegisterItem) d, null, false);
-            }
-            return d;
-        } finally {
-            unlockStoreRead();
+        Description d = doGetVersion(uri, true);
+        if (d instanceof RegisterItem && withEntity) {
+            doGetEntity((RegisterItem) d, null, false);
         }
+        return d;
     }
 
     protected Description doGetVersion(String uri, boolean flatten) {
@@ -290,19 +253,14 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public Description getVersionAt(String uri, long time) {
-        lockStoreRead();
-        try {
-            RDFNode version = selectFirstVar("version", getDefaultModel(),
-                    VERSION_AT_QUERY, Prefixes.getDefault(), "root",
-                    ResourceFactory.createResource(uri), "time",
-                    RDFUtil.fromDateTime(time));
-            if (version != null && version.isURIResource()) {
-                return doGetVersion(version.asResource().getURI(), true);
-            } else {
-                return null;
-            }
-        } finally {
-            unlockStoreRead();
+        RDFNode version = selectFirstVar("version", getDefaultModel(),
+                VERSION_AT_QUERY, Prefixes.getDefault(), "root",
+                ResourceFactory.createResource(uri), "time",
+                RDFUtil.fromDateTime(time));
+        if (version != null && version.isURIResource()) {
+            return doGetVersion(version.asResource().getURI(), true);
+        } else {
+            return null;
         }
     }
 
@@ -317,27 +275,22 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public List<VersionInfo> listVersions(String uri) {
-        lockStoreRead();
-        try {
-            ResultSet rs = selectAll(getDefaultModel(), VERSION_LIST_QUERY,
-                    Prefixes.getDefault(),
-                    createBindings("root", ResourceFactory.createResource(uri)));
-            List<VersionInfo> results = new ArrayList<VersionInfo>();
-            while (rs.hasNext()) {
-                QuerySolution soln = rs.next();
-                VersionInfo vi = new VersionInfo(soln.getResource("version"),
-                        soln.getLiteral("info"), soln.getLiteral("from"),
-                        soln.getLiteral("to"));
-                Resource replaces = soln.getResource("replaces");
-                if (replaces != null) {
-                    vi.setReplaces(replaces.getURI());
-                }
-                results.add(vi);
+        ResultSet rs = selectAll(getDefaultModel(), VERSION_LIST_QUERY,
+                Prefixes.getDefault(),
+                createBindings("root", ResourceFactory.createResource(uri)));
+        List<VersionInfo> results = new ArrayList<VersionInfo>();
+        while (rs.hasNext()) {
+            QuerySolution soln = rs.next();
+            VersionInfo vi = new VersionInfo(soln.getResource("version"),
+                    soln.getLiteral("info"), soln.getLiteral("from"),
+                    soln.getLiteral("to"));
+            Resource replaces = soln.getResource("replaces");
+            if (replaces != null) {
+                vi.setReplaces(replaces.getURI());
             }
-            return results;
-        } finally {
-            unlockStoreRead();
+            results.add(vi);
         }
+        return results;
     }
 
     static String VERSION_LIST_QUERY = "SELECT ?version ?info ?from ?to ?replaces WHERE \n"
@@ -351,38 +304,28 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public long versionStartedAt(String uri) {
-        lockStoreRead();
-        try {
-            Resource root = getDefaultModel().getResource(uri);
-            Resource interval = root.getPropertyResourceValue(Version.interval);
-            if (interval == null)
-                return -1;
-            return RDFUtil.asTimestamp(interval
-                    .getPropertyResourceValue(Time.hasBeginning)
-                    .getProperty(Time.inXSDDateTime).getObject());
-        } finally {
-            unlockStoreRead();
-        }
+        Resource root = getDefaultModel().getResource(uri);
+        Resource interval = root.getPropertyResourceValue(Version.interval);
+        if (interval == null)
+            return -1;
+        return RDFUtil.asTimestamp(interval
+                .getPropertyResourceValue(Time.hasBeginning)
+                .getProperty(Time.inXSDDateTime).getObject());
     }
 
     @Override
     public List<EntityInfo> listEntityOccurences(String uri) {
         Resource entity = ResourceFactory.createResource(uri);
-        lockStoreRead();
-        try {
-            ResultSet matches = QueryUtil.selectAll(getDefaultModel(),
-                    ENTITY_FIND_QUERY, Prefixes.getDefault(), "entity", entity);
-            List<EntityInfo> results = new ArrayList<EntityInfo>();
-            while (matches.hasNext()) {
-                QuerySolution soln = matches.next();
-                results.add(new EntityInfo(entity, soln.getResource("item"),
-                        soln.getResource("register"), soln
-                                .getResource("status")));
-            }
-            return results;
-        } finally {
-            unlockStoreRead();
+        ResultSet matches = QueryUtil.selectAll(getDefaultModel(),
+                ENTITY_FIND_QUERY, Prefixes.getDefault(), "entity", entity);
+        List<EntityInfo> results = new ArrayList<EntityInfo>();
+        while (matches.hasNext()) {
+            QuerySolution soln = matches.next();
+            results.add(new EntityInfo(entity, soln.getResource("item"),
+                    soln.getResource("register"), soln
+                            .getResource("status")));
         }
+        return results;
     }
 
     static String ENTITY_FIND_QUERY = "SELECT * WHERE { "
@@ -393,20 +336,15 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public RegisterItem getItem(String uri, boolean withEntity) {
-        lockStoreRead();
-        try {
-            Resource root = doGetCurrentVersion(uri, null);
-            if (!root.hasProperty(RDF.type, RegistryVocab.RegisterItem)) {
-                return null;
-            }
-            RegisterItem item = new RegisterItem(root);
-            if (withEntity) {
-                doGetEntity(item, null, true);
-            }
-            return item;
-        } finally {
-            unlockStoreRead();
+        Resource root = doGetCurrentVersion(uri, null);
+        if (!root.hasProperty(RDF.type, RegistryVocab.RegisterItem)) {
+            return null;
         }
+        RegisterItem item = new RegisterItem(root);
+        if (withEntity) {
+            doGetEntity(item, null, true);
+        }
+        return item;
     }
 
     protected Resource doGetEntity(RegisterItem item, Model dest,
@@ -452,33 +390,23 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public Resource getEntity(RegisterItem item) {
-        lockStoreRead();
-        try {
-            return doGetEntity(item, null, true);
-        } finally {
-            unlockStoreRead();
-        }
+        return doGetEntity(item, null, true);
     }
 
     @Override
     public List<RegisterItem> fetchAll(List<String> itemURIs, boolean withEntity) {
-        lockStoreRead();
-        try {
-            Model shared = ModelFactory.createDefaultModel();
-            List<RegisterItem> results = new ArrayList<RegisterItem>(
-                    itemURIs.size());
-            for (String uri : itemURIs) {
-                Resource itemRoot = doGetCurrentVersion(uri, shared);
-                RegisterItem item = new RegisterItem(itemRoot);
-                if (withEntity) {
-                    doGetEntity(item, shared, true);
-                }
-                results.add(item);
+        Model shared = ModelFactory.createDefaultModel();
+        List<RegisterItem> results = new ArrayList<RegisterItem>(
+                itemURIs.size());
+        for (String uri : itemURIs) {
+            Resource itemRoot = doGetCurrentVersion(uri, shared);
+            RegisterItem item = new RegisterItem(itemRoot);
+            if (withEntity) {
+                doGetEntity(item, shared, true);
             }
-            return results;
-        } finally {
-            unlockStoreRead();
+            results.add(item);
         }
+        return results;
     }
 
     // public List<RegisterItem> doFetchMembers(Register register, boolean
@@ -513,33 +441,28 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public List<RegisterEntryInfo> listMembers(Register register) {
-        lockStoreRead();
-        try {
-            ResultSet rs = selectAll(getDefaultModel(), REGISTER_LIST_QUERY,
-                    Prefixes.getDefault(),
-                    createBindings("register", register.getRoot()));
-            List<RegisterEntryInfo> results = new ArrayList<RegisterEntryInfo>();
-            Resource priorItem = null;
-            RegisterEntryInfo prior = null;
-            while (rs.hasNext()) {
-                QuerySolution soln = rs.next();
-                Resource item = soln.getResource("item");
-                if (item.equals(priorItem)) {
-                    prior.addLabel(soln.getLiteral("label"));
-                    prior.addType(soln.getResource("type"));
-                } else {
-                    prior = new RegisterEntryInfo(soln.getResource("status"),
-                            item, soln.getResource("entity"),
-                            soln.getLiteral("label"), soln.getResource("type"),
-                            soln.getLiteral("notation"));
-                    priorItem = item;
-                    results.add(prior);
-                }
+        ResultSet rs = selectAll(getDefaultModel(), REGISTER_LIST_QUERY,
+                Prefixes.getDefault(),
+                createBindings("register", register.getRoot()));
+        List<RegisterEntryInfo> results = new ArrayList<RegisterEntryInfo>();
+        Resource priorItem = null;
+        RegisterEntryInfo prior = null;
+        while (rs.hasNext()) {
+            QuerySolution soln = rs.next();
+            Resource item = soln.getResource("item");
+            if (item.equals(priorItem)) {
+                prior.addLabel(soln.getLiteral("label"));
+                prior.addType(soln.getResource("type"));
+            } else {
+                prior = new RegisterEntryInfo(soln.getResource("status"),
+                        item, soln.getResource("entity"),
+                        soln.getLiteral("label"), soln.getResource("type"),
+                        soln.getLiteral("notation"));
+                priorItem = item;
+                results.add(prior);
             }
-            return results;
-        } finally {
-            unlockStoreRead();
         }
+        return results;
     }
 
     static String REGISTER_LIST_QUERY = "SELECT * WHERE { "
@@ -552,15 +475,10 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public boolean contains(Register register, String notation) {
-        lockStoreRead();
-        try {
-            String base = RDFUtil.getNamespace(register.getRoot());
-            Resource ri = ResourceFactory.createResource(base + "_" + notation);
-            return getDefaultModel().contains(ri, RDF.type,
-                    RegistryVocab.RegisterItem);
-        } finally {
-            unlockStoreRead();
-        }
+        String base = RDFUtil.getNamespace(register.getRoot());
+        Resource ri = ResourceFactory.createResource(base + "_" + notation);
+        return getDefaultModel().contains(ri, RDF.type,
+                RegistryVocab.RegisterItem);
     }
 
     @Override
@@ -568,7 +486,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         Model bootmodel = FileManager.get().loadModel(filename); // Load first
                                                                  // in case of
                                                                  // errors
-        lock();
+        beginWrite();
         try {
             getDefaultModel().add(bootmodel);
             commit();
@@ -584,7 +502,6 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public void addToRegister(Register register, RegisterItem item, Calendar now) {
-        checkWriteLocked();
         doUpdateItem(item, true, now);
         // Don't automatically update register, we want the option to do batch
         // updates
@@ -616,7 +533,6 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public String update(Register register, Calendar timestamp) {
-        checkWriteLocked();
         return doUpdateRegister(register.getRoot(), timestamp).getURI();
     }
 
@@ -670,7 +586,6 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     @Override
     public String update(RegisterItem item, boolean withEntity,
             Calendar timestamp) {
-        checkWriteLocked();
         return doUpdateItem(item, withEntity, timestamp);
     }
 
@@ -735,7 +650,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                 } else {
                     entityModel = entity.getModel();
                 }
-                storeLockedGraph(graphURI, entityModel);
+                storeGraph(graphURI, entityModel);
 
                 if (!item.isGraph()) {
                     getDefaultModel().add(entityModel);
@@ -746,19 +661,6 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             }
         }
         return newVersion.getURI();
-    }
-
-    private void storeLockedGraph(String graphURI, Model entityModel) {
-        // Avoids Store.updateGraph because we are already in a transaction
-        Model graphModel = store.asDataset().getNamedModel(graphURI);
-        if (graphModel == null) {
-            // Probably an in-memory test store
-            graphModel = ModelFactory.createDefaultModel();
-            store.asDataset().addNamedModel(graphURI, graphModel);
-        } else {
-            graphModel.removeAll();
-        }
-        graphModel.add(entityModel);
     }
 
     private boolean removeGraphFor(Resource oldVersion) {
@@ -830,24 +732,18 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
             // log.debug("Search query = " + query.toString());
 
-            lockStoreRead();
+            QueryExecution exec = QueryExecutionFactory.create(
+                    query.toString(), store.asDataset());
             try {
-                // DEBUG
-                QueryExecution exec = QueryExecutionFactory.create(
-                        query.toString(), store.asDataset());
-                try {
-                    ResultSet results = exec.execSelect();
-                    List<String> matches = new ArrayList<String>();
-                    while (results.hasNext()) {
-                        QuerySolution row = results.next();
-                        matches.add(row.getResource("item").getURI());
-                    }
-                    return matches;
-                } finally {
-                    exec.close();
+                ResultSet results = exec.execSelect();
+                List<String> matches = new ArrayList<String>();
+                while (results.hasNext()) {
+                    QuerySolution row = results.next();
+                    matches.add(row.getResource("item").getURI());
                 }
+                return matches;
             } finally {
-                unlockStoreRead();
+                exec.close();
             }
 
         } catch (Exception e) {
@@ -866,72 +762,67 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     // Debug support only
     public void dump() {
-        lockStoreRead();
+        beginRead();
         try {
             getDefaultModel().write(System.out, "Turtle");
         } finally {
-            unlockStoreRead();
+            end();
         }
     }
 
     @Override
     public List<ForwardingRecord> listDelegations() {
         List<ForwardingRecord> results = new ArrayList<>();
-        lockStoreRead();
-        try {
-            Model m = getDefaultModel();
-            ResultSet rs = QueryUtil.selectAll(m, DELEGATION_LIST_QUERY,
-                    Prefixes.getDefault());
-            while (rs.hasNext()) {
-                QuerySolution soln = rs.nextSolution();
-                try {
-                    Status status = Status.forResource(soln
-                            .getResource("status"));
-                    if (status.isAccepted()) {
-                        Resource record = soln.getResource("record").inModel(m);
-                        ForwardingRecord.Type type = Type.FORWARD;
-                        if (record.hasProperty(RDF.type,
-                                RegistryVocab.FederatedRegister)) {
-                            type = Type.FEDERATE;
-                        } else if (record.hasProperty(RDF.type,
-                                RegistryVocab.DelegatedRegister)) {
-                            type = Type.DELEGATE;
-                        }
-                        String target = soln.getResource("target").getURI();
-                        ForwardingRecord fr = null;
-                        if (type == Type.DELEGATE) {
-                            DelegationRecord dr = new DelegationRecord(
-                                    record.getURI(), target, type);
-                            Resource s = soln.getResource("subject");
-                            if (s != null)
-                                dr.setSubject(s);
-                            Resource p = soln.getResource("predicate");
-                            if (p != null)
-                                dr.setPredicate(p);
-                            Resource o = soln.getResource("object");
-                            if (o != null)
-                                dr.setObject(o);
-                            fr = dr;
-                        } else {
-                            fr = new ForwardingRecord(record.getURI(), target,
-                                    type);
-                            Literal code = soln.getLiteral("code");
-                            if (code != null) {
-                                fr.setForwardingCode(code.getInt());
-                            }
-                        }
-                        results.add(fr);
+        Model m = getDefaultModel();
+        ResultSet rs = QueryUtil.selectAll(m, DELEGATION_LIST_QUERY,
+                Prefixes.getDefault());
+        while (rs.hasNext()) {
+            QuerySolution soln = rs.nextSolution();
+            try {
+                Status status = Status.forResource(soln
+                        .getResource("status"));
+                if (status.isAccepted()) {
+                    Resource record = soln.getResource("record").inModel(m);
+                    ForwardingRecord.Type type = Type.FORWARD;
+                    if (record.hasProperty(RDF.type,
+                            RegistryVocab.FederatedRegister)) {
+                        type = Type.FEDERATE;
+                    } else if (record.hasProperty(RDF.type,
+                            RegistryVocab.DelegatedRegister)) {
+                        type = Type.DELEGATE;
                     }
-                } catch (Exception e) {
-                    log.error(
-                            "Bad delegation record for " + soln.get("record"),
-                            e);
+                    String target = soln.getResource("target").getURI();
+                    ForwardingRecord fr = null;
+                    if (type == Type.DELEGATE) {
+                        DelegationRecord dr = new DelegationRecord(
+                                record.getURI(), target, type);
+                        Resource s = soln.getResource("subject");
+                        if (s != null)
+                            dr.setSubject(s);
+                        Resource p = soln.getResource("predicate");
+                        if (p != null)
+                            dr.setPredicate(p);
+                        Resource o = soln.getResource("object");
+                        if (o != null)
+                            dr.setObject(o);
+                        fr = dr;
+                    } else {
+                        fr = new ForwardingRecord(record.getURI(), target,
+                                type);
+                        Literal code = soln.getLiteral("code");
+                        if (code != null) {
+                            fr.setForwardingCode(code.getInt());
+                        }
+                    }
+                    results.add(fr);
                 }
+            } catch (Exception e) {
+                log.error(
+                        "Bad delegation record for " + soln.get("record"),
+                        e);
             }
-            return results;
-        } finally {
-            unlockStoreRead();
         }
+        return results;
     }
 
     static String DELEGATION_LIST_QUERY = "SELECT * WHERE {"
@@ -959,17 +850,12 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public ResultSet query(String query) {
-        lockStoreRead();
+        QueryExecution exec = QueryExecutionFactory.create(query,
+                store.asDataset());
         try {
-            QueryExecution exec = QueryExecutionFactory.create(query,
-                    store.asDataset());
-            try {
-                return ResultSetFactory.copyResults(exec.execSelect());
-            } finally {
-                exec.close();
-            }
+            return ResultSetFactory.copyResults(exec.execSelect());
         } finally {
-            unlockStoreRead();
+            exec.close();
         }
     }
 
@@ -993,7 +879,6 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     }
     
     protected void delete(RegisterItem item) {
-        checkWriteLocked();
         if ( item.isRegister() ) {
             Register register = item.getAsRegister(this);
             for (RegisterEntryInfo ei : listMembers(register )) {
@@ -1076,12 +961,10 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     @Override
     public void exportTree(String uri, StreamRDF out) {
         RegisterItem item = asItem(uri);
-        lockStoreRead();
         out.start();
         try {
             doExportTree(item, out);
         } finally {
-            unlockStoreRead();
             out.finish();
         }
     }
@@ -1105,7 +988,6 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     
     @Override
     public StreamRDF importTree(String uri) {
-        checkWriteLocked();
         RegisterItem item = asItem(uri);
         if (item != null) {
             delete(item);

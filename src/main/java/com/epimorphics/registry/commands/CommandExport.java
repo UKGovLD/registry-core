@@ -50,7 +50,9 @@ public class CommandExport extends Command {
             public void write(OutputStream output) throws IOException,
                     WebApplicationException {
                 StreamRDF rdfstream = StreamRDFWriter.getWriterStream(output, Lang.NQUADS);
+                store.beginRead();
                 store.exportTree(itemURI, rdfstream);
+                store.end();
             }
         };
         

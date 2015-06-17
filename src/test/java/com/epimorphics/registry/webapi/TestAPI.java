@@ -40,8 +40,10 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.junit.Test;
 
 import com.epimorphics.rdfutil.RDFUtil;
+import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.csv.CSVPayloadRead;
+import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.util.JSONLDSupport;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.Ldbp_orig;
@@ -584,18 +586,25 @@ public class TestAPI extends TomcatTestBase {
         // Update of prefixes depends on the background message thread, this is fragile to test for
         int trycount = 0;
         boolean passed = false;
-        while (trycount < 10 && !passed) {
-            trycount++;
-            pm = Prefixes.get().getNsPrefixMap();
-            if (pm.containsKey("xyz")) {
-                assertTrue(pm.containsKey("xyz"));
-                assertEquals("http://example.com/xyz", pm.get("xyz"));
-                passed = true;
-            } else {
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {};
+        
+        StoreAPI store = Registry.get().getStore();
+        store.beginRead();
+        try {
+            while (trycount < 10 && !passed) {
+                trycount++;
+                pm = Prefixes.get().getNsPrefixMap();
+                if (pm.containsKey("xyz")) {
+                    assertTrue(pm.containsKey("xyz"));
+                    assertEquals("http://example.com/xyz", pm.get("xyz"));
+                    passed = true;
+                } else {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {};
+                }
             }
+        } finally {
+            store.end();
         }
     }
 

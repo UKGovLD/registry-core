@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.epimorphics.rdfutil.RDFUtil;
+import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -178,6 +179,7 @@ public class Status {
      * Return true if this status is an instance of the target status category
      */
     public boolean isA(Status target) {
+        load();
         if (target == null) return true;
         if (this.equals(target)) {
             return true;
@@ -195,6 +197,7 @@ public class Status {
      * The target should be a concrete (leaf) status, otherwise will return false.
      */
     public boolean legalNextState(Status target) {
+        load();
         if (this.equals(target)) return true;
         for (Status n : successors) {
             if ( n.equals(target) ) {
@@ -207,9 +210,8 @@ public class Status {
     /**
      * Force reload of the status register
      */
-    public synchronized static void reload() {
+    public synchronized static void needsReload() {
         needsLoad = true;
-        load();
     }
     
     /**
@@ -219,57 +221,64 @@ public class Status {
         if (needsLoad) {
             needsLoad = false;
 
-            // Reset back to just builtins
-            statusIndex = new HashMap<String, Status>();
-            for (Status s : new Status[]{Any, NotAccepted, Submitted, Reserved, Invalid, Accepted, Valid, Deprecated, Superseded, Retired,Stable, Experimental}) {
-                s.reset();
-                addStatus(s);
-            }
-            Reserved.addSuccessor(Submitted);
-
-            Description d = null;
-            
-            if (Registry.get() != null) { // Guard for test cases
-                String registerURI = Registry.get().getBaseURI() + LIFECYCLE_REGISTER;
-                d = Registry.get().getStore().getDescription(registerURI);
-            }
-            if (d instanceof Register) {
-                Register register = (Register) d;
-                log.info("Loading custom status lifecycle");
-        
-                Model view = ModelFactory.createDefaultModel();
-                List<Resource> members = new ArrayList<>();
-                register.constructView(view, false, null, 0, -1, -1, members);
-            
-                for (Resource member : members) {
-                    Status s = new Status(member, RDFUtil.getLabel(member));
+            StoreAPI store = Registry.get().getStore();
+            store.beginSafeRead();
+            try {
+                // Reset back to just builtins
+                statusIndex = new HashMap<String, Status>();
+                for (Status s : new Status[]{Any, NotAccepted, Submitted, Reserved, Invalid, Accepted, Valid, Deprecated, Superseded, Retired,Stable, Experimental}) {
+                    s.reset();
                     addStatus(s);
-                    Resource parent = RDFUtil.getResourceValue(member, SKOS.broader);
-                    if (parent != null) {
-                        s.setParent( forResource(parent) );
-                    }
-                    s.setPresentation( RDFUtil.getStringValue(member, RegistryVocab.presentation, PRES_DEFAULT) );
-                    s.addSuccessor(Invalid);
-                    for (Status suc : getStatusValues(member, RegistryVocab.nextState)) {
-                        s.addSuccessor(suc);
-                    }
-                    for (Status p : getStatusValues(member, RegistryVocab.priorState)) {
-                        p.addSuccessor(s);
-                    }
                 }
-            } else {
-                log.info("Setting default status lifecycle");
-                // No custom lifecycle found
-                Submitted.addSuccessor(Stable);
-                Submitted.addSuccessor(Experimental);
+                Reserved.addSuccessor(Submitted);
+    
+                Description d = null;
                 
-                Stable.addSuccessor(Retired);
-                Stable.addSuccessor(Superseded);
+                if (Registry.get() != null) { // Guard for test cases
+                    String registerURI = Registry.get().getBaseURI() + LIFECYCLE_REGISTER;
+                    d = store.getDescription(registerURI);
+                }
+                if (d instanceof Register) {
+                    Register register = (Register) d;
+                    log.info("Loading custom status lifecycle");
+            
+                    Model view = ModelFactory.createDefaultModel();
+                    List<Resource> members = new ArrayList<>();
+                    register.constructView(view, false, null, 0, -1, -1, members);
                 
-                Experimental.addSuccessor(Stable);
-                Experimental.addSuccessor(Retired);
-                Experimental.addSuccessor(Superseded);
+                    for (Resource member : members) {
+                        Status s = new Status(member, RDFUtil.getLabel(member));
+                        addStatus(s);
+                        Resource parent = RDFUtil.getResourceValue(member, SKOS.broader);
+                        if (parent != null) {
+                            s.setParent( forResource(parent) );
+                        }
+                        s.setPresentation( RDFUtil.getStringValue(member, RegistryVocab.presentation, PRES_DEFAULT) );
+                        s.addSuccessor(Invalid);
+                        for (Status suc : getStatusValues(member, RegistryVocab.nextState)) {
+                            s.addSuccessor(suc);
+                        }
+                        for (Status p : getStatusValues(member, RegistryVocab.priorState)) {
+                            p.addSuccessor(s);
+                        }
+                    }
+                } else {
+                    log.info("Setting default status lifecycle");
+                    // No custom lifecycle found
+                    Submitted.addSuccessor(Stable);
+                    Submitted.addSuccessor(Experimental);
+                    
+                    Stable.addSuccessor(Retired);
+                    Stable.addSuccessor(Superseded);
+                    
+                    Experimental.addSuccessor(Stable);
+                    Experimental.addSuccessor(Retired);
+                    Experimental.addSuccessor(Superseded);
+                }
+            } finally {
+                store.endSafeRead();
             }
+
             printLifecycle(Reserved, new HashSet<Status>());
         }
     }

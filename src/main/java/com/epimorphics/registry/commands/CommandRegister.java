@@ -178,43 +178,38 @@ public class CommandRegister extends Command {
     @Override
     public Response doExecute() {
 
-        store.lock();
-        try {
-            Resource location = null;
-            if (parameters.containsKey(Parameters.BATCH_MANAGED) || parameters.containsKey(Parameters.BATCH_REFERENCED)) {
-                location = batchRegister(parentRegister);
+        Resource location = null;
+        if (parameters.containsKey(Parameters.BATCH_MANAGED) || parameters.containsKey(Parameters.BATCH_REFERENCED)) {
+            location = batchRegister(parentRegister);
+        } else {
+            if (payload.contains(null, RDF.type, RegistryVocab.RegisterItem)) {
+                for (ResIterator ri = payload.listSubjectsWithProperty(RDF.type, RegistryVocab.RegisterItem); ri.hasNext();) {
+                    Resource itemSpec = ri.next();
+                    location = register(parentRegister, itemSpec, true, false);
+                }
             } else {
-                if (payload.contains(null, RDF.type, RegistryVocab.RegisterItem)) {
-                    for (ResIterator ri = payload.listSubjectsWithProperty(RDF.type, RegistryVocab.RegisterItem); ri.hasNext();) {
-                        Resource itemSpec = ri.next();
-                        location = register(parentRegister, itemSpec, true, false);
-                    }
-                } else {
-                    Collection<Resource> entities = findEntities();
-                    if (entities.isEmpty()) {
-                        throw new WebApiException(Response.Status.BAD_REQUEST, "No items or entities found");
-                    }
-                    for (Resource entity : entities) {
-                        location = register(parentRegister, entity, false, false);
-                    }
+                Collection<Resource> entities = findEntities();
+                if (entities.isEmpty()) {
+                    throw new WebApiException(Response.Status.BAD_REQUEST, "No items or entities found");
+                }
+                for (Resource entity : entities) {
+                    location = register(parentRegister, entity, false, false);
                 }
             }
-            // Update the register itself only after all the items have been registered
-            // TODO could have consistent date stamp across these if we want
-            store.update(parentRegister);
-            store.commit();
-            
-            for (RegisterItem item : notifications) {
-                notify( new Message(this, item) );
-            }
+        }
+        // Update the register itself only after all the items have been registered
+        // TODO could have consistent date stamp across these if we want
+        store.update(parentRegister);
+        store.commit();
+        
+        for (RegisterItem item : notifications) {
+            notify( new Message(this, item) );
+        }
 
-            try {
-                return Response.created(new URI(location.getURI())).build();
-            } catch (URISyntaxException e) {
-                throw new EpiException(e);
-            }
-        } finally {
-            store.end();
+        try {
+            return Response.created(new URI(location.getURI())).build();
+        } catch (URISyntaxException e) {
+            throw new EpiException(e);
         }
     }
 

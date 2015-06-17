@@ -47,34 +47,43 @@ import com.hp.hpl.jena.rdf.model.Resource;
 //                    raw RDF storage and this application-centred API?
 
 public interface StoreAPI {
-
+    
     /**
-     * Lock the store for an update transaction.
-     * Should be called before an API action that involves a store update.
+     * Begin a read transaction. 
      */
-    public void lock();
+    public void beginRead();
+    
+    /**
+     * Begin a write transaction
+     */
+    public void beginWrite();
 
     /**
-     * Commit the update transaction
+     * Commit a write transaction
      */
     public void commit();
-    
-    /**
-     * Finish the update transaction, if commit has not been called then abort the transaction
-     */
-    public void end();
 
     /**
-     * Lock the store for reading.
-     * If this thread is already in a write transaction then do nothing.
+     * Abort a write transaction
      */
-    public void lockStoreRead();
+    public void abort();
     
     /**
-     * Unlock the store for reading.
-     * If this thread is in a write transaction then do nothing
+     * Finish a transaction. If this is a write transaction and commit has not been called
+     * then the transaction is aborted.
      */
-    public void unlockStoreRead();
+    public void end();
+    
+    /**
+     * Begin a safe read block. If the store is already in a transaction this is a no-op, otherwise
+     * it starts a read transaction.
+     */
+    public void beginSafeRead();
+    
+    /**
+     * End a safe read block. If the transaction was created by the corresponding beginSafeRead then close the read transaction.
+     */
+    public void endSafeRead();
 
     // --- Methods for access versions of resource descriptions ---
 

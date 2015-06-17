@@ -52,8 +52,13 @@ public class CachingStore implements StoreAPI {
     }
 
     @Override
-    public void lock() {
-        store.lock();
+    public void beginRead() {
+        store.beginRead();
+    }
+    
+    @Override
+    public void beginWrite() {
+        store.beginWrite();
     }
 
     @Override
@@ -62,18 +67,23 @@ public class CachingStore implements StoreAPI {
     }
 
     @Override
+    public void abort() {
+        store.abort();
+    }
+    
+    @Override
     public void end() {
         store.end();
     }
     
     @Override
-    public void lockStoreRead() {
-        store.lockStoreRead();
+    public synchronized void beginSafeRead() {
+        store.beginSafeRead();
     }
     
     @Override
-    public void unlockStoreRead() {
-        store.unlockStoreRead();
+    public synchronized void endSafeRead() {
+        store.endSafeRead();
     }
 
     @Override
