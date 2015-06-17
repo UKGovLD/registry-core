@@ -62,9 +62,9 @@ public class ConcurrencyTest extends TomcatTestBase {
 
     public static void main(String[] args) throws Exception {
         int nthreads = 10;
-        int nreads = 1000;
-        int nwrites = 100;
-        int delay = 5;
+        int nreads = 10000;
+        int nwrites = 200;
+        int delay = 10;
         
         ConcurrencyTest test = new ConcurrencyTest();
         test.containerStart();
@@ -170,11 +170,7 @@ public class ConcurrencyTest extends TomcatTestBase {
             public void run() {
                 for (int i = 0; i < iterations; i++) {
                     if ( !skewedDelay(delay) ) return;
-                    try {
-                        assertTrue( registerList() > 0 );
-                    } catch (Exception e) {
-                        System.err.println("Error during read: " + e);
-                    }
+                    assertTrue( registerList() > 0 );
                 }
             }
             
