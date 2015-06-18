@@ -30,7 +30,7 @@ import java.net.URISyntaxException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
@@ -239,14 +239,15 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
         MessagingService.Process reload = new MessagingService.Process(){
             @Override
             public void processMessage(Message message) {
-                com.epimorphics.registry.core.Status.needsReload();
+                Status.needsReload();
             }
         };
         String target = getBaseURI() + LIFECYCLE_REGISTER;
         getMessagingService().processMessages( new ProcessIfChanges(reload, target) );
         store.beginRead();
         try {
-            com.epimorphics.registry.core.Status.load();
+            Status.needsReload();
+            Status.load();
         } finally {
             store.end();
         }
@@ -389,7 +390,7 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
         try {
             uri = new URI( "/X/" + uriTarget);
         } catch (URISyntaxException e) {
-            throw new WebApiException(Status.BAD_REQUEST, "Illegal URI");
+            throw new WebApiException(BAD_REQUEST, "Illegal URI");
         }
         String encPath = uri.getRawPath().replaceFirst("/X/", "");
         String target = UriComponent.decode(encPath, UriComponent.Type.PATH);

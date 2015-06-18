@@ -221,23 +221,19 @@ public class Status {
         if (needsLoad) {
             needsLoad = false;
 
+            if (Registry.get() == null) { // Guard for test cases
+                resetStatus();
+                setDefaultLifecycle();
+                return;
+            }
+
             StoreAPI store = Registry.get().getStore();
             store.beginSafeRead();
             try {
-                // Reset back to just builtins
-                statusIndex = new HashMap<String, Status>();
-                for (Status s : new Status[]{Any, NotAccepted, Submitted, Reserved, Invalid, Accepted, Valid, Deprecated, Superseded, Retired,Stable, Experimental}) {
-                    s.reset();
-                    addStatus(s);
-                }
-                Reserved.addSuccessor(Submitted);
+                resetStatus();
     
-                Description d = null;
-                
-                if (Registry.get() != null) { // Guard for test cases
-                    String registerURI = Registry.get().getBaseURI() + LIFECYCLE_REGISTER;
-                    d = store.getDescription(registerURI);
-                }
+                String registerURI = Registry.get().getBaseURI() + LIFECYCLE_REGISTER;
+                Description d = store.getDescription(registerURI);
                 if (d instanceof Register) {
                     Register register = (Register) d;
                     log.info("Loading custom status lifecycle");
@@ -263,17 +259,7 @@ public class Status {
                         }
                     }
                 } else {
-                    log.info("Setting default status lifecycle");
-                    // No custom lifecycle found
-                    Submitted.addSuccessor(Stable);
-                    Submitted.addSuccessor(Experimental);
-                    
-                    Stable.addSuccessor(Retired);
-                    Stable.addSuccessor(Superseded);
-                    
-                    Experimental.addSuccessor(Stable);
-                    Experimental.addSuccessor(Retired);
-                    Experimental.addSuccessor(Superseded);
+                    setDefaultLifecycle();
                 }
             } finally {
                 store.endSafeRead();
@@ -281,6 +267,30 @@ public class Status {
 
             printLifecycle(Reserved, new HashSet<Status>());
         }
+    }
+
+    private static void setDefaultLifecycle() {
+        log.info("Setting default status lifecycle");
+        // No custom lifecycle found
+        Submitted.addSuccessor(Stable);
+        Submitted.addSuccessor(Experimental);
+        
+        Stable.addSuccessor(Retired);
+        Stable.addSuccessor(Superseded);
+        
+        Experimental.addSuccessor(Stable);
+        Experimental.addSuccessor(Retired);
+        Experimental.addSuccessor(Superseded);
+    }
+
+    private static void resetStatus() {
+        // Reset back to just builtins
+        statusIndex = new HashMap<String, Status>();
+        for (Status s : new Status[]{Any, NotAccepted, Submitted, Reserved, Invalid, Accepted, Valid, Deprecated, Superseded, Retired,Stable, Experimental}) {
+            s.reset();
+            addStatus(s);
+        }
+        Reserved.addSuccessor(Submitted);
     }
     
     // Log lifecycle summary, mostly for debugging
