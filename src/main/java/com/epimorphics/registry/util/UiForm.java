@@ -28,6 +28,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.vocab.Ui;
 import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -53,9 +54,15 @@ public class UiForm {
     }
 
     public static Resource create(MultivaluedMap<String, String> form, String target) {
-        String specURI = form.getFirst(FORM_TYPE_FIELD);
-        UiForm proc = new UiForm(Registry.get().getStore().getCurrentVersion(specURI).getRoot());
-        return proc.make(form, target);
+        StoreAPI store = Registry.get().getStore();
+        store.beginRead();
+        try {
+            String specURI = form.getFirst(FORM_TYPE_FIELD);
+            UiForm proc = new UiForm(store.getCurrentVersion(specURI).getRoot());
+            return proc.make(form, target);
+        } finally {
+            store.end();
+        }
     }
 
     public Resource make(MultivaluedMap<String, String> form, String target) {
