@@ -120,13 +120,13 @@ ui:templatePriority a owl:DatatypeProperty;
 # Hierachical view Support
 ui:hierarchyChildProperty a rdfs:Property;
     rdfs:label "hierarchy child property"@en;
-    rdfs:comment "Specifies a path from a parent not in a hierarchical register to a child node. If the values is a resource then it assumed to be a simple direct property. It is a literal then it is assumed to be a syntactically legal SPARQL path expression."@en;
+    rdfs:comment "Specifies a path from a parent node in a hierarchical register to a child node. If the value of this property is a resource then it assumed to be a simple direct property (e.g. `skos:narrower` or `org:hasSubOrganization`). If it is a literal then it is assumed to be a syntactically legal SPARQL path expression that can be used to navigate from the parent to the child."@en;
     rdfs:domain reg:Register ;
     .
 
 ui:hierarchyRootProperty a rdfs:Property ;
     rdfs:label "hierarchy root property"@en;
-    rdfs:comment "For a register that can be viewed as a hierarchy, the value of this property gives a property possessed by any root entries."@en;
+    rdfs:comment "For a register that can be viewed as a hierarchy, the value of this property gives a property possessed by any root entries. The value that such a property has is not relevant, though a common pattern is to use `skos:topConceptOf` in which case the value will be the register itself."@en;
     rdfs:domain reg:Register ;
     .
 
