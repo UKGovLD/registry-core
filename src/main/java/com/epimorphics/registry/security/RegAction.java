@@ -35,6 +35,7 @@ public enum RegAction {
     Force,
     Grant,
     GrantAdmin,
+    RealDelete,
     WildCard;
 
     public static RegAction forString(String param) {

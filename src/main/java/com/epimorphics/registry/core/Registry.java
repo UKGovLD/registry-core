@@ -26,23 +26,30 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Map;
 
-import javax.servlet.ServletContext;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.epimorphics.appbase.core.App;
+import com.epimorphics.appbase.core.ComponentBase;
+import com.epimorphics.appbase.core.Shutdown;
+import com.epimorphics.appbase.core.Startup;
+import com.epimorphics.appbase.templates.VelocityRender;
+import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.rdfutil.ModelWrapper;
 import com.epimorphics.registry.core.Command.Operation;
 import com.epimorphics.registry.core.ForwardingRecord.Type;
 import com.epimorphics.registry.message.LocalMessagingService;
+import com.epimorphics.registry.message.Message;
 import com.epimorphics.registry.message.MessagingService;
+import com.epimorphics.registry.message.ProcessIfChanges;
 import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.security.UserStore;
 import com.epimorphics.registry.store.BackupService;
@@ -51,13 +58,7 @@ import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.store.StoreBaseImpl;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
-import com.epimorphics.server.core.Service;
-import com.epimorphics.server.core.ServiceBase;
-import com.epimorphics.server.core.ServiceConfig;
-import com.epimorphics.server.core.Shutdown;
-import com.epimorphics.server.templates.VelocityRender;
-import com.epimorphics.server.webapi.WebApiException;
-import com.epimorphics.server.webapi.facets.FacetService;
+import com.epimorphics.registry.webapi.facets.FacetService;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.util.FileUtil;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -65,6 +66,7 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.util.FileUtils;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.sun.jersey.api.uri.UriComponent;
+import static com.epimorphics.registry.core.Status.LIFECYCLE_REGISTER;
 
 /**
  * This the primary configuration point for the Registry.
@@ -78,7 +80,7 @@ import com.sun.jersey.api.uri.UriComponent;
  * <ul>
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
-public class Registry extends ServiceBase implements Service, Shutdown {
+public class Registry extends ComponentBase implements Startup, Shutdown {
     static final Logger log = LoggerFactory.getLogger( Registry.class );
 
     public static final String VELOCITY_SERVICE = "velocity";
@@ -101,115 +103,156 @@ public class Registry extends ServiceBase implements Service, Shutdown {
     public static final int DEFAULT_PAGE_SIZE = 50;
 
     protected StoreAPI store;
+    protected long cacheSize = -1;
     protected String baseURI;
-    protected int pageSize;
+    protected long pageSize = DEFAULT_PAGE_SIZE;
     protected ForwardingService forwarder;
     protected String logDir;
     protected UserStore userStore;
-    protected MessagingService messageService;
+    protected MessagingService messageService = new LocalMessagingService();
     protected FacetService facetService;
     protected BackupService backupService;
-
-
-    @Override
-    public void init(Map<String, String> config, ServletContext context) {
-        this.config = config;
-        baseURI = getRequiredParam(BASE_URI_PARAM);
+    protected String bootFile;
+    protected String bootdirs;
+    protected VelocityRender velocity;
+    protected String backupDir;
+    protected boolean redirectToHttpsOnLogin = false;
+    
+    public void setBaseUri(String uri) {
+        baseURI = uri;
         if (baseURI.endsWith("/")) {
             baseURI = baseURI.substring(0, baseURI.length() -1 );
         }
-        if (config.containsKey(PAGE_SIZE_PARAM)) {
-            pageSize = Integer.parseInt(config.get(PAGE_SIZE_PARAM));
-        } else {
-            pageSize = DEFAULT_PAGE_SIZE;
-        }
+    }
+
+    // Just for backward compatibility
+    public void setBaseURI(String uri) {
+        setBaseUri(uri);
+    }
+
+    public void setStore( StoreAPI store ) {
+        this.store = store;
+    }
+    
+    public void setCacheSize(long size) {
+        this.cacheSize = size;
+    }
+    
+    public void setPageSize(long size) {
+        this.pageSize = size;
+    }
+    
+    public void setMessageService( MessagingService service ) {
+        messageService = service;
+    }
+    
+    public void setBootSpec(String file) {
+        bootFile = file;
+    }
+    
+    public void setSystemBoot(String dirs) {
+        bootdirs = dirs;
+    }
+    
+    public void setVelocity(VelocityRender velocity) {
+        this.velocity = velocity;
+    }
+    
+    public VelocityRender getVelocity() {
+        return velocity;
+    }
+    
+    public void setForwarder(ForwardingService service) {
+        this.forwarder = service;
+    }
+    
+    public void setLog(String logdir) {
+        this.logDir = expandFileLocation(logdir);
+        FileUtil.ensureDir(this.logDir);
+    }
+    
+    public void setUserStore(UserStore store) {
+        this.userStore = store;
+    }
+    
+    public void setBackupDir(String dir) {
+        backupDir = expandFileLocation(dir);
+    }
+    
+    public void setFacetService(FacetService service) {
+        this.facetService = service;
+    }
+    
+    public boolean isRedirectToHttpsOnLogin() {
+        return redirectToHttpsOnLogin;
+    }
+
+    public void setRedirectToHttpsOnLogin(boolean redirectToHttpsOnLogin) {
+        this.redirectToHttpsOnLogin = redirectToHttpsOnLogin;
     }
 
     @Override
-    public void postInit() {
-        StoreAPI baseStore = null;
+    public void startup(App app) {
+        super.startup(app);
+
+        require(store, STORE_PARAM);
+        require(bootFile, BOOT_FILE_PARAM);
         
-        // Locate the configured store and optionally wrap it in a cache
-        try {
-            baseStore = getNamedService(getRequiredParam(STORE_PARAM), StoreAPI.class);
-            String cacheSizeStr = config.get(CACHE_SIZE_PARAM);
-            if (cacheSizeStr != null) {
-                int cacheSize = Integer.parseInt(cacheSizeStr);
-                store = new CachingStore(baseStore, cacheSize);
-            } else {
-                store = baseStore;
-            }
-        } catch (Exception e) {
-            log.error("Misconfigured StoreAPI implementation", e);
+        StoreAPI baseStore = store;
+        if (cacheSize > 1) {
+            store = new CachingStore(store, (int)cacheSize);
         }
-
         registry = this;   // Assumes singleton registry
-
-        // Configure the messaging service
-        String msName = config.get(MESSAGE_SERVICE_PARAM);
-        if (msName != null) {
-            messageService = getNamedService(msName, MessagingService.class);
-        }
-        if (messageService == null) {
-            messageService = new LocalMessagingService();
-        }
 
         // Initialize the registry RDF store from the bootstrap registers if needed
         Description root = store.getDescription(getBaseURI() + "/");
         if (root == null) {
             // Blank store, need to install a bootstrap root registers
-            for(String bootSrc : getRequiredFileParam(BOOT_FILE_PARAM).split("\\|")) {
-                log.info("Loading bootstrap file " + bootSrc);
-                store.loadBootstrap( bootSrc );
+            for(String bootSrc : bootFile.split("\\|")) {
+                log.info("Loading bootstrap file " + expandFileLocation(bootSrc));
+                store.loadBootstrap( expandFileLocation(bootSrc) );
             }
-            String bootdirs = config.get(SYSTEM_BOOTSTRAP_DIR_PARAM);
             if (bootdirs != null) {
                 for (String bootdir : bootdirs.split("\\|")) {
-                    bootdir = ServiceConfig.get().expandFileLocation( bootdir );
+                    bootdir = expandFileLocation( bootdir );
                     loadInitialRegisterTree(bootdir);
                 }
             }
             log.info("Installed bootstrap root register");
         }
 
-        // Configure the velocity renderer
-        VelocityRender velocity = ServiceConfig.get().getServiceAs(Registry.VELOCITY_SERVICE, VelocityRender.class);
-        if (velocity != null) {
-            velocity.setPrefixes( Prefixes.get() );
-        }
-
         // Initialize the forwarding service from the stored forwarding records
-        String fname = config.get(FORWARDER_PARAM);
-        if (fname != null) {
-            forwarder = getNamedService(fname, ForwardingService.class);
-
-            for (ForwardingRecord fr : store.listDelegations()) {
-                forwarder.register(fr);
+        if (forwarder != null) {
+            store.beginRead();
+            try {
+                for (ForwardingRecord fr : store.listDelegations()) {
+                    forwarder.register(fr);
+                }
+            } finally {
+                store.end();
             }
             forwarder.updateConfig();
+                
         }
-
-        // Configure the log area
-        logDir = config.get(LOG_DIR_PARAM);
-        if (logDir != null) {
-            FileUtil.ensureDir(logDir);
-            logDir = ServiceConfig.get().expandFileLocation( logDir );
-        }
-
-        // Configure the authorization store
-        String usName = config.get(USERSTORE_PARAM);
-        if (usName != null) {
-            userStore = getNamedService(usName, UserStore.class);
-        }
-
-        // Configure optional facet service
-        String fsName = config.get(FACET_SERVICE_PARAM);
-        if (fsName != null) {
-            facetService = getNamedService(fsName, FacetService.class);
+        
+        // Monitor the status register
+        MessagingService.Process reload = new MessagingService.Process(){
+            @Override
+            public void processMessage(Message message) {
+                Status.needsReload();
+            }
+        };
+        String target = getBaseURI() + LIFECYCLE_REGISTER;
+        getMessagingService().processMessages( new ProcessIfChanges(reload, target) );
+        store.beginRead();
+        try {
+            Status.needsReload();
+            Status.load();
+        } finally {
+            store.end();
         }
         
         // Configure optional backup service
-        String backupDir = getFileParam(BACKUP_DIR_PARAM);
         if (backupDir != null && baseStore != null && baseStore instanceof StoreBaseImpl) {
             backupService = new BackupService(backupDir, ((StoreBaseImpl)baseStore).getStore());
         } else {
@@ -297,7 +340,7 @@ public class Registry extends ServiceBase implements Service, Shutdown {
         return store;
     }
 
-    public int getPageSize() {
+    public long getPageSize() {
         return pageSize;
     }
 
@@ -345,11 +388,11 @@ public class Registry extends ServiceBase implements Service, Shutdown {
         Operation op = Operation.valueOf(operation);
         URI uri;
         try {
-            uri = new URI(uriTarget);
+            uri = new URI( "/X/" + uriTarget);
         } catch (URISyntaxException e) {
-            throw new EpiException(e);
+            throw new WebApiException(BAD_REQUEST, "Illegal URI");
         }
-        String encPath = uri.getRawPath();
+        String encPath = uri.getRawPath().replaceFirst("/X/", "");
         String target = UriComponent.decode(encPath, UriComponent.Type.PATH);
         String queries = uriTarget;
         int split = queries.indexOf("?");
@@ -407,4 +450,5 @@ public class Registry extends ServiceBase implements Service, Shutdown {
     public void shutdown() {
         Prefixes.shutdown();
     }
+    
 }

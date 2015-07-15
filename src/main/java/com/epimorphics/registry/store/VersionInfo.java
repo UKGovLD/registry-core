@@ -33,14 +33,14 @@ import com.hp.hpl.jena.rdf.model.Resource;
 public class VersionInfo {
 
     protected String uri;
-    protected String version;
+    protected int version;
     protected String replaces;
     protected long fromTime = -1;
     protected long toTime = -1;
 
     public VersionInfo(Resource resource, Literal version, Literal from, Literal to) {
         this.uri = resource.getURI();
-        this.version = version.getLexicalForm();
+        this.version = version.getInt();
         if (from != null) {
             this.fromTime = RDFUtil.asTimestamp(from);
         }
@@ -53,7 +53,7 @@ public class VersionInfo {
         return uri;
     }
 
-    public String getVersion() {
+    public int getVersion() {
         return version;
     }
 

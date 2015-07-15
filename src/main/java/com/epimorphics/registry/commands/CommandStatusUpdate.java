@@ -26,9 +26,11 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.RegisterItem;
+import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.core.ValidationResponse;
 import com.epimorphics.registry.message.Message;
 import com.epimorphics.registry.security.RegAction;
@@ -36,7 +38,6 @@ import com.epimorphics.registry.security.RegPermission;
 import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.Parameters;
-import com.epimorphics.server.webapi.WebApiException;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.sun.jersey.api.NotFoundException;
@@ -46,16 +47,31 @@ public class CommandStatusUpdate extends Command {
     public static final String STATUS_PARAM = "status";
 
     protected boolean isForce = false;
+    protected String requestedStatus;
 
     @Override
     public ValidationResponse validate() {
         isForce = parameters.containsKey(Parameters.FORCE);
+        
+        requestedStatus = getRequestedStatus();
+        if (requestedStatus == null) {
+            return new ValidationResponse(BAD_REQUEST,  "Could not determine status to update to");
+        }
+        Status s = Status.forString(requestedStatus, null);
+        if (s == null) {
+            return new ValidationResponse(BAD_REQUEST, "Did not recognize status");
+        }
+        if ( s.equals(Status.Superseded) ) {
+            if ( ! parameters.containsKey(Parameters.SUCCESSOR) || parameters.getFirst(Parameters.SUCCESSOR).isEmpty() ) {
+                return new ValidationResponse(BAD_REQUEST,  "Must specify successor when superseding an item");
+            }
+        }
         return ValidationResponse.OK;
     }
 
     @Override
-    public RegPermission permissionRequried() {
-        RegPermission required = super.permissionRequried();
+    public RegPermission permissionRequired() {
+        RegPermission required = super.permissionRequired();
         if (isForce) {
             required.addAction(RegAction.Force);
         }
@@ -68,36 +84,29 @@ public class CommandStatusUpdate extends Command {
     
     @Override
     public Response doExecute() {
-        store.lock(target);
         RegisterItem ri = store.getItem(itemURI(), false);
-        try {
-            if (ri != null) {
-                String requestedStatus = getRequestedStatus();
-                if (requestedStatus == null) {
-                    throw new WebApiException(BAD_REQUEST, "Could not determine status to update to");
+        if (ri != null) {
+            String requestedStatus = getRequestedStatus();
+            if (ri.isRegister() && !lastSegment.startsWith("_")) {
+                for (RegisterEntryInfo member : store.listMembers( ri.getAsRegister(store) )) {
+                    doStatusUpdate(store.getItem(member.getItemURI(), false), requestedStatus);
                 }
-                if (ri.isRegister() && !lastSegment.startsWith("_")) {
-                    for (RegisterEntryInfo member : store.listMembers( ri.getAsRegister(store) )) {
-                        doStatusUpdate(store.getItem(member.getItemURI(), false), requestedStatus);
-                    }
-                } else {
-                    if (!lastSegment.startsWith("_")) {
-                        throw new WebApiException(BAD_REQUEST, "Can only update the status of a register item or whole register");
-                    }
-                    doStatusUpdate(ri, requestedStatus);
-                }
-                
-                // Notify event
-                Message message = new Message(this);
-                message.setMessage( getRequestedStatus() );
-                notify(message);
-                
-                return Response.noContent().build();
             } else {
-                throw new NotFoundException();
+                if (!lastSegment.startsWith("_")) {
+                    throw new WebApiException(BAD_REQUEST, "Can only update the status of a register item or whole register");
+                }
+                doStatusUpdate(ri, requestedStatus);
             }
-        } finally {
-            store.unlock(target);
+            store.commit();
+            
+            // Notify event
+            Message message = new Message(this);
+            message.setMessage( getRequestedStatus() );
+            notify(message);
+            
+            return Response.noContent().build();
+        } else {
+            throw new NotFoundException();
         }
     }
 
@@ -109,6 +118,9 @@ public class CommandStatusUpdate extends Command {
         }
         if (status.equals(RegistryVocab.statusExperimental) || status.equals(RegistryVocab.statusStable)) {
             RDFUtil.timestamp(ri.getRoot(), DCTerms.dateAccepted);
+        }
+        if ( parameters.containsKey(Parameters.SUCCESSOR) ) {
+            setSuccessor(ri, parameters.getFirst(Parameters.SUCCESSOR) );
         }
         store.update(ri, false);
         checkDelegation(ri);

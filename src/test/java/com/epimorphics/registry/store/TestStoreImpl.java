@@ -28,29 +28,38 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.system.StreamRDF;
+import org.apache.jena.riot.system.StreamRDFWriter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.epimorphics.appbase.core.ComponentBase;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Status;
+import com.epimorphics.registry.store.impl.TDBStore;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
-import com.epimorphics.server.core.ServiceConfig;
-import com.epimorphics.server.stores.MemStore;
 import com.epimorphics.util.NameUtils;
 import com.epimorphics.util.TestUtil;
 import com.epimorphics.vocabs.SKOS;
+import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.ResIterator;
@@ -68,30 +77,30 @@ public class TestStoreImpl {
     static final String BOOTSTRAP_FILE = "src/test/webapp/WEB-INF/root-register.ttl";
     static final String ROOT_REGISTER = "http://location.data.gov.uk/";
     static final String REG1 = ROOT_REGISTER + "reg1";
+    static final String REG3 = ROOT_REGISTER + "reg1/reg3";
 
-    MemStore basestore;
+    Store basestore;
     StoreAPI store;
 
     @Before
     public void setup() {
-        basestore = new MemStore();
-        basestore.init(new HashMap<String, String>(), null);
+        basestore = new TDBStore();
+        ((ComponentBase)basestore).startup(null);
 
-        Map<String, String> config = new HashMap<String, String>();
-        config.put( StoreBaseImpl.STORE_PARAMETER, "basestore");
         StoreBaseImpl store = new StoreBaseImpl();
-        store.init(config, null);
-
-        ServiceConfig.get().initServices("basestore", basestore, "store", store);
+        store.setStore(basestore);
         this.store = store;
         store.loadBootstrap(BOOTSTRAP_FILE);
+        
+        store.beginWrite();
     }
 
     @After
     public void tearDown() {
+        store.commit();
+        store.end();
         basestore = null;
         store = null;
-        ServiceConfig.get().clearServices();
     }
 
 
@@ -109,6 +118,7 @@ public class TestStoreImpl {
     public void testMetadataUpdate() {
         Register rootreg = (Register)store.getCurrentVersion(ROOT_REGISTER);
         rootreg.setProperty(RDFS.label, ResourceFactory.createPlainLiteral("new root"));
+        
         store.update(rootreg);
 
         Resource updatedroot = store.getDescription(ROOT_REGISTER).getRoot();
@@ -121,8 +131,8 @@ public class TestStoreImpl {
         assertTrue(versions.size() >= 2);
         VersionInfo vi1 = versions.get(0);
         VersionInfo vi2 = versions.get(1);
-        assertEquals("1", vi1.getVersion());
-        assertEquals("2", vi2.getVersion());
+        assertEquals(1, vi1.getVersion());
+        assertEquals(2, vi2.getVersion());
         assertEquals(vi1.getToTime(), vi2.getFromTime());
         assertNotSame(-1, vi1.getToTime());
 
@@ -234,13 +244,12 @@ public class TestStoreImpl {
         String base = NameUtils.ensureLastSlash(REG1);
         Model m = ModelFactory.createDefaultModel();
         m.read("file:test/red-submitter-test.ttl", base, FileUtils.langTurtle);
-
+        
         Calendar now = Calendar.getInstance();
         for (ResIterator i = m.listResourcesWithProperty(RDF.type, RegistryVocab.RegisterItem); i.hasNext();) {
             RegisterItem item = RegisterItem.fromRIRequest(i.next(), REG1, true, now);
             store.addToRegister(parent, item);
         }
-
 
         RegisterItem ri = store.getItem(REG1 + "/_red", true);
         List<Statement> submitters = ri.getRoot().listProperties(RegistryVocab.submitter).toList();
@@ -252,7 +261,6 @@ public class TestStoreImpl {
         ri = store.getItem(REG1 + "/_red", true);
         submitters = ri.getRoot().listProperties(RegistryVocab.submitter).toList();
         assertEquals(1, submitters.size());
-
     }
 
     private List<RegisterItem> members(Register reg, boolean withEntity) {
@@ -269,6 +277,7 @@ public class TestStoreImpl {
         long ts0 = Calendar.getInstance().getTimeInMillis();
         Thread.sleep(5);
         addEntry("file:test/red.ttl", REG1);
+        
         String itemURI = ROOT_REGISTER + "reg1/_red";
         String entity = ROOT_REGISTER + "reg1/red";
         checkLiveVersion("red", entity);
@@ -313,6 +322,7 @@ public class TestStoreImpl {
         Calendar now = Calendar.getInstance();
         ri.updateForEntity(false, now);
         store.update(ri, true, now);
+        
         return now.getTimeInMillis();
     }
 
@@ -348,7 +358,7 @@ public class TestStoreImpl {
         Model m = ModelFactory.createDefaultModel();
         m.read("file:test/absolute-black.ttl", REG1 + "/", FileUtils.langTurtle);
         Resource ri = m.listSubjectsWithProperty(RDF.type, RegistryVocab.RegisterItem).next();
-
+        
         RegisterItem item = RegisterItem.fromRIRequest(ri, REG1, true);
         store.addToRegister(parent, item);
 
@@ -390,6 +400,109 @@ public class TestStoreImpl {
         checkRegisterList(reg1, ts0-1);
     }
 
+    @Test
+    public void testRealDelete() {
+        long baseSize = sizeSig();     
+        createTestTree();
+        assertTrue( sizeSig() > baseSize);
+        
+        store.delete(REG1);
+        
+        assertEquals(baseSize, sizeSig());
+    }
+    
+    @Test
+    public void testExport() throws IOException {
+        createTestTree();
+        
+        File exportFile = File.createTempFile("reg-export", "nq");
+        exportTo(REG1, exportFile);
+        
+        Dataset ds = RDFDataMgr.loadDataset(exportFile.getPath(), Lang.NQUADS);
+        assertTrue( ds.getDefaultModel().size() > 100);
+        for (String graph : new String[]{
+                "http://location.data.gov.uk/reg1/_blue:1#graph",
+                "http://location.data.gov.uk/reg1/_red:1#graph",
+                "http://location.data.gov.uk/reg1/_red:2#graph",
+                "http://location.data.gov.uk/reg1/reg3/_green:1#graph",
+        }) {
+            assertTrue( ds.getNamedModel(graph).size() >= 3 );
+        }
+
+        exportFile.delete();
+    }
+    
+    @Test
+    public void testImport() throws IOException {
+        long baseSize = sizeSig();     
+        createTestTree();
+        long testSize = sizeSig();
+        assertTrue( testSize > baseSize);
+        
+        File exportFile = File.createTempFile("reg-export", "nq");
+        exportTo(REG1, exportFile);
+        
+        store.delete(REG1 + "/reg3");
+        
+        assertTrue( sizeSig() < testSize );
+        
+        StreamRDF stream = store.importTree(REG1);
+        FileInputStream in = new FileInputStream(exportFile);
+        RDFDataMgr.parse(stream, in, Lang.NQUADS);
+        
+        assertEquals( testSize, sizeSig() );
+        
+        exportFile.delete();
+    }
+
+    private void exportTo(String register, File exportFile) throws IOException {
+        OutputStream output = new FileOutputStream(exportFile);
+        StreamRDF out = StreamRDFWriter.getWriterStream(output, Lang.NQUADS);
+        store.exportTree(register, out);
+    }
+    
+    private void createTestTree() {
+        addEntry("file:test/reg1.ttl", ROOT_REGISTER);
+        addEntry("file:test/blue.ttl", REG1);
+        addEntry("file:test/red.ttl", REG1);
+
+        String itemURI = ROOT_REGISTER + "reg1/_red";
+        doUpdate(itemURI, "red1");
+
+        addEntry("file:test/reg3.ttl", REG1);
+        addEntry("file:test/green.ttl", REG3);
+
+    }
+    
+    private long sizeSig() {
+        long graphs = getCount("SELECT (COUNT(DISTINCT ?G) as ?n) WHERE { GRAPH ?G {}}", "n");
+        long triples = getCount("SELECT (COUNT(1) as ?n) WHERE { ?s ?p ?o }", "n");
+        return graphs * 10000 + triples;
+    }
+    
+    private long getCount(String query, String var) {
+        ResultSet results = store.query(query);
+        return results.next().getLiteral(var).asLiteral().getLong();
+    }
+    
+//    private void printStore() {
+//        basestore.lock();
+//        try {
+//            Dataset ds =  basestore.asDataset();
+//            Model store = ds.getDefaultModel();
+//            System.out.println("Default model:");
+//            store.write(System.out, "Turtle");
+//            for (Iterator<String> i = ds.listNames(); i.hasNext(); ) {
+//                String graphName = i.next();
+//                Model graph = ds.getNamedModel(graphName);
+//                System.out.println("Graph " + graphName + ":");
+//                graph.write(System.out, "Turtle");
+//            }
+//        } finally {
+//            basestore.end();
+//        }
+//    }
+    
     private void checkRegisterList(Register register, long ts, String...labels) {
         List<RegisterItem> members = StoreUtil.fetchMembersAt(store, register, ts, false);
         assertEquals(labels.length, members.size());

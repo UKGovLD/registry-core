@@ -24,12 +24,13 @@ package com.epimorphics.registry.store;
 import java.util.Calendar;
 import java.util.List;
 
+import org.apache.jena.riot.system.StreamRDF;
+
 import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.ForwardingRecord;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.util.DescriptionCache;
-import com.epimorphics.server.indexers.LuceneResult;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -51,13 +52,38 @@ public class CachingStore implements StoreAPI {
     }
 
     @Override
-    public void lock(String uri) {
-        store.lock(uri);
+    public void beginRead() {
+        store.beginRead();
+    }
+    
+    @Override
+    public void beginWrite() {
+        store.beginWrite();
     }
 
     @Override
-    public void unlock(String uri) {
-        store.unlock(uri);
+    public void commit() {
+        store.commit();
+    }
+
+    @Override
+    public void abort() {
+        store.abort();
+    }
+    
+    @Override
+    public void end() {
+        store.end();
+    }
+    
+    @Override
+    public synchronized void beginSafeRead() {
+        store.beginSafeRead();
+    }
+    
+    @Override
+    public synchronized void endSafeRead() {
+        store.endSafeRead();
     }
 
     @Override
@@ -179,8 +205,8 @@ public class CachingStore implements StoreAPI {
     }
 
     @Override
-    public LuceneResult[] search(String query, int offset, int maxresults, String... fields) {
-        return store.search(query, offset, maxresults, fields);
+    public List<String> search(SearchRequest request) {
+        return store.search(request);
     }
 
     @Override
@@ -201,6 +227,21 @@ public class CachingStore implements StoreAPI {
     @Override
     public ResultSet query(String query) {
         return store.query(query);
+    }
+
+    @Override
+    public void delete(String uri) {
+        store.delete(uri);
+    }
+
+    @Override
+    public void exportTree(String uri, StreamRDF out) {
+        store.exportTree(uri, out);
+    }
+
+    @Override
+    public StreamRDF importTree(String uri) {
+        return store.importTree(uri);
     }
 
 }

@@ -26,6 +26,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -33,15 +36,21 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.jena.riot.RDFDataMgr;
 import org.junit.Test;
 
 import com.epimorphics.rdfutil.RDFUtil;
+import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.core.Status;
+import com.epimorphics.registry.csv.CSVPayloadRead;
+import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.util.JSONLDSupport;
 import com.epimorphics.registry.util.Prefixes;
-import com.epimorphics.registry.vocab.Ldbp;
+import com.epimorphics.registry.vocab.Ldbp_orig;
 import com.epimorphics.registry.vocab.Prov;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
+import com.epimorphics.util.FileUtil;
 import com.epimorphics.util.TestUtil;
 import com.epimorphics.vocabs.API;
 import com.epimorphics.vocabs.SKOS;
@@ -75,19 +84,20 @@ public class TestAPI extends TomcatTestBase {
     static final String REG1_URI = ROOT_REGISTER + "reg1";
     static final String REG1_ITEM = ROOT_REGISTER + "_reg1";
     static final String REGL_URL = BASE_URL + "regL";
-
+    
     String getWebappRoot() {
         return "src/test/webapp";
     }
 
     @Test
-    public void testBasics() throws IOException {
+    public void testAll() throws IOException {
         // Create reg1
         doRegisterRegistrationTests();
 
         // Puts red in reg1/red
         doItemRegistrationTests();
 
+        
         // Adds external resource reg1/black
         doExternalRegistrationTests();
 
@@ -175,6 +185,9 @@ public class TestAPI extends TomcatTestBase {
 
         // Check tagging
         doTaggingTest();
+        
+        // CSV output
+        doTestCSVOut();
 
         // Graph entities and annotations
         doGraphEntityTest();
@@ -185,9 +198,41 @@ public class TestAPI extends TomcatTestBase {
         
         // Bug tests
         doBNodeDuplicationBugTest();
+        doSkosLabelTest();
 
+        // CSV parsing, needs runtime registry to access prefixes register
+        doTestPayloadRead("test/csv/reg3-red.csv", "test/csv/reg3-red.ttl");
+        doTestPayloadRead("test/csv/reg3-red-no-metadata.csv", "test/csv/reg3-red-no-metadata.ttl");
+        doTestPayloadRead("test/edit/edit3.csv", "test/csv/edit3.ttl");
+        
+        // Edit
+        doEditTest();
+
+        File exportFile = File.createTempFile("export", "nq");
+        doExport(exportFile);
+        
+        // Deletion
+        doTestRealDelete();
+
+        // Reimport from before delete
+        doImportTest(exportFile);
+        exportFile.delete();
+        
+        // Registration of multiple entities in a single payload
+        doTestMultipleEntities();
+        
+        // Status lifecycle
+        doLifecycleTest();
+        
 //        System.out.println("Store dump");
 //        ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel().write(System.out, "Turtle");
+    }
+
+
+    private void doSkosLabelTest() {
+        assertEquals(201, postFileStatus("test/bugs/brown-preflabel.ttl", REG1));
+        checkModelResponse(REG1 + "/brown", ROOT_REGISTER + "reg1/brown", "test/expected/brown.ttl");
+        checkModelResponse(REG1 + "/brown?_view=with_metadata", ROOT_REGISTER + "reg1/brown", "test/expected/brown_metadata.ttl");
     }
 
     private void doInvalidUpdateTest() {
@@ -221,7 +266,10 @@ public class TestAPI extends TomcatTestBase {
         checkModelResponse(m, ROOT_REGISTER + "reg1/_red", "test/expected/red_item.ttl");
         checkModelResponse(m, ROOT_REGISTER + "reg1/red", "test/expected/red.ttl");
         checkEntity(m, ROOT_REGISTER + "reg1/_red",  ROOT_REGISTER + "reg1/red");
+        
         assertEquals(404, getResponse(REG1 + "/notred").getStatus());
+        assertEquals(404, getResponse(REG1 + "/notred/").getStatus());
+        
         m = getModelResponse(REG1 + "/_red");
         checkModelResponse(m, ROOT_REGISTER + "reg1/_red", "test/expected/red_item.ttl");
         checkModelResponse(m, ROOT_REGISTER + "reg1/red", "test/expected/red.ttl");
@@ -458,12 +506,23 @@ public class TestAPI extends TomcatTestBase {
     // Assumes reg1/blue exists, leaves it in "invalid" status
     private void doStatusTransitionsTest() {
         assertEquals(403, post(REG1 + "/_blue?update&status=retired").getStatus());
-        assertEquals(403, post(REG1 + "/_blue?update&status=superseded").getStatus());
+        assertEquals(400, post(REG1 + "/_blue?update&status=superseded").getStatus());
+        assertEquals(403, post(REG1 + "/_blue?update&status=superseded&successor=http://example.com/next").getStatus());
         assertEquals(204, post(REG1 + "/_blue?update&status=experimental").getStatus());
         assertEquals(204, post(REG1 + "/_blue?update&status=stable").getStatus());
         assertEquals(403, post(REG1 + "/_blue?update&status=experimental").getStatus());
         assertEquals(403, post(REG1 + "/_blue?update&status=submitted").getStatus());
-        assertEquals(204, post(REG1 + "/_blue?update&status=superseded").getStatus());
+        assertEquals(204, post(REG1 + "/_blue?update&status=superseded&successor="+REG1_URI+"/_red").getStatus());
+        Model m = getModelResponse(REG1 + "/_blue?status=any&_view=with_metadata");
+        assertTrue( m.contains(
+                ResourceFactory.createResource(REG1_URI + "/_blue"),
+                RegistryVocab.successor,
+                ResourceFactory.createResource(REG1_URI + "/_red") ) );
+        m = getModelResponse(REG1 + "/_red?status=any&_view=with_metadata");
+        assertTrue( m.contains(
+                ResourceFactory.createResource(REG1_URI + "/_red"),
+                RegistryVocab.predecessor,
+                ResourceFactory.createResource(REG1_URI + "/_blue") ) );
         assertEquals(204, post(REG1 + "/_blue?update&status=invalid").getStatus());
     }
 
@@ -527,18 +586,25 @@ public class TestAPI extends TomcatTestBase {
         // Update of prefixes depends on the background message thread, this is fragile to test for
         int trycount = 0;
         boolean passed = false;
-        while (trycount < 10 && !passed) {
-            trycount++;
-            pm = Prefixes.get().getNsPrefixMap();
-            if (pm.containsKey("xyz")) {
-                assertTrue(pm.containsKey("xyz"));
-                assertEquals("http://example.com/xyz", pm.get("xyz"));
-                passed = true;
-            } else {
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {};
+        
+        StoreAPI store = Registry.get().getStore();
+        store.beginRead();
+        try {
+            while (trycount < 10 && !passed) {
+                trycount++;
+                pm = Prefixes.get().getNsPrefixMap();
+                if (pm.containsKey("xyz")) {
+                    assertTrue(pm.containsKey("xyz"));
+                    assertEquals("http://example.com/xyz", pm.get("xyz"));
+                    passed = true;
+                } else {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {};
+                }
             }
+        } finally {
+            store.end();
         }
     }
 
@@ -763,6 +829,22 @@ public class TestAPI extends TomcatTestBase {
         assertTrue( members.contains( model.getResource(ROOT_REGISTER + "reg3/_blue:2") ) );
         assertEquals(2, members.size());
     }
+    
+    /**
+     * Test export to CSV, assumes a particular state for reg3 so has
+     * be run after tagging test
+     */
+    private void doTestCSVOut() {
+        ClientResponse response = getResponse(BASE_URL + "reg3?_view=with_metadata", "text/csv");
+        assertEquals(200, response.getStatus());
+        assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3.csv"), response.getEntity(String.class).replace("\r", ""));
+        response = getResponse(BASE_URL + "reg3/red?_view=with_metadata", "text/csv");
+        assertEquals(200, response.getStatus());
+        assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3-red.csv"), response.getEntity(String.class).replace("\r", ""));
+        response = getResponse(BASE_URL + "reg3/red", "text/csv");
+        assertEquals(200, response.getStatus());
+        assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3-red-no-metadata.csv"), response.getEntity(String.class).replace("\r", ""));
+    }
 
     /**
      * Check support for graph entities
@@ -852,20 +934,123 @@ public class TestAPI extends TomcatTestBase {
         reg = m.getResource("http://location.data.gov.uk/RiverBasinDistrict"); 
         assertEquals(version + 1, RDFUtil.getIntValue(reg, OWL.versionInfo, -1));        
     }
+ 
+    /**
+     * Test case for real delete, assumes reg1 and reg1/red exist before hand
+     */
+    private void doTestRealDelete() {
+        assertEquals(200, getResponse(REG1).getStatus());
+        assertEquals(200, getResponse(REG1 + "/red").getStatus());
+        
+        assertEquals(204, post(REG1 + "?real_delete").getStatus());
+        
+        assertEquals(404, getResponse(REG1).getStatus());
+        assertEquals(404, getResponse(REG1 + "/red").getStatus());
+    }
 
+    /**
+     * Export Reg1 for later import test
+     */
+    private void doExport(File exportFile) throws IOException {
+        ClientResponse response = getResponse(REG1+"?export", "application/n-quads");
+        assertEquals(200, response.getStatus());
+        InputStream in = response.getEntity(InputStream.class);
+        FileOutputStream out = new FileOutputStream(exportFile);
+        FileUtil.copyResource(in, out);
+        out.close();
+    }    
+    
+    /**
+     * Reimport the earlier export and test REG1 is back after the delete
+     */
+    private void doImportTest(File exportFile) throws IOException {
+        ClientResponse response = invoke("PUT", exportFile.getPath(), REG1+"?import", "application/n-quads");
+        assertEquals(204, response.getStatus());
+        
+        assertEquals(200, getResponse(REG1).getStatus());
+        assertEquals(200, getResponse(REG1 + "/red").getStatus());
+    }
+    
+    /**
+     * Basic edit test cases
+     */
+    private void doEditTest() {
+        final String REGE = BASE_URL + "rege";
+        assertEquals(201, postFileStatus("test/edit/rege.ttl", BASE_URL));
+        assertEquals(204, postFileStatus("test/edit/edit1.ttl", REGE + "?edit"));
+        checkModelResponse(REGE + "?_view=with_metadata&status=any", "test/edit/expected1.ttl", 
+                DCTerms.dateSubmitted, DCTerms.modified);
+        assertEquals(204, postFileStatus("test/edit/edit2.ttl", REGE + "?edit"));
+        checkModelResponse(REGE + "?_view=with_metadata&status=any", "test/edit/expected2.ttl", 
+                DCTerms.dateSubmitted, DCTerms.modified);
+        // Re-apply same edit which should not change versions
+        assertEquals(204, postFileStatus("test/edit/edit2.ttl", REGE + "?edit"));
+        checkModelResponse(REGE + "?_view=with_metadata&status=any", "test/edit/expected2.ttl", 
+                DCTerms.dateSubmitted, DCTerms.modified);
+        assertEquals(204, postFileStatus("test/edit/edit3.csv", REGE + "?edit", "text/csv"));
+        checkModelResponse(REGE + "?_view=with_metadata&status=any", "test/edit/expected3.ttl", 
+                DCTerms.dateSubmitted, DCTerms.modified);
+        assertEquals(204, postFileStatus("test/edit/edit4.ttl", REGE + "?edit"));
+        checkModelResponse(REGE + "?_view=with_metadata&status=any", "test/edit/expected4.ttl", 
+                DCTerms.dateSubmitted, DCTerms.modified);
+    }
+    
+    /**
+     * Test registration of multiple entities in a single payload
+     */
+    private void doTestMultipleEntities() {
+        final String REGF = BASE_URL + "regf";
+        assertEquals(201, postFileStatus("test/multiload/regf.ttl", BASE_URL));
+        assertEquals(201, postFileStatus("test/multiload/load123.ttl", REGF));
+        checkModelResponse(REGF + "?status=any", "test/multiload/expected.ttl", 
+                DCTerms.dateSubmitted, DCTerms.modified);
+    }
+
+    /**
+     * Test custom status life cycle
+     */
+    private void doLifecycleTest() throws IOException {
+        // Some default lifecycle elements
+        checkStatus("submitted", "experimental");
+        checkStatus("experimental", "stable");
+        
+        // Load a custom lifecycle
+        assertEquals(201, postFileStatus("test/lifecycle/lifecycle-reg.ttl", BASE_URL + "system"));
+        assertEquals(201, postFileStatus("test/lifecycle/wmo-cycle.csv", BASE_URL + "system/lifecycle", "text/csv"));
+        checkStatus("submitted", "validation");
+        checkStatus("validation", "preoperational");
+        checkStatus("preoperational", "operational");
+        
+        assertEquals(204, post(BASE_URL + "system/lifecycle?real_delete").getStatus());
+        checkStatus("submitted", "stable");
+    }
+
+    private void checkStatus(String status, String successor) {
+        Status s = Status.forString(status, null);
+        assertNotNull(s);
+        boolean foundSuccessor = false;
+        for (Status n : s.nextStates()) {
+            if (n.getLabel().equals(successor)) {
+                foundSuccessor = true;
+                break;
+            }
+        }
+        assertTrue( foundSuccessor );
+    }
+    
     private void checkPageResponse(Model m, String nextpage, int length) {
-        ResIterator ri = m.listSubjectsWithProperty(RDF.type, Ldbp.Page);
+        ResIterator ri = m.listSubjectsWithProperty(RDF.type, Ldbp_orig.Page);
         assertTrue(ri.hasNext());
         Resource page = ri.next();
         assertFalse(ri.hasNext());
         if (nextpage != null) {
-            Resource next = page.getPropertyResourceValue(Ldbp.nextPage);
+            Resource next = page.getPropertyResourceValue(Ldbp_orig.nextPage);
             assertNotNull(next);
             assertTrue(next.getURI().contains("_page=" + nextpage));
         } else {
-            assertFalse(page.hasProperty(Ldbp.nextPage));
+            assertFalse(page.hasProperty(Ldbp_orig.nextPage));
         }
-        Resource reg = page.getPropertyResourceValue(Ldbp.pageOf);
+        Resource reg = page.getPropertyResourceValue(Ldbp_orig.pageOf);
         int count = 0;
         for (StmtIterator si = reg.listProperties(RDFS.member); si.hasNext();) {
             si.next();
@@ -889,6 +1074,13 @@ public class TestAPI extends TomcatTestBase {
                     .addProperty(RDF.type, SKOS.Concept);
             assertEquals(201, postModel(m, REGL_URL).getStatus());
         }
+    }
+        
+    private void doTestPayloadRead(String csv, String expected) throws IOException {
+        InputStream ins = new FileInputStream(csv);
+        String baseURI = "http://location.data.gov.uk/reg3/";
+        Model payload = CSVPayloadRead.readCSVStream(ins, baseURI);
+        assertTrue( payload.isIsomorphicWith( RDFDataMgr.loadModel(expected) ) );
     }
 
 }

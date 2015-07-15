@@ -37,11 +37,11 @@ import org.openid4java.message.ax.FetchResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.security.RegToken;
 import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.security.UserStore;
-import com.epimorphics.server.webapi.WebApiException;
 
 public class ProcessOpenID {
     static final Logger log = LoggerFactory.getLogger( Login.class );
@@ -95,6 +95,16 @@ public class ProcessOpenID {
         if (returnURL == null || returnURL.isEmpty()) {
             returnURL = "/ui/admin";
         }
+        
+        if (Registry.get().isRedirectToHttpsOnLogin()) {
+            returnURL = returnURL.replaceFirst("^/", "");
+            returnURL = uriInfo.getBaseUri().toString() + returnURL;
+            log.info(String.format("OAuth returnURL is %s", returnURL));
+            String secureReturnURL = returnURL.replace("http://", "https://");
+                session.setAttribute(SA_RETURN_URL, secureReturnURL);
+        } else {
+            session.setAttribute(SA_RETURN_URL, returnURL);
+        }        
         session.setAttribute(SA_RETURN_URL, returnURL);
 
         if (provider == null || provider.isEmpty()) {
@@ -103,6 +113,9 @@ public class ProcessOpenID {
         log.info("Authentication request for " + provider + (isRegister ? " (registration)" : ""));
 
         String responseURL = uriInfo.getBaseUri().toString() + "system/security/response";
+        if (Registry.get().isRedirectToHttpsOnLogin()) {
+            responseURL = responseURL.replace("http://", "https://");
+        }
         try
         {
             // perform discovery on the user-supplied identifier

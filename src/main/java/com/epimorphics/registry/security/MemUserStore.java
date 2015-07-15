@@ -30,8 +30,6 @@ import java.util.Set;
 
 import org.apache.shiro.util.ByteSource;
 
-import com.epimorphics.server.core.Service;
-
 /**
  * Non-persistent memory implementation of a UserSore for testing use.
  * Can initialize this from a file with syntax:
@@ -45,7 +43,7 @@ import com.epimorphics.server.core.Service;
  * </pre>
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
-public class MemUserStore extends BaseUserStore implements UserStore, Service {
+public class MemUserStore extends BaseUserStore implements UserStore {
     protected Map<String, UserRecord> users = new HashMap<String, UserRecord>();
     protected Map<String, Set<RegPermission>> permissions = new HashMap<String, Set<RegPermission>>();
 

@@ -21,29 +21,24 @@
 
 package com.epimorphics.registry.webapi;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Iterator;
 
 import org.junit.Test;
 
-import com.epimorphics.rdfutil.RDFUtil;
+import com.epimorphics.appbase.core.AppConfig;
+import com.epimorphics.registry.store.Store;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
-import com.epimorphics.server.core.ServiceConfig;
-import com.epimorphics.server.core.Store;
-import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.sparql.util.Closure;
-import com.hp.hpl.jena.vocabulary.DCTerms;
-import com.hp.hpl.jena.vocabulary.OWL;
-import com.hp.hpl.jena.vocabulary.RDF;
 import com.sun.jersey.api.client.ClientResponse;
 
 /**
@@ -55,7 +50,6 @@ import com.sun.jersey.api.client.ClientResponse;
  */
 public class TestAPIDebug extends TomcatTestBase {
 
-    static final String EXT_BLACK = "http://example.com/colours/black";
     static final String REG1 = BASE_URL + "reg1";
     static final String REG1_URI = ROOT_REGISTER + "reg1";
 
@@ -65,11 +59,14 @@ public class TestAPIDebug extends TomcatTestBase {
 
     @Test
     public void testDebug() throws IOException {
+        
+
     }
+
 
     // Debugging utility only, should not be used while transactions are live
     public static void printResourceState(String...uris) {
-        Store storesvc = ServiceConfig.get().getServiceAs("basestore", Store.class);
+        Store storesvc = AppConfig.getApp().getComponentAs("basestore", Store.class);
         storesvc.lock();
         try {
             Dataset ds =  storesvc.asDataset();
@@ -93,14 +90,14 @@ public class TestAPIDebug extends TomcatTestBase {
                 graph.write(System.out, "Turtle");
             }
         } finally {
-            storesvc.unlock();
+            storesvc.end();
         }
     }
 
 
     // Debugging utility only, should not be used while transactions are live
     public static void printStore() {
-        Store storesvc = ServiceConfig.get().getServiceAs("basestore", Store.class);
+        Store storesvc = AppConfig.getApp().getComponentAs("basestore", Store.class);
         storesvc.lock();
         try {
             Dataset ds =  storesvc.asDataset();
@@ -114,7 +111,7 @@ public class TestAPIDebug extends TomcatTestBase {
                 graph.write(System.out, "Turtle");
             }
         } finally {
-            storesvc.unlock();
+            storesvc.end();
         }
     }
 

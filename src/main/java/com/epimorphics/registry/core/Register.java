@@ -24,10 +24,12 @@ package com.epimorphics.registry.core;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.util.Util;
-import com.epimorphics.registry.vocab.Ldbp;
+import com.epimorphics.registry.vocab.Ldbp_orig;
+import com.epimorphics.registry.vocab.Ldp;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -160,9 +162,9 @@ public class Register extends Description {
         // Membership relations
         Resource predicateR = null;
         boolean isInverse = false;
-        predicateR = root.getPropertyResourceValue(Ldbp.membershipPredicate);
+        predicateR = getMembershipPredicate();
         if (predicateR == null) {
-            predicateR = root.getPropertyResourceValue(RegistryVocab.inverseMembershipPredicate);
+            predicateR = getInvMembershipPredicate();
             if (predicateR != null) {
                 isInverse = true;
             } else {
@@ -214,5 +216,33 @@ public class Register extends Description {
        }
     }
 
+    public Property getMembershipPredicate() {
+        return getAProp(root, Ldbp_orig.membershipPredicate, Ldp.hasMemberRelation);
+    }
+
+    public Property getInvMembershipPredicate() {
+        return getAProp(root, RegistryVocab.inverseMembershipPredicate, Ldp.isMemberOfRelation);
+    }
+
+    public static Property getMembershipPredicate(Resource root) {
+        return getAProp(root, Ldbp_orig.membershipPredicate, Ldp.hasMemberRelation);
+    }
+
+    public static Property getInvMembershipPredicate(Resource root) {
+        return getAProp(root, RegistryVocab.inverseMembershipPredicate, Ldp.isMemberOfRelation);
+    }
+    
+    private static Property getAProp(Resource root, Property p1, Property p2) {
+        Resource mp = RDFUtil.getResourceValue(root, p1);
+        if (mp == null) {
+            mp = RDFUtil.getResourceValue(root, p2);
+        }
+        if (mp == null) {
+            return null;
+        } else {
+            return RDFUtil.asProperty(mp);
+        }
+        
+    }
 
 }

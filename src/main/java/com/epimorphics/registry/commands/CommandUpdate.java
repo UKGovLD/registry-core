@@ -25,7 +25,6 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Calendar;
 import java.util.List;
 
 import javax.ws.rs.WebApplicationException;
@@ -39,7 +38,6 @@ import com.epimorphics.registry.core.ValidationResponse;
 import com.epimorphics.registry.message.Message;
 import com.epimorphics.registry.security.RegAction;
 import com.epimorphics.registry.security.RegPermission;
-import com.epimorphics.registry.util.PatchUtil;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.Parameters;
 import com.hp.hpl.jena.rdf.model.Property;
@@ -142,6 +140,11 @@ public class CommandUpdate extends Command {
                     if (!oldstatus.legalNextState(newstatus)) {
                         needStatusForce = true;
                     }
+                    if (newstatus.equals(Status.Superseded)) {
+                        if (! newitem.getRoot().hasProperty(RegistryVocab.successor)) {
+                            return new ValidationResponse(BAD_REQUEST,  "Must specify successor when superseding an item");
+                        }
+                    }
                 }
             }
 
@@ -156,8 +159,8 @@ public class CommandUpdate extends Command {
     }
 
     @Override
-    public RegPermission permissionRequried() {
-        RegPermission required = super.permissionRequried();
+    public RegPermission permissionRequired() {
+        RegPermission required = super.permissionRequired();
         if (needStatusPermission) {
             required.addAction(RegAction.StatusUpdate);
             if (needStatusForce) {
@@ -187,42 +190,14 @@ public class CommandUpdate extends Command {
     @Override
     public Response doExecute() {
         // Current and newitem will have been set and checked by validation step, so just process them
-        String itemURI = newitem.getRoot().getURI();
-        store.lock(itemURI);
         try {
-            boolean isRegister = currentItem.isRegister();
-            Resource entity = newitem.getEntity();
-            boolean withEntity = entity != null;
-            if (withEntity) {
-                if (isPatch){
-                    if (isRegister) {
-                        PatchUtil.patch(entity, currentItem.getEntity(), RegistryVocab.subregister);
-                    } else {
-                        PatchUtil.patch(entity, currentItem.getEntity());
-                    }
-                } else {
-                    currentItem.setEntity(entity);
-                }
-                currentItem.updateForEntity(false, Calendar.getInstance());
-            }
-
-            if (!isEntityUpdate) {
-                if (isPatch) {
-                    PatchUtil.patch(newitem.getRoot(), currentItem.getRoot(), RegisterItem.RIGID_PROPS);
-                } else {
-                    PatchUtil.update(newitem.getRoot(), currentItem.getRoot(), RegisterItem.RIGID_PROPS, RegisterItem.REQUIRED_PROPS);
-                }
-            }
-            String versionURI = store.update(currentItem, withEntity);
-            checkDelegation(currentItem);
+            String versionURI = applyUpdate(currentItem, newitem, isPatch, !isEntityUpdate);
+            store.commit();
             
             notify( new Message(this, newitem) );
-            
             return Response.noContent().location(new URI(versionURI)).build();
         } catch (URISyntaxException e) {
             throw new WebApplicationException(e);
-        } finally {
-            store.unlock(itemURI);
         }
     }
 

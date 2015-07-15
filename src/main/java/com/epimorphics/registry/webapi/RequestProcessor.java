@@ -28,6 +28,7 @@ import static com.epimorphics.webapi.marshalling.RDFXMLMarshaller.MIME_RDFXML;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +57,10 @@ import org.apache.velocity.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.epimorphics.appbase.core.AppConfig;
+import com.epimorphics.appbase.templates.VelocityRender;
+import com.epimorphics.appbase.webapi.BaseEndpoint;
+import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.registry.commands.CommandUpdate;
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Command.Operation;
@@ -64,14 +69,12 @@ import com.epimorphics.registry.core.ForwardingRecord.Type;
 import com.epimorphics.registry.core.ForwardingService;
 import com.epimorphics.registry.core.MatchResult;
 import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.csv.CSVPayloadRead;
+import com.epimorphics.registry.csv.RDFCSVUtil;
 import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.util.JSONLDSupport;
 import com.epimorphics.registry.util.PATCH;
 import com.epimorphics.registry.util.UiForm;
-import com.epimorphics.server.core.ServiceConfig;
-import com.epimorphics.server.templates.VelocityRender;
-import com.epimorphics.server.webapi.BaseEndpoint;
-import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.util.NameUtils;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -100,8 +103,8 @@ public class RequestProcessor extends BaseEndpoint {
     private static final String SYSTEM_QUERY = "system/query";
 
     @GET
-    @Produces("text/html")
-    public Response htmlrender() {
+    @Produces("text/html;qs=2.0")
+    public Response htmlrender() {        
         String path = uriInfo.getPath();
         if (path.startsWith(UI_PATH) ) {
             String template = path.substring(UI_PATH.length()+1) + ".vm";
@@ -115,7 +118,7 @@ public class RequestProcessor extends BaseEndpoint {
             // Pass to the generic velocity handler, which in turn falls through to file serving
             throw new NotFoundException();
         }
-
+        
         PassThroughResult result = checkForPassThrough();
         if (result != null && result.isDone()) {
             return result.getResponse();
@@ -131,17 +134,22 @@ public class RequestProcessor extends BaseEndpoint {
             } else if (format.equals("jsonld")) {
                 mime = JSONLDSupport.FULL_MIME_JSONLD;
                 extension = "json";
+            } else if (format.equals("csv")) {
+                mime = RDFCSVUtil.MEDIA_TYPE;
+                extension = "csv";
             }
             return readAsRDF(result, mime, extension);
-        } if (parameters.containsKey(Parameters.ANNOTATION)) {
+        } else if (parameters.containsKey(Parameters.ANNOTATION)) {
             return readAsRDF(result, FULL_MIME_TURTLE, "ttl");
+        } else if (parameters.containsKey(Parameters.EXPORT_TREE)) {
+            return export();
         } else {
             return render("main.vm", uriInfo, context, request);
         }
     }
 
     private Response readAsRDF(PassThroughResult ptr, String mime, String ext) {
-        Response response = doRead(ptr);
+        Response response = doRead(ptr, mime);
         Object location = response.getMetadata().getFirst(HttpHeaders.LOCATION);
         ResponseBuilder builder = Response.ok().type(mime).entity(response.getEntity());
         if (location != null) {
@@ -174,7 +182,7 @@ public class RequestProcessor extends BaseEndpoint {
         fullParams[i++] = "language";
         fullParams[i++] = language;
 
-        VelocityRender velocity = ServiceConfig.get().getServiceAs(Registry.VELOCITY_SERVICE, VelocityRender.class);
+        VelocityRender velocity = AppConfig.getApp().getA(VelocityRender.class);
         StreamingOutput out = velocity.render(template, uriInfo.getPath(), context, uriInfo.getQueryParameters(), fullParams);
         
         ResponseBuilder builder = Response.ok().type("text/html");
@@ -208,10 +216,41 @@ public class RequestProcessor extends BaseEndpoint {
         if (result != null && result.isDone()) {
             return result.getResponse();
         } else {
-            return doRead(result);
+            return doRead(result, null);
         }
     }
+    
+    @GET
+    @Produces({"application/n-quads;qs=0.3"})
+    public Response export() {
+        if (uriInfo.getQueryParameters().containsKey(Parameters.EXPORT_TREE)) {
+            return makeCommand( Operation.Export ).execute();
+        }
+        return Response.status(Status.NOT_ACCEPTABLE).entity("n-quads only supported for export").build();
+    }
+    
+    @PUT
+    @Consumes({"application/n-quads"})
+    public Response importTree( InputStream body ) {
+        if (uriInfo.getQueryParameters().containsKey(Parameters.IMPORT_TREE)) {
+            Command command = makeCommand( Operation.Import );
+            command.setPayloadStream( body );
+            return command.execute();
+        }
+        return Response.status(Status.NOT_ACCEPTABLE).entity("n-quads only supported for import").build();
+    }
 
+    @GET
+    @Produces({RDFCSVUtil.MEDIA_TYPE})
+    public Response readCSV() {
+        PassThroughResult result = checkForPassThrough();
+        if (result != null && result.isDone()) {
+            return result.getResponse();
+        } else {
+            return doRead(result, RDFCSVUtil.MEDIA_TYPE);
+        }
+    }
+    
     @GET
     public Response defaultRead() {
         // Default to text/html case which in turn will default to file serving for image files etc
@@ -219,7 +258,7 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
 
-    private Response doRead(PassThroughResult ptr) {
+    private Response doRead(PassThroughResult ptr, String mediaType) {
         String path = uriInfo.getPath();
         if (path.startsWith(SYSTEM_QUERY) || path.startsWith(UI_PATH) ) {
             // Will chain through to file serving/fuseki
@@ -233,6 +272,9 @@ public class RequestProcessor extends BaseEndpoint {
             command = makeCommand( Operation.Read );
             if (ptr != null) {
                 command.setDelegation(ptr.getRecord());
+            }
+            if (mediaType != null) {
+                command.setMediaType(mediaType);
             }
         }
         return command.execute();
@@ -295,17 +337,20 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     @POST
-    @Consumes({MIME_TURTLE, MIME_RDFXML, JSONLDSupport.MIME_JSONLD})
+    @Consumes({MIME_TURTLE, MIME_RDFXML, JSONLDSupport.MIME_JSONLD, RDFCSVUtil.MEDIA_TYPE})
     public Response register(@Context HttpHeaders hh, InputStream body) {
         MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
         Command command = null;
         if ( parameters.get(Parameters.VALIDATE) != null ) {
             return validate(hh , body);
         } else if ( parameters.get(Parameters.TAG) != null ) {
-            // TODO to support tagging delegated regsiter would need a checkForPassThrough here
+            // TODO to support tagging delegated register would need a checkForPassThrough here
             command = makeCommand(Operation.Tag);
         } else if ( parameters.get(Parameters.STATUS_UPDATE) != null ) {
             command = makeCommand(Operation.StatusUpdate);
+        } else if (parameters.get(Parameters.EDIT) != null && body != null) {
+            command = makeCommand(Operation.Edit);
+            setPayload(command, hh, body, true);
         } else if (body != null) {
             command = makeCommand(Operation.Register);
             setPayload(command, hh, body, true);
@@ -328,7 +373,7 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     @PUT
-    @Consumes({MIME_TURTLE, MIME_RDFXML, JSONLDSupport.MIME_JSONLD})
+    @Consumes({MIME_TURTLE, MIME_RDFXML, JSONLDSupport.MIME_JSONLD, RDFCSVUtil.MEDIA_TYPE})
     public Response update(@Context HttpHeaders hh, InputStream body) {
         MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
         Command command = null;
@@ -352,7 +397,7 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     @PATCH
-    @Consumes({MIME_TURTLE, MIME_RDFXML, JSONLDSupport.MIME_JSONLD})
+    @Consumes({MIME_TURTLE, MIME_RDFXML, JSONLDSupport.MIME_JSONLD, RDFCSVUtil.MEDIA_TYPE})
     public Response updatePatch(@Context HttpHeaders hh, InputStream body) {
         Command command = makeCommand( Operation.Update );
         ((CommandUpdate)command).setToPatch();
@@ -368,15 +413,23 @@ public class RequestProcessor extends BaseEndpoint {
             String target = uriInfo.getPath();
             target = Registry.get().getBaseURI() + (target.isEmpty() ? "/" : "/" + target + "/");
             Resource r = UiForm.create(form, target);
-
-//            // TEMP debug
-//            System.out.println("Form created resource:");
-//            r.getModel().setNsPrefixes(Prefixes.get());
-//            r.getModel().write(System.out, "Turtle");
-
             Command command = makeCommand( Operation.Register );
             command.setPayload( r.getModel() );
             return command.execute();
+        } else if ( uriInfo.getQueryParameters().containsKey(Parameters.REAL_DELETE) ) {
+            Command command = makeCommand( Operation.RealDelete );
+            Response response = command.execute();
+            if (response.getStatus() == 204) {
+                // For UI level actions then redirect
+                URI uri;
+                try {
+                    uri = new URI("/");
+                    return Response.seeOther(uri).build();
+                } catch (URISyntaxException e) {
+                    // fall through to default return
+                }
+            } 
+            return response;
         } else {
             // Default is to invoke register, e.g. for status update processing
             return register(hh, null);
@@ -385,6 +438,11 @@ public class RequestProcessor extends BaseEndpoint {
 
     @POST
     public Response nullForm(@Context HttpHeaders hh, InputStream body) {
+        MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
+        if ( parameters.containsKey(Parameters.REAL_DELETE) ) {
+            Command command = makeCommand( Operation.RealDelete );
+            return command.execute();
+        }
         // Default is to invoke register, e.g. for status update processing
         return register(hh, body);
     }
@@ -400,6 +458,7 @@ public class RequestProcessor extends BaseEndpoint {
         List<String> successfullyProcessed = new ArrayList<>();
         int success = 0;
         int failure = 0;
+        Response response = null;
         StringBuffer errorMessages = new StringBuffer();
         for(FormDataBodyPart field : fields){
             InputStream uploadedInputStream       = field.getValueAs(InputStream.class);
@@ -414,21 +473,30 @@ public class RequestProcessor extends BaseEndpoint {
                 payload.read(uploadedInputStream, base, FileUtils.langTurtle);
             } else if (filename.endsWith(".jsonld") || filename.endsWith(".json")) {
                 payload = JSONLDSupport.readModel(base, uploadedInputStream);
-            } else {
+            } else if (filename.endsWith(".csv")) {
+                payload = CSVPayloadRead.readCSVStream(uploadedInputStream, base);
+            } else if (!action.equals("import")) {
                 payload.read(uploadedInputStream, base, FileUtils.langXML);
             }
             Command command = null;
             if (action.equals("register")) {
                 command = makeCommand( Operation.Register );
+                command.setPayload(payload);
             } else if (action.equals("annotate")) {
                 command = makeCommand( Operation.Annotate );
+                command.setPayload(payload);
+            } else if (action.equals("edit")) {
+                command = makeCommand( Operation.Edit );
+                command.setPayload(payload);
+            } else if (action.equals("import")) {
+                command = makeCommand( Operation.Import );
+                command.setPayloadStream( uploadedInputStream );
             }
             if (command == null) {
                 throw new WebApiException(Response.Status.BAD_REQUEST, "Action " + action + " not recognized");
             }
-            command.setPayload(payload);
             try {
-                Response response = command.execute();
+                response = command.execute();
                 if (response.getStatus() >= 400) {
                     failure++;
                     errorMessages.append("<p>" + filename + " - " + response.getEntity() + "</p>");
@@ -460,6 +528,13 @@ public class RequestProcessor extends BaseEndpoint {
         if (success == 0) {
             throw new WebApiException(Response.Status.BAD_REQUEST, "No file uploaded");
         }
+        if (action.equals("edit") || action.equals("import")) {
+            try {
+                return Response.seeOther(new URI(uriInfo.getPath())).build();
+            } catch (URISyntaxException e) {
+                // Fall through to default
+            }
+        }
         return Response.ok().build();
     }
 
@@ -470,6 +545,9 @@ public class RequestProcessor extends BaseEndpoint {
 
         if (mime.equals(JSONLDSupport.MIME_JSONLD)) {
             return JSONLDSupport.readModel(baseURI(isPOST), body);
+            
+        } else if (mime.equals(RDFCSVUtil.MEDIA_TYPE)) {
+            return CSVPayloadRead.readCSVStream(body, baseURI(isPOST));
 
         } else {
             String lang = null;

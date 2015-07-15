@@ -28,11 +28,10 @@ import java.util.regex.Pattern;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.vocab.RegistryVocab;
-import com.epimorphics.server.webapi.WebApiException;
-import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
@@ -332,12 +331,11 @@ public class RegisterItem extends Description {
         root.removeAll(RDFS.label)
             .removeAll(DCTerms.description)
             .removeAll(RegistryVocab.itemClass);
-        if (entity.hasProperty(SKOS.prefLabel)) {
-            RDFUtil.copyProperty(entity, root, SKOS.prefLabel, RDFS.label);
-        } else if (entity.hasProperty(SKOS.altLabel)) {
-            RDFUtil.copyProperty(entity, root, SKOS.altLabel, RDFS.label);
-        } else {
-            RDFUtil.copyProperty(entity, root, RDFS.label);
+        for (Property labelProp : RDFUtil.labelProps) {
+            if (entity.hasProperty(labelProp)) {
+                RDFUtil.copyProperty(entity, root, labelProp, RDFS.label);
+                break;
+            }
         }
         RDFUtil.copyProperty(entity, root, DCTerms.description);
         for (Statement s : entity.listProperties(RDF.type).toList()) {

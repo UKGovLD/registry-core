@@ -23,7 +23,7 @@ package com.epimorphics.registry.webapi;
 
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.security.*;
-import com.epimorphics.server.webapi.WebApiException;
+import com.epimorphics.appbase.webapi.WebApiException;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ByteSource;
@@ -368,7 +368,6 @@ public class Login {
             uri = new URI(path);
             return Response.seeOther(uri).build();
         } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             return null;
         }

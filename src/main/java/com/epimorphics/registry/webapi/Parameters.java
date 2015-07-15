@@ -34,6 +34,10 @@ public class Parameters {
     public static final String TAG = "tag";
     public static final String GRAPH = "graph";
     public static final String ANNOTATION = "annotation";
+    public static final String REAL_DELETE = "real_delete";
+    public static final String EXPORT_TREE = "export";
+    public static final String IMPORT_TREE = "import";
+    public static final String EDIT = "edit";
 
     public static final String VIEW = "_view";
     public static final String WITH_METADATA = "with_metadata";
@@ -47,6 +51,7 @@ public class Parameters {
     public static final String PAGE_NUMBER = "_page";
 
     public static final String STATUS = "status";
+    public static final String SUCCESSOR = "successor";
 
     public static final String BATCH_REFERENCED = "batch-referenced";
     public static final String BATCH_MANAGED = "batch-managed";

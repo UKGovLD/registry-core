@@ -180,7 +180,6 @@ public abstract class TomcatTestBase {
         return r.accept(mime).get(ClientResponse.class);
     }
 
-
     protected Model checkModelResponse(String fetch, String rooturi, String file, Property...omit) {
         Model m = getModelResponse(fetch);
         Resource actual = m.getResource(rooturi);
@@ -188,6 +187,10 @@ public abstract class TomcatTestBase {
         assertTrue(expected.listProperties().hasNext());  // guard against wrong rooturi in config
         TestUtil.testResourcesMatch(expected, actual, omit);
         return m;
+    }
+
+    protected Model checkModelResponse(String fetch, String file, Property...omit) {
+        return checkModelResponse(getModelResponse(fetch), file, omit);
     }
 
     protected Model checkModelResponse(Model m, String rooturi, String file, Property...omit) {
@@ -250,8 +253,7 @@ public abstract class TomcatTestBase {
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    return;
                 }
                 if (count++ > 10) {
                     assertTrue("Too many tries", false);

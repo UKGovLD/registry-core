@@ -27,6 +27,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -34,11 +35,10 @@ import java.util.Set;
 
 import javax.ws.rs.core.Response;
 
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.UnavailableSecurityManagerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.rdfutil.QueryUtil;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Command;
@@ -50,13 +50,11 @@ import com.epimorphics.registry.core.ValidationResponse;
 import com.epimorphics.registry.message.Message;
 import com.epimorphics.registry.security.RegAction;
 import com.epimorphics.registry.security.RegPermission;
-import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.store.EntityInfo;
 import com.epimorphics.registry.util.Prefixes;
-import com.epimorphics.registry.vocab.Ldbp;
+import com.epimorphics.registry.vocab.Ldp;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.Parameters;
-import com.epimorphics.server.webapi.WebApiException;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.util.NameUtils;
 import com.epimorphics.util.PrefixUtils;
@@ -72,7 +70,6 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.sparql.util.Closure;
-import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
@@ -91,23 +88,19 @@ public class CommandRegister extends Command {
     boolean needStatusPermission = false;
 
     Register parentRegister;
+    List<RegisterItem> notifications = new ArrayList<>();
 
     @Override
     public ValidationResponse validate() {
         boolean isBatch = parameters.containsKey(Parameters.BATCH_MANAGED) || parameters.containsKey(Parameters.BATCH_REFERENCED);
-        store.lock(target);
-        try {
-            Description d = store.getCurrentVersion(target);
-            if (d == null) {
-                return new ValidationResponse(NOT_FOUND, "No such register");
-            }
-            if (!(d instanceof Register)) {
-                return new ValidationResponse(BAD_REQUEST, "Can only register items in a register");
-            }
-            parentRegister = d.asRegister();
-        } finally {
-            store.unlock(target);
+        Description d = store.getCurrentVersion(target);
+        if (d == null) {
+            return new ValidationResponse(NOT_FOUND, "No such register");
         }
+        if (!(d instanceof Register)) {
+            return new ValidationResponse(BAD_REQUEST, "Can only register items in a register");
+        }
+        parentRegister = d.asRegister();
 
         for (Resource validationQuery : RDFUtil.allResourceValues(parentRegister.getRoot(), RegistryVocab.validationQuery)) {
             String query = RDFUtil.getStringValue(validationQuery, RegistryVocab.query);
@@ -127,6 +120,7 @@ public class CommandRegister extends Command {
 
         needStatusPermission = statusOverride != null;
 
+        boolean foundEntries = false;
         for (ResIterator ri = payload.listSubjectsWithProperty(RDF.type, RegistryVocab.RegisterItem); ri.hasNext();) {
             Resource itemSpec = ri.next();
             StmtIterator i = itemSpec.listProperties(RegistryVocab.status);
@@ -153,37 +147,28 @@ public class CommandRegister extends Command {
                     return entityValid;
                 }
             }
+            foundEntries = true;
         }
-
-        return ValidationResponse.OK;
-    }
-
-    private ValidationResponse validateEntity(Register parent, Resource entity) {
-        if (entity == null) {
-            return new ValidationResponse(BAD_REQUEST, "Missing entity");
-        }
-
-        if ( !entity.hasProperty(RDF.type) || !entity.hasProperty(RDFS.label) ) {
-            return new ValidationResponse(BAD_REQUEST, "Missing required property (rdf:type or rdfs:label) on " + entity);
-        }
-
-        List<Resource> itemClasses = RDFUtil.allResourceValues(parent.getRoot(), RegistryVocab.containedItemClass);
-        boolean foundLegalType = itemClasses.isEmpty();
-        for (Resource itemClass : itemClasses) {
-            if (entity.hasProperty(RDF.type, itemClass)) {
-                foundLegalType = true;
-                break;
+        if (!isBatch && !foundEntries) {
+            // Check for direct registration of entities
+            for (Resource entity : findEntities()) {
+                ValidationResponse entityValid = validateEntity(parentRegister, entity );
+                if (!entityValid.isOk()) {
+                    return entityValid;
+                }
+                foundEntries = true;
             }
         }
-        if (!foundLegalType) {
-            return new ValidationResponse(BAD_REQUEST, "Entity does not have one of the types required by this register: " + entity);
+
+        if (!isBatch && !foundEntries) {
+            return new ValidationResponse(BAD_REQUEST, "No items found in request");
         }
         return ValidationResponse.OK;
     }
 
     @Override
-    public RegPermission permissionRequried() {
-        RegPermission required = super.permissionRequried();
+    public RegPermission permissionRequired() {
+        RegPermission required = super.permissionRequired();
         if (needStatusPermission) {
             required.addAction(RegAction.StatusUpdate);
         }
@@ -193,31 +178,38 @@ public class CommandRegister extends Command {
     @Override
     public Response doExecute() {
 
-        store.lock(target);
-        try {
-            Resource location = null;
-            if (parameters.containsKey(Parameters.BATCH_MANAGED) || parameters.containsKey(Parameters.BATCH_REFERENCED)) {
-                location = batchRegister(parentRegister);
+        Resource location = null;
+        if (parameters.containsKey(Parameters.BATCH_MANAGED) || parameters.containsKey(Parameters.BATCH_REFERENCED)) {
+            location = batchRegister(parentRegister);
+        } else {
+            if (payload.contains(null, RDF.type, RegistryVocab.RegisterItem)) {
+                for (ResIterator ri = payload.listSubjectsWithProperty(RDF.type, RegistryVocab.RegisterItem); ri.hasNext();) {
+                    Resource itemSpec = ri.next();
+                    location = register(parentRegister, itemSpec, true, false);
+                }
             } else {
-                if (payload.contains(null, RDF.type, RegistryVocab.RegisterItem)) {
-                    for (ResIterator ri = payload.listSubjectsWithProperty(RDF.type, RegistryVocab.RegisterItem); ri.hasNext();) {
-                        Resource itemSpec = ri.next();
-                        location = register(parentRegister, itemSpec, true, false);
-                    }
-                } else {
-                    location = register(parentRegister, findSingletonRoot(), false, false);
+                Collection<Resource> entities = findEntities();
+                if (entities.isEmpty()) {
+                    throw new WebApiException(Response.Status.BAD_REQUEST, "No items or entities found");
+                }
+                for (Resource entity : entities) {
+                    location = register(parentRegister, entity, false, false);
                 }
             }
-            // Update the register itself only after all the items have been registered
-            // TODO could have consistent date stamp across these if we want
-            store.update(parentRegister);
-            try {
-                return Response.created(new URI(location.getURI())).build();
-            } catch (URISyntaxException e) {
-                throw new EpiException(e);
-            }
-        } finally {
-            store.unlock(target);
+        }
+        // Update the register itself only after all the items have been registered
+        // TODO could have consistent date stamp across these if we want
+        store.update(parentRegister);
+        store.commit();
+        
+        for (RegisterItem item : notifications) {
+            notify( new Message(this, item) );
+        }
+
+        try {
+            return Response.created(new URI(location.getURI())).build();
+        } catch (URISyntaxException e) {
+            throw new EpiException(e);
         }
     }
 
@@ -226,10 +218,14 @@ public class CommandRegister extends Command {
         Resource type = null;
         RegisterItem bulkItem = null;
         while (types.hasNext()) {
-            type = types.next().getResource("type");
-            bulkItem = getBulkType(type);
-            if (bulkItem != null) {
-                break;
+            Resource ty = types.next().getResource("type");
+            RegisterItem bt = getBulkType(ty);
+            if (bt != null) {
+                if (type == null || type.equals(RegistryVocab.Register) ) {
+                    // Allow more specific bulk items to take precedence over reg:Register
+                    type = ty;
+                    bulkItem = bt;
+                }
             }
         }
         if (bulkItem == null) {
@@ -246,9 +242,10 @@ public class CommandRegister extends Command {
 
         // Find membership property
         boolean isInverse = false;
-        Property memberProp = RDFUtil.asProperty( bulkItem.getRoot().getPropertyResourceValue(Ldbp.membershipPredicate) );
+        Resource rt = bulkItem.getRoot();
+        Property memberProp = Register.getMembershipPredicate( rt );
         if (memberProp == null) {
-            memberProp = RDFUtil.asProperty( bulkItem.getRoot().getPropertyResourceValue(RegistryVocab.inverseMembershipPredicate) );
+            memberProp = Register.getInvMembershipPredicate(rt);
             if (memberProp == null) {
                 memberProp = RDFS.member;
             } else {
@@ -298,7 +295,7 @@ public class CommandRegister extends Command {
                 // TODO make it the submitter
             }
         }
-        root.addProperty(isInverse ? RegistryVocab.inverseMembershipPredicate : Ldbp.membershipPredicate, memberProp);
+        root.addProperty(isInverse ? Ldp.isMemberOfRelation : Ldp.hasMemberRelation, memberProp);
         Resource item = register(parent, root, false, false);
         String registerURI = item.getURI().replaceAll("/_([^/]*)$", "/$1");
         Register newReg = store.getCurrentVersion(registerURI).asRegister();
@@ -348,65 +345,13 @@ public class CommandRegister extends Command {
         }
         ri.setAsGraph(asGraph);
 
-        if (store.getDescription(ri.getRoot().getURI()) != null) {
-            // Item already exists
-            throw new WebApiException(Response.Status.FORBIDDEN, "Item already registered at request location: " + ri.getRoot());
-        }
-
-        ValidationResponse entityValid = validateEntity(parent, ri.getEntity() );
-        if (!entityValid.isOk()) {
-            throw new WebApiException(entityValid.getStatus(), entityValid.getMessage());
-        }
-        ri.skolemize();
-
         if (statusOverride != null) {
             ri.getRoot().removeAll(RegistryVocab.status);
             ri.getRoot().addProperty(RegistryVocab.status, statusOverride.getResource());
         }
-
-        // Santization
-        for (Property p : RegisterItem.INTERNAL_PROPS) {
-            ri.getRoot().removeAll(p);
-        }
-
-        // Submitter
-        Model m = ri.getRoot().getModel();
-        Resource submitter = m.createResource();
-        try {
-            UserInfo userinfo = (UserInfo) SecurityUtils.getSubject().getPrincipal();
-            submitter
-            .addProperty(FOAF.name, userinfo.getName())
-            .addProperty(FOAF.openid, m.createResource( userinfo.getOpenid()) );
-        } catch (UnavailableSecurityManagerException e) {
-            // Occurs during bootstrap
-            submitter.addProperty(FOAF.name, "bootstrap");
-        }
-        ri.getRoot().addProperty(RegistryVocab.submitter, submitter);
-
-        Resource entity = ri.getEntity();
-        // Normalization closures
-        // TODO factor these out as SPARQL constructs in an external file?
-        if( entity.hasProperty(RDF.type, RegistryVocab.Register) ) {
-            // TODO fill in void description
-            entity.addProperty(RDF.type, Ldbp.Container);
-            log.info("Created new sub-register: " + ri.getNotation());
-        }
-        if (entity.hasProperty(RDF.type, RegistryVocab.FederatedRegister)
-                || entity.hasProperty(RDF.type, RegistryVocab.NamespaceForward)
-                || entity.hasProperty(RDF.type, RegistryVocab.DelegatedRegister)) {
-            entity.addProperty(RDF.type, RegistryVocab.Delegated);
-            ri.getRoot().addProperty(RegistryVocab.itemClass, RegistryVocab.Delegated);
-            if (entity.hasProperty(RDF.type, RegistryVocab.DelegatedRegister)) {
-                entity.addProperty(RDF.type, RegistryVocab.Register);
-                ri.getRoot().addProperty(RegistryVocab.itemClass, RegistryVocab.Register);
-            }
-        }
-        store.addToRegister(parent, ri);
-        checkDelegation(ri);
-
-        notify( new Message(this, ri) );
-
-        return ri.getRoot();
+        
+        notifications.add(ri);
+        return addToRegister(parent, ri);
     }
 
 

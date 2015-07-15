@@ -40,28 +40,24 @@ public class CommandAnnotate extends Command {
     @Override
     public Response doExecute() {
         String graphURI = target + "?annotation=" + parameters.getFirst(Parameters.ANNOTATION);
-        store.lock(target);
+        RegisterItem item = store.getItem(target, false);
+        if (item == null) {
+            throw new NotFoundException();
+        }
+        store.storeGraph(graphURI, getPayload());
+        item.getRoot().addProperty(RegistryVocab.annotation, ResourceFactory.createResource(graphURI));
+        store.update(item, false);
+        store.commit();
+        
+        // notify event
+        Message message = new Message(this);
+        message.setMessage( payload );
+        notify(message);
+        
         try {
-            RegisterItem item = store.getItem(target, false);
-            if (item == null) {
-                throw new NotFoundException();
-            }
-            store.storeGraph(graphURI, getPayload());
-            item.getRoot().addProperty(RegistryVocab.annotation, ResourceFactory.createResource(graphURI));
-            store.update(item, false);
-            
-            // notify event
-            Message message = new Message(this);
-            message.setMessage( payload );
-            notify(message);
-            
-            try {
-                return Response.created(new URI(graphURI)).build();
-            } catch (URISyntaxException e) {
-                throw new EpiException(e);
-            }
-        } finally {
-            store.unlock(target);
+            return Response.created(new URI(graphURI)).build();
+        } catch (URISyntaxException e) {
+            throw new EpiException(e);
         }
     }
 

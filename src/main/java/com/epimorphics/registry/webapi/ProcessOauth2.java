@@ -7,7 +7,7 @@ import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.security.UserStore;
 import com.epimorphics.registry.util.OAuthParams;
 import com.epimorphics.registry.util.Oauth2Util;
-import com.epimorphics.server.webapi.WebApiException;
+import com.epimorphics.appbase.webapi.WebApiException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.oltu.oauth2.client.OAuthClient;

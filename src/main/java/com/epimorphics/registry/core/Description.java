@@ -21,9 +21,7 @@
 
 package com.epimorphics.registry.core;
 
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.util.VersionUtil;
@@ -51,11 +49,7 @@ import com.hp.hpl.jena.vocabulary.RDF;
 public class Description {
 
     protected Resource root;
-
-    // TODO the recording of changes is currently not used either remove or extend to entities so it can be used uniformly
-    protected List<Statement> removals = new ArrayList<Statement>();
-    protected List<Statement> additions = new ArrayList<Statement>();
-
+    
     /**
      * Construct a description from a root resource. This is assumed to already
      * be in a local memory model which can be used as the base model.
@@ -163,7 +157,7 @@ public class Description {
      */
     public Description remove(Property p) {
         for (StmtIterator si = root.listProperties(p); si.hasNext();) {
-            removals.add(si.next());
+            si.next();
             si.remove();
         }
         return this;
@@ -176,7 +170,6 @@ public class Description {
         Model m = root.getModel();
         Statement s = m.createStatement(root, p, value);
         m.add(s);
-        additions.add(s);
         return this;
     }
 
@@ -208,19 +201,4 @@ public class Description {
         return setProperty(p, root.getModel().createTypedLiteral(Calendar.getInstance()));
     }
 
-    /**
-     * Return the set of statements that have been added to this description since it was created.
-     * For use by StoreAPI implementation.
-     */
-    public List<Statement> getAdditions() {
-        return additions;
-    }
-
-    /**
-     * Return the set of statements that have been removed from this description since it was created.
-     * For use by StoreAPI implementation.
-     */
-    public List<Statement> getRemovals() {
-        return removals;
-    }
 }

@@ -81,7 +81,6 @@ public class CommandGraphRegister extends CommandRegister {
 
     @Override
     public Response doExecute() {
-        store.lock(parent);
         try {
             // Check if this entity is already registered
             RegisterItem item = store.getItem(parent +"/_" + lastSegment, false);
@@ -92,17 +91,17 @@ public class CommandGraphRegister extends CommandRegister {
                 item.setAsGraph(true);
                 item.updateForEntity(false, Calendar.getInstance());
                 String versionURI = store.update(item, true);
+                store.commit();
                 return Response.noContent().location(new URI(versionURI)).build();
 
             } else {
                 Resource location = register(parentRegister, root, false, true);
+                store.commit();
                 return Response.created(new URI(location.getURI())).build();
 
             }
         } catch (URISyntaxException e) {
             throw new WebApplicationException(e);
-        } finally {
-            store.unlock(parent);
         }
     }
 

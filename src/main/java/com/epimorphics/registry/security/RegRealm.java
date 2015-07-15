@@ -45,13 +45,16 @@ import com.epimorphics.util.EpiException;
  */
 public class RegRealm extends BaseRegRealm {
     protected UserStore userstore;
-
-    public RegRealm() {
-        super();
-        userstore = Registry.get().getUserStore();
-        userstore.setRealm(this);
+   
+    /**
+     * Configure the user store for this realm
+     */
+    public void setUserStore(UserStore store) {
+        userstore = store;
+        store.setRealm(this);
+        Registry.get().setUserStore(store);
     }
-
+ 
     public UserStore getUserStore() {
         return userstore;
     }

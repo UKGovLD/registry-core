@@ -24,11 +24,12 @@ package com.epimorphics.registry.store;
 import java.util.Calendar;
 import java.util.List;
 
+import org.apache.jena.riot.system.StreamRDF;
+
 import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.ForwardingRecord;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
-import com.epimorphics.server.indexers.LuceneResult;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -36,23 +37,53 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
  * Abstract interface onto the underlying versioned RDF storage and
- * indexing system. Should support non-RDF storage options as well as
- * straight triple stores.
+ * indexing system. 
  *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
+
+// TODO review this - it has accreted operations as they extensions have demanded them and is now
+//                    rather unwieldy. Is there a useful set of core operations somewhere between 
+//                    raw RDF storage and this application-centred API?
+
 public interface StoreAPI {
+    
+    /**
+     * Begin a read transaction. 
+     */
+    public void beginRead();
+    
+    /**
+     * Begin a write transaction
+     */
+    public void beginWrite();
 
     /**
-     * Lock a specific resource for updating. Will block until any existing lock is lifted.
+     * Commit a write transaction
      */
-    public void lock(String uri);
+    public void commit();
 
     /**
-     * Release the "forupdate" lock on the given URI (should be a Register or RegisterItem).
-     * Throws an error if there is no such lock.
+     * Abort a write transaction
      */
-    public void unlock(String uri);
+    public void abort();
+    
+    /**
+     * Finish a transaction. If this is a write transaction and commit has not been called
+     * then the transaction is aborted.
+     */
+    public void end();
+    
+    /**
+     * Begin a safe read block. If the store is already in a transaction this is a no-op, otherwise
+     * it starts a read transaction.
+     */
+    public void beginSafeRead();
+    
+    /**
+     * End a safe read block. If the transaction was created by the corresponding beginSafeRead then close the read transaction.
+     */
+    public void endSafeRead();
 
     // --- Methods for access versions of resource descriptions ---
 
@@ -205,12 +236,10 @@ public interface StoreAPI {
 
     /**
      * Free text search over the registered items
-     * @param query the text query, supports lucence search syntax
-     * @param offset the number of results to skip (to find desired page)
-     * @param maxresults the maximum number of results to return
-     * @param fields alternating list of tagname/tagvalue pairs
+     * @param query the search parameters
+     * @return list of URIs for the matched RegisterItems
      */
-    public LuceneResult[] search(String query, int offset, int maxresults, String...fields);
+    public List<String> search(SearchRequest query);
 
     /**
      * Tests if the register contains an item with the given notation (relative URI)
@@ -238,6 +267,24 @@ public interface StoreAPI {
     // This breaks the internal goal of hiding sparql, which in turn was to leave
     // open a path to simpler versioning implementations and maybe non-triple store implementations
     // The weasel words in the javadoc are intended to leave the possibility of just using
-    // SPARQL for accessing the graph annotations (for which there's no alterantive anyway)
+    // SPARQL for accessing the graph annotations (for which there's no alternative anyway)
     public ResultSet query(String query);
+    
+    /**
+     * Delete all versions of an entry from the store.
+     * For an item it deletes the associated entity (including it's graph).
+     * For a register it recursively deletes all the register members as well.
+     */
+    public void delete(String uri);
+    
+    /**
+     * Generate an export of the complete registry state for some tree of registers
+     */
+    public void exportTree(String uri, StreamRDF out);
+    
+    /**
+     * Import a complete registry state, deletes the existing state if any
+     */
+    public StreamRDF importTree(String uri);
+    
 }

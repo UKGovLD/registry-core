@@ -31,21 +31,19 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-
-import javax.servlet.ServletContext;
 
 import org.apache.shiro.util.ByteSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.epimorphics.server.core.Service;
-import com.epimorphics.server.core.Shutdown;
+import com.epimorphics.appbase.core.App;
+import com.epimorphics.appbase.core.Shutdown;
+import com.epimorphics.appbase.core.Startup;
 import com.epimorphics.util.EpiException;
 import com.hp.hpl.jena.util.FileManager;
 
-public class DBUserStore extends BaseUserStore implements UserStore, Service, Shutdown {
+public class DBUserStore extends BaseUserStore implements UserStore, Shutdown, Startup {
     static final Logger log = LoggerFactory.getLogger( DBUserStore.class );
 
     public static final String DATABASE_PARAM = "dbfile";
@@ -57,21 +55,29 @@ public class DBUserStore extends BaseUserStore implements UserStore, Service, Sh
     protected static final String protocol = "jdbc:derby:";
 
     protected Connection conn;
+    
+    protected String home;
 
-    @Override
-    public void init(Map<String, String> config, ServletContext context) {
-        super.init(config, context);
-        String home = getRequiredParam(SYSTEM_HOME_PARAM);
+    public void setHome(String home) {
+        this.home = home;
         System.setProperty(SYSTEM_HOME_PROP, home);
+    }
+    
+    public void setDbfile(String dbName) {
         try {
             Class.forName(driver).newInstance();
-            String dbName = getRequiredParam(DATABASE_PARAM);
             conn = DriverManager.getConnection(protocol + dbName + ";create=true");
         } catch (Exception e) {
             log.error("*** Security configuration error ***", e);
         }
     }
-
+    
+    @Override
+    public void startup(App app) {
+        require(home, SYSTEM_HOME_PROP);
+        require(conn, DATABASE_PARAM);
+    }
+    
     protected boolean initstore() {
         if (conn != null) {
             try {

@@ -3,7 +3,7 @@
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
 
-  <display-name>UKL Registry POC</display-name>
+  <display-name>LD Registry</display-name>
 
   <filter>
     <filter-name>ShiroFilter</filter-name>
@@ -29,11 +29,7 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
 
   <filter>
     <filter-name>VelocityFilter</filter-name>
-    <filter-class>com.epimorphics.server.templates.VelocityFilter</filter-class>
-    <init-param>
-      <param-name>renderService</param-name>
-      <param-value>velocity</param-value>
-    </init-param>
+    <filter-class>com.epimorphics.appbase.webapi.VelocityFilter</filter-class>
   </filter>
 
   <!-- Most security is done at the Jersey resource level not here -->
@@ -55,15 +51,26 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
     <filter-name>VelocityFilter</filter-name>
     <url-pattern>/ui/*</url-pattern>
   </filter-mapping>
-
+ 
+  <context-param>
+    <param-name>AppConfig.app</param-name>
+    <!-- Will initialize from first of these it finds -->
+    <param-value>/opt/ldregistry/config/app.conf,{webapp}/WEB-INF/app.conf,/etc/ldregistry/app.conf</param-value>
+  </context-param>
+  
+  <context-param>
+    <param-name>registry-file-root</param-name>
+    <param-value>/opt/ldregistry</param-value>
+  </context-param>
+  
   <listener>
     <listener-class>com.epimorphics.registry.core.RegistryDirBootstrap</listener-class>
   </listener>
 
   <listener>
-    <listener-class>com.epimorphics.server.core.ServiceConfig</listener-class>
+    <listener-class>com.epimorphics.appbase.core.AppConfig</listener-class>
   </listener>
-
+ 
   <listener>
       <listener-class>org.apache.shiro.web.env.EnvironmentLoaderListener</listener-class>
   </listener>
@@ -72,17 +79,6 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
     <!-- web.xml expects the session timeout in minutes: -->
     <session-timeout>30</session-timeout>
   </session-config>
-
-  <context-param>
-    <param-name>registry-file-root</param-name>
-    <param-value>/opt/ldregistry</param-value>
-  </context-param>
-
-  <context-param>
-    <param-name>service-config</param-name>
-    <!-- Will initialize from first of these it finds, so external overrides internal -->
-    <param-value>/opt/ldregistry/config/services.conf|${webapp}/WEB-INF/services.conf</param-value>
-  </context-param>
 
     <servlet>
         <servlet-name>sparql</servlet-name>

@@ -61,8 +61,9 @@ public class RegistryDirBootstrap implements ServletContextListener {
             ensureDirectory("config");
             ensureFile("config/user.ini", "WEB-INF/user.ini");
             ensureFile("config/root-register.ttl", "WEB-INF/root-register.ttl");
-            ensureFile("config/services.conf", "WEB-INF/services.conf");
+            ensureFile("config/app.conf", "WEB-INF/app.conf");
             ensureDirectory("boot", "WEB-INF/boot");
+            ensureDirectory("ui");
             ensureDirectory("ui/css", "ui/css");
             ensureDirectory("ui/images", "ui/images");
             ensureDirectory("ui/img", "ui/img");

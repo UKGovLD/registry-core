@@ -43,7 +43,7 @@ import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.epimorphics.registry.vocab.Prov;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.Parameters;
-import com.epimorphics.server.webapi.WebApiException;
+import com.epimorphics.appbase.webapi.WebApiException;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -80,7 +80,6 @@ public class CommandTag extends Command {
         Model collectionModel = ModelFactory.createDefaultModel();
         Resource collection = collectionModel.createResource(target + "?tag=" + tag)
                 .addProperty(RDF.type, Prov.Collection);
-        store.lock(target);
         try {
             now = Calendar.getInstance();
             long regVersion = RDFUtil.getLongValue(register.getRoot(), OWL.versionInfo);
@@ -101,11 +100,11 @@ public class CommandTag extends Command {
             store.storeGraph(collection.getURI(), collectionModel);
             register.getRoot().addProperty(RegistryVocab.release, collection);
             store.update(register);
+            store.commit();
+            
             return Response.created( new URI(collection.getURI()) ).build();
         } catch (URISyntaxException e) {
             throw new WebApiException(Response.Status.INTERNAL_SERVER_ERROR, "Illegal URL generated for tagged collection: " + collection);
-        } finally {
-            store.unlock(target);
         }
     }
 

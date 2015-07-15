@@ -29,7 +29,7 @@ import java.util.List;
 import org.junit.Test;
 
 import com.epimorphics.rdfutil.RDFUtil;
-import com.epimorphics.registry.vocab.Ldbp;
+import com.epimorphics.registry.vocab.Ldbp_orig;
 import com.epimorphics.util.TestUtil;
 import com.epimorphics.vocabs.API;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -81,17 +81,17 @@ public class TestSearchAPI extends TomcatTestBase {
 
         checkSearch("query=collection+item", "item 1", "item 2", "item 3", "A test collection");
 
-        checkSearch("query=collection+item&type=http://www.w3.org/2004/02/skos/core%23Concept", "item 1", "item 2", "item 3");
+        checkSearch("query=collection+item&rdf:type=http://www.w3.org/2004/02/skos/core%23Concept", "item 1", "item 2", "item 3");
 
         assertEquals(204, post(BASE_URL + "collection/_item2?update&status=stable").getStatus());
-        checkSearch("query=collection+item&status=http://purl.org/linked-data/registry%23statusStable", "item 2");
+        checkSearch("query=collection+item&status=stable", "item 2");
 
 //        m.write(System.out, "Turtle");
     }
 
     protected Model checkSearch(String query, String...members) {
         Model m = getModelResponse(BASE_URL + "?" + query);
-        List<RDFNode> roots = m.listObjectsOfProperty(Ldbp.pageOf).toList();
+        List<RDFNode> roots = m.listObjectsOfProperty(Ldbp_orig.pageOf).toList();
         assertEquals(1, roots.size());
         Resource result = roots.get(0).asResource();
         List<String> actual = new ArrayList<String>();
