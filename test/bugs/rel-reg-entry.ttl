@@ -1,0 +1,19 @@
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dc:    <http://purl.org/dc/elements/1.1/> .
+@prefix dct:   <http://purl.org/dc/terms/> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+
+<entity1>
+        a                 skos:Concept ;
+        rdfs:label        "test entity 1"@en ;
+        dct:description   "A test entity #1"@en ;
+        skos:narrower      <entity2> ;
+        skos:topConceptOf     <../test1> .
+
+<entity2>
+        a                 skos:Concept ;
+        rdfs:label        "test entity 2"@en ;
+        dct:description   "A test entity #2"@en ;
+        skos:broader      <entity1> .
