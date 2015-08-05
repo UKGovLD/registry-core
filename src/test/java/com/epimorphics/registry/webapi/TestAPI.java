@@ -1004,6 +1004,10 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(201, postFileStatus("test/multiload/load123.ttl", REGF));
         checkModelResponse(REGF + "?status=any", "test/multiload/expected.ttl", 
                 DCTerms.dateSubmitted, DCTerms.modified);
+        Model model = getModelResponse(REGF+"/item1?status=any&_view=with_metadata");
+        List<Resource> entities = model.listSubjectsWithProperty(RDF.type, SKOS.Concept).toList();
+        assertTrue( entities.contains( model.getResource("http://location.data.gov.uk/regf/item1") ) );
+        assertEquals(1, entities.size());        
     }
 
     /**

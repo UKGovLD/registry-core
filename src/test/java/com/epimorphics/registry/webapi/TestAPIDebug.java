@@ -21,10 +21,12 @@
 
 package com.epimorphics.registry.webapi;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -33,18 +35,20 @@ import com.epimorphics.registry.store.Store;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
+import com.epimorphics.vocabs.SKOS;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.sparql.util.Closure;
+import com.hp.hpl.jena.vocabulary.DCTerms;
+import com.hp.hpl.jena.vocabulary.RDF;
 import com.sun.jersey.api.client.ClientResponse;
 
 /**
- * Place where new webapi tests can be developed to investigate
- * reported problems. Once running they get merged
- * in the main tests in TestAPI.
+ * Place where new webapi tests can be developed to investigate reported
+ * problems. Once running they get merged in the main tests in TestAPI.
  *
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
@@ -59,20 +63,27 @@ public class TestAPIDebug extends TomcatTestBase {
 
     @Test
     public void testDebug() throws IOException {
-        
-
+        final String REGF = BASE_URL + "regf";
+        assertEquals(201, postFileStatus("test/multiload/regf.ttl", BASE_URL));
+        assertEquals(201, postFileStatus("test/multiload/load123.ttl", REGF));
+        checkModelResponse(REGF + "?status=any", "test/multiload/expected.ttl", 
+                DCTerms.dateSubmitted, DCTerms.modified);
+        Model model = getModelResponse(REGF+"/item1?status=any&_view=with_metadata");
+        List<Resource> entities = model.listSubjectsWithProperty(RDF.type, SKOS.Concept).toList();
+        assertTrue( entities.contains( model.getResource("http://location.data.gov.uk/regf/item1") ) );
+        assertEquals(1, entities.size());
     }
 
-
     // Debugging utility only, should not be used while transactions are live
-    public static void printResourceState(String...uris) {
-        Store storesvc = AppConfig.getApp().getComponentAs("basestore", Store.class);
+    public static void printResourceState(String... uris) {
+        Store storesvc = AppConfig.getApp().getComponentAs("basestore",
+                Store.class);
         storesvc.lock();
         try {
-            Dataset ds =  storesvc.asDataset();
+            Dataset ds = storesvc.asDataset();
             Model store = ds.getDefaultModel();
             Model description = ModelFactory.createDefaultModel();
-            for (String uri: uris) {
+            for (String uri : uris) {
                 Resource r = store.getResource(uri);
                 Closure.closure(r, false, description);
                 if (r.hasProperty(Version.currentVersion)) {
@@ -80,11 +91,14 @@ public class TestAPIDebug extends TomcatTestBase {
                     Closure.closure(r, false, description);
                 }
             }
-            description.setNsPrefixes( Prefixes.get() );
+            description.setNsPrefixes(Prefixes.get());
             description.write(System.out, "Turtle");
-            for (NodeIterator ni = description.listObjectsOfProperty(RegistryVocab.sourceGraph); ni.hasNext(); ) {
+            for (NodeIterator ni = description
+                    .listObjectsOfProperty(RegistryVocab.sourceGraph); ni
+                    .hasNext();) {
                 String graphname = ni.next().asResource().getURI();
-                Model graph = ModelFactory.createDefaultModel().add( ds.getNamedModel(graphname) );
+                Model graph = ModelFactory.createDefaultModel().add(
+                        ds.getNamedModel(graphname));
                 System.out.println("Graph " + graphname);
                 graph.setNsPrefixes(Prefixes.get());
                 graph.write(System.out, "Turtle");
@@ -94,17 +108,17 @@ public class TestAPIDebug extends TomcatTestBase {
         }
     }
 
-
     // Debugging utility only, should not be used while transactions are live
     public static void printStore() {
-        Store storesvc = AppConfig.getApp().getComponentAs("basestore", Store.class);
+        Store storesvc = AppConfig.getApp().getComponentAs("basestore",
+                Store.class);
         storesvc.lock();
         try {
-            Dataset ds =  storesvc.asDataset();
+            Dataset ds = storesvc.asDataset();
             Model store = ds.getDefaultModel();
             System.out.println("Default model:");
             store.write(System.out, "Turtle");
-            for (Iterator<String> i = ds.listNames(); i.hasNext(); ) {
+            for (Iterator<String> i = ds.listNames(); i.hasNext();) {
                 String graphName = i.next();
                 Model graph = ds.getNamedModel(graphName);
                 System.out.println("Graph " + graphName + ":");
@@ -117,7 +131,9 @@ public class TestAPIDebug extends TomcatTestBase {
 
     public static void debugStatus(ClientResponse response) {
         if (response.getStatus() >= 400) {
-            System.out.println("Response was: " + response.getEntity(String.class) + " (" + response.getStatus() + ")");
+            System.out.println("Response was: "
+                    + response.getEntity(String.class) + " ("
+                    + response.getStatus() + ")");
             assertTrue(false);
         }
     }

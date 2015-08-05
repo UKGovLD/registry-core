@@ -341,6 +341,10 @@ public class CommandRegister extends Command {
         if ( withItemSpec ) {
             ri = RegisterItem.fromRIRequest(itemSpec, parentURI, true);
         } else {
+            if (!asGraph) {
+                // Isolate this entity from the rest of the payload
+                itemSpec = itemSpec.inModel( Closure.closure(itemSpec, false) );
+            }
             ri = RegisterItem.fromEntityRequest(itemSpec, parentURI, true);
         }
         ri.setAsGraph(asGraph);
