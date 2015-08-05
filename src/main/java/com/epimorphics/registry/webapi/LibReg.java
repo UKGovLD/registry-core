@@ -655,11 +655,20 @@ public class LibReg extends ComponentBase implements LibPlugin {
     static final String LABEL_QUERY =
               "SELECT * WHERE {\n"
               + "    VALUES ?resource {$LIST$}\n"
-              + "    OPTIONAL {?resource rdfs:label ?label}\n"
-              + "    OPTIONAL {?resource foaf:name  ?name}\n"
-              + "    OPTIONAL {?resource skos:prefLabel ?pref}\n"
-              + "    OPTIONAL {?resource skos:altLabel  ?alt}\n"
-              + "    OPTIONAL {?resource dct:title  ?title}\n"
+              + "    {\n"
+              + "        OPTIONAL {?resource rdfs:label ?label}\n"
+              + "        OPTIONAL {?resource foaf:name  ?name}\n"
+              + "        OPTIONAL {?resource skos:prefLabel ?pref}\n"
+              + "        OPTIONAL {?resource skos:altLabel  ?alt}\n"
+              + "        OPTIONAL {?resource dct:title  ?title}\n"
+              + "    } UNION {\n"
+              + "        ?resource version:currentVersion ?current ."
+              + "        OPTIONAL {?current rdfs:label ?label}\n"
+              + "        OPTIONAL {?current foaf:name  ?name}\n"
+              + "        OPTIONAL {?current skos:prefLabel ?pref}\n"
+              + "        OPTIONAL {?current skos:altLabel  ?alt}\n"
+              + "        OPTIONAL {?current dct:title  ?title}\n"
+              + "    }\n"
               + "}";
     static final String[] VARS = new String[]{"label", "name", "pref", "alt", "title"};
     static final Property[] PROPS = new Property[]{RDFS.label, FOAF.name, SKOS.prefLabel, SKOS.altLabel, DCTerms.title};
