@@ -62,7 +62,7 @@ public class CommandSearch extends Command {
         if (!paged) {
             parameters.put(FIRST_PAGE, new ArrayList<String>());
             paged = true;
-            length = (int)registry.getPageSize();
+            length = MAX_LEN;
         }
     }
 
