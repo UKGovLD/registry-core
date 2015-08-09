@@ -79,7 +79,6 @@ import com.hp.hpl.jena.util.FileManager;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDF;
-import com.hp.hpl.jena.vocabulary.RDFS;
 
 /**
  * Implementation of the store API which uses a local triple store for persistence and
@@ -683,57 +682,37 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         try {
             // SelectBuilder doesn't support property paths so use brute force
             // string bashing
-            StringBuffer query = new StringBuffer();
-            query.append("PREFIX text: <http://jena.apache.org/text#>\n");
-            query.append(String.format("PREFIX reg:     <%s>\n",
-                    RegistryVocab.getURI()));
-            query.append(String.format("PREFIX version: <%s>\n",
-                    Version.getURI()));
-            query.append(String.format("PREFIX dct:     <%s>\n",
-                    DCTerms.getURI()));
-            query.append(String.format("PREFIX rdfs:    <%s>\n", RDFS.getURI()));
-            query.append("\nSELECT DISTINCT ?item WHERE {\n");
-            query.append(String.format("    ?entity text:query '%s' . \n",
-                    safeLiteral(request.getQuery())));
-
-            if (request.isSearchVersions()) {
-                query.append("    ?item ^dct:versionOf/reg:definition/reg:entity ?entity.\n");
-            } else {
-                query.append("    ?item version:currentVersion/reg:definition/reg:entity/version:currentVersion? ?entity.\n");
-            }
-
+            String query = request.isSearchVersions() ? QUERY_VERSION_TEMPLATE : QUERY_TEMPLATE;
+            query = query.replace("?text", safeLiteral(request.getQuery()) );
+            String filterStr = "";
+            
             if (request.getStatus() != null) {
                 String statusRef = "reg:status"
                         + StringUtils.capitalize(request.getStatus());
-                query.append(String.format(
-                        "   ?item version:currentVersion/reg:status %s.\n",
-                        statusRef));
+                filterStr = String.format("   ?item version:currentVersion/reg:status %s.\n", statusRef);
             }
 
             for (KeyValuePair filter : request.getFilters()) {
                 String value = filter.value;
                 if (value.startsWith("http://") || value.startsWith("https://")) {
-                    query.append(String.format("    ?entity <%s> <%s>.\n",
-                            filter.key, safeURI(value)));
+                    filterStr += String.format("    ?entity <%s> <%s>.\n", filter.key, safeURI(value));
                 } else {
-                    query.append(String.format("    ?entity <%s> '%s'.\n",
-                            filter.key, safeLiteral(value)));
+                    filterStr += String.format("    ?entity <%s> '%s'.\n", filter.key, safeLiteral(value));
                 }
             }
-            query.append("} ");
+            query = query.replace("#$FILTER$", filterStr);
 
             if (request.getLimit() != null) {
-                query.append("LIMIT " + request.getLimit() + " ");
+                query += "LIMIT " + request.getLimit() + " ";
             }
 
             if (request.getOffset() != null) {
-                query.append("OFFSET " + request.getOffset());
+                query +=  "OFFSET " + request.getOffset();
             }
 
-            // log.debug("Search query = " + query.toString());
+            // log.info("Search query = " + query.toString());
 
-            QueryExecution exec = QueryExecutionFactory.create(
-                    query.toString(), store.asDataset());
+            QueryExecution exec = QueryExecutionFactory.create( query, store.asDataset() );
             try {
                 ResultSet results = exec.execSelect();
                 List<String> matches = new ArrayList<String>();
@@ -752,6 +731,35 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         }
     }
 
+    private static final String QUERY_TEMPLATE= 
+              "PREFIX text:    <http://jena.apache.org/text#>\n"
+            + "PREFIX reg:     <http://purl.org/linked-data/registry#>\n"
+            + "PREFIX version: <http://purl.org/linked-data/version#>\n"
+            + "PREFIX dct:     <http://purl.org/dc/terms/>\n"
+            + "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>\n"
+            + "SELECT DISTINCT ?item WHERE {\n"
+            + "    {\n"
+            + "        ?entity text:query '?text' .\n"
+            + "        ?item version:currentVersion/reg:definition/reg:entity ?entity.\n"
+            + "    } UNION {\n"
+            + "        ?entity text:query '?text' .\n"
+            + "        ?item version:currentVersion/reg:definition/reg:entity/version:currentVersion ?entity.\n"
+            + "    }\n"
+            + "    #$FILTER$\n"
+            + "}";
+
+    private static final String QUERY_VERSION_TEMPLATE= 
+              "PREFIX text:    <http://jena.apache.org/text#>\n"
+            + "PREFIX reg:     <http://purl.org/linked-data/registry#>\n"
+            + "PREFIX version: <http://purl.org/linked-data/version#>\n"
+            + "PREFIX dct:     <http://purl.org/dc/terms/>\n"
+            + "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>\n"
+            + "SELECT DISTINCT ?item WHERE {\n"
+            + "    ?entity text:query '?text' .\n"
+            + "    ?item ^dct:versionOf/reg:definition/reg:entity ?entity.\n"
+            + "    #$FILTER$\n"
+            + "}";
+    
     private String safeLiteral(String value) {
         return value.replace("'", "\\'");
     }
