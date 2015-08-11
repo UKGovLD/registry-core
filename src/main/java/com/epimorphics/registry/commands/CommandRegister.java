@@ -271,7 +271,10 @@ public class CommandRegister extends Command {
             }
         }
         if (children.isEmpty()) {
-            throw new WebApiException(BAD_REQUEST, "No children of bulk collection type found");
+            String btLabel = Prefixes.get().shortForm(type.getURI()); 
+            String mpLabel = (isInverse ? "^" : "") + Prefixes.get().shortForm(memberProp.getURI()); 
+            throw new WebApiException(BAD_REQUEST, 
+                    String.format( "Found bulk collection type %s, but no children found using membership property %s", btLabel, mpLabel )); 
         }
 
         // Check if there are any suspiciously surplus resources
