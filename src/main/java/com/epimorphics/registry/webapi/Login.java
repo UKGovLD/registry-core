@@ -98,6 +98,7 @@ public class Login {
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.removeAttribute(VN_SUBJECT);
+            log.info("Logout by userid: " + SecurityUtils.getSubject().getPrincipal());
             SecurityUtils.getSubject().logout();
         }
         removeNocache(response);
