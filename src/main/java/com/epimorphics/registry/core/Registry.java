@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 
 import com.epimorphics.appbase.core.App;
 import com.epimorphics.appbase.core.ComponentBase;
+import com.epimorphics.appbase.core.GenericConfig;
 import com.epimorphics.appbase.core.Shutdown;
 import com.epimorphics.appbase.core.Startup;
 import com.epimorphics.appbase.templates.VelocityRender;
@@ -117,6 +118,7 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
     protected VelocityRender velocity;
     protected String backupDir;
     protected boolean redirectToHttpsOnLogin = false;
+    protected GenericConfig configExtensions;
     
     public void setBaseUri(String uri) {
         baseURI = uri;
@@ -189,6 +191,14 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
 
     public void setRedirectToHttpsOnLogin(boolean redirectToHttpsOnLogin) {
         this.redirectToHttpsOnLogin = redirectToHttpsOnLogin;
+    }
+
+    public GenericConfig getConfigExtensions() {
+        return configExtensions;
+    }
+
+    public void setConfigExtensions(GenericConfig configExtensions) {
+        this.configExtensions = configExtensions;
     }
 
     @Override
