@@ -682,4 +682,24 @@ public class LibReg extends ComponentBase implements LibPlugin {
             store.end();
         }
     }
+    
+    /**
+     * Transform a query string into a conjuctive, wildcard lucene query
+     */
+    public String asLucenceQuery(String in) {
+        String[] words = in.split("([\\+\\-\\&\\|!\\(\\)\\{\\}\\[\\]^\"~/\\.,]|\\s)+");
+        // Note this doesn't include ' which may need to be treated as a special case
+        
+        if (words.length >= 1) {
+            String query = "(";
+            int i = 0;
+            while (i < words.length -1) {
+                query += words[i++] + "* AND ";
+            }
+            query += words[i] + "*)";
+            return query.replace("'", "\\'");
+        } else {
+            return words[0];
+        }
+    }
 }
