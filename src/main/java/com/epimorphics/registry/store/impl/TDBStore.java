@@ -166,7 +166,7 @@ public class TDBStore  extends ComponentBase implements Store {
             }
             base += qEndpoint;
             DatasetRef ds = new DatasetRef();
-            ds.name = qEndpoint;
+            ds.name = base; // qEndpoint;
             ds.query.endpoints.add("query" ); 
             ds.init();
             ds.dataset = dataset.asDatasetGraph();
