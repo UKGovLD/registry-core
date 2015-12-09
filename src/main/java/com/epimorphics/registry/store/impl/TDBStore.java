@@ -23,11 +23,18 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import org.apache.jena.fuseki.server.DatasetRef;
 import org.apache.jena.fuseki.server.DatasetRegistry;
+import org.apache.jena.query.text.DatasetGraphText;
+import org.apache.jena.query.text.Entity;
 import org.apache.jena.query.text.EntityDefinition;
 import org.apache.jena.query.text.TextDatasetFactory;
+import org.apache.jena.query.text.TextIndex;
+import org.apache.jena.query.text.TextQueryFuncs;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -51,6 +58,7 @@ import com.hp.hpl.jena.query.ARQ;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.ReadWrite;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.sparql.core.Quad;
 import com.hp.hpl.jena.tdb.TDB;
 import com.hp.hpl.jena.tdb.TDBFactory;
 import com.hp.hpl.jena.util.FileUtils;
@@ -87,11 +95,13 @@ public class TDBStore  extends ComponentBase implements Store {
     public static final String UPDATE_ACTION = "UPDATE";
     public static final String DELETE_ACTION = "DELETE";
 
-    protected Dataset dataset;
+    protected Dataset dataset;        // Includes the lucene index, if any
+    protected Dataset baseDataset;    // Triple store only
     protected String logDirectory;
     protected String qEndpoint;
     protected File textIndex;      
     protected String indexSpec = null;
+    protected Directory dir;
 
     public void setEp(String endpoint) {
         qEndpoint = endpoint;
@@ -153,25 +163,11 @@ public class TDBStore  extends ComponentBase implements Store {
             log.warn("Opening in-memory database");
             dataset = TDBFactory.createDataset( );
         }
+        baseDataset = dataset;
 
         if (isUnionDefault) {
             // Nasty global side effect, in normal implementation this is done per query
             TDB.getContext().set(TDB.symUnionDefaultGraph, true) ;
-        }
-        
-        if (qEndpoint != null) {
-            String base = AppConfig.getAppConfig().getContext().getContextPath();
-            if ( ! base.endsWith("/")) {
-                base += "/";
-            }
-            base += qEndpoint;
-            DatasetRef ds = new DatasetRef();
-            ds.name = base; // qEndpoint;
-            ds.query.endpoints.add("query" ); 
-            ds.init();
-            ds.dataset = dataset.asDatasetGraph();
-            DatasetRegistry.get().put(base, ds);
-            log.info("Installing SPARQL query endpoint at " + base + "/query");
         }
         
         if (timeout != null) {
@@ -179,31 +175,68 @@ public class TDBStore  extends ComponentBase implements Store {
         }
         
         if (textIndex != null || indexSpec != null) {
-            try {
-                Directory dir = null;
-                if (textIndex == null) {
-                    log.warn("Opening memory based text index, will not preserved across restarts");
-                    dir = new RAMDirectory(); 
-                } else {
-                    dir = FSDirectory.open(textIndex);
-                }
-                EntityDefinition entDef = new EntityDefinition("uri", "text", RDFS.label.asNode()) ;
-                if (indexSpec != null) {
-                    for (String spec : indexSpec.split(",")) {
-                        String uri = Prefixes.getDefault().expandPrefix(spec.trim());
-                        if ( ! uri.equals("default") ) {
-                            Node predicate = NodeFactory.createURI(uri);
-                            if (!predicate.equals(RDFS.label.asNode())) {
-                                entDef.set("text", predicate);
-                            }
-                        }
+            makeTextDataset();
+        }        
+        
+        if (qEndpoint != null) {
+            bindFusekiRef();
+        }
+    }
+
+    private void bindFusekiRef() {
+        String base = AppConfig.getAppConfig().getContext().getContextPath();
+        if ( ! base.endsWith("/")) {
+            base += "/";
+        }
+        base += qEndpoint;
+        DatasetRef ds = new DatasetRef();
+        ds.name = base; // qEndpoint;
+        ds.query.endpoints.add("query" ); 
+        ds.init();
+        ds.dataset = dataset.asDatasetGraph();
+        DatasetRegistry.get().put(base, ds);
+        log.info("Installing SPARQL query endpoint at " + base + "/query");
+    }
+
+    private void makeTextDataset() {
+        try {
+            dir = null;
+            if (textIndex == null) {
+                log.warn("Opening memory based text index, will not preserved across restarts");
+                dir = new RAMDirectory(); 
+            } else {
+                dir = FSDirectory.open(textIndex);
+            }
+            EntityDefinition entDef = makeEntityDef();
+            dataset = TextDatasetFactory.createLucene(baseDataset, dir, entDef, new StandardAnalyzer(org.apache.jena.query.text.TextIndexLucene.VER)) ;            
+        } catch (IOException e) {
+            throw new EpiException("Failed to create jena-text lucence index area", e);
+        }
+    }
+
+    private EntityDefinition makeEntityDef() {
+        EntityDefinition entDef = new EntityDefinition("uri", "text", RDFS.label.asNode()) ;
+        if (indexSpec != null) {
+            for (String spec : indexSpec.split(",")) {
+                String uri = Prefixes.getDefault().expandPrefix(spec.trim());
+                if ( ! uri.equals("default") ) {
+                    Node predicate = NodeFactory.createURI(uri);
+                    if (!predicate.equals(RDFS.label.asNode())) {
+                        entDef.set("text", predicate);
                     }
                 }
-                dataset = TextDatasetFactory.createLucene(dataset, dir, entDef, new StandardAnalyzer(org.apache.jena.query.text.TextIndexLucene.VER)) ;            
-            } catch (IOException e) {
-                throw new EpiException("Failed to create jena-text lucence index area", e);
             }
-        }        
+        }
+        return entDef;
+    }
+
+    private Set<Node> getIndexedProperties(EntityDefinition entityDefinition) {
+        Set<Node> result = new HashSet<>() ;
+        for (String f : entityDefinition.fields()) {
+            for ( Node p : entityDefinition.getPredicates(f) )
+                result.add(p) ;
+        }
+        return result ;
     }
 
     @Override
@@ -349,5 +382,49 @@ public class TDBStore  extends ComponentBase implements Store {
                 end();
             }
         }
+    }
+    
+    public long textReindex() {
+        long count = 0;
+        if (textIndex != null || indexSpec != null) {
+            DatasetGraphText ds = (DatasetGraphText) dataset.asDatasetGraph();
+            ds.getTextIndex().close();
+
+            if (textIndex != null) {
+                try {
+                    org.apache.tomcat.util.http.fileupload.FileUtils.deleteDirectory(textIndex);
+                } catch (IOException e) {
+                    log.warn("Problem deleting old textindex, continuing anyway", e);
+                }
+            }
+            
+            makeTextDataset();
+            bindFusekiRef();
+            ds = (DatasetGraphText) dataset.asDatasetGraph();
+            TextIndex index = ds.getTextIndex();
+            EntityDefinition entDef = makeEntityDef();
+            
+            try {
+                ds.begin(ReadWrite.READ);
+                for ( Node property : getIndexedProperties(entDef) )
+                {
+                    Iterator<Quad> quadIter = ds.find( Node.ANY, Node.ANY, property, Node.ANY );
+                    for (; quadIter.hasNext(); )
+                    {
+                        Quad quad = quadIter.next();
+                        Entity entity = TextQueryFuncs.entityFromQuad( entDef, quad );
+                        if ( entity != null )
+                        {
+                            index.addEntity( entity );
+                            count++;
+                        }
+                    }
+                }
+                index.commit();
+            } finally {
+                ds.end();
+            }
+        }
+        return count;
     }
 }
