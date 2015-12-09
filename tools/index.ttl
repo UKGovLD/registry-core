@@ -4,10 +4,11 @@
 @prefix tdb:     <http://jena.hpl.hp.com/2008/tdb#> .
 @prefix ja:      <http://jena.hpl.hp.com/2005/11/Assembler#> .
 @prefix text:    <http://jena.apache.org/text#> .
-@prefix dct:  <http://purl.org/dc/terms/> .
-@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix dct:     <http://purl.org/dc/terms/> .
+@prefix foaf:    <http://xmlns.com/foaf/0.1/> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
 
-## Initialize TDB
+##  TDB
 [] ja:loadClass "com.hp.hpl.jena.tdb.TDB" .
 tdb:DatasetTDB  rdfs:subClassOf  ja:RDFDataset .
 tdb:GraphTDB    rdfs:subClassOf  ja:Model .
@@ -46,4 +47,7 @@ text:TextIndexLucene  rdfs:subClassOf   text:TextIndex .
          [ text:field "text" ; text:predicate rdfs:label ]
          [ text:field "text" ; text:predicate dct:title ]
          [ text:field "text" ; text:predicate foaf:name ]
+         [ text:field "text" ; text:predicate skos:prefLabel ]
+         [ text:field "text" ; text:predicate skos:altLabel ]
+         [ text:field "text" ; text:predicate rdfs:comment ]
          ) .
