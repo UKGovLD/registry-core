@@ -113,6 +113,8 @@ public class RequestProcessor extends BaseEndpoint {
             } catch (ResourceNotFoundException e) {
                 // Will chain through to file serving
                 throw new NotFoundException();
+            } catch (Exception e) {
+                throw new WebApiException(Status.INTERNAL_SERVER_ERROR, "Template rendering problem: " + e);
             }
         } else if (path.startsWith(SYSTEM_QUERY) || path.equals("favicon.ico")) {
             // Pass to the generic velocity handler, which in turn falls through to file serving
@@ -144,7 +146,11 @@ public class RequestProcessor extends BaseEndpoint {
         } else if (parameters.containsKey(Parameters.EXPORT_TREE)) {
             return export();
         } else {
-            return render("main.vm", uriInfo, context, request);
+            try {
+                return render("main.vm", uriInfo, context, request);
+            } catch (Exception e) {
+                throw new WebApiException(Status.INTERNAL_SERVER_ERROR, "Template rendering problem: " + e);
+            }
         }
     }
 
