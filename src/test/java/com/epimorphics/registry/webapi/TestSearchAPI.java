@@ -24,7 +24,10 @@ package com.epimorphics.registry.webapi;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -36,6 +39,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
+import com.hp.hpl.jena.util.ResourceUtils;
 import com.hp.hpl.jena.vocabulary.RDFS;
 
 
@@ -71,8 +75,14 @@ public class TestSearchAPI extends TomcatTestBase {
         assertEquals(201, postFileStatus("test/bulk-skos-collection.ttl", BASE_URL + "?batch-managed"));
 
         Model m = getModelResponse(BASE_URL + "?query=blue");
+        normalizeRoot(m, ROOT_REGISTER, "query=blue&firstPage");
         checkModelResponse(m, "test/expected/search-result-blue.ttl", API.items);
+        
         m = getModelResponse(BASE_URL + "?query=blue&_view=with_metadata");
+        m.write(System.out, "Turtle");
+        normalizeRoot(m, ROOT_REGISTER, "query=blue&_view=with_metadata&firstPage");
+        normalizeRoot(m, ROOT_REGISTER, "query=blue&_view=with_metadata");
+        m.write(System.out, "Turtle");
         checkModelResponse(m, "test/expected/search-result-blue-with-metadata.ttl", API.items);
 
         checkSearch("query=blue", "blue");
@@ -88,7 +98,41 @@ public class TestSearchAPI extends TomcatTestBase {
 
 //        m.write(System.out, "Turtle");
     }
+    
+    /**
+     * The query argument order of the root resouce can vary depending on execution
+     * environment, normalize it
+     */
+    protected void normalizeRoot(Model m, String base, String arg) {
+        List<String> args = new ArrayList<>();
+        for (String a : arg.split("&")) args.add(a);
+        Set<String> perms = new HashSet<>();
+        permute(args, 0, perms);
+        for (String perm : perms) {
+            Resource r = m.getResource(base + "?" + perm);
+            if (r.listProperties().hasNext()) {
+                ResourceUtils.renameResource(r, base + "?" + arg);
+            }
+        }
+    }
 
+    static void permute(List<String> arr, int k, Set<String> perms){
+        for(int i = k; i < arr.size(); i++){
+            Collections.swap(arr, i, k);
+            permute(arr, k+1, perms);
+            Collections.swap(arr, k, i);
+        }
+        if (k == arr.size() -1){
+            StringBuffer merge = new StringBuffer();
+            boolean started = false;
+            for (String a : arr) {
+                if (started) merge.append("&"); else started = true; 
+                merge.append(a);
+            }
+            perms.add(merge.toString());
+        }
+    }
+    
     protected Model checkSearch(String query, String...members) {
         Model m = getModelResponse(BASE_URL + "?" + query);
         List<RDFNode> roots = m.listObjectsOfProperty(Ldbp_orig.pageOf).toList();

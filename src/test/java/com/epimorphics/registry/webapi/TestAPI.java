@@ -779,8 +779,7 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(201, postFileStatus("test/codes.ttl", BASE_URL));
         assertEquals(201, postFileStatus("test/jmt/runway-numeric.ttl", BASE_URL + "codes"));
         Model m = getModelResponse(BASE_URL + "codes?_view=with_metadata&firstPage");
-
-        Resource page = m.getResource(ROOT_REGISTER + "codes?_view=with_metadata&firstPage=");
+        Resource page = findOneOf(m, ROOT_REGISTER + "codes", "_view=with_metadata&firstPage=",  "firstPage=&_view=with_metadata");
         Resource items = page.getPropertyResourceValue(API.items);
         assertNotNull(items);
         List<RDFNode> itemList = items.as(RDFList.class).asJavaList();
@@ -794,6 +793,16 @@ public class TestAPI extends TomcatTestBase {
             assert(value instanceof Number);
             assertEquals(e, ((Number)value).intValue());
         }
+    }
+    
+    public static Resource findOneOf(Model m, String base, String...args) {
+        for (String arg : args) {
+            Resource r = m.getResource(base + "?" + arg);
+            if (r.listProperties().hasNext()) {
+                return r;
+            }
+        }
+        return null;
     }
 
     /**
