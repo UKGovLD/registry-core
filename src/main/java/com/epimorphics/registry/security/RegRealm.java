@@ -56,6 +56,15 @@ public class RegRealm extends BaseRegRealm {
     }
  
     public UserStore getUserStore() {
+        if ( userstore == null ){
+            // Assume configured via app.conf instead of shiro.ini
+            userstore = Registry.get().getUserStore();
+            if (userstore != null){
+                userstore.setRealm(this);
+            } else {
+                throw new EpiException("Could not find user credentials store - check app.conf and shiro.ini");
+            }
+        }
         return userstore;
     }
 

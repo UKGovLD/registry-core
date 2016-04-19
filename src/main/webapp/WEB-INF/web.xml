@@ -55,7 +55,7 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
   <context-param>
     <param-name>AppConfig.app</param-name>
     <!-- Will initialize from first of these it finds -->
-    <param-value>/opt/ldregistry/config/app.conf,{webapp}/WEB-INF/app.conf,/etc/ldregistry/app.conf</param-value>
+    <param-value>/opt/{context}/config/app.conf,/opt/ldregistry/config/app.conf,{webapp}/WEB-INF/app.conf,/etc/ldregistry/app.conf</param-value>
   </context-param>
   
   <context-param>
