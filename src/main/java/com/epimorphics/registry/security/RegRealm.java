@@ -52,7 +52,6 @@ public class RegRealm extends BaseRegRealm {
     public void setUserStore(UserStore store) {
         userstore = store;
         store.setRealm(this);
-        Registry.get().setUserStore(store);
     }
  
     public UserStore getUserStore() {
@@ -67,7 +66,13 @@ public class RegRealm extends BaseRegRealm {
         }
         return userstore;
     }
-
+    
+    public void setUserStoreFromRegistry(boolean install) {
+        if ( install ) {
+            getUserStore();
+        }
+    }
+    
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(
             AuthenticationToken token) throws AuthenticationException {
