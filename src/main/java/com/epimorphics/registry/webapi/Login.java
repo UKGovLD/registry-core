@@ -102,10 +102,7 @@ public class Login {
             SecurityUtils.getSubject().logout();
         }
         removeNocache(response);
-        String redirect = request.getServletContext().getContextPath();
-        if (redirect == null || redirect.isEmpty()) {
-            redirect = "/";
-        }
+        String redirect = Registry.get().getBaseURI();
         response.sendRedirect(redirect);
     }
 
