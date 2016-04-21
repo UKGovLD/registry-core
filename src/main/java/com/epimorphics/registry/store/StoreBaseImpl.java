@@ -810,7 +810,16 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                         Resource p = soln.getResource("predicate");
                         if (p != null)
                             dr.setPredicate(p);
-                        Resource o = soln.getResource("object");
+                        RDFNode on = soln.get("object");
+                        Resource o = null;
+                        if (on.isResource()) {
+                            o = on.asResource();
+                        } else if (on.isLiteral()) {
+                            String olit = on.asLiteral().getLexicalForm();
+                            if (NameUtils.isURI(olit)) {
+                                o = ResourceFactory.createResource(olit);
+                            }
+                        }
                         if (o != null)
                             dr.setObject(o);
                         fr = dr;

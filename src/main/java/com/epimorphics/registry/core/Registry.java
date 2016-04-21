@@ -26,6 +26,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
@@ -346,6 +348,29 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
         return baseURI;
     }
 
+    /**
+     * Return the base URI excluding any path elements. For example a base URI
+     * of http://environment.data.gov.uk/registry has a root of http://environment.data.gov.uk 
+     */
+    public String getBaseDomain() {
+        Matcher m = ROOT_URI_PATTERN.matcher(getBaseURI());
+        if (m.matches()) {
+            return m.group(1);
+        } else {
+            return getBaseURI();
+        }
+    }
+    static final Pattern ROOT_URI_PATTERN = Pattern.compile("(https?://[^/]*)/.*");
+    
+    /**
+     * Return the path element of the base URI.
+     * For example a base URI of http://environment.data.gov.uk/registry has a root path of /registry.
+     * For a base URI with no path element this will return an empty string. 
+     */
+    public String getRootPath() {
+        return getBaseURI().substring( getBaseDomain().length() );
+    }
+    
     public StoreAPI getStore() {
         return store;
     }

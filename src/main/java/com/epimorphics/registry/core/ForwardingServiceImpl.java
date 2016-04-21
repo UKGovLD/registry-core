@@ -125,9 +125,9 @@ public class ForwardingServiceImpl extends ComponentBase implements ForwardingSe
     @Override
     public synchronized void register(ForwardingRecord record) {
         String loc = record.getLocation();
-        String base = Registry.get().getBaseURI();
-        if (loc.startsWith(base)) {
-            loc = loc.substring(base.length());
+        String root = Registry.get().getBaseDomain();
+        if (loc.startsWith(root)) {
+            loc = loc.substring(root.length());
         } else {
             log.error("Attempted to forward an external URL, will be ignored: " + loc);
             return;
