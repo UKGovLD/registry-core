@@ -244,6 +244,9 @@ public class DBUserStore extends BaseUserStore implements UserStore, Shutdown, S
     public void doSetCredentials(String id, ByteSource credentials, int minstolive) {
         try {
             UserRecord record = getRecord(id);
+            if (record == null) {
+                throw new EpiException("No such user");
+            }
             record.setPassword(credentials, minstolive);
 
             PreparedStatement s = conn.prepareStatement("UPDATE USERS SET PASSWORD=?, TIMEOUT=? WHERE ID=?");

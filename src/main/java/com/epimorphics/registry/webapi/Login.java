@@ -156,6 +156,34 @@ public class Login {
         }
     }
 
+    /* Register a user but don't login, must be run by an administrator */
+    @Path("/pwregisterOther")
+    @POST
+    public Response pwregisterOther(
+            @FormParam("userid") String userid, 
+            @FormParam("password") String password, 
+            @FormParam("name") String name, 
+            @FormParam("return") String returnURL) {
+        if (userid == null || userid.isEmpty() || password == null || password.isEmpty() || name == null || name.isEmpty()) {
+            return error( "You must supply all of a username, display name and password to register" );
+        }
+        UserStore userstore = Registry.get().getUserStore();
+        UserInfo userinfo = new UserInfo(userid, name);
+        if (userstore.register( userinfo )) {
+            try {
+                userstore.setCredentials(userid, ByteSource.Util.bytes(password), Integer.MAX_VALUE);
+                if (returnURL == null || returnURL.isEmpty()) {
+                    returnURL = "/ui/admin";
+                }
+                return redirectTo( returnURL );
+            } catch (Exception e) {
+                return error("Failed to register the password: " + e);
+            }            
+        } else {
+            return error( "That username is already registered" );
+        }
+    }
+
     @Path("/apilogin")
     @POST
     public Response apilogin(@FormParam("userid") String userid, @FormParam("password") String password) {
@@ -213,7 +241,7 @@ public class Login {
     public Response grant(@FormParam("user") String id, @FormParam("grant") String action, @FormParam("path") String inpath) {
         String path = inpath;
         if (path == null || path.isEmpty()) {
-            // Occurrs when setting global admin permissions
+            // Occurs when setting global admin permissions
             path = "/ui/administrators";
         }
         UserStore userstore = Registry.get().getUserStore();
@@ -340,15 +368,38 @@ public class Login {
 
     @Path("/setrole")
     @POST
-    public Response setrole(@FormParam("id") String id, @FormParam("role") String role) {
+    public Response setrole(@FormParam("id") String id, @FormParam("role") String role, @FormParam("return") String returnURL) {
         Subject subject = SecurityUtils.getSubject();
         if (subject.isAuthenticated() && subject.hasRole(RegAuthorizationInfo.ADMINSTRATOR_ROLE)) {
             UserStore userstore = Registry.get().getUserStore();
             try {
                 userstore.setRole(id, role.isEmpty() ? null : role);
-                return redirectTo("/ui/admin");
+                if (returnURL == null || returnURL.isEmpty()) {
+                    returnURL = "/ui/admin";
+                }
+                return redirectTo( returnURL );
             } catch (Exception e) {
                 return error("Role assignment failed: " + e);
+            }
+        } else {
+            return error("You must be logged in as an administrator to do this");
+        }
+    }
+
+    @Path("/unregister")
+    @POST
+    public Response unregister(@FormParam("id") String id, @FormParam("return") String returnURL) {
+        Subject subject = SecurityUtils.getSubject();
+        if (subject.isAuthenticated() && subject.hasRole(RegAuthorizationInfo.ADMINSTRATOR_ROLE)) {
+            UserStore userstore = Registry.get().getUserStore();
+            try {
+                userstore.unregister(id);
+                if (returnURL == null || returnURL.isEmpty()) {
+                    returnURL = "/ui/admin";
+                }
+                return redirectTo( returnURL );
+            } catch (Exception e) {
+                return error("Failed to un-register user: " + e);
             }
         } else {
             return error("You must be logged in as an administrator to do this");
