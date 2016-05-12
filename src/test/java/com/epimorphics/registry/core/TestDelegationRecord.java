@@ -47,7 +47,7 @@ public class TestDelegationRecord {
         dr.setPredicate( ResourceFactory.createResource("http://reference.data.gov.uk/def/reference/uriSet") );
 
         List<Resource> members = dr.listMembers();
-        assertTrue(members.size() > 500);
+        assertTrue(members.size() > 300);
 
         Resource bw1 = ResourceFactory.createResource("http://environment.data.gov.uk/id/bathing-water/ukc1101-06000");
         Model m = dr.describeMember( bw1 );
