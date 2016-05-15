@@ -71,6 +71,7 @@ import com.hp.hpl.jena.shared.PrefixMapping;
 import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.OWL;
+import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
 
 /**
@@ -282,7 +283,8 @@ public class LibReg extends ComponentBase implements LibPlugin {
         NonEditableRIProps.add( DCTerms.dateAccepted );
         NonEditableRIProps.add( DCTerms.dateSubmitted );
         NonEditableRIProps.add( OWL.versionInfo );
-        NonEditableRIProps.add( RDFS.label );
+//        NonEditableRIProps.add( RDFS.label );
+        NonEditableRIProps.add( RDF.type );
     }
 
     public boolean isEditable(Object prop) {
