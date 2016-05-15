@@ -61,6 +61,7 @@ public class CommandEdit extends Command {
     
     Register parentRegister;
     List<RegisterItem> requestItems = new ArrayList<>();
+    boolean itemsSupplied = true;
 
     @Override
     public ValidationResponse validate() {
@@ -93,6 +94,7 @@ public class CommandEdit extends Command {
             requestItems.add( item );
         }
         if (requestItems.isEmpty()) {
+            itemsSupplied = false;
             // Check for direct registration of entities
             for (Resource entity : findEntities()) {
                 RegisterItem item = RegisterItem.fromEntityRequest(entity, parentURI, true); 
@@ -147,7 +149,7 @@ public class CommandEdit extends Command {
                 
                 if ( PatchUtil.willChange(itemR, currentItem.getRoot(), RIGID_ITEM_PROPS)
                   || PatchUtil.willChange(importItem.getEntity(), currentItem.getEntity(), RegistryVocab.subregister) ) {
-                    applyUpdate(currentItem, importItem, true, true);
+                    applyUpdate(currentItem, importItem, true, itemsSupplied);
                 }
             } else {
                 addToRegister(parentRegister, importItem);
