@@ -513,7 +513,8 @@ public class RequestProcessor extends BaseEndpoint {
             } catch (WebApiException e) {
                 failure++;
                 log.warn("Error processing uploaded file", e);
-                errorMessages.append("<p>" + filename + " - " + e.getResponse().getStatus() + " (" + e.getMessage() + ") </p>");
+                String message = e.getResponse().getEntity().toString();
+                errorMessages.append("<p>" + filename + " - " + e.getResponse().getStatus() + " (" + message + ") </p>");
                 throw e;
             } catch (Exception e) {
                 failure++;
