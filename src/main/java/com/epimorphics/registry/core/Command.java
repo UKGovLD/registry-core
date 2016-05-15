@@ -95,6 +95,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.vocabulary.RDF;
 
@@ -608,6 +609,11 @@ public abstract class Command {
         }
         if ( !entity.hasProperty(RDF.type) || getAPropertyValue(entity, labelProps) == null ) {
             return new ValidationResponse(BAD_REQUEST, "Missing required property (rdf:type or rdfs:label) on " + entity);
+        }
+        for (StmtIterator i = entity.listProperties(RDF.type); i.hasNext();) {
+            if ( i.next().getObject().isLiteral() ) {
+                return new ValidationResponse(BAD_REQUEST, "Illegal type (must be a resource) on " + entity);
+            }
         }
 
         List<Resource> itemClasses = RDFUtil.allResourceValues(parent.getRoot(), RegistryVocab.containedItemClass);
