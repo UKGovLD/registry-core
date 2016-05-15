@@ -448,17 +448,23 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         RegisterEntryInfo prior = null;
         while (rs.hasNext()) {
             QuerySolution soln = rs.next();
-            Resource item = soln.getResource("item");
-            if (item.equals(priorItem)) {
-                prior.addLabel(soln.getLiteral("label"));
-                prior.addType(soln.getResource("type"));
-            } else {
-                prior = new RegisterEntryInfo(soln.getResource("status"),
-                        item, soln.getResource("entity"),
-                        soln.getLiteral("label"), soln.getResource("type"),
-                        soln.getLiteral("notation"));
-                priorItem = item;
-                results.add(prior);
+            try {
+                Resource item = soln.getResource("item");
+                if (item.equals(priorItem)) {
+                    prior.addLabel(soln.getLiteral("label"));
+                    prior.addType(soln.getResource("type"));
+                } else {
+                    prior = new RegisterEntryInfo(soln.getResource("status"),
+                            item, soln.getResource("entity"),
+                            soln.getLiteral("label"), soln.getResource("type"),
+                            soln.getLiteral("notation"));
+                    priorItem = item;
+                    results.add(prior);
+                }
+            } catch (ClassCastException e) {
+                log.warn("Skipping ill-formed resource: " + soln.get("item"));
+                // Skip ill-formed resources
+                // Though these should be blocked on registration
             }
         }
         return results;
