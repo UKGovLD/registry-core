@@ -93,7 +93,7 @@ public class CSVRDFReader {
             }
             String id = getColumnValue(CSVRDFWriter.ID_COL);
             src.append( id  + "\n");
-            for (int i = 0; i < headers.length; i++) {
+            for (int i = 0; i < currentRow.length && i < headers.length; i++) {
                 String prop = headers[i];
                 if (! prop.startsWith("@") ) {
                     src.append("   ");
