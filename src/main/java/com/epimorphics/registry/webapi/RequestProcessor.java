@@ -535,13 +535,6 @@ public class RequestProcessor extends BaseEndpoint {
         if (success == 0) {
             throw new WebApiException(Response.Status.BAD_REQUEST, "No file uploaded");
         }
-        if (action.equals("edit") || action.equals("import")) {
-            try {
-                return Response.seeOther(new URI(uriInfo.getPath())).build();
-            } catch (URISyntaxException e) {
-                // Fall through to default
-            }
-        }
         return Response.ok().build();
     }
 
