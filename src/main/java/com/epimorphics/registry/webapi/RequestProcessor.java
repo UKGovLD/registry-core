@@ -427,13 +427,7 @@ public class RequestProcessor extends BaseEndpoint {
             Response response = command.execute();
             if (response.getStatus() == 204) {
                 // For UI level actions then redirect
-                URI uri;
-                try {
-                    uri = new URI("/");
-                    return Response.seeOther(uri).build();
-                } catch (URISyntaxException e) {
-                    // fall through to default return
-                }
+                return redirectTo("/");
             } 
             return response;
         } else {
@@ -584,6 +578,24 @@ public class RequestProcessor extends BaseEndpoint {
         }
 //        log.debug("Base URI for payload parse: " +  base + "/" );
         return base + "/";
+    }
+    
+    /**
+     * Construct a redirect response converting an app-relative URI (should start with "/") to an absolute
+     * URI, taking into account possible proxy front end.
+     */
+    public Response redirectTo(String path) {
+        Registry registry = Registry.get();
+        
+        String scheme = registry.isRedirectToHttpsOnLogin() ? "https" : "http";
+        String absolutePath = String.format("%s://%s%s%s", scheme, request.getServerName(), registry.getRootPath(), path);
+        URI uri;
+        try {
+            uri = new URI(absolutePath);
+            return Response.seeOther(uri).build();
+        } catch (URISyntaxException e) {
+            return Response.ok().build();
+        }
     }
 
 
