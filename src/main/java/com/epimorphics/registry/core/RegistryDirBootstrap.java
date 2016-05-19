@@ -64,10 +64,13 @@ public class RegistryDirBootstrap implements ServletContextListener {
             ensureFile("config/app.conf", "WEB-INF/app.conf");
             ensureDirectory("boot", "WEB-INF/boot");
             ensureDirectory("ui");
-            ensureDirectory("ui/css", "ui/css");
-            ensureDirectory("ui/images", "ui/images");
-            ensureDirectory("ui/img", "ui/img");
-            ensureDirectory("ui/js", "ui/js");
+            // Modern versions use ui/assets for better separation
+            if ( ! new File(fileRoot + "ui/assets").exists() ) {
+                ensureDirectory("ui/css", "ui/css");
+                ensureDirectory("ui/images", "ui/images");
+                ensureDirectory("ui/img", "ui/img");
+                ensureDirectory("ui/js", "ui/js");
+            }
             ensureDirectory("templates", "WEB-INF/templates");
             ensureFile("proxy-conf.sh", "WEB-INF/proxy-conf.sh");
     }
