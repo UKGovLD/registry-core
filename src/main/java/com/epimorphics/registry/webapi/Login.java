@@ -103,7 +103,7 @@ public class Login {
         }
         removeNocache(response);
         
-        String redirect = String.format("%s://%s%s", request.getScheme(), request.getServerName(), Registry.get().getRootPath());
+        String redirect = String.format("%s://%s%s/", request.getScheme(), request.getServerName(), Registry.get().getRootPath());
         response.sendRedirect(redirect);
     }
 
