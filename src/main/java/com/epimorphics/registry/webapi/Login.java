@@ -102,7 +102,8 @@ public class Login {
             SecurityUtils.getSubject().logout();
         }
         removeNocache(response);
-        String redirect = Registry.get().getBaseURI();
+        
+        String redirect = String.format("%s://%s%s", request.getScheme(), request.getServerName(), Registry.get().getRootPath());
         response.sendRedirect(redirect);
     }
 
