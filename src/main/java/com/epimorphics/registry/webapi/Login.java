@@ -103,8 +103,15 @@ public class Login {
         }
         removeNocache(response);
         
-        String redirect = String.format("%s://%s%s/", request.getScheme(), request.getServerName(), Registry.get().getRootPath());
+        String redirect = fullURLForPath("/"); 
         response.sendRedirect(redirect);
+    }
+    
+    /**
+     * Generate an absolute URL for the given registry-relative path (which should start with /).
+     */
+    protected String fullURLForPath(String path) {
+        return String.format("%s://%s%s%s", request.getScheme(), request.getServerName(), Registry.get().getRootPath(), path);
     }
 
     @Path("/pwlogin")
@@ -252,7 +259,7 @@ public class Login {
             } else {
                 userstore.addPermision(id, new RegPermission(action, path));
             }
-            return redirectTo(path);
+            return redirectTo( fullURLForPath(path) );
         } catch (Exception e) {
             return error("Permission grant failed: " + e);
         }
@@ -264,7 +271,7 @@ public class Login {
         UserStore userstore = Registry.get().getUserStore();
         try {
             userstore.removePermission(id, path);
-            return redirectTo(path);
+            return redirectTo( fullURLForPath(path) );
         } catch (Exception e) {
             return error("Permission grant failed: " + e);
         }
