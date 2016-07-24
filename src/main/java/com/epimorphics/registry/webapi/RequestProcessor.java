@@ -468,7 +468,7 @@ public class RequestProcessor extends BaseEndpoint {
                 throw new WebApiException(Status.BAD_REQUEST, "No filename to upload");
             }
             Model payload = ModelFactory.createDefaultModel();
-            String base = baseURI(true);
+            String base = baseURI( ! action.equals("update") );
             if (filename.endsWith(".ttl")) {
                 payload.read(uploadedInputStream, base, FileUtils.langTurtle);
             } else if (filename.endsWith(".jsonld") || filename.endsWith(".json")) {
@@ -491,6 +491,9 @@ public class RequestProcessor extends BaseEndpoint {
             } else if (action.equals("import")) {
                 command = makeCommand( Operation.Import );
                 command.setPayloadStream( uploadedInputStream );
+            } else if (action.equals("update")) {
+                command = makeCommand( Operation.Update );
+                command.setPayload( payload );
             }
             if (command == null) {
                 throw new WebApiException(Response.Status.BAD_REQUEST, "Action " + action + " not recognized");
