@@ -65,7 +65,7 @@ public class Status {
     
     public static Status Accepted     = new Status(RegistryVocab.statusAccepted,     "accepted",    PRES_DEFAULT, Any);
     public static Status Valid        = new Status(RegistryVocab.statusValid,        "valid",       PRES_DEFAULT, Accepted);
-    public static Status Deprecated   = new Status(RegistryVocab.statusDeprecated,   "deprecated",  PRES_DANGER,  Valid);
+    public static Status Deprecated   = new Status(RegistryVocab.statusDeprecated,   "deprecated",  PRES_DANGER,  Accepted);
     public static Status Superseded   = new Status(RegistryVocab.statusSuperseded,   "superseded",  PRES_DANGER,  Deprecated);
     public static Status Retired      = new Status(RegistryVocab.statusRetired,      "retired",     PRES_DANGER,  Deprecated);
     
