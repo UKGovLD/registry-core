@@ -107,6 +107,13 @@ public class Login {
         response.sendRedirect(redirect);
     }
     
+    /**  trap for cases where browser tries a GET against one of the login/logout endpoints  */
+    @GET
+    @Path("/logout")
+    public Response gegLogout() {
+        return redirectTo( fullURLForPath("/") );
+    }
+    
     /**
      * Generate an absolute URL for the given registry-relative path (which should start with /).
      */
@@ -131,6 +138,13 @@ public class Login {
             log.warn(String.format("Password login failure for userid %s [%s]: %s", userid, e.getClass().toString(), e.getMessage()));
             return error("Login failed");
         }
+    }
+    
+    /**  trap for cases where browser tries a GET against one of the login/logout endpoints  */
+    @GET
+    @Path("/pwlogin")
+    public Response getPwlogin() {
+        return redirectTo( fullURLForPath("/") );
     }
 
     @Path("/pwregister")
