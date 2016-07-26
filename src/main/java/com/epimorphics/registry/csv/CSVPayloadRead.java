@@ -75,8 +75,10 @@ public class CSVPayloadRead {
         if( reader.hasColumn(header) ) {
             String value = reader.getColumnValue(header);
             if (value != null && ! value.isEmpty()) {
-                Resource res = item.getModel().createResource( reader.asURI(value) );
-                item.addProperty(prop, res);
+                for (String v : RDFCSVUtil.unpackMultiValues(value)) {
+                    Resource res = item.getModel().createResource( reader.asURI(v) );
+                    item.addProperty(prop, res);
+                }
             }
         }
     }

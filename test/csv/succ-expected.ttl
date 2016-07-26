@@ -32,7 +32,7 @@
         a                reg:RegisterItem ;
         reg:definition   [ reg:entity  <http://location.data.gov.uk/reg3/anew> ] ;
         reg:notation     "anew" ;
-        reg:predecessor  <http://location.data.gov.uk/reg3/_a> ;
+        reg:predecessor  <http://location.data.gov.uk/reg3/_a>, <http://location.data.gov.uk/reg3/_b> ;
         reg:status       reg:statusExperimental .
 
 <http://location.data.gov.uk/reg3/a>
