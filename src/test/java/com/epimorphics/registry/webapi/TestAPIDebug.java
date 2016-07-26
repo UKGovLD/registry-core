@@ -24,6 +24,7 @@ package com.epimorphics.registry.webapi;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -31,6 +32,7 @@ import java.util.List;
 import org.junit.Test;
 
 import com.epimorphics.appbase.core.AppConfig;
+import com.epimorphics.registry.csv.CSVPayloadRead;
 import com.epimorphics.registry.store.Store;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
@@ -63,15 +65,6 @@ public class TestAPIDebug extends TomcatTestBase {
 
     @Test
     public void testDebug() throws IOException {
-        final String REGF = BASE_URL + "regf";
-        assertEquals(201, postFileStatus("test/multiload/regf.ttl", BASE_URL));
-        assertEquals(201, postFileStatus("test/multiload/load123.ttl", REGF));
-        checkModelResponse(REGF + "?status=any", "test/multiload/expected.ttl", 
-                DCTerms.dateSubmitted, DCTerms.modified);
-        Model model = getModelResponse(REGF+"/item1?status=any&_view=with_metadata");
-        List<Resource> entities = model.listSubjectsWithProperty(RDF.type, SKOS.Concept).toList();
-        assertTrue( entities.contains( model.getResource("http://location.data.gov.uk/regf/item1") ) );
-        assertEquals(1, entities.size());
     }
 
     // Debugging utility only, should not be used while transactions are live

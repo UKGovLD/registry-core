@@ -42,6 +42,8 @@ import com.hp.hpl.jena.vocabulary.XSD;
 public class RDFCSVUtil {
     public static final String STATUS_HEADER = "@status";
     public static final String NOTATION_HEADER = "@notation";
+    public static final String SUCCESSOR_HEADER = "@successor";
+    public static final String SUCCEEDS_HEADER = "@succeeds";
     public static final String MEDIA_TYPE = "text/csv";
     
     /**

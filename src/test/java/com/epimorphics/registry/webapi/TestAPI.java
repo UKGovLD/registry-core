@@ -204,6 +204,7 @@ public class TestAPI extends TomcatTestBase {
         doTestPayloadRead("test/csv/reg3-red.csv", "test/csv/reg3-red.ttl");
         doTestPayloadRead("test/csv/reg3-red-no-metadata.csv", "test/csv/reg3-red-no-metadata.ttl");
         doTestPayloadRead("test/edit/edit3.csv", "test/csv/edit3.ttl");
+        doTestPayloadRead("test/csv/succ-test.csv", "test/csv/succ-expected.ttl");
         
         // Edit
         doEditTest();
@@ -854,6 +855,10 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(200, response.getStatus());
         assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3-red-no-metadata.csv"), response.getEntity(String.class).replace("\r", ""));
     }
+    
+    /**
+     * Test input from CSV for update 
+     */
 
     /**
      * Check support for graph entities

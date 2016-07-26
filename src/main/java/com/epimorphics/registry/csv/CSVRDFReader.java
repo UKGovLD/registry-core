@@ -135,6 +135,13 @@ public class CSVRDFReader {
     }
     
     /**
+     * Convert a value to a URI (useful when processing non-RDF columns externally
+     */
+    public String asURI(String value) {
+        return RDFCSVUtil.asURI(value, prefixes, baseURI);
+    }
+    
+    /**
      * Fetch the value of the given column from the current row.
      * This is useful for retrieving additional annotations outside of the RDF serialization.
      */

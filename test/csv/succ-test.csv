@@ -1,0 +1,3 @@
+@id,@notation,@status,@successor,@succeeds,rdf:type,rdfs:label
+<a>,a,succeeded,<_anew>,,skos:Concept,A
+<anew>,anew,experimental,,<_a>,skos:Concept,A New

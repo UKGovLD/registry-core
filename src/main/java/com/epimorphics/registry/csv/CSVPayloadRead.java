@@ -18,6 +18,7 @@
 
 package com.epimorphics.registry.csv;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import com.epimorphics.registry.core.Status;
@@ -25,6 +26,7 @@ import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDF;
 
@@ -54,11 +56,28 @@ public class CSVPayloadRead {
                     String status = reader.getColumnValue(STATUS_HEADER);
                     item.addProperty(RegistryVocab.status, Status.forString(status, Status.Submitted).getResource());
                 }
+                addItemProperty(reader, SUCCESSOR_HEADER, item, RegistryVocab.successor);
+                addItemProperty(reader, SUCCEEDS_HEADER, item, RegistryVocab.predecessor);
                 Resource description = payload.createResource()
                         .addProperty(RegistryVocab.entity, entity);
                 item.addProperty(RegistryVocab.definition, description);
             }
         }
+        try {
+            reader.close();
+        } catch (IOException e) {
+            // Ignore close errors, might be already closed elsewhere in chain
+        }
         return payload;
+    }
+    
+    private static void addItemProperty(CSVRDFReader reader, String header, Resource item, Property prop) {
+        if( reader.hasColumn(header) ) {
+            String value = reader.getColumnValue(header);
+            if (value != null && ! value.isEmpty()) {
+                Resource res = item.getModel().createResource( reader.asURI(value) );
+                item.addProperty(prop, res);
+            }
+        }
     }
 }
