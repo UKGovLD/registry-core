@@ -21,6 +21,7 @@ package com.epimorphics.registry.csv;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
@@ -43,12 +44,21 @@ public class CSVPayloadRead {
         Model payload = ModelFactory.createDefaultModel();
         CSVRDFReader reader = new CSVRDFReader(ins, Prefixes.get());
         reader.setBaseURI(baseURI);
-        boolean withItems = reader.hasColumn(NOTATION_HEADER);
+        boolean withItems = reader.hasColumn(NOTATION_HEADER) || reader.hasColumn(STATUS_HEADER) ;
         
         Resource entity = null;
         while ((entity = reader.nextResource(payload)) != null) {
             if (withItems) {
-                String notation = reader.getColumnValue(NOTATION_HEADER);
+                String notation = "";
+                if ( reader.hasColumn(NOTATION_HEADER) ) {
+                    notation = reader.getColumnValue(NOTATION_HEADER);
+                }
+                if (notation.isEmpty()) {
+                    // Default if no explicit notation is to use the id value
+                    String id = reader.getColumnValue(CSVRDFWriter.ID_COL);
+                    String idURI = reader.asURI(id);
+                    notation = RDFUtil.getLocalname( idURI );
+                }
                 Resource item = payload.createResource(baseURI + "_" + notation)
                         .addProperty(RegistryVocab.notation, notation)
                         .addProperty(RDF.type, RegistryVocab.RegisterItem);

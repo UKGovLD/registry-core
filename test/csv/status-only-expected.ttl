@@ -1,0 +1,39 @@
+@prefix dc:    <http://purl.org/dc/elements/1.1/> .
+@prefix ssd:   <http://www.w3.org/ns/sparql-service-description#> .
+@prefix prov:  <http://www.w3.org/ns/prov#> .
+@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
+@prefix void:  <http://rdfs.org/ns/void#> .
+@prefix vann:  <http://purl.org/vocab/vann/> .
+@prefix vs:    <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+@prefix version: <http://purl.org/linked-data/version#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix time:  <http://www.w3.org/2006/time#> .
+@prefix dct:   <http://purl.org/dc/terms/> .
+@prefix reg:   <http://purl.org/linked-data/registry#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix api:   <http://purl.org/linked-data/api/vocab#> .
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+@prefix ldp:   <http://www.w3.org/ns/ldp#> .
+
+<http://location.data.gov.uk/reg3/b>
+        a           skos:Concept ;
+        rdfs:label  "b" .
+
+<http://location.data.gov.uk/reg3/_a>
+        a               reg:RegisterItem ;
+        reg:definition  [ reg:entity  <http://location.data.gov.uk/reg3/a> ] ;
+        reg:notation    "a" ;
+        reg:status      reg:statusExperimental .
+
+<http://location.data.gov.uk/reg3/a>
+        a           skos:Concept ;
+        rdfs:label  "a" .
+
+<http://location.data.gov.uk/reg3/_b>
+        a               reg:RegisterItem ;
+        reg:definition  [ reg:entity  <http://location.data.gov.uk/reg3/b> ] ;
+        reg:notation    "b" ;
+        reg:status      reg:statusStable .
+        

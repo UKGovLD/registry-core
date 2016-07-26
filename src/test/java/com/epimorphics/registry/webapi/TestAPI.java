@@ -205,6 +205,7 @@ public class TestAPI extends TomcatTestBase {
         doTestPayloadRead("test/csv/reg3-red-no-metadata.csv", "test/csv/reg3-red-no-metadata.ttl");
         doTestPayloadRead("test/edit/edit3.csv", "test/csv/edit3.ttl");
         doTestPayloadRead("test/csv/succ-test.csv", "test/csv/succ-expected.ttl");
+        doTestPayloadRead("test/csv/status-only.csv", "test/csv/status-only-expected.ttl");
         
         // Edit
         doEditTest();

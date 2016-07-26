@@ -95,7 +95,7 @@ public class CSVRDFReader {
             src.append( id  + "\n");
             for (int i = 0; i < currentRow.length && i < headers.length; i++) {
                 String prop = headers[i];
-                if (! prop.startsWith("@") ) {
+                if (! prop.startsWith("@") && ! currentRow[i].isEmpty() ) {
                     src.append("   ");
                     src.append(prop);
                     src.append(" ");

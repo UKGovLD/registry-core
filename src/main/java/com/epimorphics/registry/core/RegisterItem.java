@@ -62,7 +62,7 @@ public class RegisterItem extends Description {
     /** Properties that should not be changed once set */
     public static final Property[] RIGID_PROPS = new Property[] {
                                 RegistryVocab.register, RegistryVocab.notation,
-                                RegistryVocab.itemClass, RegistryVocab.predecessor,
+                                RegistryVocab.itemClass, // RegistryVocab.predecessor,
                                 RegistryVocab.submitter, RDF.type,
                                 DCTerms.dateSubmitted, OWL.versionInfo};
 

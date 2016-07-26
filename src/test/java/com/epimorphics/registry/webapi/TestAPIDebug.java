@@ -65,6 +65,10 @@ public class TestAPIDebug extends TomcatTestBase {
 
     @Test
     public void testDebug() throws IOException {
+        FileInputStream ins = new FileInputStream( "test/csv/status-only.csv" );
+        Model payload = CSVPayloadRead.readCSVStream(ins, "http://location.data.gov.uk/reg3/");
+        payload.write(System.out, "Turtle");
+//        checkModelResponse(payload, "test/csv/succ-expected.ttl");
     }
 
     // Debugging utility only, should not be used while transactions are live
