@@ -85,7 +85,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <oltu.oauth2.version>1.0.1-SNAPSHOT</oltu.oauth2.version>
+    <oltu.oauth2.version>1.0.1</oltu.oauth2.version>
     <oltu.oidc.version>0.1-SNAPSHOT</oltu.oidc.version>
   </properties>
 
