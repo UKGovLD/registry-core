@@ -51,8 +51,16 @@ public class CommandExport extends Command {
                     WebApplicationException {
                 StreamRDF rdfstream = StreamRDFWriter.getWriterStream(output, Lang.NQUADS);
                 store.beginRead();
-                store.exportTree(itemURI, rdfstream);
-                store.end();
+                try {
+	                store.exportTree(itemURI, rdfstream);
+                }
+                catch (org.apache.jena.atlas.RuntimeIOException e){
+                	// IO errors ignored if the client closes the socket.
+                }
+                finally {
+                	store.end();
+                }
+
             }
         };
         
