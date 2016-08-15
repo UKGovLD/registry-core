@@ -101,13 +101,13 @@
     <dependency>
       <groupId>com.epimorphics</groupId>
       <artifactId>appbase</artifactId>
-      <version>0.1.6-SNAPSHOT</version>
+      <version>0.1.6</version>
     </dependency>
      
     <dependency>
       <groupId>com.epimorphics</groupId>
       <artifactId>lib</artifactId>
-      <version>0.1.4</version>
+      <version>0.1.6</version>
     </dependency>
     
     <dependency>
