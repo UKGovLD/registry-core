@@ -226,6 +226,7 @@ public class TestAPI extends TomcatTestBase {
         // Status lifecycle
         doLifecycleTest();
         
+        doExportAbortTest();
 //        System.out.println("Store dump");
 //        ServiceConfig.get().getServiceAs("basestore", Store.class).asDataset().getDefaultModel().write(System.out, "Turtle");
     }
@@ -1043,7 +1044,22 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(204, post(BASE_URL + "system/lifecycle?real_delete").getStatus());
         checkStatus("submitted", "stable");
     }
+/* Test that a client aborting a export stream does not poison tomcat 
+ * threads leaving an open transaction.*/
+    public void doExportAbortTest() throws IOException {
+    	
+        assertEquals(201, postFileStatus("test/big-bulk-skos-collection.ttl", BASE_URL + "?batch-managed"));
+        for (int i = 0; i < 50; i++){
+  	      ClientResponse response = getResponse(BASE_URL + "big-collection?status=any&export=", "application/n-quads");
 
+  	      assertEquals(200, response.getStatus());
+  	      // obtain export stream but do not read it, just close it.
+  	      InputStream export = response.getEntity(InputStream.class);
+  	      export.close();
+        }
+
+      }
+    
     private void checkStatus(String status, String successor) {
         Status s = Status.forString(status, null);
         assertNotNull(s);

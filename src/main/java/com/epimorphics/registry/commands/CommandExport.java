@@ -26,6 +26,8 @@ import javax.ws.rs.core.StreamingOutput;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.webapi.RequestProcessor;
@@ -46,13 +48,25 @@ public class CommandExport extends Command {
         }
         
         StreamingOutput stream = new StreamingOutput() {
+        	// Temporary logger support while testing abort fix
+        	final Logger log = LoggerFactory.getLogger(CommandExport.class);
+        	
             @Override
             public void write(OutputStream output) throws IOException,
                     WebApplicationException {
                 StreamRDF rdfstream = StreamRDFWriter.getWriterStream(output, Lang.NQUADS);
                 store.beginRead();
-                store.exportTree(itemURI, rdfstream);
-                store.end();
+                try {
+	                store.exportTree(itemURI, rdfstream);
+                }
+                catch (org.apache.jena.atlas.RuntimeIOException e){
+                	log.info("Closed output stream detected in streaming export");
+                	// IO errors ignored if the client closes the socket.
+                }
+                finally {
+                	store.end();
+                }
+
             }
         };
         
