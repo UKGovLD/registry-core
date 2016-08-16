@@ -24,8 +24,8 @@ package com.epimorphics.registry.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
-import com.hp.hpl.jena.datatypes.xsd.XSDDateTime;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.datatypes.xsd.XSDDateTime;
 
 /**
  * Misc. utilities

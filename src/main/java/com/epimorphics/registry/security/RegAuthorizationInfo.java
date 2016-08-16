@@ -29,7 +29,7 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.Permission;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 
-import com.hp.hpl.jena.util.OneToManyMap;
+import org.apache.jena.util.OneToManyMap;
 
 /**
  * Representation of all the authorization information applicable

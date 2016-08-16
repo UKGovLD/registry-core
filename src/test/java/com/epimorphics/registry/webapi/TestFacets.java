@@ -31,8 +31,8 @@ import com.epimorphics.registry.webapi.facets.FacetResult;
 import com.epimorphics.registry.webapi.facets.FacetResultEntry;
 import com.epimorphics.registry.webapi.facets.FacetService;
 import com.epimorphics.registry.webapi.facets.FacetSpec;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.util.FileManager;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.util.FileManager;
 
 public class TestFacets {
 

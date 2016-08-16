@@ -41,11 +41,11 @@ import com.epimorphics.registry.store.SearchRequest;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.webapi.Parameters;
 import com.epimorphics.vocabs.API;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.vocabulary.RDFS;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDFS;
 
 public class CommandSearch extends Command {
     static int MAX_LEN = 1000;

@@ -31,13 +31,13 @@ import org.apache.commons.lang.text.StrTokenizer;
 import org.apache.jena.riot.system.IRIResolver;
 
 import com.epimorphics.util.EpiException;
-import com.hp.hpl.jena.rdf.model.Literal;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
-import com.hp.hpl.jena.shared.PrefixMapping;
-import com.hp.hpl.jena.vocabulary.XSD;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.shared.PrefixMapping;
+import org.apache.jena.vocabulary.XSD;
 
 public class RDFCSVUtil {
     public static final String STATUS_HEADER = "@status";

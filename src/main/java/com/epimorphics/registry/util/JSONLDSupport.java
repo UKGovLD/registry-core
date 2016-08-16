@@ -26,13 +26,14 @@ import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
+import org.apache.jena.rdf.model.Model;
+
 import com.epimorphics.util.EpiException;
 import com.github.jsonldjava.core.JsonLdOptions;
 import com.github.jsonldjava.core.JsonLdProcessor;
 import com.github.jsonldjava.jena.JenaRDFParser;
 import com.github.jsonldjava.jena.JenaTripleCallback;
 import com.github.jsonldjava.utils.JSONUtils;
-import com.hp.hpl.jena.rdf.model.Model;
 
 /**
  * Utilities for assisting with JSON-LD parsing.

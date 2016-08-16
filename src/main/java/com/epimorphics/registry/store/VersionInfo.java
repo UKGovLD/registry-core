@@ -22,8 +22,8 @@
 package com.epimorphics.registry.store;
 
 import com.epimorphics.rdfutil.RDFUtil;
-import com.hp.hpl.jena.rdf.model.Literal;
-import com.hp.hpl.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Resource;
 
 /**
  * Struct used for reporting the available versions of a resource.

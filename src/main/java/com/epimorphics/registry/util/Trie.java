@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.hp.hpl.jena.util.iterator.Filter;
+import org.apache.jena.util.iterator.Filter;
 
 /**
  * Trie structure for matching URI prefixes. The trie is based on matching URI segments

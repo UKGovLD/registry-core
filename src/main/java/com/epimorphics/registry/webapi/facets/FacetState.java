@@ -28,7 +28,7 @@ import java.util.Map;
 
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.util.EpiException;
-import com.hp.hpl.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.RDFNode;
 
 /**
  * Represents the state of facet selection in a way that can be serialized/deserialized in a URI.

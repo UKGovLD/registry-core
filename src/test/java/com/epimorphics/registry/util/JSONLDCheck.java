@@ -30,7 +30,7 @@ import com.github.jsonldjava.core.JsonLdOptions;
 import com.github.jsonldjava.core.JsonLdProcessor;
 import com.github.jsonldjava.jena.JenaTripleCallback;
 import com.github.jsonldjava.utils.JSONUtils;
-import com.hp.hpl.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Model;
 
 
 public class JSONLDCheck {

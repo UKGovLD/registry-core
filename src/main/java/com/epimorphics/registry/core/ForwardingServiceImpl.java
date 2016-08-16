@@ -37,10 +37,10 @@ import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.ForwardingRecord.Type;
 import com.epimorphics.registry.util.Trie;
 import com.epimorphics.registry.vocab.RegistryVocab;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.util.FileManager;
-import com.hp.hpl.jena.util.iterator.Filter;
-import com.hp.hpl.jena.vocabulary.RDF;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.util.FileManager;
+import org.apache.jena.util.iterator.Filter;
+import org.apache.jena.vocabulary.RDF;
 
 /**
  * Default forwarding service implementation. Uses a trie to store and match

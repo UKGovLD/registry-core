@@ -35,9 +35,9 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.junit.Test;
 
 import com.epimorphics.util.TestUtil;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.util.FileManager;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.util.FileManager;
 
 public class TestCSVSupport {
 

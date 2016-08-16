@@ -25,7 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.Map;
 
-import com.hp.hpl.jena.util.FileManager;
+import org.apache.jena.util.FileManager;
 
 /**
  * Utility to generate a prefixes bootstrap file.

@@ -23,6 +23,13 @@ package com.epimorphics.registry.util;
 
 import java.util.Iterator;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.util.OneToManyMap;
+import org.apache.jena.vocabulary.RDF;
+
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.Registry;
@@ -30,12 +37,7 @@ import com.epimorphics.registry.message.Message;
 import com.epimorphics.registry.message.MessagingService;
 import com.epimorphics.registry.message.ProcessIfChanges;
 import com.epimorphics.registry.vocab.Ui;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
-import com.hp.hpl.jena.util.OneToManyMap;
-import com.hp.hpl.jena.vocabulary.RDF;
+
 
 /**
  * Utility to keep track of type-specific UI templates registered

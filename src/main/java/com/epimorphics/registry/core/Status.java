@@ -36,12 +36,12 @@ import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.vocabs.SKOS;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.StmtIterator;
 
 /**
  * The set of status values which a RegisterItem can have.

@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.epimorphics.rdfutil.RDFUtil;
-import com.hp.hpl.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.RDFNode;
 
 /**
  * Represents an individual facet option. Corresponds to some

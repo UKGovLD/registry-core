@@ -22,7 +22,7 @@
 package com.epimorphics.registry.store;
 
 import com.epimorphics.registry.core.Status;
-import com.hp.hpl.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Resource;
 
 /**
  * Struct used to represent results of a search for an entity.

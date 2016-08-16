@@ -21,7 +21,7 @@
 
 package com.epimorphics.registry.webapi.facets;
 
-import com.hp.hpl.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.RDFNode;
 
 /**
  * Specification for a single facet.

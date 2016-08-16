@@ -32,7 +32,7 @@ import com.epimorphics.registry.message.Message;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.Parameters;
 import com.epimorphics.util.EpiException;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
+import org.apache.jena.rdf.model.ResourceFactory;
 import com.sun.jersey.api.NotFoundException;
 
 public class CommandAnnotate extends Command {

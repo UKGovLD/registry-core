@@ -37,7 +37,7 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
 import com.epimorphics.registry.util.JSONLDSupport;
-import com.hp.hpl.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Model;
 
 import com.github.jsonldjava.utils.JSONUtils;
 

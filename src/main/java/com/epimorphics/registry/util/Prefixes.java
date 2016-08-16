@@ -38,10 +38,10 @@ import com.epimorphics.registry.message.ProcessIfChanges;
 import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.webapi.JsonContext;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
-import com.hp.hpl.jena.shared.PrefixMapping;
-import com.hp.hpl.jena.util.FileManager;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.shared.PrefixMapping;
+import org.apache.jena.util.FileManager;
 
 /**
  * Set of default prefixes used in registry descriptions and queries.
