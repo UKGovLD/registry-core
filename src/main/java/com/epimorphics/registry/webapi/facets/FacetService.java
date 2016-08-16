@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import com.epimorphics.appbase.core.ComponentBase;
 import com.epimorphics.rdfutil.RDFUtil;
+import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.store.Store;
 import com.epimorphics.registry.vocab.FacetVocab;
 import com.epimorphics.util.EpiException;
@@ -102,7 +103,9 @@ public class FacetService extends ComponentBase {
         try {
             store.lock();
 //            return new FacetResult(baseQuery, state, specList, store.getUnionModel());
-            return new FacetResult(baseQuery, state, specList, store.asDataset().getDefaultModel());
+            FacetResult fr =  new FacetResult(baseQuery, state, specList, store.asDataset().getDefaultModel());
+            fr.setPageSize( (int) Registry.get().getPageSize() );
+            return fr;
         } finally {
             store.end();
         }
