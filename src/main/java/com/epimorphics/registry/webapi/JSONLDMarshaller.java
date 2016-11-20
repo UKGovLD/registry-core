@@ -36,10 +36,10 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
-import com.epimorphics.registry.util.JSONLDSupport;
 import org.apache.jena.rdf.model.Model;
 
-import com.github.jsonldjava.utils.JSONUtils;
+import com.epimorphics.registry.util.JSONLDSupport;
+import com.github.jsonldjava.utils.JsonUtils;
 
 @Provider
 @Produces(JSONLDSupport.MIME_JSONLD)
@@ -70,7 +70,7 @@ public class JSONLDMarshaller implements MessageBodyWriter<Model> {
         Object jsonld = JSONLDSupport.toJSONLD(t);
         Writer writer = new OutputStreamWriter(entityStream, Charset.forName("UTF-8"));
 //        JSONUtils.write(writer, jsonld);
-        JSONUtils.writePrettyPrint(writer, jsonld);
+        JsonUtils.writePrettyPrint(writer, jsonld);
         writer.flush();
     }
 

@@ -25,12 +25,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.jena.rdf.model.Model;
+
 import com.github.jsonldjava.core.JsonLdError;
 import com.github.jsonldjava.core.JsonLdOptions;
 import com.github.jsonldjava.core.JsonLdProcessor;
-import com.github.jsonldjava.jena.JenaTripleCallback;
-import com.github.jsonldjava.utils.JSONUtils;
-import org.apache.jena.rdf.model.Model;
+import com.github.jsonldjava.core.JsonLdTripleCallback;
+import com.github.jsonldjava.utils.JsonUtils;
 
 
 public class JSONLDCheck {
@@ -38,13 +39,15 @@ public class JSONLDCheck {
     public static void main(String[] args) throws IOException, JsonLdError {
      // Open a valid json(-ld) input file
         InputStream inputStream = new FileInputStream("test/input-expanded.jsonld");
-        Object jsonObject = JSONUtils.fromInputStream(inputStream);
+        Object jsonObject = JsonUtils.fromInputStream(inputStream);
 
-        JenaTripleCallback callback = new JenaTripleCallback();
+        JsonLdTripleCallback callback = new JenaTripleCallBack();
         Model m = (Model) JsonLdProcessor.toRDF(jsonObject, callback, new JsonLdOptions("http://dummy.org/"));
 
         // If you didn't use your own Jena Model, get the resulting one with:
         System.out.println("Model is ...");
         m.write(System.out, "Turtle");
     }
+   
+    
 }

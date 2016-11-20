@@ -65,7 +65,7 @@ public class RDFCSVUtil {
             Literal l = value.asLiteral();
             String lex = l.getLexicalForm().replace("'", "\\'");
             if (l.getLanguage() == null || l.getLanguage().isEmpty()) {
-                if (l.getDatatype() == null) {
+                if (l.getDatatype() == null || l.getDatatypeURI().equals(XSD.xstring.getURI())) {
                     if (embedded) {
                         if (lex.contains("\n")) {
                             return "'''" + lex + "'''";
