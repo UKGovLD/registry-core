@@ -63,19 +63,19 @@ public class Login {
     protected @Context HttpServletRequest request;
     protected @Context HttpServletResponse response;
 
-    @Path("/login")
-    @POST
-    public Response login(@FormParam("provider") String provider, @FormParam("return") String returnURL) {
-        new ProcessOpenID(uriInfo, servletContext).processOpenID(request, response, provider, returnURL, false);
-        return Response.ok().build();
-    }
-
-    @Path("/register")
-    @POST
-    public Response register(@FormParam("provider") String provider, @FormParam("return") String returnURL) {
-        new ProcessOpenID(uriInfo, servletContext).processOpenID(request, response, provider, returnURL, true);
-        return Response.ok().build();
-    }
+//    @Path("/login")
+//    @POST
+//    public Response login(@FormParam("provider") String provider, @FormParam("return") String returnURL) {
+//        new ProcessOpenID(uriInfo, servletContext).processOpenID(request, response, provider, returnURL, false);
+//        return Response.ok().build();
+//    }
+//
+//    @Path("/register")
+//    @POST
+//    public Response register(@FormParam("provider") String provider, @FormParam("return") String returnURL) {
+//        new ProcessOpenID(uriInfo, servletContext).processOpenID(request, response, provider, returnURL, true);
+//        return Response.ok().build();
+//    }
 
     @Path("/loginoa")
     @POST
@@ -221,11 +221,11 @@ public class Login {
         return Response.status(Response.Status.UNAUTHORIZED).build();
     }
 
-    @Path("/response")
-    @GET
-    public Response openIDResponse() {
-        return new ProcessOpenID(uriInfo, servletContext).verifyResponse(request, response);
-    }
+//    @Path("/response")
+//    @GET
+//    public Response openIDResponse() {
+//        return new ProcessOpenID(uriInfo, servletContext).verifyResponse(request, response);
+//    }
 
     @Path("/responseoa")
     @GET
