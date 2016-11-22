@@ -11,7 +11,6 @@ package com.epimorphics.registry.message;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Registry;
@@ -28,14 +27,10 @@ public interface RequestLogger {
     
     /**
      * Log the command to a configured log directory.
+     * Returns the name of the created log file
      */
-    public void writeLog(Command command) throws IOException;
-    
-    /**
-     * Log the command to the given output stream
-     */
-    public void writeLog(Command command, OutputStream out) throws IOException;
-    
+    public String writeLog(Command command) throws IOException;
+
     /**
      * Reconstruct a command from the a log entry originally created with writeLog
      */

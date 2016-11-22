@@ -12,12 +12,9 @@ package com.epimorphics.registry.message;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -26,16 +23,23 @@ import java.util.regex.Pattern;
 
 import javax.ws.rs.core.MultivaluedMap;
 
+import org.apache.commons.io.output.FileWriterWithEncoding;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Command.Operation;
 import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.util.RunShell;
+import com.epimorphics.tasks.ProgressMessage;
+import com.epimorphics.tasks.ProgressMonitor;
 import com.epimorphics.util.EpiException;
 
 public class GenericRequestLogger implements RequestLogger {
-    
+    static final Logger log = LoggerFactory.getLogger( GenericRequestLogger.class ); 
+            
     Registry registry;
     String   logDir;
     String   notificationScript;
@@ -51,17 +55,12 @@ public class GenericRequestLogger implements RequestLogger {
     public void setNotificationScript(String notificationScript) {
         this.notificationScript = notificationScript;
     }
-
+    
     @Override
-    public void writeLog(Command command) throws IOException {
+    public String writeLog(Command command) throws IOException {
         String logfile = logDir + File.separator + String.format( "on-%s-%s.ttl",
                 new SimpleDateFormat("dd-MMM-yyyy-HH-mm-ss").format(new Date()), command.getOperation().name() );
-        writeLog(command, new FileOutputStream(logfile) );
-    }
-
-    @Override
-    public void writeLog(Command command, OutputStream out) throws IOException {
-        BufferedWriter writer = new BufferedWriter( new OutputStreamWriter(out, StandardCharsets.UTF_8) );
+        BufferedWriter writer = new BufferedWriter( new FileWriterWithEncoding(logfile, StandardCharsets.UTF_8) );
         try {
             String operation = command.getOperation().name();
             String target = command.getTarget().substring( registry.getBaseURI().length() + 1 );
@@ -89,6 +88,19 @@ public class GenericRequestLogger implements RequestLogger {
         } finally {
             writer.close();
         }
+        if ( notificationScript != null ) {
+            RunShell shell = new RunShell(notificationScript);
+            ProgressMonitor monitor = shell.run( logfile );
+            if ( ! monitor.succeeded() ){
+                log.error("Notification script " + notificationScript + " failed");
+                StringBuffer errors = new StringBuffer();
+                for( ProgressMessage msg : monitor.getMessages() ) {
+                    errors.append( msg.toString() );
+                    errors.append( "\n" );
+                }
+            }
+        }
+        return logfile;
     }
 
     @Override
