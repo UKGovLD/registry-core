@@ -28,7 +28,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.util.FileManager;
+import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,10 +41,6 @@ import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.ForwardingRecord.Type;
 import com.epimorphics.registry.util.Trie;
 import com.epimorphics.registry.vocab.RegistryVocab;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.util.FileManager;
-import org.apache.jena.util.iterator.Filter;
-import org.apache.jena.vocabulary.RDF;
 
 /**
  * Default forwarding service implementation. Uses a trie to store and match
@@ -198,9 +198,10 @@ public class ForwardingServiceImpl extends ComponentBase implements ForwardingSe
 
     @Override
     public List<DelegationRecord> listDelegations(String path) {
-        List<ForwardingRecord> records = trie.findAll(path, new Filter<ForwardingRecord>() {
+        List<ForwardingRecord> records = trie.findAll(path, new Predicate<ForwardingRecord>() {
+            
             @Override
-            public boolean accept(ForwardingRecord o) {
+            public boolean test(ForwardingRecord o) {
                 return o instanceof DelegationRecord;
             }
         });

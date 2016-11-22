@@ -13,6 +13,11 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
+/**
+ * @deprecated with no current replacement
+ * 
+ * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
+ */
 public class HttpCache {
 
     private CachingHttpClient cachingClient;
