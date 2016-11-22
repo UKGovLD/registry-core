@@ -53,6 +53,7 @@ import com.epimorphics.registry.message.LocalMessagingService;
 import com.epimorphics.registry.message.Message;
 import com.epimorphics.registry.message.MessagingService;
 import com.epimorphics.registry.message.ProcessIfChanges;
+import com.epimorphics.registry.message.RequestLogger;
 import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.security.UserStore;
 import com.epimorphics.registry.store.BackupService;
@@ -121,6 +122,7 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
     protected String backupDir;
     protected boolean redirectToHttpsOnLogin = false;
     protected GenericConfig configExtensions;
+    protected RequestLogger requestLogger;
     
     public void setBaseUri(String uri) {
         baseURI = uri;
@@ -201,6 +203,15 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
 
     public void setConfigExtensions(GenericConfig configExtensions) {
         this.configExtensions = configExtensions;
+    }
+    
+    public RequestLogger getRequestLogger() {
+        return requestLogger;
+    }
+
+    public void setRequestLogger(RequestLogger requestLogger) {
+        this.requestLogger = requestLogger;
+        requestLogger.setRegistry(this);
     }
 
     @Override

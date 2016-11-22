@@ -28,8 +28,6 @@ import static com.epimorphics.registry.webapi.Parameters.PAGE_NUMBER;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -52,6 +50,13 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.sparql.vocabulary.FOAF;
+import org.apache.jena.vocabulary.RDF;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.subject.Subject;
@@ -91,13 +96,6 @@ import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.RequestProcessor;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.util.NameUtils;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.rdf.model.StmtIterator;
-import org.apache.jena.sparql.vocabulary.FOAF;
-import org.apache.jena.vocabulary.RDF;
 
 /**
  * Wraps up a registry request as a command object to modularize
@@ -248,7 +246,7 @@ public abstract class Command {
     public String getTarget() {
         return target;
     }
-
+    
     public MultivaluedMap<String, String> getParameters() {
         return parameters;
     }
@@ -361,16 +359,9 @@ public abstract class Command {
                 (response.getStatus() == 201) ? " -> " + response.getMetadata().get("Location") : "",
                 response.getStatus()));
 
-        if (payload != null && registry.getLogDir() != null) {
-            String logfile = registry.getLogDir() + File.separator + String.format("on-%s-%s-%s.ttl",
-                    new SimpleDateFormat("dd-MMM-yyyy-HH-mm-ss").format(now),
-                    operation.toString(),
-                    NameUtils.encodeSafeName( target + "?" + makeParamString(parameters))
-                    );
+        if ( operation.isUpdate && registry.getRequestLogger() != null ) {
             try {
-                FileOutputStream out = new FileOutputStream(logfile);
-                payload.write(out, "Turtle");
-                out.close();
+                registry.getRequestLogger().writeLog(this);
             } catch (IOException e) {
                 log.error("Failed to write log of payload", e);
             }
