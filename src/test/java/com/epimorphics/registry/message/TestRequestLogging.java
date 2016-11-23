@@ -68,9 +68,6 @@ public class TestRequestLogging {
         
         String file = registry.getRequestLogger().writeLog(command);
         
-        // Check the notification has fired
-        assertTrue( new File( file + ".log" ).exists() );
-        
         InputStream in = new FileInputStream(file);
         return registry.getRequestLogger().getLog(in);
     }

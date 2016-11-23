@@ -1,4 +1,4 @@
 #!/bin/bash
 # Test script access from logging engine
 readonly file="$1"
-echo "Script fired on $file" > $1.log
+echo "Script fired on $file"

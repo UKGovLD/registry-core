@@ -26,20 +26,14 @@ import javax.ws.rs.core.MultivaluedMap;
 import org.apache.commons.io.output.FileWriterWithEncoding;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Command.Operation;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.util.RunShell;
-import com.epimorphics.tasks.ProgressMessage;
-import com.epimorphics.tasks.ProgressMonitor;
 import com.epimorphics.util.EpiException;
 
 public class GenericRequestLogger implements RequestLogger {
-    static final Logger log = LoggerFactory.getLogger( GenericRequestLogger.class ); 
-            
     Registry registry;
     String   logDir;
     String   notificationScript;
@@ -89,16 +83,7 @@ public class GenericRequestLogger implements RequestLogger {
             writer.close();
         }
         if ( notificationScript != null ) {
-            RunShell shell = new RunShell(notificationScript);
-            ProgressMonitor monitor = shell.run( logfile );
-            if ( ! monitor.succeeded() ){
-                log.error("Notification script " + notificationScript + " failed");
-                StringBuffer errors = new StringBuffer();
-                for( ProgressMessage msg : monitor.getMessages() ) {
-                    errors.append( msg.toString() );
-                    errors.append( "\n" );
-                }
-            }
+            new RunShell(notificationScript).run( logfile );
         }
         return logfile;
     }
