@@ -29,6 +29,7 @@ import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.SaltedAuthenticationInfo;
+import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.Permission;
 import org.apache.shiro.authz.UnauthorizedException;
@@ -76,10 +77,15 @@ public class RegRealm extends BaseRegRealm {
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(
             AuthenticationToken token) throws AuthenticationException {
-        if (!(token instanceof RegToken)) {
+        RegToken rtoken = null;
+        if ( token instanceof UsernamePasswordToken ) {
+            UsernamePasswordToken uptoken = (UsernamePasswordToken) token;
+            rtoken = new RegToken(uptoken.getUsername(), new String(uptoken.getPassword()));
+        } else if (token instanceof RegToken) {
+            rtoken = (RegToken)token;
+        } else {
             throw new IncorrectCredentialsException();
         }
-        RegToken rtoken = (RegToken)token;
         String id = (String)rtoken.getPrincipal();
         SaltedAuthenticationInfo info = getUserStore().checkUser(id);
         return info;
