@@ -21,10 +21,7 @@
 
 package com.epimorphics.registry.security;
 
-import static com.epimorphics.registry.security.RegAction.Grant;
-import static com.epimorphics.registry.security.RegAction.Register;
-import static com.epimorphics.registry.security.RegAction.StatusUpdate;
-import static com.epimorphics.registry.security.RegAction.Update;
+import static com.epimorphics.registry.security.RegAction.*;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -68,6 +65,7 @@ public class RegPermission implements Permission {
         roleAliases.put("Authorized", new RegAction[]{Register, Update, StatusUpdate});
         roleAliases.put("Submitter",  new RegAction[]{Register, Update});
         roleAliases.put("Reviewer",   new RegAction[]{StatusUpdate});
+        roleAliases.put("Replication", new RegAction[]{Register, Update, StatusUpdate, Force, RealDelete});
     }
 
     public RegPermission(String permission) {
