@@ -53,7 +53,7 @@ public class GenericRequestLogger implements RequestLogger {
     @Override
     public String writeLog(Command command) throws IOException {
         String logfile = logDir + File.separator + String.format( "on-%s-%s.ttl",
-                new SimpleDateFormat("dd-MMM-yyyy-HH-mm-ss").format(new Date()), command.getOperation().name() );
+                new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-S").format(new Date()), command.getOperation().name() );
         BufferedWriter writer = new BufferedWriter( new FileWriterWithEncoding(logfile, StandardCharsets.UTF_8) );
         try {
             String operation = command.getOperation().name();
