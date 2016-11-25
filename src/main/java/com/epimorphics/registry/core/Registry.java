@@ -21,6 +21,9 @@
 
 package com.epimorphics.registry.core;
 
+import static com.epimorphics.registry.core.Status.LIFECYCLE_REGISTER;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,10 +35,14 @@ import java.util.regex.Pattern;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.util.FileUtils;
+import org.apache.jena.vocabulary.RDF;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
+import org.glassfish.jersey.uri.UriComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,12 +72,6 @@ import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.facets.FacetService;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.util.FileUtil;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.util.FileUtils;
-import org.apache.jena.vocabulary.RDF;
-import com.sun.jersey.api.uri.UriComponent;
-import static com.epimorphics.registry.core.Status.LIFECYCLE_REGISTER;
 
 /**
  * This the primary configuration point for the Registry.

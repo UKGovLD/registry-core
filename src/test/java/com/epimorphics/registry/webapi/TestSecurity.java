@@ -21,29 +21,33 @@
 
 package com.epimorphics.registry.webapi;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.InputStream;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
-import org.junit.Test;
-
-import com.epimorphics.rdfutil.RDFUtil;
-import com.epimorphics.registry.vocab.RegistryVocab;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.RDFS;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.WebResource.Builder;
-import com.sun.jersey.api.representation.Form;
-import com.sun.jersey.client.apache.ApacheHttpClient;
-import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
+import org.glassfish.jersey.apache.connector.ApacheConnectorProvider;
+import org.glassfish.jersey.client.ClientConfig;
+import org.junit.Test;
+
+import com.epimorphics.rdfutil.RDFUtil;
+import com.epimorphics.registry.vocab.RegistryVocab;
 
 public class TestSecurity extends TomcatTestBase {
     @Override
@@ -67,11 +71,11 @@ public class TestSecurity extends TomcatTestBase {
     protected void checkLoginLogout() {
         Client c = clientFor("http://example.com/alice", "testing");
 
-        String user = c.resource(BASE_URL + "system/security/username").get(String.class);
+        String user = c.target(BASE_URL + "system/security/username").request().get(String.class);
         assertEquals("Alice", user);
 
-        c.resource(BASE_URL + "system/security/logout").post(ClientResponse.class);
-        ClientResponse response = c.resource(BASE_URL + "system/security/username").get(ClientResponse.class);
+        c.target(BASE_URL + "system/security/logout").request().post(null);
+        Response response = c.target(BASE_URL + "system/security/username").request().get();
         assertTrue(response.getStatus() >= 400);
     }
 
@@ -165,29 +169,31 @@ public class TestSecurity extends TomcatTestBase {
         testFor("david").source("test/green-item-update-withbadstatus.ttl").invoke("PATCH", BASE_URL + "open/colours/_green").checkRejected();
     }
 
-    protected static ApacheHttpClient makeClient() {
-        ApacheHttpClient c = ApacheHttpClient.create();
-        c.getProperties().put(ApacheHttpClientConfig.PROPERTY_HANDLE_COOKIES, true);
-        return c;
+    protected static Client makeClient() {
+        ClientConfig clientConfig = new ClientConfig();
+        clientConfig.connectorProvider(new ApacheConnectorProvider());
+        Client client = ClientBuilder.newClient(clientConfig);
+        // TODO is the cookie policy set OK?
+        return client;
     }
 
     protected static Model getModelResponse(Client c, String uri) {
-        WebResource r = c.resource( uri );
-        InputStream response = r.accept("text/turtle").get(InputStream.class);
+        WebTarget r = c.target( uri );
+        InputStream response = r.request("text/turtle").get(InputStream.class);
         Model result = ModelFactory.createDefaultModel();
         result.read(response, uri, "Turtle");
         return result;
     }
 
 
-    protected static ApacheHttpClient clientFor(String userid, String password) {
-        ApacheHttpClient c = makeClient();
+    protected static Client clientFor(String userid, String password) {
+        Client c = makeClient();
 
         Form loginform = new Form();
-        loginform.add("userid", userid);
-        loginform.add("password", password);
-        WebResource r = c.resource(BASE_URL + "system/security/apilogin");
-        ClientResponse response = r.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).post(ClientResponse.class, loginform);
+        loginform.param("userid", userid);
+        loginform.param("password", password);
+        WebTarget r = c.target(BASE_URL + "system/security/apilogin");
+        Response response = r.request().post( Entity.entity(loginform, MediaType.APPLICATION_FORM_URLENCODED_TYPE) );
         assertTrue("Login failed for " + userid, response.getStatus() < 400);
         return c;
     }
@@ -201,8 +207,8 @@ public class TestSecurity extends TomcatTestBase {
         String sourceFile;
         String mime = "text/turtle";
         String uri;
-        WebResource r;
-        ClientResponse response;
+        WebTarget r;
+        Response response;
 
         public TestBuilder(Client c) {
             this.c = c;
@@ -221,33 +227,28 @@ public class TestSecurity extends TomcatTestBase {
         }
 
         public TestBuilder get(String url) {
-            response = c.resource(url).accept("text/turtle").get(ClientResponse.class);
+            response = c.target(url).request("text/turtle").get(Response.class);
             return this;
         }
 
         public TestBuilder post(String url) {
-            Builder b = c.resource(url).type(mime);
-            if (sourceFile != null) {
-                File file = new File(sourceFile);
-                response = b.post(ClientResponse.class, file);
-            } else {
-                response = b.post(ClientResponse.class);
-            }
+            File file = (sourceFile == null) ? null : new File(sourceFile);
+            response = c.target(url).request().post( Entity.entity(file, mime) );
             return this;
         }
 
         public TestBuilder invoke(String method, String url) {
-            Builder b = c.resource(url).type(mime);
-            if (sourceFile != null) {
-                File file = new File(sourceFile);
-                response = b.header("X-HTTP-Method-Override", method).post(ClientResponse.class, file);
+            WebTarget r = c.target(url);
+            if (sourceFile == null) {
+                response = r.request().header("X-HTTP-Method-Override", method).post(Entity.entity(null, mime));
             } else {
-                response = b.header("X-HTTP-Method-Override", method).post(ClientResponse.class);
+                File src = new File(sourceFile);
+                response = r.request().header("X-HTTP-Method-Override", method).post(Entity.entity(src, mime));
             }
             return this;
         }
 
-        public ClientResponse getResponse() {
+        public Response getResponse() {
             assertNotNull(response);
             return response;
         }
@@ -258,7 +259,7 @@ public class TestSecurity extends TomcatTestBase {
 
         public Model getModel() {
             assertNotNull(response);
-            InputStream stream = response.getEntity(InputStream.class);
+            InputStream stream = response.readEntity(InputStream.class);
             Model result = ModelFactory.createDefaultModel();
             result.read(stream, uri, "Turtle");
             return result;
@@ -266,7 +267,7 @@ public class TestSecurity extends TomcatTestBase {
 
         public TestBuilder checkRejected() {
             if (getStatus() != 401) {
-                System.out.println("Response was: " + response.getEntity(String.class) );
+                System.out.println("Response was: " + response.readEntity(String.class) );
             }
             assertEquals(401, getStatus());
             return this;
@@ -274,7 +275,7 @@ public class TestSecurity extends TomcatTestBase {
 
         public TestBuilder checkAccepted() {
             if (getStatus() >= 400) {
-                System.out.println("Failure response: " + response.getEntity(String.class) );
+                System.out.println("Failure response: " + response.readEntity(String.class) );
             }
             assertTrue("Status was: " + getStatus(), getStatus() < 400);
             return this;

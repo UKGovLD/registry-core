@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.webapi.RequestProcessor;
-import com.sun.jersey.api.NotFoundException;
+import javax.ws.rs.NotFoundException;
 
 /**
  * Return an n-quad serialization of the entire internal RDF structure describing a register tree.

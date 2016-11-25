@@ -87,6 +87,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <oltu.oauth2.version>1.0.2</oltu.oauth2.version>
     <oltu.oidc.version>0.1-SNAPSHOT</oltu.oidc.version>
+    <jersey.version>2.21</jersey.version>
   </properties>
 
   <dependencies>
@@ -122,33 +123,6 @@
       <version>3.0.1</version>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>com.sun.jersey</groupId>
-      <artifactId>jersey-core</artifactId>
-      <version>1.17</version>
-      <type>jar</type>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.jersey</groupId>
-      <artifactId>jersey-server</artifactId>
-      <version>1.17</version>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.jersey</groupId>
-      <artifactId>jersey-servlet</artifactId>
-      <version>1.17</version>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.jersey</groupId>
-      <artifactId>jersey-client</artifactId>
-      <version>1.17</version>
-      <scope>test</scope>
-      </dependency>
-    <dependency>
-      <groupId>com.sun.jersey.contribs</groupId>
-      <artifactId>jersey-apache-client</artifactId>
-      <version>1.17</version>
-    </dependency>
 
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
@@ -168,6 +142,17 @@
       <version>7.0.26</version>
       <scope>provided</scope>
      </dependency>
+     <dependency>
+       <groupId>org.glassfish.jersey.connectors</groupId>
+       <artifactId>jersey-apache-connector</artifactId>
+       <version>${jersey.version}</version>
+       <scope>test</scope>
+     </dependency>
+    <dependency>
+        <groupId>org.glassfish.jersey.media</groupId>
+        <artifactId>jersey-media-multipart</artifactId>
+        <version>2.21</version>
+    </dependency>
 
 <!-- 
     <dependency>
@@ -197,12 +182,7 @@
       </exclusions>
      </dependency>
      -->
-     
-    <dependency>
-        <groupId>com.sun.jersey.contribs</groupId>
-        <artifactId>jersey-multipart</artifactId>
-        <version>1.17</version>
-    </dependency>
+
     <!-- 
     <dependency>
       <groupId>org.openid4java</groupId>

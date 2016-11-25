@@ -22,13 +22,13 @@ import javax.ws.rs.core.MultivaluedMap;
 import org.apache.jena.ext.com.google.common.io.Files;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
+import org.glassfish.jersey.uri.UriComponent;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Command.Operation;
 import com.epimorphics.registry.core.Registry;
-import com.sun.jersey.api.uri.UriComponent;
 
 public class TestRequestLogging {
     Registry registry = new Registry();

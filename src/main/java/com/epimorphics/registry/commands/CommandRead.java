@@ -64,7 +64,7 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
-import com.sun.jersey.api.NotFoundException;
+import javax.ws.rs.NotFoundException;
 
 
 public class CommandRead extends Command {
