@@ -110,7 +110,7 @@ public class Login {
     /**  trap for cases where browser tries a GET against one of the login/logout endpoints  */
     @GET
     @Path("/logout")
-    public Response gegLogout() {
+    public Response getLogout() {
         return redirectTo( fullURLForPath("/") );
     }
     
