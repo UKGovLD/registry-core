@@ -44,6 +44,7 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.util.FileManager;
 import org.apache.jena.vocabulary.RDF;
+import org.glassfish.jersey.client.HttpUrlConnectorProvider;
 import org.junit.After;
 import org.junit.Before;
 
@@ -88,7 +89,7 @@ public abstract class TomcatTestBase {
 
         // Allow arbitrary HTTP methods so we can use PATCH
         c = ClientBuilder.newClient();
-//        c.property(HttpUrlConnectorProvider.SET_METHOD_WORKAROUND, true);
+        c.property(HttpUrlConnectorProvider.SET_METHOD_WORKAROUND, true);
 
         checkLive(200);
     }
@@ -132,15 +133,20 @@ public abstract class TomcatTestBase {
     }
 
     protected Response invoke(String method, String file, String uri, String mime) {
+        File src = (file == null) ? null : new File(file);  
         WebTarget r = c.target(uri);
-        Response response = null;
-        if (file == null) {
-            response = r.request().header("X-HTTP-Method-Override", method).post(Entity.entity(null, mime));
-        } else {
-            File src = new File(file);
-            response = r.request().header("X-HTTP-Method-Override", method).post(Entity.entity(src, mime));
+        switch( method ) {
+        case "GET" :
+            return r.request().get();
+        case "POST" :
+            return r.request().post( Entity.entity(src, mime) );
+        case "PUT" :
+            return r.request().put( Entity.entity(src, mime) );
+        case "DELETE":
+            return r.request().delete();
+        default:
+            return r.request().method(method, Entity.entity(src, mime) );
         }
-        return response;
     }
 
     protected Response post(String uri, String...paramvals) {

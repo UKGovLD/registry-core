@@ -60,6 +60,7 @@ import org.apache.jena.util.FileUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.velocity.exception.ResourceNotFoundException;
+import org.glassfish.jersey.internal.util.collection.MultivaluedStringMap;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -328,7 +329,7 @@ public class RequestProcessor extends BaseEndpoint {
     @POST
     @Consumes({"text/plain"})
     public Response validate(@Context HttpHeaders hh, InputStream body) {
-        MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
+        MultivaluedMap<String, String> parameters = new MultivaluedStringMap( uriInfo.getQueryParameters() );
         if ( parameters.get(Parameters.VALIDATE) != null ) {
             if (body != null) {
                 for (String uri : FileManager.get().readWholeFileAsUTF8(body).split("\\s")) {
@@ -414,6 +415,18 @@ public class RequestProcessor extends BaseEndpoint {
     @POST
     @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
     public Response simpleForm(@Context HttpHeaders hh, MultivaluedMap<String, String> form) {
+        if (form == null) {
+            // Can reach here if its a POST request with an empty body like a status update but with form-like mime type
+            MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
+            Command command = null;
+            if( parameters.get(Parameters.TAG) != null ) {
+                command = makeCommand(Operation.Tag);
+            } else if ( parameters.get(Parameters.STATUS_UPDATE) != null ) {
+                command = makeCommand(Operation.StatusUpdate);
+            }
+            return command.execute();
+        }
+        
         String action = form.getFirst("action");
         if ("register-inline".equals(action)) {
             String target = uriInfo.getPath();

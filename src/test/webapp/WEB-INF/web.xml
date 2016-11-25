@@ -10,7 +10,8 @@
     <!-- Will initialize from first of these it finds -->
     <param-value>{webapp}/WEB-INF/app.conf</param-value>
   </context-param>
-
+ 
+  
   <filter>
     <filter-name>Jersey Web Application</filter-name>
     <filter-class>org.glassfish.jersey.servlet.ServletContainer</filter-class>
@@ -25,6 +26,10 @@
     <init-param>
         <param-name>jersey.config.server.provider.classnames</param-name>
         <param-value>org.glassfish.jersey.media.multipart.MultiPartFeature</param-value>
+    </init-param>
+    <init-param>
+        <param-name>org.glassfish.jersey.spi.container.ContainerRequestFilters</param-name>
+        <param-value>org.glassfish.jersey.server.filter.HttpMethodOverrideFilter</param-value>
     </init-param>
   </filter>
 
