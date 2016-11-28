@@ -20,6 +20,10 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
         <param-name>jersey.config.server.provider.classnames</param-name>
         <param-value>org.glassfish.jersey.media.multipart.MultiPartFeature</param-value>
     </init-param>
+    <init-param>
+        <param-name>org.glassfish.jersey.spi.container.ContainerRequestFilters</param-name>
+        <param-value>org.glassfish.jersey.server.filter.HttpMethodOverrideFilter</param-value>
+    </init-param>
   </filter>
 
   <filter>

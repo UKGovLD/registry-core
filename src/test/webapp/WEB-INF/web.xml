@@ -10,7 +10,6 @@
     <!-- Will initialize from first of these it finds -->
     <param-value>{webapp}/WEB-INF/app.conf</param-value>
   </context-param>
- 
   
   <filter>
     <filter-name>Jersey Web Application</filter-name>

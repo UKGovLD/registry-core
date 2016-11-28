@@ -336,7 +336,8 @@ public class RequestProcessor extends BaseEndpoint {
                     parameters.add(Parameters.VALIDATE, uri);
                 }
             }
-            Command command = makeCommand(Operation.Validate);
+            Command command = Registry.get().make(Operation.Validate, uriInfo.getPath(), parameters);
+            command.setRequestor(getRequestor(request));
             return command.execute();
         } else {
             throw new WebApiException(Response.Status.BAD_REQUEST, "No operations supported on text/plain other than validate");
@@ -423,6 +424,18 @@ public class RequestProcessor extends BaseEndpoint {
                 command = makeCommand(Operation.Tag);
             } else if ( parameters.get(Parameters.STATUS_UPDATE) != null ) {
                 command = makeCommand(Operation.StatusUpdate);
+            } else if ( parameters.get(Parameters.VALIDATE) != null ) {
+                command = makeCommand(Operation.Validate);
+            } else if ( parameters.containsKey(Parameters.REAL_DELETE) ) {
+                command = makeCommand( Operation.RealDelete );
+                Response response = command.execute();
+                if (response.getStatus() == 204) {
+                    // For UI level actions then redirect
+                    return redirectTo("/");
+                } 
+                return response;
+            } else {
+                throw new WebApiException(Status.BAD_REQUEST, "Did not recognise request");
             }
             return command.execute();
         }
@@ -435,14 +448,6 @@ public class RequestProcessor extends BaseEndpoint {
             Command command = makeCommand( Operation.Register );
             command.setPayload( r.getModel() );
             return command.execute();
-        } else if ( uriInfo.getQueryParameters().containsKey(Parameters.REAL_DELETE) ) {
-            Command command = makeCommand( Operation.RealDelete );
-            Response response = command.execute();
-            if (response.getStatus() == 204) {
-                // For UI level actions then redirect
-                return redirectTo("/");
-            } 
-            return response;
         } else {
             // Default is to invoke register, e.g. for status update processing
             return register(hh, null);

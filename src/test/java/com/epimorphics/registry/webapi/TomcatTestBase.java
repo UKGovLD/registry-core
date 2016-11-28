@@ -44,6 +44,7 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.util.FileManager;
 import org.apache.jena.vocabulary.RDF;
+import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.HttpUrlConnectorProvider;
 import org.junit.After;
 import org.junit.Before;
@@ -151,6 +152,7 @@ public abstract class TomcatTestBase {
 
     protected Response post(String uri, String...paramvals) {
         WebTarget r = c.target(uri);
+        r.property(ClientProperties.FOLLOW_REDIRECTS, false);
         for (int i = 0; i < paramvals.length; ) {
             String param = paramvals[i++];
             String value = paramvals[i++];

@@ -46,6 +46,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDFS;
+import org.glassfish.jersey.internal.util.collection.MultivaluedStringMap;
 
 public class CommandSearch extends Command {
     static int MAX_LEN = 1000;
@@ -60,7 +61,8 @@ public class CommandSearch extends Command {
         }
         withMetadata = hasParamValue(VIEW, WITH_METADATA);
         if (!paged) {
-            parameters.put(FIRST_PAGE, new ArrayList<String>());
+            this.parameters = new MultivaluedStringMap( parameters );
+            this.parameters.put(FIRST_PAGE, new ArrayList<String>());
             paged = true;
             length = MAX_LEN;
         }

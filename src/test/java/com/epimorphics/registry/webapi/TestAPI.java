@@ -959,7 +959,7 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(200, getResponse(REG1).getStatus());
         assertEquals(200, getResponse(REG1 + "/red").getStatus());
         
-        assertEquals(204, post(REG1 + "?real_delete").getStatus());
+        assertEquals(303, post(REG1 + "?real_delete").getStatus());
         
         assertEquals(404, getResponse(REG1).getStatus());
         assertEquals(404, getResponse(REG1 + "/red").getStatus());
@@ -1042,7 +1042,7 @@ public class TestAPI extends TomcatTestBase {
         checkStatus("validation", "preoperational");
         checkStatus("preoperational", "operational");
         
-        assertEquals(204, post(BASE_URL + "system/lifecycle?real_delete").getStatus());
+        assertEquals(303, post(BASE_URL + "system/lifecycle?real_delete").getStatus());
         checkStatus("submitted", "stable");
     }
 /* Test that a client aborting a export stream does not poison tomcat 

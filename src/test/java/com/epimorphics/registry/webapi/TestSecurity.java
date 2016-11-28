@@ -238,14 +238,25 @@ public class TestSecurity extends TomcatTestBase {
         }
 
         public TestBuilder invoke(String method, String url) {
+            File src = (sourceFile == null) ? null : new File(sourceFile);  
             WebTarget r = c.target(url);
-            if (sourceFile == null) {
-                response = r.request().header("X-HTTP-Method-Override", method).post(Entity.entity(null, mime));
-            } else {
-                File src = new File(sourceFile);
-                response = r.request().header("X-HTTP-Method-Override", method).post(Entity.entity(src, mime));
+            switch( method ) {
+            case "GET" :
+                response = r.request().get();
+                return this;
+            case "POST" :
+                response = r.request().post( Entity.entity(src, mime) );
+                return this;
+            case "PUT" :
+                response = r.request().put( Entity.entity(src, mime) );
+                return this;
+            case "DELETE":
+                response = r.request().delete();
+                return this;
+            default:
+                response = r.request().method(method, Entity.entity(src, mime) );
+                return this;
             }
-            return this;
         }
 
         public Response getResponse() {

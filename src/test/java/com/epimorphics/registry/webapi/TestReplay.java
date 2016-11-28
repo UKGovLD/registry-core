@@ -80,7 +80,7 @@ public class TestReplay extends TomcatTestBase  {
         assertEquals(204, post(REG1 + "/_blue?update&status=experimental").getStatus());
         assertEquals(204, post(REG1 + "/_red?update&status=experimental").getStatus());
         assertEquals(204, post(BASE_URL + "_reg1?update&status=experimental").getStatus());
-        assertEquals(204, post(REG1 + "/_blue?real_delete").getStatus());
+        assertEquals(303, post(REG1 + "/_blue?real_delete").getStatus());
     }
     
     protected void checkNoUpdates() {
