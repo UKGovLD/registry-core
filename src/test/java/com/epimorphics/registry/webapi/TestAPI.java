@@ -1043,10 +1043,17 @@ public class TestAPI extends TomcatTestBase {
         checkStatus("preoperational", "operational");
         
         assertEquals(303, post(BASE_URL + "system/lifecycle?real_delete").getStatus());
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            return;
+        }
         checkStatus("submitted", "stable");
     }
-/* Test that a client aborting a export stream does not poison tomcat 
- * threads leaving an open transaction.*/
+    
+   /**
+    * Test that a client aborting a export stream does not poison tomcat 
+     * threads leaving an open transaction.*/
     public void doExportAbortTest() throws IOException {
     	
         assertEquals(201, postFileStatus("test/big-bulk-skos-collection.ttl", BASE_URL + "?batch-managed"));
