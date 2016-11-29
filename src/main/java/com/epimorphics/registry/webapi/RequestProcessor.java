@@ -351,6 +351,14 @@ public class RequestProcessor extends BaseEndpoint {
         Command command = null;
         if ( parameters.get(Parameters.VALIDATE) != null ) {
             return validate(hh , body);
+        } else if ( parameters.containsKey(Parameters.REAL_DELETE) ) {
+            command = makeCommand( Operation.RealDelete );
+            Response response = command.execute();
+            if (response.getStatus() == 204) {
+                // For UI level actions then redirect
+                return redirectTo("/");
+            } 
+            return response;
         } else if ( parameters.get(Parameters.TAG) != null ) {
             // TODO to support tagging delegated register would need a checkForPassThrough here
             command = makeCommand(Operation.Tag);
@@ -416,42 +424,18 @@ public class RequestProcessor extends BaseEndpoint {
     @POST
     @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
     public Response simpleForm(@Context HttpHeaders hh, MultivaluedMap<String, String> form) {
-        if (form == null) {
-            // Can reach here if its a POST request with an empty body like a status update but with form-like mime type
-            MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
-            Command command = null;
-            if( parameters.get(Parameters.TAG) != null ) {
-                command = makeCommand(Operation.Tag);
-            } else if ( parameters.get(Parameters.STATUS_UPDATE) != null ) {
-                command = makeCommand(Operation.StatusUpdate);
-            } else if ( parameters.get(Parameters.VALIDATE) != null ) {
-                command = makeCommand(Operation.Validate);
-            } else if ( parameters.containsKey(Parameters.REAL_DELETE) ) {
-                command = makeCommand( Operation.RealDelete );
-                Response response = command.execute();
-                if (response.getStatus() == 204) {
-                    // For UI level actions then redirect
-                    return redirectTo("/");
-                } 
-                return response;
-            } else {
-                throw new WebApiException(Status.BAD_REQUEST, "Did not recognise request");
-            }
-            return command.execute();
-        }
-        
-        String action = form.getFirst("action");
-        if ("register-inline".equals(action)) {
+        // This might be a real form, an empty form (e.g. delete action) or a non-existent form (e.g. from test clients) cater for all cases
+        if ( form != null && "register-inline".equals( form.getFirst("action") ) ) {
             String target = uriInfo.getPath();
             target = Registry.get().getBaseURI() + (target.isEmpty() ? "/" : "/" + target + "/");
             Resource r = UiForm.create(form, target);
             Command command = makeCommand( Operation.Register );
             command.setPayload( r.getModel() );
             return command.execute();
-        } else {
-            // Default is to invoke register, e.g. for status update processing
-            return register(hh, null);
         }
+        
+        // Doesn't seem to be a real form so fall through to same options as for generic POST but with empty body
+        return register(hh, null);
     }
 
     @POST
