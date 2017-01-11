@@ -16,7 +16,10 @@
  * limitations under the License.
  */
 
+// 
 package com.epimorphics.registry.util;
+
+// Largely a direct copy of the Jena JsonLDReader but with the details exposed for our use case
 
 import java.util.List;
 import java.util.Map;
