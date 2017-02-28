@@ -11,7 +11,7 @@ For information on installing and operating a registry instance see the wiki:
    * [Operation](https://github.com/UKGovLD/registry-core/wiki/Operation)
  
 
-Download most relecent full release: [registry-core-1.1.0.war](https://s3-eu-west-1.amazonaws.com/ukgovld/release/com/github/ukgovld/registry-core/1.1.0/registry-core-1.1.0.war)
+Download most relecent full release: [registry-core-1.2.0.war](https://s3-eu-west-1.amazonaws.com/ukgovld/release/com/github/ukgovld/registry-core/1.2.0/registry-core-1.2.0.war)
 
 ## Project governance
 
