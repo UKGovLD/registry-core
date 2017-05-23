@@ -59,20 +59,20 @@ import com.epimorphics.registry.webapi.facets.FacetResultEntry;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.util.PrefixUtils;
 import com.epimorphics.vocabs.SKOS;
-import com.hp.hpl.jena.query.QuerySolution;
-import com.hp.hpl.jena.query.ResultSet;
-import com.hp.hpl.jena.rdf.model.Literal;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.shared.PrefixMapping;
-import com.hp.hpl.jena.sparql.vocabulary.FOAF;
-import com.hp.hpl.jena.vocabulary.DCTerms;
-import com.hp.hpl.jena.vocabulary.OWL;
-import com.hp.hpl.jena.vocabulary.RDF;
-import com.hp.hpl.jena.vocabulary.RDFS;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.shared.PrefixMapping;
+import org.apache.jena.sparql.vocabulary.FOAF;
+import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.OWL;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 
 /**
  * Some supporting methods to help Velocity UI access the registry store.
@@ -656,14 +656,15 @@ public class LibReg extends ComponentBase implements LibPlugin {
     
     static final String LABEL_QUERY =
               "SELECT * WHERE {\n"
-              + "    VALUES ?resource {$LIST$}\n"
               + "    {\n"
+              + "        VALUES ?resource {$LIST$}\n"
               + "        OPTIONAL {?resource rdfs:label ?label}\n"
               + "        OPTIONAL {?resource foaf:name  ?name}\n"
               + "        OPTIONAL {?resource skos:prefLabel ?pref}\n"
               + "        OPTIONAL {?resource skos:altLabel  ?alt}\n"
               + "        OPTIONAL {?resource dct:title  ?title}\n"
               + "    } UNION {\n"
+              + "        VALUES ?resource {$LIST$}\n"
               + "        ?resource version:currentVersion ?current ."
               + "        OPTIONAL {?current rdfs:label ?label}\n"
               + "        OPTIONAL {?current foaf:name  ?name}\n"
