@@ -416,7 +416,7 @@ public class RequestProcessor extends BaseEndpoint {
     @POST
     @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
     public Response simpleForm(@Context HttpHeaders hh, MultivaluedMap<String, String> form) {
-        if (form == null) {
+        if (form == null || form.size()==0 ) {
             // Can reach here if its a POST request with an empty body like a status update but with form-like mime type
             MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
             Command command = null;
