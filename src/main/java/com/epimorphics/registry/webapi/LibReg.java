@@ -656,14 +656,15 @@ public class LibReg extends ComponentBase implements LibPlugin {
     
     static final String LABEL_QUERY =
               "SELECT * WHERE {\n"
-              + "    VALUES ?resource {$LIST$}\n"
               + "    {\n"
+              + "        VALUES ?resource {$LIST$}\n"
               + "        OPTIONAL {?resource rdfs:label ?label}\n"
               + "        OPTIONAL {?resource foaf:name  ?name}\n"
               + "        OPTIONAL {?resource skos:prefLabel ?pref}\n"
               + "        OPTIONAL {?resource skos:altLabel  ?alt}\n"
               + "        OPTIONAL {?resource dct:title  ?title}\n"
               + "    } UNION {\n"
+              + "        VALUES ?resource {$LIST$}\n"
               + "        ?resource version:currentVersion ?current ."
               + "        OPTIONAL {?current rdfs:label ?label}\n"
               + "        OPTIONAL {?current foaf:name  ?name}\n"
