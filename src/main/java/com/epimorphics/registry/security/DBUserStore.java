@@ -41,7 +41,7 @@ import com.epimorphics.appbase.core.App;
 import com.epimorphics.appbase.core.Shutdown;
 import com.epimorphics.appbase.core.Startup;
 import com.epimorphics.util.EpiException;
-import com.hp.hpl.jena.util.FileManager;
+import org.apache.jena.util.FileManager;
 
 public class DBUserStore extends BaseUserStore implements UserStore, Shutdown, Startup {
     static final Logger log = LoggerFactory.getLogger( DBUserStore.class );

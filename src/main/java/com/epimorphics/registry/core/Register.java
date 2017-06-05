@@ -24,6 +24,13 @@ package com.epimorphics.registry.core;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.vocabulary.RDFS;
+
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.epimorphics.registry.store.StoreAPI;
@@ -31,12 +38,6 @@ import com.epimorphics.registry.util.Util;
 import com.epimorphics.registry.vocab.Ldbp_orig;
 import com.epimorphics.registry.vocab.Ldp;
 import com.epimorphics.registry.vocab.RegistryVocab;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
-import com.hp.hpl.jena.vocabulary.RDFS;
 
 /**
  * Abstraction for access to a Register.

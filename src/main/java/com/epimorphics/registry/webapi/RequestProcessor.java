@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -51,9 +52,18 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.util.FileManager;
+import org.apache.jena.util.FileUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.velocity.exception.ResourceNotFoundException;
+import org.glassfish.jersey.internal.util.collection.MultivaluedStringMap;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,15 +86,6 @@ import com.epimorphics.registry.util.JSONLDSupport;
 import com.epimorphics.registry.util.PATCH;
 import com.epimorphics.registry.util.UiForm;
 import com.epimorphics.util.NameUtils;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.util.FileManager;
-import com.hp.hpl.jena.util.FileUtils;
-import com.sun.jersey.api.NotFoundException;
-import com.sun.jersey.multipart.FormDataBodyPart;
-import com.sun.jersey.multipart.FormDataMultiPart;
-import com.sun.jersey.multipart.FormDataParam;
 
 /**
  * Filter all requests as possible register API requests.
@@ -103,7 +104,7 @@ public class RequestProcessor extends BaseEndpoint {
     private static final String SYSTEM_QUERY = "system/query";
 
     @GET
-    @Produces("text/html;qs=2.0")
+    @Produces("text/html")
     public Response htmlrender() {        
         String path = uriInfo.getPath();
         if (path.startsWith(UI_PATH) ) {
@@ -328,14 +329,15 @@ public class RequestProcessor extends BaseEndpoint {
     @POST
     @Consumes({"text/plain"})
     public Response validate(@Context HttpHeaders hh, InputStream body) {
-        MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
+        MultivaluedMap<String, String> parameters = new MultivaluedStringMap( uriInfo.getQueryParameters() );
         if ( parameters.get(Parameters.VALIDATE) != null ) {
             if (body != null) {
                 for (String uri : FileManager.get().readWholeFileAsUTF8(body).split("\\s")) {
                     parameters.add(Parameters.VALIDATE, uri);
                 }
             }
-            Command command = makeCommand(Operation.Validate);
+            Command command = Registry.get().make(Operation.Validate, uriInfo.getPath(), parameters);
+            command.setRequestor(getRequestor(request));
             return command.execute();
         } else {
             throw new WebApiException(Response.Status.BAD_REQUEST, "No operations supported on text/plain other than validate");
@@ -349,6 +351,14 @@ public class RequestProcessor extends BaseEndpoint {
         Command command = null;
         if ( parameters.get(Parameters.VALIDATE) != null ) {
             return validate(hh , body);
+        } else if ( parameters.containsKey(Parameters.REAL_DELETE) ) {
+            command = makeCommand( Operation.RealDelete );
+            Response response = command.execute();
+            if (response.getStatus() == 204) {
+                // For UI level actions then redirect
+                return redirectTo("/");
+            } 
+            return response;
         } else if ( parameters.get(Parameters.TAG) != null ) {
             // TODO to support tagging delegated register would need a checkForPassThrough here
             command = makeCommand(Operation.Tag);
@@ -414,26 +424,18 @@ public class RequestProcessor extends BaseEndpoint {
     @POST
     @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
     public Response simpleForm(@Context HttpHeaders hh, MultivaluedMap<String, String> form) {
-        String action = form.getFirst("action");
-        if ("register-inline".equals(action)) {
+        // This might be a real form, an empty form (e.g. delete action) or a non-existent form (e.g. from test clients) cater for all cases
+        if ( form != null && "register-inline".equals( form.getFirst("action") ) ) {
             String target = uriInfo.getPath();
             target = Registry.get().getBaseURI() + (target.isEmpty() ? "/" : "/" + target + "/");
             Resource r = UiForm.create(form, target);
             Command command = makeCommand( Operation.Register );
             command.setPayload( r.getModel() );
             return command.execute();
-        } else if ( uriInfo.getQueryParameters().containsKey(Parameters.REAL_DELETE) ) {
-            Command command = makeCommand( Operation.RealDelete );
-            Response response = command.execute();
-            if (response.getStatus() == 204) {
-                // For UI level actions then redirect
-                return redirectTo("/");
-            } 
-            return response;
-        } else {
-            // Default is to invoke register, e.g. for status update processing
-            return register(hh, null);
         }
+        
+        // Doesn't seem to be a real form so fall through to same options as for generic POST but with empty body
+        return register(hh, null);
     }
 
     @POST

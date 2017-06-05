@@ -26,10 +26,10 @@ import java.util.List;
 import com.epimorphics.registry.commands.CommandStatusUpdate;
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.RegisterItem;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.vocabulary.RDF;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 
 /**
  * Format for notification messages. These are used to allow for processing or

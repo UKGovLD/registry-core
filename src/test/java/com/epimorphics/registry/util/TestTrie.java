@@ -27,7 +27,7 @@ import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 import com.epimorphics.util.TestUtil;
-import com.hp.hpl.jena.util.iterator.Filter;
+import org.apache.jena.util.iterator.Filter;
 
 public class TestTrie {
 

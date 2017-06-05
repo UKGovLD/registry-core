@@ -26,8 +26,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.epimorphics.registry.core.Status;
-import com.hp.hpl.jena.rdf.model.Literal;
-import com.hp.hpl.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Resource;
 
 /**
  * Struct which provides a summary description of an entry in a register.

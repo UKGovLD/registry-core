@@ -29,13 +29,13 @@ import static org.junit.Assert.*;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.ForwardingRecord.Type;
 import com.epimorphics.registry.util.Util;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
-import com.hp.hpl.jena.vocabulary.RDF;
-import com.hp.hpl.jena.vocabulary.RDFS;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 
 public class TestDelegationRecord {
     public static final String BW_TEST_ENDPOINT = "http://environment.data.gov.uk/sparql/bwq/query";

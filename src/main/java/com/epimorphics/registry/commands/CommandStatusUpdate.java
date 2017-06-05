@@ -38,9 +38,9 @@ import com.epimorphics.registry.security.RegPermission;
 import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.Parameters;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.vocabulary.DCTerms;
-import com.sun.jersey.api.NotFoundException;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.DCTerms;
+import javax.ws.rs.NotFoundException;
 
 
 public class CommandStatusUpdate extends Command {

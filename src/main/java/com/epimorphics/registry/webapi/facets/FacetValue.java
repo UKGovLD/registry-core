@@ -22,7 +22,7 @@
 package com.epimorphics.registry.webapi.facets;
 
 import com.epimorphics.rdfutil.RDFUtil;
-import com.hp.hpl.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.RDFNode;
 
 /**
  * Represents a possible value for a Facet together with the filter count for it.

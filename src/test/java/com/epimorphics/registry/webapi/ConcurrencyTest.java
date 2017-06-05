@@ -24,18 +24,19 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 import java.util.Random;
 
+import javax.ws.rs.core.Response;
+
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.junit.Test;
 
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.util.NameUtils;
 import com.epimorphics.vocabs.SKOS;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.vocabulary.RDF;
-import com.hp.hpl.jena.vocabulary.RDFS;
-import com.sun.jersey.api.client.ClientResponse;
 
 /**
  * Test for concurrency issues by hammering a test instance with parallel reads and interspersed writes.
@@ -124,7 +125,7 @@ public class ConcurrencyTest extends TomcatTestBase {
         }
     
         protected void initRegister() {
-            ClientResponse response = postFile("test/reg1.ttl", BASE_URL, "text/turtle");
+            Response response = postFile("test/reg1.ttl", BASE_URL, "text/turtle");
             assertEquals("Register a register", 201, response.getStatus());
             assertEquals(REG1_ITEM, response.getLocation().toString());
         }

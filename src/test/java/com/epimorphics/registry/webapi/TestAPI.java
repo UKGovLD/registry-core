@@ -36,6 +36,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
+import javax.ws.rs.core.Response;
+
 import org.apache.jena.riot.RDFDataMgr;
 import org.junit.Test;
 
@@ -54,21 +56,20 @@ import com.epimorphics.util.FileUtil;
 import com.epimorphics.util.TestUtil;
 import com.epimorphics.vocabs.API;
 import com.epimorphics.vocabs.SKOS;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.RDFList;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.ResIterator;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
-import com.hp.hpl.jena.util.FileManager;
-import com.hp.hpl.jena.vocabulary.DCTerms;
-import com.hp.hpl.jena.vocabulary.OWL;
-import com.hp.hpl.jena.vocabulary.RDF;
-import com.hp.hpl.jena.vocabulary.RDFS;
-import com.sun.jersey.api.client.ClientResponse;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFList;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.ResIterator;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.util.FileManager;
+import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.OWL;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 
 
 /**
@@ -251,7 +252,7 @@ public class TestAPI extends TomcatTestBase {
 
     private void doRegisterRegistrationTests() {
         // Leaves register reg1 set up
-        ClientResponse response = postFile("test/reg1.ttl", BASE_URL, "text/turtle");
+        Response response = postFile("test/reg1.ttl", BASE_URL, "text/turtle");
         assertEquals("Register a register", 201, response.getStatus());
         assertEquals(REG1_ITEM, response.getLocation().toString());
         assertEquals("Register in non-existant location", 404, postFileStatus("test/reg1.ttl", BASE_URL+"foo"));
@@ -301,7 +302,7 @@ public class TestAPI extends TomcatTestBase {
     // Returns the version number of the new version
     private String doUpdateTest() {
         // Updates, change properties on red
-        ClientResponse response = invoke("PUT", "test/red1.ttl", REG1 + "/red");
+        Response response = invoke("PUT", "test/red1.ttl", REG1 + "/red");
         assertEquals(204,  response.getStatus());
         String red1Version = response.getLocation().toString();
         assertTrue(red1Version.startsWith(ROOT_REGISTER + "reg1/_red:"));
@@ -316,7 +317,7 @@ public class TestAPI extends TomcatTestBase {
         Resource reg1 = m.getResource(REG1_URI);
         long version = RDFUtil.getLongValue(reg1, OWL.versionInfo);
 
-        ClientResponse response = invoke("PUT", "test/reg1-put.ttl", reg1meta);
+        Response response = invoke("PUT", "test/reg1-put.ttl", reg1meta);
         assertEquals(204, response.getStatus());
 
         m = getModelResponse(reg1meta);
@@ -361,7 +362,7 @@ public class TestAPI extends TomcatTestBase {
     // Assumes reg1/red exists
     // Patch its name to red1b
     private void doPatchTest() {
-        ClientResponse response = invoke("PATCH", "test/red1b.ttl", REG1 + "/red");
+        Response response = invoke("PATCH", "test/red1b.ttl", REG1 + "/red");
         assertEquals(204,  response.getStatus());
         checkModelResponse(REG1 + "/red", ROOT_REGISTER + "reg1/red", "test/expected/red1b.ttl");
     }
@@ -421,7 +422,7 @@ public class TestAPI extends TomcatTestBase {
         assertEquals("Not a bulk type", 400, postFileStatus("test/blue.ttl", BASE_URL + "?batch-managed"));
 
 //        assertEquals(201, postFileStatus("test/bulk-skos-collection.ttl", BASE_URL + "?batch-managed"));
-        ClientResponse response = postFile("test/bulk-skos-collection.ttl", BASE_URL + "?batch-managed");
+        Response response = postFile("test/bulk-skos-collection.ttl", BASE_URL + "?batch-managed");
         TestAPIDebug.debugStatus(response);
 
         Model m = getModelResponse(BASE_URL + "collection?status=any");
@@ -492,9 +493,9 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(404, post(BASE_URL + "foo?validate=http://location.data.gov.uk/collection/item1").getStatus());
         assertEquals(400, post(BASE_URL + "?validate=http://location.data.gov.uk/collection/item1&validate=http://location.data.gov.uk/collection/item8").getStatus());
 
-        ClientResponse response = post(BASE_URL + "?validate=http://location.data.gov.uk/collection/item1");
+        Response response = post(BASE_URL + "?validate=http://location.data.gov.uk/collection/item1");
         assertEquals(200, response.getStatus());
-        assertEquals("http://location.data.gov.uk/collection/item1 is http://location.data.gov.uk/collection/_item1", response.getEntity(String.class).trim());
+        assertEquals("http://location.data.gov.uk/collection/item1 is http://location.data.gov.uk/collection/_item1", response.readEntity(String.class).trim());
 
     }
 
@@ -621,9 +622,9 @@ public class TestAPI extends TomcatTestBase {
         assertEquals("purple", RDFUtil.getStringValue(r, RDFS.label));
         assertEquals("I am purple but described using JSON-LD, good luck with that", RDFUtil.getStringValue(r, DCTerms.description));
 
-        ClientResponse response = getResponse(BASE_URL + "reg1/blue", JSONLDSupport.MIME_JSONLD);
+        Response response = getResponse(BASE_URL + "reg1/blue", JSONLDSupport.MIME_JSONLD);
         assertEquals(200, response.getStatus());
-        InputStream is = response.getEntityInputStream();
+        InputStream is = response.readEntity(InputStream.class);
         m = JSONLDSupport.readModel(RequestProcessor.DUMMY_BASE_URI, is);
         is.close();
         r = m.getResource(ROOT_REGISTER + "reg1/blue");
@@ -642,7 +643,7 @@ public class TestAPI extends TomcatTestBase {
     private void doRegisterWithMetadataTest() {
 
         // Testing update of item + entity - ISSUE-38
-        ClientResponse response = postFile("test/jmt/number-eight-post-notation.ttl", REG1);
+        Response response = postFile("test/jmt/number-eight-post-notation.ttl", REG1);
         assertEquals(201, response.getStatus());
         String itemURI = ROOT_REGISTER + "reg1/_eight";
         assertEquals(itemURI, response.getLocation().toASCIIString());
@@ -820,7 +821,7 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(204, post(BASE_URL + "reg3/_blue?update&status=stable").getStatus());
 
         // Tag it
-        ClientResponse response = post(BASE_URL+"reg3?tag=tag1");
+        Response response = post(BASE_URL+"reg3?tag=tag1");
         assertEquals(201, response.getStatus());
         String uri = ROOT_REGISTER+"reg3?tag=tag1";
         assertEquals(uri, response.getLocation().toString());
@@ -847,15 +848,15 @@ public class TestAPI extends TomcatTestBase {
      * be run after tagging test
      */
     private void doTestCSVOut() {
-        ClientResponse response = getResponse(BASE_URL + "reg3?_view=with_metadata", "text/csv");
+        Response response = getResponse(BASE_URL + "reg3?_view=with_metadata", "text/csv");
         assertEquals(200, response.getStatus());
-        assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3.csv"), response.getEntity(String.class).replace("\r", ""));
+        assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3.csv"), response.readEntity(String.class).replace("\r", ""));
         response = getResponse(BASE_URL + "reg3/red?_view=with_metadata", "text/csv");
         assertEquals(200, response.getStatus());
-        assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3-red.csv"), response.getEntity(String.class).replace("\r", ""));
+        assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3-red.csv"), response.readEntity(String.class).replace("\r", ""));
         response = getResponse(BASE_URL + "reg3/red", "text/csv");
         assertEquals(200, response.getStatus());
-        assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3-red-no-metadata.csv"), response.getEntity(String.class).replace("\r", ""));
+        assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3-red-no-metadata.csv"), response.readEntity(String.class).replace("\r", ""));
     }
     
     /**
@@ -866,7 +867,7 @@ public class TestAPI extends TomcatTestBase {
      * Check support for graph entities
      */
     private void doGraphEntityTest() {
-        ClientResponse response;
+        Response response;
         Model m;
         response =  invoke("PUT", "test/ont1.ttl", BASE_URL + "reg1/ont?graph");
         assertEquals(201, response.getStatus());
@@ -891,7 +892,7 @@ public class TestAPI extends TomcatTestBase {
         String annotationGraph = BASE_URL + "reg1/_red?annotation=test";
         assertEquals(404, getResponse(annotationGraph).getStatus());
 
-        ClientResponse response = invoke("PUT", "test/ont1.ttl", annotationGraph);
+        Response response = invoke("PUT", "test/ont1.ttl", annotationGraph);
         assertEquals(201, response.getStatus());
 
         Model m = getModelResponse(annotationGraph);
@@ -958,7 +959,7 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(200, getResponse(REG1).getStatus());
         assertEquals(200, getResponse(REG1 + "/red").getStatus());
         
-        assertEquals(204, post(REG1 + "?real_delete").getStatus());
+        assertEquals(303, post(REG1 + "?real_delete").getStatus());
         
         assertEquals(404, getResponse(REG1).getStatus());
         assertEquals(404, getResponse(REG1 + "/red").getStatus());
@@ -968,9 +969,9 @@ public class TestAPI extends TomcatTestBase {
      * Export Reg1 for later import test
      */
     private void doExport(File exportFile) throws IOException {
-        ClientResponse response = getResponse(REG1+"?export", "application/n-quads");
+        Response response = getResponse(REG1+"?export", "application/n-quads");
         assertEquals(200, response.getStatus());
-        InputStream in = response.getEntity(InputStream.class);
+        InputStream in = response.readEntity(InputStream.class);
         FileOutputStream out = new FileOutputStream(exportFile);
         FileUtil.copyResource(in, out);
         out.close();
@@ -980,7 +981,7 @@ public class TestAPI extends TomcatTestBase {
      * Reimport the earlier export and test REG1 is back after the delete
      */
     private void doImportTest(File exportFile) throws IOException {
-        ClientResponse response = invoke("PUT", exportFile.getPath(), REG1+"?import", "application/n-quads");
+        Response response = invoke("PUT", exportFile.getPath(), REG1+"?import", "application/n-quads");
         assertEquals(204, response.getStatus());
         
         assertEquals(200, getResponse(REG1).getStatus());
@@ -1041,20 +1042,27 @@ public class TestAPI extends TomcatTestBase {
         checkStatus("validation", "preoperational");
         checkStatus("preoperational", "operational");
         
-        assertEquals(204, post(BASE_URL + "system/lifecycle?real_delete").getStatus());
+        assertEquals(303, post(BASE_URL + "system/lifecycle?real_delete").getStatus());
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            return;
+        }
         checkStatus("submitted", "stable");
     }
-/* Test that a client aborting a export stream does not poison tomcat 
- * threads leaving an open transaction.*/
+    
+   /**
+    * Test that a client aborting a export stream does not poison tomcat 
+     * threads leaving an open transaction.*/
     public void doExportAbortTest() throws IOException {
     	
         assertEquals(201, postFileStatus("test/big-bulk-skos-collection.ttl", BASE_URL + "?batch-managed"));
         for (int i = 0; i < 50; i++){
-  	      ClientResponse response = getResponse(BASE_URL + "big-collection?status=any&export=", "application/n-quads");
+  	      Response response = getResponse(BASE_URL + "big-collection?status=any&export=", "application/n-quads");
 
   	      assertEquals(200, response.getStatus());
   	      // obtain export stream but do not read it, just close it.
-  	      InputStream export = response.getEntity(InputStream.class);
+  	      InputStream export = response.readEntity(InputStream.class);
   	      export.close();
         }
 

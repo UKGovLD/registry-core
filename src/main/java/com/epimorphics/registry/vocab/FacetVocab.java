@@ -1,7 +1,7 @@
 /* CVS $Id: $ */
 package com.epimorphics.registry.vocab; 
-import com.hp.hpl.jena.rdf.model.*;
-import com.hp.hpl.jena.ontology.*;
+import org.apache.jena.rdf.model.*;
+import org.apache.jena.ontology.*;
  
 /**
  * Vocabulary definitions from src/main/vocabs/facet.ttl 

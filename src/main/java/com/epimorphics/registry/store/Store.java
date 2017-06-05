@@ -21,8 +21,8 @@ package com.epimorphics.registry.store;
 
 import java.io.InputStream;
 
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.rdf.model.Model;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.rdf.model.Model;
 
 
 /**

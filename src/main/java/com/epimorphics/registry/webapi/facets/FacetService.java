@@ -34,13 +34,15 @@ import com.epimorphics.registry.store.Store;
 import com.epimorphics.registry.vocab.FacetVocab;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.vocabs.SKOS;
-import com.hp.hpl.jena.enhanced.UnsupportedPolymorphismException;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.RDFList;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.ResIterator;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.util.FileManager;
+
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.jena.enhanced.UnsupportedPolymorphismException;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.RDFList;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.ResIterator;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.util.FileManager;
 
 public class FacetService extends ComponentBase {
     static Logger log = LoggerFactory.getLogger(FacetService.class);
@@ -99,7 +101,8 @@ public class FacetService extends ComponentBase {
         return baseQuery;
     }
     
-    public FacetResult query(String state) {
+    public FacetResult query(String stateIn) {
+        String state = StringEscapeUtils.unescapeHtml(stateIn);
         try {
             store.lock();
 //            return new FacetResult(baseQuery, state, specList, store.getUnionModel());

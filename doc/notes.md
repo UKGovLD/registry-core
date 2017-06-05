@@ -6,17 +6,8 @@
 
    * The root register must end in "/" to avoid the version info being treated as part of the dns name.
 
-   * Lucene index on every item update costs 3x slow down on in-memory test case, actually 6x on a machine with spinning disc
+## Future 
 
-   * Where do the labels for things like owner organization come from?
-
-   * If lucene update breaks (e.g. write lock left behind) then the update fails uncleanly, need to abort in that case
-
-## Future redesign for scale
-
-   * Switch to a message-oriented design for connecting the registry core logic to the store, indexers and other possible data consumers - but what message structure BSON encoding?
-     support pub/sub for e.g. watcher API
-   * Include userstore events on message bus and update logger
    * plugin architecture for validators, use ServiceLoader machinery for that?
 
    * shake down StoreAPI - simplify version/flatten/item stuff - too many slightly variant methods
@@ -28,17 +19,10 @@
    * Review handling of getting version of Register when retrieving versioned RegisterItem
    * As part of API shake down, scrap the incremental-delta machinery on Description
 
-
    * bulk registration should dodge the register versioning somehow?
 
    * Would be nice if the search API returned the total number of matches to allow for pagination of results
 
-## Stack
-
-   * create void description for registers
-   * creating of void:example from early registrations
-   * If RI includes status value then need to authorize status update as well
-   * caching control headers
    * e-tag support
 
    * Validate delegations - relative to server base, legal java URI, if server code it is a valid integer and valid range
@@ -50,45 +34,7 @@
 
    * Cache management of delegated registers needs work, in fact all of cache management needs work - doesn't function through UI-
 
-   * logging is seeing the nginx proxy, the requestor forwarding is getting lost
-
-   * Improve logging so can replay update actions. Currently have mix of full log including read and logging of actions with payloads.
-
-   * Template config should allow external UI root so css etc can be supplied without a war rebuild
-
-   * 
-
 ## UI Stack
 
-   * faceted filter on search results
-   * inject resource labels into results models, need a label utility (caching?) which handles that and knows about prefixes and registered ontologies
    * show register at an earlier time - would be nice to have a timeline widget for this
-
-   * Per-register sets of registration forms
-
-   * Customization register and item views (whole override or just tabbed-field override. Definable by register of templates.
-
-   * Need to set velocity into production mode for full deployment.
-
-## Extensions
-
-   * Register a non-RDF payload?  C.f. XML namespace.
-   * Open annotation graphs - for provenance, for dataset analysis?
-
-## Trial deployment notes
-
-   * Set baseURI in web.xml and @base in root-register.ttl
-
-
-## Open ID
-
-   * Sample code for Openid4java   https://gist.github.com/jdkanani/4303883
-   * Built in code examples, use comments on the page https://code.google.com/p/openid4java/wiki/SampleConsumer
-   * Standard URILs: Novell=http://novell.com/openid Google=https://www.google.com/accounts/o8/id Yahoo=http://yahoo.com/
-   * Useful google summary page: https://developers.google.com/accounts/docs/OpenID
-
-   * DER ID if login using generic google:   https://www.google.com/accounts/o8/id?id=AItOawnuFU9lYCFB60lMIO8lRLYRkWGCk3pT4Cs
-   * DER ID if login using profile page:  https://profiles.google.com/114719444327647609228
-     Unclear how id in first form relates to ID in second!
-
 

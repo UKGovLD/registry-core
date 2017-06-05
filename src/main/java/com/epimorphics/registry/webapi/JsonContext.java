@@ -26,8 +26,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
 import com.epimorphics.registry.util.JSONLDSupport;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 
 @Path(JsonContext.JSON_CONTEXT_PATH)
 public class JsonContext {

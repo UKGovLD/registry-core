@@ -133,3 +133,7 @@ kill -HUP `cat /var/run/nginx.pid`
     include /var/local/registry/proxy-*.conf ;
 ]]]
 
+# Shell script core for replication
+
+readonly log="$1"
+curl --basic --user:replication:$PASSWORD --data-binary="@$log" $slave/system/replay

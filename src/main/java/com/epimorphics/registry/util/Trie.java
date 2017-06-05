@@ -25,8 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.hp.hpl.jena.util.iterator.Filter;
+import java.util.function.Predicate;
 
 /**
  * Trie structure for matching URI prefixes. The trie is based on matching URI segments
@@ -50,7 +49,7 @@ public class Trie<T> {
         return root.match(split(uri), 0);
     }
 
-    public List<T> findAll(String path, Filter<T> filter) {
+    public List<T> findAll(String path, Predicate<T> filter) {
         List<T> results = new ArrayList<T>();
         root.findAll(split(path), 0, filter, results);
         return results;
@@ -92,7 +91,7 @@ public class Trie<T> {
 
         public void unregister(String[] path, int index);
 
-        public void findAll(String[] path, int index, Filter<T> filter, List<T> results);
+        public void findAll(String[] path, int index, Predicate<T> filter, List<T> results);
     }
 
     static class TrieTerminal<T> implements TrieNode<T> {
@@ -114,9 +113,9 @@ public class Trie<T> {
         }
 
         @Override
-        public void findAll(String[] path, int index, Filter<T> filter, List<T> results) {
+        public void findAll(String[] path, int index, Predicate<T> filter, List<T> results) {
             if (index >= path.length -1) {
-                if (filter == null || filter.accept(match)) {
+                if (filter == null || filter.test(match)) {
                     results.add(match);
                 }
             }
@@ -165,7 +164,7 @@ public class Trie<T> {
         }
 
         @Override
-        public void findAll(String[] path, int index, Filter<T> filter, List<T> results) {
+        public void findAll(String[] path, int index, Predicate<T> filter, List<T> results) {
             if (index < path.length && path.length > 0) {
                 TrieNode<T> next = branches.get(path[index]);
                 if (next == null) {

@@ -21,6 +21,9 @@
 
 package com.epimorphics.registry.core;
 
+import static com.epimorphics.registry.core.Status.LIFECYCLE_REGISTER;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,10 +35,14 @@ import java.util.regex.Pattern;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.util.FileUtils;
+import org.apache.jena.vocabulary.RDF;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
+import org.glassfish.jersey.uri.UriComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +60,7 @@ import com.epimorphics.registry.message.LocalMessagingService;
 import com.epimorphics.registry.message.Message;
 import com.epimorphics.registry.message.MessagingService;
 import com.epimorphics.registry.message.ProcessIfChanges;
+import com.epimorphics.registry.message.RequestLogger;
 import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.security.UserStore;
 import com.epimorphics.registry.store.BackupService;
@@ -64,12 +72,6 @@ import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.facets.FacetService;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.util.FileUtil;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.util.FileUtils;
-import com.hp.hpl.jena.vocabulary.RDF;
-import com.sun.jersey.api.uri.UriComponent;
-import static com.epimorphics.registry.core.Status.LIFECYCLE_REGISTER;
 
 /**
  * This the primary configuration point for the Registry.
@@ -121,6 +123,7 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
     protected String backupDir;
     protected boolean redirectToHttpsOnLogin = false;
     protected GenericConfig configExtensions;
+    protected RequestLogger requestLogger;
     
     public void setBaseUri(String uri) {
         baseURI = uri;
@@ -201,6 +204,15 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
 
     public void setConfigExtensions(GenericConfig configExtensions) {
         this.configExtensions = configExtensions;
+    }
+    
+    public RequestLogger getRequestLogger() {
+        return requestLogger;
+    }
+
+    public void setRequestLogger(RequestLogger requestLogger) {
+        this.requestLogger = requestLogger;
+        requestLogger.setRegistry(this);
     }
 
     @Override

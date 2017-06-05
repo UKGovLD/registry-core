@@ -26,13 +26,12 @@ import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
+import org.apache.jena.rdf.model.Model;
+
 import com.epimorphics.util.EpiException;
 import com.github.jsonldjava.core.JsonLdOptions;
 import com.github.jsonldjava.core.JsonLdProcessor;
-import com.github.jsonldjava.jena.JenaRDFParser;
-import com.github.jsonldjava.jena.JenaTripleCallback;
-import com.github.jsonldjava.utils.JSONUtils;
-import com.hp.hpl.jena.rdf.model.Model;
+import com.github.jsonldjava.utils.JsonUtils;
 
 /**
  * Utilities for assisting with JSON-LD parsing.
@@ -48,7 +47,7 @@ public class JSONLDSupport {
 
     public static Model readModel(String baseURI, InputStream inputStream) {
         try {
-            Object json = JSONUtils.fromInputStream(inputStream);
+            Object json = JsonUtils.fromInputStream(inputStream);
             inputStream.close();
             return parseModel(baseURI, json );
         } catch (Exception e) {
@@ -67,7 +66,7 @@ public class JSONLDSupport {
                     top.put(CONTEXT_KEY, Prefixes.getJsonldContext());
                 }
             }
-            JenaTripleCallback callback = new JenaTripleCallback();
+            JenaTripleCallBack callback = new JenaTripleCallBack();
             Model m = (Model) JsonLdProcessor.toRDF(jsonObject, callback, new JsonLdOptions(baseURI));
 //            Model m = (Model) JSONLD.toRDF(jsonObject, callback, new Options(baseURI));
             return m;
@@ -78,15 +77,14 @@ public class JSONLDSupport {
 
     public static Object toJSONLD(Model m) {
         try {
-            JenaRDFParser parser = new JenaRDFParser();
-            Object json = JsonLdProcessor.fromRDF(m, parser);
+            Object json = JsonLdProcessor.fromRDF(m, new JenaJSONLDParser());
             json = JsonLdProcessor.compact(json, Prefixes.getJsonldContext(), new JsonLdOptions());
             return json;
         } catch (Exception e) {
             throw new EpiException(e);
         }
     }
-
+    
     @SuppressWarnings("unchecked")
     public static Object toJSONLDNoContext(Model m) {
         Object json = toJSONLD(m);
@@ -97,5 +95,6 @@ public class JSONLDSupport {
         }
         return json;
     }
+    
 
 }
