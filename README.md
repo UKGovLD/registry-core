@@ -13,6 +13,10 @@ For information on installing and operating a registry instance see the wiki:
 
 Download most recent full release: [registry-core-1.2.0.war](https://s3-eu-west-1.amazonaws.com/ukgovld/release/com/github/ukgovld/registry-core/1.2.0/registry-core-1.2.0.war)
 
+## Warning
+
+This feature branch is now obsolete, it has been merged into master and will be removed.
+
 ## Project governance
 
 See:
