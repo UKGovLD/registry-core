@@ -299,7 +299,7 @@ public class CommandRead extends Command {
             } else {
 
                 // Status filter option
-                Status status = Status.forString( parameters.getFirst(STATUS), Status.Accepted );
+                Status status = Status.forString( parameters.getFirst(STATUS), Status.Valid );
 
                 // Select version of view
                 long timestamp = -1;
