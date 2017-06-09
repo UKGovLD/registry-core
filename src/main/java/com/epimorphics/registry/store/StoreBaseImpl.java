@@ -873,6 +873,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public ResultSet query(String query) {
+        log.debug("Query: " + query);
         QueryExecution exec = QueryExecutionFactory.create(query,
                 store.asDataset());
         try {
