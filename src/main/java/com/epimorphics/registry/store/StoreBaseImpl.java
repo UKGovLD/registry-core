@@ -716,7 +716,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                 query +=  "OFFSET " + request.getOffset();
             }
 
-            // log.info("Search query = " + query.toString());
+            log.debug("Search query = " + query.toString());
 
             QueryExecution exec = QueryExecutionFactory.create( query, store.asDataset() );
             try {
