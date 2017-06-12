@@ -51,7 +51,7 @@ import com.epimorphics.registry.vocab.RegistryVocab;
 
 public class TestSecurity extends TomcatTestBase {
     @Override
-    String getWebappRoot() {
+    public String getWebappRoot() {
         return "src/test/webapp-security";
     }
 

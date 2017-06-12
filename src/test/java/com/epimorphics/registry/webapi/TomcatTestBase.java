@@ -63,7 +63,7 @@ public abstract class TomcatTestBase {
     Tomcat tomcat ;
     Client c;
 
-    abstract String getWebappRoot() ;
+    public abstract String getWebappRoot() ;
 
 
     @Before

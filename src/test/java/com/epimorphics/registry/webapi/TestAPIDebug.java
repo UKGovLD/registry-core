@@ -55,7 +55,7 @@ public class TestAPIDebug extends TomcatTestBase {
     static final String REG1 = BASE_URL + "reg1";
     static final String REG1_URI = ROOT_REGISTER + "reg1";
 
-    String getWebappRoot() {
+    public String getWebappRoot() {
         return "src/test/webapp";
     }
 

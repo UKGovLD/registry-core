@@ -454,6 +454,38 @@ public class TestStoreImpl {
         
         exportFile.delete();
     }
+    
+    @Test
+    public void testFilters() throws IOException {
+        addEntry("file:test/reg1.ttl", ROOT_REGISTER);
+        Register reg1 = store.getCurrentVersion(REG1).asRegister();
+        addEntry("file:test/regfilter/entry1.ttl", REG1);
+        addEntry("file:test/regfilter/entry2.ttl", REG1);
+        addEntry("file:test/regfilter/entry3.ttl", REG1);
+        addEntry("file:test/regfilter/entry4.ttl", REG1);
+        
+        checkRegisterList(reg1, "", "entry 1", "entry 2", "entry 3", "entry 4");
+        checkRegisterList(reg1, "skos:notation=2", "entry 2");
+        checkRegisterList(reg1, "min-skos:notation=2", "entry 2", "entry 3", "entry 4");
+        checkRegisterList(reg1, "maxEx-skos:notation=3", "entry 1", "entry 2");
+        
+    }
+    
+    private void checkRegisterList(Register register, String filter, String...labels) {
+        List<FilterSpec> filters = new ArrayList<>();
+        for (String f : filter.split("&")) {
+            if ( ! f.isEmpty() ) {
+                String[] kv = f.split("=");
+                filters.add( FilterSpec.filterFor(kv[0], kv[1]));
+            }
+        }
+        List<RegisterEntryInfo> entries = store.listMembers(register, filters);
+        assertEquals( labels.length, entries.size() );
+        int count = 0;
+        for (RegisterEntryInfo entry : entries) {
+            assertTrue( entry.hasLabel( labels[count++] ) );
+        }
+    }
 
     private void exportTo(String register, File exportFile) throws IOException {
         OutputStream output = new FileOutputStream(exportFile);

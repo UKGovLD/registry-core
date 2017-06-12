@@ -438,9 +438,19 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     // static String REGISTER_ENUM_QUERY =
     // "SELECT ?ri WHERE { ?ri reg:register ?register. }";
 
+
     @Override
     public List<RegisterEntryInfo> listMembers(Register register) {
-        ResultSet rs = selectAll(getDefaultModel(), REGISTER_LIST_QUERY,
+        return listMembers(register, null);
+    }
+    
+    @Override
+    public List<RegisterEntryInfo> listMembers(Register register, List<FilterSpec> filters) {
+        String query = REGISTER_LIST_QUERY;
+        if (filters != null) {
+            query = query.replace("#filtertag", FilterSpec.asQuery(filters, "entity"));
+        }
+        ResultSet rs = selectAll(getDefaultModel(), query,
                 Prefixes.getDefault(),
                 createBindings("register", register.getRoot()));
         List<RegisterEntryInfo> results = new ArrayList<RegisterEntryInfo>();
@@ -473,10 +483,13 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     static String REGISTER_LIST_QUERY = "SELECT * WHERE { "
             + "?item reg:register ?register; "
             + "      version:currentVersion ?itemVer; "
-            + "      reg:notation ?notation; " + "      reg:itemClass ?type ."
+            + "      reg:notation ?notation; reg:itemClass ?type ."
             + "?itemVer reg:status ?status; "
             + "         reg:definition [reg:entity ?entity]; "
-            + "         rdfs:label ?label . " + "} ORDER BY ?notation";
+            + "         rdfs:label ?label . \n"
+            + " #filtertag\n" +
+            "} ORDER BY ?notation";
+
 
     @Override
     public boolean contains(Register register, String notation) {

@@ -32,6 +32,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.vocabulary.RDFS;
 
 import com.epimorphics.rdfutil.RDFUtil;
+import com.epimorphics.registry.store.FilterSpec;
 import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.util.Util;
@@ -70,6 +71,14 @@ public class Register extends Description {
         }
         return members;
     }
+    
+    public List<RegisterEntryInfo> getMembers(List<FilterSpec> filters) {
+        if (filters == null || filters.isEmpty()) {
+            return getMembers();
+        } else {
+            return store.listMembers(this, filters);
+        }
+    }
 
     /**
      * Fetch all the members of the register and construct an RDF view
@@ -82,19 +91,39 @@ public class Register extends Description {
      * @param offset offset in the list to start the return window
      * @param length then maximum number of members to return, -1 for no limit
      * @param timestamp the time at which the values should be valid, -1 for current value
-     * @param items an array in which to return an ordered list of the items, if null if not required
+     * @param filters set of filters to apply to the register view, may be null if no filtering needed
+     * @param results an array in which to return an ordered list of the items, if null if not required
      * @return whether the view is complete
      */
+    // The signature of this method is now out of control, need some refactoring
     public boolean constructView(Model model, boolean withMetadata, Status status, int offset, int length, long timestamp, List<Resource> results) {
-        getMembers();
+        return constructView(model, withMetadata, status, offset, length, timestamp, null, results);
+    }
 
+    /**
+     * Fetch all the members of the register and construct an RDF view
+     * according the given flags.
+     *
+     * @param model model in which to store the results
+     * @param withVersion  if true then versioning information is included, if false the Version/VersionedThing pairs are merged
+     * @param withMetadata if true then both RegisterItems and the entities are included, if false then just entities are shown
+     * @param status only return members which are specializations of this status, use null as a wildcard
+     * @param offset offset in the list to start the return window
+     * @param length then maximum number of members to return, -1 for no limit
+     * @param timestamp the time at which the values should be valid, -1 for current value
+     * @param filters set of filters to apply to the register view, may be null if no filtering needed
+     * @param results an array in which to return an ordered list of the items, if null if not required
+     * @return whether the view is complete
+     */
+    // The signature of this method is now out of control, need some refactoring
+    public boolean constructView(Model model, boolean withMetadata, Status status, int offset, int length, long timestamp, List<FilterSpec> filters, List<Resource> results) {
         List<String> itemURIs = new ArrayList<String>( length == -1 ? 50 : length );
         List<String> entityURIs = new ArrayList<String>( length == -1 ? 50 : length );
 
         int count = 0;
         boolean incomplete = false;
         int limit = length == -1 ? Integer.MAX_VALUE : offset + length;
-        for (RegisterEntryInfo info : members) {
+        for (RegisterEntryInfo info : getMembers(filters)) {
             boolean valid = (timestamp == -1) ? info.getStatus().isA(status) : true;
             if (valid) {
                 if (timestamp != -1) {

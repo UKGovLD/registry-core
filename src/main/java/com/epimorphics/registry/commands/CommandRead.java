@@ -46,6 +46,7 @@ import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.csv.RDFCSVUtil;
 import com.epimorphics.registry.store.EntityInfo;
+import com.epimorphics.registry.store.FilterSpec;
 import com.epimorphics.registry.store.VersionInfo;
 import com.epimorphics.registry.util.Util;
 import com.epimorphics.registry.vocab.RegistryVocab;
@@ -75,6 +76,7 @@ public class CommandRead extends Command {
     boolean timestamped;
     boolean entityLookup;
     boolean tagRetieval;
+    List<FilterSpec> filters = new ArrayList<>();
 
     public void init(Operation operation, String target,
             MultivaluedMap<String, String> parameters, Registry registry) {
@@ -85,6 +87,11 @@ public class CommandRead extends Command {
         timestamped = parameters.containsKey(VERSION_AT);
         entityLookup = parameters.containsKey(ENTITY_LOOKUP);
         tagRetieval = parameters.containsKey(Parameters.TAG);
+        for (String key: parameters.keySet()) {
+            if (FilterSpec.isFilterSpec(key)) {
+                filters.add( FilterSpec.filterFor(key, parameters.getFirst(key)) );
+            }
+        }
     }
 
     @Override
@@ -308,7 +315,7 @@ public class CommandRead extends Command {
                 } else {
                     timestamp = Util.asTimestamp( parameters.getFirst(VERSION_AT) );
                 }
-                complete = register.constructView(view, withMetadata, status, pagenum * length, length, timestamp, members);
+                complete = register.constructView(view, withMetadata, status, pagenum * length, length, timestamp, filters, members);
             }
 
             // Paging parameters

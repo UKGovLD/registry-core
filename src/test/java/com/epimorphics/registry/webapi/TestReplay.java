@@ -40,7 +40,7 @@ public class TestReplay extends TomcatTestBase  {
     static final String REPLAY = BASE_URL + "system/replay";
     
     @Override
-    String getWebappRoot() {
+    public String getWebappRoot() {
         return "src/test/webapp";
     }
 

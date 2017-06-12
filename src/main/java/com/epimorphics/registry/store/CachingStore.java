@@ -137,6 +137,12 @@ public class CachingStore implements StoreAPI {
     public List<RegisterEntryInfo> listMembers(Register register) {
         return store.listMembers(register);
     }
+    
+    @Override
+    public List<RegisterEntryInfo> listMembers(Register register, List<FilterSpec> filters) {
+        return store.listMembers(register, filters);
+    }
+
 
     @Override
     public void addToRegister(Register register, RegisterItem item) {

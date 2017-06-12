@@ -80,7 +80,12 @@ public class Prefixes {
      */
     public synchronized static PrefixMapping get() {
         if (prefixes == null) {
-            prefixes = loadPrefixes();
+            if (Registry.get() != null) {
+                prefixes = loadPrefixes();
+            } else {
+                // Test situation
+                prefixes = defaultPrefixes;
+            }
         }
         return prefixes;
     }

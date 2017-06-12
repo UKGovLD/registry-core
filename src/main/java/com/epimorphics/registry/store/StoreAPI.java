@@ -169,6 +169,11 @@ public interface StoreAPI {
     public List<RegisterEntryInfo> listMembers(Register register);
 
     /**
+     * List all members of a register which also pass the given SPARQL filter criteria
+     */
+    public List<RegisterEntryInfo> listMembers(Register register, List<FilterSpec> filters);
+
+    /**
      * Find all places where the given entity is registered and return the URIs for the coresponding
      * item and the register it is in.
      */

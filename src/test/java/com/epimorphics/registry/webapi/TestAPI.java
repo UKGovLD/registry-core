@@ -86,7 +86,7 @@ public class TestAPI extends TomcatTestBase {
     static final String REG1_ITEM = ROOT_REGISTER + "_reg1";
     static final String REGL_URL = BASE_URL + "regL";
     
-    String getWebappRoot() {
+    public String getWebappRoot() {
         return "src/test/webapp";
     }
 

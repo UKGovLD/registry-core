@@ -48,7 +48,7 @@ public class ConcurrencyTest extends TomcatTestBase {
     static final String REG1_ITEM = ROOT_REGISTER + "_reg1";
     
     @Override
-    String getWebappRoot() {
+    public String getWebappRoot() {
         return "src/test/webapp";
     }
     
