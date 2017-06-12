@@ -34,28 +34,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.jena.riot.system.StreamRDF;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.epimorphics.appbase.core.ComponentBase;
-import com.epimorphics.rdfutil.QueryUtil;
-import com.epimorphics.rdfutil.RDFUtil;
-import com.epimorphics.registry.core.DelegationRecord;
-import com.epimorphics.registry.core.Description;
-import com.epimorphics.registry.core.ForwardingRecord;
-import com.epimorphics.registry.core.ForwardingRecord.Type;
-import com.epimorphics.registry.core.Register;
-import com.epimorphics.registry.core.RegisterItem;
-import com.epimorphics.registry.core.Status;
-import com.epimorphics.registry.store.SearchRequest.KeyValuePair;
-import com.epimorphics.registry.util.Prefixes;
-import com.epimorphics.registry.util.VersionUtil;
-import com.epimorphics.registry.vocab.RegistryVocab;
-import com.epimorphics.registry.vocab.Version;
-import com.epimorphics.util.EpiException;
-import com.epimorphics.util.NameUtils;
-import com.epimorphics.vocabs.Time;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.QueryExecution;
@@ -72,6 +50,7 @@ import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.util.Closure;
@@ -79,6 +58,26 @@ import org.apache.jena.util.FileManager;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.epimorphics.appbase.core.ComponentBase;
+import com.epimorphics.rdfutil.QueryUtil;
+import com.epimorphics.rdfutil.RDFUtil;
+import com.epimorphics.registry.core.DelegationRecord;
+import com.epimorphics.registry.core.Description;
+import com.epimorphics.registry.core.ForwardingRecord;
+import com.epimorphics.registry.core.ForwardingRecord.Type;
+import com.epimorphics.registry.core.Register;
+import com.epimorphics.registry.core.RegisterItem;
+import com.epimorphics.registry.core.Status;
+import com.epimorphics.registry.util.Prefixes;
+import com.epimorphics.registry.util.VersionUtil;
+import com.epimorphics.registry.vocab.RegistryVocab;
+import com.epimorphics.registry.vocab.Version;
+import com.epimorphics.util.EpiException;
+import com.epimorphics.util.NameUtils;
+import com.epimorphics.vocabs.Time;
 
 /**
  * Implementation of the store API which uses a local triple store for persistence and
@@ -711,14 +710,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                 filterStr = String.format("   ?item version:currentVersion/reg:status %s.\n", statusRef);
             }
 
-            for (KeyValuePair filter : request.getFilters()) {
-                String value = filter.value;
-                if (value.startsWith("http://") || value.startsWith("https://")) {
-                    filterStr += String.format("    ?entity <%s> <%s>.\n", filter.key, safeURI(value));
-                } else {
-                    filterStr += String.format("    ?entity <%s> '%s'.\n", filter.key, safeLiteral(value));
-                }
-            }
+            filterStr += FilterSpec.asQuery(request.getFilters(), "entity");
             query = query.replace("#$FILTER$", filterStr);
 
             if (request.getLimit() != null) {

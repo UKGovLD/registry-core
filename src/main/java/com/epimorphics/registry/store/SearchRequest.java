@@ -28,21 +28,13 @@ import java.util.List;
 // Would be nice to put all the SPARQL query logic in here but that
 // would couple us too strongly to SPARQL and indeed jena-text.
 public class SearchRequest {
-    public class KeyValuePair {
-        public String key;
-        public String value;
-        public KeyValuePair(String key, String value) {
-            this.key = key;
-            this.value = value;
-        }
-    }
-    
+ 
     protected String query;
     protected Integer offset;
     protected Integer limit;
     protected boolean searchVersions;
     protected String status;
-    protected List<KeyValuePair> filters = new ArrayList<SearchRequest.KeyValuePair>();
+    protected List<FilterSpec> filters = new ArrayList<>();
     
     public SearchRequest(String query) {
         this.query = query;
@@ -111,7 +103,7 @@ public class SearchRequest {
         return this;
     }
     
-    public List<KeyValuePair> getFilters() {
+    public List<FilterSpec> getFilters() {
         return filters;
     }
 
@@ -121,7 +113,7 @@ public class SearchRequest {
      * @param value The value the match, this is either the lexical form of a literal or (if it begins with http[s]) a resource URI
      */
     public SearchRequest addFilter(String key, String value) {
-        filters.add( new KeyValuePair(key, value) );
+        filters.add( FilterSpec.filterFor(key, value) );
         return this;
     }
     
