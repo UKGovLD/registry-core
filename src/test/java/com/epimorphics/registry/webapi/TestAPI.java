@@ -530,28 +530,33 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(204, post(REG1 + "/_blue?update&status=invalid").getStatus());
     }
 
+    protected static final String PROXY_CONFIG = "/var/opt/ldregistry/proxy-registry.conf";
+    
     // Set up a namespace forward to EA data and checks can access it
     // Relies on the EA service being up :)
     private void doForwardingTest() {
-        assertEquals(201, postFileStatus("test/bw-forward.ttl", REG1));
-        assertEquals(404, getResponse(REG1 + "/eabw/ukc2102-03600").getStatus());
-        assertEquals(204, post(REG1 + "/_eabw?update&status=stable").getStatus());
-        assertEquals(200, getResponse(REG1 + "/eabw/ukc2102-03600").getStatus());
-        Model m = getModelResponse(REG1 + "/eabw/ukc2102-03600");
-        Resource bw = m.getResource("http://environment.data.gov.uk/id/bathing-water/ukc2102-03600");
-        assertEquals("Spittal", RDFUtil.getStringValue(bw, SKOS.prefLabel));
-
-        // convert forwarding to proxying, will only actually function if nginx is up and test doesn't require that
-        assertEquals(204, invoke("PATCH", "test/bw-proxy-patch.ttl", REG1 + "/eabw").getStatus());
-        String proxyConfig = FileManager.get().readWholeFileAsUTF8("/var/opt/ldregistry/proxy-registry.conf");
-        assertTrue(proxyConfig.contains("location /reg1/eabw"));
-        assertTrue(proxyConfig.contains("proxy_pass http://environment.data.gov.uk/doc/bathing-water/"));
-
-        // Switch batch to forwarding mode to check switching off proxy works
-        assertEquals(204, invoke("PATCH", "test/bw-forward-patch.ttl", REG1 + "/eabw").getStatus());
-        proxyConfig = FileManager.get().readWholeFileAsUTF8("/var/opt/ldregistry/proxy-registry.conf");
-        assertFalse(proxyConfig.contains("location /reg1/eabw"));
-        assertEquals(200, getResponse(REG1 + "/eabw/ukc2102-03600").getStatus());
+        // Skip test unless we are running in a set up with accessible configuration
+        if (new File(PROXY_CONFIG).canWrite()) {
+            assertEquals(201, postFileStatus("test/bw-forward.ttl", REG1));
+            assertEquals(404, getResponse(REG1 + "/eabw/ukc2102-03600").getStatus());
+            assertEquals(204, post(REG1 + "/_eabw?update&status=stable").getStatus());
+            assertEquals(200, getResponse(REG1 + "/eabw/ukc2102-03600").getStatus());
+            Model m = getModelResponse(REG1 + "/eabw/ukc2102-03600");
+            Resource bw = m.getResource("http://environment.data.gov.uk/id/bathing-water/ukc2102-03600");
+            assertEquals("Spittal", RDFUtil.getStringValue(bw, SKOS.prefLabel));
+    
+            // convert forwarding to proxying, will only actually function if nginx is up and test doesn't require that
+            assertEquals(204, invoke("PATCH", "test/bw-proxy-patch.ttl", REG1 + "/eabw").getStatus());
+            String proxyConfig = FileManager.get().readWholeFileAsUTF8(PROXY_CONFIG);
+            assertTrue(proxyConfig.contains("location /reg1/eabw"));
+            assertTrue(proxyConfig.contains("proxy_pass http://environment.data.gov.uk/doc/bathing-water/"));
+    
+            // Switch batch to forwarding mode to check switching off proxy works
+            assertEquals(204, invoke("PATCH", "test/bw-forward-patch.ttl", REG1 + "/eabw").getStatus());
+            proxyConfig = FileManager.get().readWholeFileAsUTF8(PROXY_CONFIG);
+            assertFalse(proxyConfig.contains("location /reg1/eabw"));
+            assertEquals(200, getResponse(REG1 + "/eabw/ukc2102-03600").getStatus());
+        }
     }
 
     // Set up a delegated register for the EA bathingwaters URI set and checks register listing
