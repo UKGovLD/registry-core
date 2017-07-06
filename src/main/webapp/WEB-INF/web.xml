@@ -12,6 +12,10 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
       <param-name>cors.allowed.methods</param-name>
       <param-value>GET,POST,HEAD,OPTIONS,PUT,DELETE,PATCH</param-value>
     </init-param>
+    <init-param>
+      <param-name>cors.allowed.headers</param-name>
+      <param-value>Origin,Accept,X-Requested-With,Content-Type,Access-Control-Request-Method,Access-Control-Request-Headers,authorization</param-value>
+    </init-param>
   </filter>
   <filter-mapping>
     <filter-name>CORS</filter-name>
