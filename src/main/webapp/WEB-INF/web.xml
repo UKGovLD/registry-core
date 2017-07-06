@@ -8,6 +8,10 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
   <filter>
     <filter-name>CORS</filter-name>
     <filter-class>com.epimorphics.appbase.webapi.CorsFilter</filter-class>
+    <init-param>
+      <param-name>cors.allowed.methods</param-name>
+      <param-value>GET,POST,HEAD,OPTIONS,PUT,DELETE,PATCH</param-value>
+    </init-param>
   </filter>
   <filter-mapping>
     <filter-name>CORS</filter-name>
