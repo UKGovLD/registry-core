@@ -17,7 +17,7 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
       <param-value>Origin,Accept,X-Requested-With,Content-Type,Access-Control-Request-Method,Access-Control-Request-Headers,authorization</param-value>
     </init-param>
     <init-param>
-      <param-name>cors.allowed.headers</param-name>
+      <param-name>cors.exposed.headers</param-name>
       <param-value>Location,Date</param-value>
     </init-param>
   </filter>
