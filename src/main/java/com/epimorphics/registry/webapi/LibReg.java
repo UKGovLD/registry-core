@@ -446,6 +446,25 @@ public class LibReg extends ComponentBase implements LibPlugin {
         }
         return results;
     }
+    
+    /**
+     * Fetch a wrapped description of a single entity, or null if it isn't in the store
+     * The URL should be the item.
+     */
+    public RDFNodeWrapper fetch(String url) {
+        StoreAPI store = getStore();
+        try {
+            store.beginRead();
+            RegisterItem item = store.getItem(url, true);
+            if (item != null) {
+                Resource entity = item.getEntity();
+                return new RDFNodeWrapper( new ModelWrapper(entity.getModel()), entity);
+            }
+        } finally {
+            store.end();
+        }
+        return null;
+    }
 
     /**
      * Utility for incrementally building up compacted range notation
