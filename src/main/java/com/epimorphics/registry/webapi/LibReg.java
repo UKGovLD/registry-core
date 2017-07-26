@@ -44,6 +44,7 @@ import com.epimorphics.rdfutil.QueryUtil;
 import com.epimorphics.rdfutil.RDFNodeWrapper;
 import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
+import com.epimorphics.registry.core.RegisterCache;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
@@ -141,7 +142,7 @@ public class LibReg extends ComponentBase implements LibPlugin {
                     return null;
                 }
             } else if (arg instanceof RDFNodeWrapper) {
-                reg = new Register( ((RDFNodeWrapper)arg).asResource() );
+                reg = RegisterCache.getRegister( ((RDFNodeWrapper)arg).asResource() );
             } else if (arg instanceof Register) {
                 reg = (Register) arg;
             } else {

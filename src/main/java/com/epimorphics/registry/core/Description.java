@@ -84,7 +84,7 @@ public class Description {
     public static Description descriptionFrom(Resource root, StoreAPI store) {
         if (root.hasProperty(RDF.type)) {
             if (root.hasProperty( RDF.type, RegistryVocab.Register)) {
-                Register reg = new Register(root);
+                Register reg = RegisterCache.getRegister(root);
                 reg.setStore(store);
                 return reg;
             } else if (root.hasProperty( RDF.type, RegistryVocab.RegisterItem)) {

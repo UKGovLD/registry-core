@@ -124,6 +124,7 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
     protected boolean redirectToHttpsOnLogin = false;
     protected GenericConfig configExtensions;
     protected RequestLogger requestLogger;
+    protected boolean cacheRegisters = false;
     
     public void setBaseUri(String uri) {
         baseURI = uri;
@@ -213,6 +214,14 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
     public void setRequestLogger(RequestLogger requestLogger) {
         this.requestLogger = requestLogger;
         requestLogger.setRegistry(this);
+    }
+    
+    public boolean isCacheRegisters() {
+        return cacheRegisters;
+    }
+
+    public void setCacheRegisters(boolean cacheRegisters) {
+        this.cacheRegisters = cacheRegisters;
     }
 
     @Override
