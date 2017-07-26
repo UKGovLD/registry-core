@@ -32,7 +32,8 @@ public class RegisterCache {
     protected static boolean listeningForChanges = false;
     
     public static synchronized Register getRegister(Resource root) {
-        if ( Registry.get().isCacheRegisters() ) {
+        Registry registry = Registry.get();
+        if ( registry != null && registry.isCacheRegisters() ) {
             return get( root );
         } else {
             return new Register(root);
