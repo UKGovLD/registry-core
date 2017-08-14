@@ -430,7 +430,7 @@ public class LibReg extends ComponentBase implements LibPlugin {
             itemURIs.add( soln.getResource("item").getURI() );
         }
         
-        Collections.sort(itemURIs);
+//        Collections.sort(itemURIs);
         
         Model aggregate = ModelFactory.createDefaultModel();
         aggregate.setNsPrefixes( Prefixes.get() );
