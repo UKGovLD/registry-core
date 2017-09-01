@@ -1,0 +1,5 @@
+@id,eg:test
+<a>,don't break
+<b>,'hello'@en|'bonjour'@fr|'don\'t'@en
+<c>,but/not
+<d>,<a> | <b>

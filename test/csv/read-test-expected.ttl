@@ -1,0 +1,13 @@
+@prefix eg:    <http://localhost/def/> .
+
+<http://localhost/test/c>
+        eg:test  "but/not" .
+
+<http://localhost/test/b>
+        eg:test  "don't"@en , "bonjour"@fr , "hello"@en .
+
+<http://localhost/test/a>
+        eg:test  "don't break" .
+
+<http://localhost/test/d>
+        eg:test  <http://localhost/test/b> , <http://localhost/test/a> .

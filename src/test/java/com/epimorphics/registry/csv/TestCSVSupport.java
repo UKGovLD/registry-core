@@ -36,6 +36,7 @@ import org.junit.Test;
 
 import com.epimorphics.util.TestUtil;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.util.FileManager;
 
@@ -79,9 +80,12 @@ public class TestCSVSupport {
     
     @Test
     public void testUnpack() {
-        String source = "first|'foo \\ bar | baz'|third";
+        String source = "first|'foo \\ bar | baz'|third|'hello'@en";
         List<String> values = RDFCSVUtil.unpackMultiValues(source);
-        TestUtil.testArray(values, new String[]{"first", "foo \\ bar | baz", "third"});
+        TestUtil.testArray(values, new String[]{"first", "'foo \\ bar | baz'", "third", "'hello'@en"});
+        source = "a|'name'@en|'b'|<a> | <b>|'foo | bar'|don't|do|'a \\'| string'";
+        values = RDFCSVUtil.unpackMultiValues(source);
+        TestUtil.testArray(values, new String[]{"a", "'name'@en", "'b'", "<a>", "<b>", "'foo | bar'", "don't", "do", "'a \\'| string'"});
     }
     
     @Test
@@ -113,7 +117,7 @@ public class TestCSVSupport {
     }
     
     @Test
-    public void testRDFRead() throws IOException {
+    public void testRDFRoundTrip() throws IOException {
         testRoundTrip("test/csv/testResource.ttl" );
         testRoundTrip("test/csv/testResource2.ttl" );
     }
@@ -132,6 +136,31 @@ public class TestCSVSupport {
         assertTrue( model.isIsomorphicWith( r.getModel() ));
         
         Files.delete(path);
+    }
+    
+    @Test
+    public void testRDFRead() throws IOException {
+        doTestRDFRead("test/csv/read-test.csv", "test/csv/read-test-expected.ttl");
+        
+    }
+    
+    private void doTestRDFRead(String source, String expected) throws IOException {
+        Model prefixes = ModelFactory.createDefaultModel();
+        prefixes.setNsPrefix("eg", "http://localhost/def/");
+       
+        String baseURI = "http://localhost/test/";
+        FileInputStream in = new FileInputStream( source );
+        CSVRDFReader reader = new CSVRDFReader(in, prefixes);
+        reader.setBaseURI(baseURI);
+        Model payload = ModelFactory.createDefaultModel();
+        Resource r;
+        while ((r = reader.nextResource(payload)) != null) {
+            // Nothing, it's in the payload
+        }
+//        payload.setNsPrefixes(prefixes);
+//        payload.write(System.out, "Turtle");
+        Model expectedM = RDFDataMgr.loadModel(expected);
+        assertTrue( expectedM.isIsomorphicWith(payload) );
     }
     
 }

@@ -27,17 +27,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.text.StrTokenizer;
-import org.apache.jena.riot.system.IRIResolver;
-
-import com.epimorphics.util.EpiException;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.riot.system.IRIResolver;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.vocabulary.XSD;
+
+import com.epimorphics.util.EpiException;
 
 public class RDFCSVUtil {
     public static final String STATUS_HEADER = "@status";
@@ -63,19 +62,19 @@ public class RDFCSVUtil {
             }
         } else {
             Literal l = value.asLiteral();
-            String lex = l.getLexicalForm().replace("'", "\\'");
+            String lex = l.getLexicalForm();
             if (l.getLanguage() == null || l.getLanguage().isEmpty()) {
                 if (l.getDatatype() == null || l.getDatatypeURI().equals(XSD.xstring.getURI())) {
                     if (embedded) {
                         if (lex.contains("\n")) {
                             return "'''" + lex + "'''";
                         } else {
-                            return "'" + lex + "'";
+                            return "'" + lex.replace("'", "\\'") + "'";
                         }
                     } else {
                         if (TRAP_PATTERN.matcher(lex).matches() || lex.contains(VALUE_SEP)) {
                             // String that looks like a number or boolean so quote it
-                            return "'" + lex + "'";
+                            return "'" + lex.replace("'", "\\'") + "'";
                         } else {
                             return lex;
                         }
@@ -115,8 +114,11 @@ public class RDFCSVUtil {
      * Most of the serialization is already Turtle
      */
     public static String toTurtle(String value) {
-        if (value.startsWith("'") || value.startsWith("<") || value.startsWith("[")) {
-            // Looks like a wrapped value so let through
+        if (value.startsWith("'")) {
+            // Assume a property quoted string which may have lang tag
+            return value;
+        } else if (URI_PATTERN.matcher(value).matches()) {
+            // URI or serialized bnode, let it through
             return value;
         } else if (TRAP_PATTERN.matcher(value).matches()) {
             // boolean or number, let through
@@ -125,11 +127,12 @@ public class RDFCSVUtil {
         if (value.contains("\n")) {
             return "'''" + value + "'''";
         } else {
-            return "'" + value + "'";
+            return "'" + value.replace("'", "\\'") + "'";
         }
     }
     protected static final Pattern NUMBER_PATTERN = Pattern.compile("(-\\s*)?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+(\\.[0-9]+)?)?");
     protected static final Pattern TRAP_PATTERN = Pattern.compile("(-\\s*)?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+(\\.[0-9]+)?)?|true|TRUE|false|FALSE|\\w+:\\S*");
+    protected static final Pattern URI_PATTERN = Pattern.compile("<.*>|\\[.*\\]");
     protected static final Pattern QNAME_PATTERN = Pattern.compile("\\w+:\\S*");
     
     private static String asPrefixOrURI(String uri, PrefixMapping prefixes) {
@@ -151,16 +154,55 @@ public class RDFCSVUtil {
     public static List<String> unpackMultiValues(String value) {
         if (value.contains(VALUE_SEP)) {
             List<String> values = new ArrayList<>();
-            String lex = value.replace("\\'", "''");        // Mangle quoted quotes to compatible with StrTokenizer
-            StrTokenizer tokenizer = new StrTokenizer(lex, '|', '\'');
-            while(tokenizer.hasNext()) {
-                String token = tokenizer.nextToken();
-                token = token.replace("'", "\\'");         // unmangle
-                values.add(token);
-            }
+            // parse into | separated components
+            // but if component starts with ' (after whitespace chomp) then ignore | until quote is closed
+            // an embedded single ' is not quoting (sigh)
+            // allow \ as an arbitrary escape for everything including itself
+            int start = 0;
+            while( start < value.length() ) {
+                start = startOfNextToken(value, start);
+                int index = start;
+                boolean quoted = false;
+                if ( value.charAt(start) == '\'' ) {
+                    quoted = true;
+                    index++;
+                }
+                for( ; index < value.length(); index++ ) {
+                    char c = value.charAt(index);
+                    if (c == '\\') {
+                        // Escape next character
+                        index++;
+                        continue;
+                    } else if (c == '\'') {
+                        quoted = false;
+                    } else if (c == '|' && !quoted) {
+                        break;
+                    }
+                }
+                values.add( value.substring(start, index).trim() );
+                start = index+1;
+            }            
             return values;
         } else {
-            return Collections.singletonList(value);
+            return Collections.singletonList(value.trim());
+        }
+    }
+    
+    private static int startOfNextToken(String value, int start) {
+        int next = start;
+        while (next < value.length()) {
+            if ( ! Character.isWhitespace( value.charAt(next)) ) {
+                break;
+            }
+            next++;
+        }
+        return next;
+    }
+    
+    public static void main(String[] args) {
+        String lex = "a|'name'@en|'b'|<a> | <b>|'foo | bar'|don't|do|'a \\'| string'";
+        for (String value: unpackMultiValues(lex)) {
+            System.out.println("> " + value);
         }
     }
     

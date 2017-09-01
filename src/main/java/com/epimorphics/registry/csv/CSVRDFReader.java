@@ -34,6 +34,7 @@ import com.epimorphics.util.EpiException;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.shared.JenaException;
 import org.apache.jena.shared.PrefixMapping;
 
 /**
@@ -83,6 +84,10 @@ public class CSVRDFReader {
             if (currentRow == null) {
                 return null;
             }
+            if (currentRow.length == 1 && currentRow[0].trim().isEmpty()) {
+                // Assume blank line at end of file, which is common error case
+                return null;
+            }
             // Unsubtle approach but performance is not really the issue here, and this way we can handle embedded bnodes with no effort
             StringBuffer src = new StringBuffer();
             if (baseURI != null) {
@@ -113,8 +118,12 @@ public class CSVRDFReader {
             }
             src.append(".\n");
             
-            InputStream isrc = new ByteArrayInputStream( src.toString().getBytes() );            
-            RDFDataMgr.read(model, isrc, RDFLanguages.TURTLE);
+            InputStream isrc = new ByteArrayInputStream( src.toString().getBytes() );
+            try {
+                RDFDataMgr.read(model, isrc, RDFLanguages.TURTLE);
+            } catch (JenaException e) {
+                throw new EpiException("Failed to parse CSV row: " + String.join(",", currentRow));
+            }
             
             return model.getResource( RDFCSVUtil.asURI(id, prefixes, baseURI) );
 
