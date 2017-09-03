@@ -28,6 +28,17 @@ import java.util.List;
 
 import javax.ws.rs.core.Response;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.ResIterator;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.OWL;
+import org.apache.jena.vocabulary.RDF;
+
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
@@ -39,16 +50,6 @@ import com.epimorphics.registry.security.RegPermission;
 import com.epimorphics.registry.util.PatchUtil;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.util.NameUtils;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.ResIterator;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.StmtIterator;
-import org.apache.jena.vocabulary.DCTerms;
-import org.apache.jena.vocabulary.OWL;
-import org.apache.jena.vocabulary.RDF;
 
 /**
  * Import provides a bulk update/patch capability.

@@ -1,0 +1,8 @@
+"@id","rdf:type","rdfs:label","skos:broader","skos:narrower","skos:inScheme","skos:topConceptOf","skos:notation"
+"<PP>","skos:Concept","'Primary producer'@en",,,"<../establishment>","<../establishment>","PP"
+"<DT>","skos:Concept","'Distributors or Transporters'@en",,,"<../establishment>","<../establishment>","DT"
+"<RE>","skos:Concept","'Retailer'@en",,"<RE-SH>|<RE-SR>|<RE-OT>","<../establishment>","<../establishment>","RE"
+"<RE-SH>","skos:Concept","'Supermarket or Hypermarket'@en","<RE>",,"<../establishment>",,"RE-SH"
+"<RE-SR>","skos:Concept","'Smaller retailers'@en","<RE>",,"<../establishment>",,"RE-SR"
+"<RE-OT>","skos:Concept","'Retailers - Others'@en","<RE>",,"<../establishment>",,"RE-OT"
+

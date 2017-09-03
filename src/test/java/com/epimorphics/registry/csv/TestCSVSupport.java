@@ -153,8 +153,7 @@ public class TestCSVSupport {
         CSVRDFReader reader = new CSVRDFReader(in, prefixes);
         reader.setBaseURI(baseURI);
         Model payload = ModelFactory.createDefaultModel();
-        Resource r;
-        while ((r = reader.nextResource(payload)) != null) {
+        while (reader.nextResource(payload) != null) {
             // Nothing, it's in the payload
         }
 //        payload.setNsPrefixes(prefixes);

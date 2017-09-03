@@ -219,7 +219,7 @@ public class RegisterItem extends Description {
             ri.addProperty(RegistryVocab.notation, notation);
         }
         RegisterItem item = new RegisterItem( ri, parentURI, notation );
-        Resource entity = e;
+        Resource entity = e.inModel( Closure.closure(e, false) );
         item.relocateEntity(entity);
         item.updateForEntity(isNewSubmission, now);
         return item;

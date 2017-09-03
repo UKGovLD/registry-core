@@ -1,0 +1,140 @@
+@id,rdf:type,rdfs:label,skos:broader,skos:narrower,skos:inScheme,skos:topConceptOf,skos:notation,dct:description
+<PP>,skos:Concept,'Primary producer'@en,,,<../establishment>,<../establishment>,PP,"'''<DIV class=""description""><P>Primary Producer</P> 
+<H3>Examples:</H3>
+<UL>
+<li>Fruit and vegetable growers</li>
+<li>Pick your own farms</li>
+<li>Egg producers</li>
+<li>Potato growers</li>
+<li>Fish farms</li>
+<li>Beekeepers</li>
+<li>Vineyards</li>
+</UL></DIV>'''"
+<MP>,skos:Concept,'Manufacturers and packers'@en,,,<../establishment>,<../establishment>,MP,"'''<DIV class=""description""><P>Manufacturers and packers</P>
+<H3>Examples:</H3>
+<UL>
+<li>Abattoirs</li>
+<li>Brewery</li>
+<li>Meat manufacturers</li>
+<li>Milk processors & dairy processors</li>
+<li>Cheesemakers</li>
+<li>Soft drinks, mineral waters</li>
+<li>Vegetable drying, freezing, canning</li>
+<li>Meat or poultry cutting establishments</li>
+<li>Purification centres for shellfish</li>
+<li>Fish processors</li>
+<li>Butchers shops cooking hams</li>
+<li>Fruit & vegetable co-operatives</li>
+<li>Egg packers</li>
+<li>Contract packers</li>
+<li>Food contact material and article manufacturers & suppliers</li>
+<li>Bakers with no on-site retail</li>
+<li>Bakeries selling through their own shops</li>
+<li>Home cake makers selling to other businesses</li>
+</UL></DIV>'''"
+<IE>,skos:Concept,'Importers or Exporters'@en,,,<../establishment>,<../establishment>,IE,"'''<P>Importers or Exporters</P>
+<P>
+<h3>Examples:</h3>
+<UL>
+<li>Warehouses for import/export purposes</li>
+<li>Freight depots, transit sheds, stores</li>
+</UL></P>'''"
+<DT>,skos:Concept,'Distributors or Transporters'@en,,,<../establishment>,<../establishment>,DT,"'''<P>Distributors or Transporters</P>
+<P>
+<H3>Examples:</H3>
+<UL>
+<li>Food brokers</li>
+<li>Wholesalers</li>
+<li>Cash & carries</li>
+<li>Cold stores</li>
+<li>Haulage companies</li>
+<li>Milk distributors</li>
+</UL></P>'''"
+<RE>,skos:Concept,'Retailer'@en,,<RE-SH>|<RE-SR>|<RE-OT>,<../establishment>,<../establishment>,RE,"'''<DIV class=""description"">Retailer</DIV>'''"
+<RE-SH>,skos:Concept,'Supermarket or Hypermarket'@en,<RE>,,<../establishment>,,RE-SH,"'''<DIV class=""description""><P>Supermarkets</P>
+<H3>Examples:</H3>
+<UL>
+<li>Supermarkets - the large retail chains</li>
+<li>City centre or local variants of larger supermarket groups</li>
+</UL></P>
+<P>e.g. Sainsbury, Tesco, Asda, Morrison, Co-op, Marks and Spencer, Waitrose, Aldi, Lidl, Budgens etc. that provide a range of food items from more than one grocery sector and from a range of brands. Also city centre or local variants of larger supermarket groups, e.g. Sainsbury's local, Tesco Metro, Tesco Express etc.</DIV>'''"
+<RE-SR>,skos:Concept,'Smaller retailers'@en,<RE>,,<../establishment>,,RE-SR,"'''<DIV class=""description""><P>Smaller-scale food businesses such as butchers, bakers, fishmongers, village shops, grocers etc. Independent retailers e.g. Costcutter, One- Stop, Londis, Nisa, Premier etc. </P>
+<H3>Examples:</H3>
+<UL>
+<li>Grocers</li>
+<li>Confectioners</li>
+<li>Butchers (retail only)</li>
+<li>Fishmongers</li>
+<li>Greengrocer/fruiterer</li>
+<li>Health food shops</li>
+<li>Bakers shops (retail only)</li>
+<li>Newsagents</li>
+<li>Mobile vans (retailers)</li>
+<li>Market stalls (retailers)</li>
+<li>Farm shops (if farm not included under producers or other establishments)</li>
+<li>Off licences</li>
+<li>Garage minimarkets</li>
+</UL></DIV>'''"
+<RE-OT>,skos:Concept,'Retailers - Others'@en,<RE>,,<../establishment>,,RE-OT,"'''<DIV class=""description""><P>Retail establishments which do not fit into one of the other retailer categories, e.g. establishments that primarily sell non-food products and a very limited range of food products.</P>
+<H3>Examples:</H3>
+<UL>
+<li>Shops where the main business is not food</li>
+</UL></P>
+<P>for example chemist/pharmacy that sell cough sweets/limited range of other confectionery</P></DIV>'''"
+<RC>,skos:Concept,'Restaurant and Caterers'@en,,<RC-RC>|<RC-HG>|<RC-PC>|<RC-TA>|<RC-CE>|<RC-SC>|<RC-MF>|<RC-OT>,<../establishment>,<../establishment>,RC,"'''<DIV class=""description"">Restaurant and Caterers</DIV>'''"
+<RC-RC>,skos:Concept,'Restaurant or Café or Canteen'@en,<RC>,,<../establishment>,,RC-RC,"'''<DIV class=""description""><P>Establishments whose primary business is to cook/prepare food for.</P>
+<H3>Examples:</H3>
+<UL>
+<li>Restaurants</li>
+<li>Cafes</li>
+<li>Self-service cater</li>
+<li>‘Fast food' establishments providing seating, e.g. McDonalds, Burger King etc. The drive-thru variants of these chains should also be included in this category.</li>
+</UL></DIV>'''"
+<RC-HG>,skos:Concept,'Hotel or Guest House'@en,<RC>,,<../establishment>,,RC-HG,"'''<DIV class=""description""><P>Establishments that provide catering only to customers to whom they are also providing accommodation.</P> 
+<P>Note: Hotels that provide a restaurant service to a wider clientele than their guests should be recorded under the <B>Restaurant or Café or Canteen</B> category</P>
+<H3>Examples:</H3>
+<UL>
+<li>Hotels</li>
+<li>Guest houses</li>
+<li>Bed and breakfast</li>
+</UL></DIV>'''"
+<RC-PC>,skos:Concept,'Pub or Club'@en,<RC>,,<../establishment>,,RC-PC,"'''<DIV class=""description""><P>Commercial establishments that primarily serve alcohol in a public bar. If the establishment has a separate restaurant facility it should be recorded under the pub category.</P>
+<UL>
+<li>Public Houses</li>
+<li>Night clubs/clubs with bars</li>
+</UL></DIV>'''"
+<RC-TA>,skos:Concept,'Take-away'@en,<RC>,,<../establishment>,,RC-TA,"'''<DIV class=""description""><P>Establishments that provide convenience food to customers, primarily for consumption off the premises. Establishments must be immobile and housed in a designated building.</P>
+<H3>Examples:</H3>
+<UL>
+<li>Fish & chip shops</li>
+<li>Take-away</li>
+<li>Sandwich shops</li>
+<li>Establishments that prepare and deliver convenience food directly to the customer</li>
+</UL></DIV>'''"
+<RC-CE>,skos:Concept,'Caring Establishments'@en,<RC>,,<../establishment>,,RC-CE,"'''<DIV class=""description""><P>Establishments with catering services for clients/customers who are provided with care, medical treatment, supervision, or assistance.</P>
+<H3>Examples:</H3>
+<UL>
+<li>Hospitals (include each establishment but not each kitchen)</li>
+<li>Nursing/care homes</li>
+<li>Childcare facilities/nurseries/childminders</li>
+</UL></DIV>'''"
+<RC-SC>,skos:Concept,'School or College'@en,<RC>,,<../establishment>,,RC-SG,"'''<DIV class=""description""><P>Catering services located within a site providing educational instruction and formal qualifications.</P>
+<H3>Examples:</H3>
+<UL>
+<li>Colleges</li>
+<li>Schools (include each establishment but not each kitchen)</li>
+</UL></DIV>'''"
+<RC-MF>,skos:Concept,'Mobile food unit'@en,<RC>,,<../establishment>,,RC-MF,"'''<DIV class=""description""><P>A food establishment that comprises a kitchen or catering facility operating from a mobile unit such as a vehicle, trailer, stall, marquee or other non-permanent structure.</P>
+<H3>Examples:</H3>
+<UL>
+<li>Mobile catering units</li>
+<li>Burger vans and other fast food vans/trailers/stalls</li>
+</UL></DIV>'''"
+<RC-OT>,skos:Concept,'Restaurants and caterers - Other'@en,<RC>,,<../establishment>,,RC-OT,"'''<DIV class=""description""><P>Restaurant/catering establishments that do not fit into one of the other <B>restaurants and caterers</B> categories.</P>
+<H3>Examples:</H3>
+<UL>
+<li>Home caterers such as cake makers selling directly to consumers</li>
+<li>Village halls, community centres etc. used by charitable/community organisations, see: 
+<a href=""http://www.food.gov.uk/enforcement/enforcework/food-law/guidance-enforcement/community-hall-guidance"">www.food.gov.uk/enforcement/enforcework/food-law/guidance-enforcement/community-hall-guidance</a></li>
+<li>Ships' catering spaces</li>
+</UL></DIV>'''"

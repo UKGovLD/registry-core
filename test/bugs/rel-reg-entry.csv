@@ -1,0 +1,3 @@
+@id,rdf:type,rdfs:label,skos:narrower,skos:topConceptOf
+<entity1>,skos:Concept,"test entity 1",<entity2>,<../test1> 
+<entity2>,skos:Concept,"test entity 2",,

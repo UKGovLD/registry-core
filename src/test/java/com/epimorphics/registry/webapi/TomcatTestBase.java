@@ -52,6 +52,7 @@ import org.junit.Before;
 import com.epimorphics.rdfutil.QueryUtil;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
+import com.epimorphics.util.NameUtils;
 import com.epimorphics.util.TestUtil;
 import com.epimorphics.vocabs.SKOS;
 
@@ -65,6 +66,18 @@ public abstract class TomcatTestBase {
 
     public abstract String getWebappRoot() ;
 
+    public String getWebappContext() {
+        return "/";
+    }
+    
+    public String getBaseURL() {
+        String base = BASE_URL;
+        if ( ! getWebappContext().equals("/") ) {
+            base += getWebappContext();
+        }
+        base = NameUtils.ensureLastSlash(base);
+        return base;
+    }
 
     @Before
     public void containerStart() throws Exception {
@@ -74,7 +87,7 @@ public abstract class TomcatTestBase {
 
         tomcat.setBaseDir(".");
 
-        String contextPath = "/";
+        String contextPath = getWebappContext();;
 
         File rootF = new File(root);
         if (!rootF.exists()) {
@@ -255,8 +268,8 @@ public abstract class TomcatTestBase {
     protected void checkLive(int targetStatus) {
         boolean tomcatLive = false;
         int count = 0;
-        while (!tomcatLive) {
-            int status = getResponse(BASE_URL).getStatus();
+        while (!tomcatLive) {            
+            int status = getResponse( getBaseURL() ).getStatus();
             if (status != targetStatus) {
                 try {
                     Thread.sleep(500);

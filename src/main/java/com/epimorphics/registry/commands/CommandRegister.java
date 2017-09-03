@@ -349,6 +349,10 @@ public class CommandRegister extends Command {
                 itemSpec = itemSpec.inModel( Closure.closure(itemSpec, false) );
             }
             ri = RegisterItem.fromEntityRequest(itemSpec, parentURI, true);
+            if (asGraph) {
+                // Restore whole entity
+                ri.setEntity( ri.getEntity().inModel(getPayload()) );
+            }
         }
         ri.setAsGraph(asGraph);
 

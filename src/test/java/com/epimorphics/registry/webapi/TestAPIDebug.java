@@ -21,9 +21,9 @@
 
 package com.epimorphics.registry.webapi;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -35,10 +35,10 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.util.Closure;
+import org.apache.jena.vocabulary.DCTerms;
 import org.junit.Test;
 
 import com.epimorphics.appbase.core.AppConfig;
-import com.epimorphics.registry.csv.CSVPayloadRead;
 import com.epimorphics.registry.store.Store;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
@@ -60,11 +60,28 @@ public class TestAPIDebug extends TomcatTestBase {
     }
 
     @Test
-    public void testDebug() throws IOException {
-//        FileInputStream ins = new FileInputStream( "test/csv/status-only.csv" );
-//        Model payload = CSVPayloadRead.readCSVStream(ins, "http://location.data.gov.uk/reg3/");
-//        payload.write(System.out, "Turtle");
-//        checkModelResponse(payload, "test/csv/succ-expected.ttl");
+    public void testDebug() throws IOException, InterruptedException {
+
+    }
+    
+    private Model resourceInDefaultModel(String uri) {
+        Store storesvc = AppConfig.getApp().getComponentAs("basestore", Store.class);
+        storesvc.lock();
+        try {
+            Dataset ds = storesvc.asDataset();
+            Model store = ds.getDefaultModel();
+            Model description = ModelFactory.createDefaultModel();
+            Resource r = store.getResource(uri);
+            Closure.closure(r, false, description);
+            if (r.hasProperty(Version.currentVersion)) {
+                r = r.getPropertyResourceValue(Version.currentVersion);
+                Closure.closure(r, false, description);
+            }
+            description.setNsPrefixes(Prefixes.get());
+            return description;
+        } finally {
+            storesvc.end();
+        }        
     }
 
     // Debugging utility only, should not be used while transactions are live
