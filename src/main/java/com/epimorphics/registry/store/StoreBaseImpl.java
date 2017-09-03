@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.jena.graph.Node;
@@ -47,6 +48,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.StmtIterator;
@@ -916,7 +918,26 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         }
     
         Model toDelete = ModelFactory.createDefaultModel();
-        Collection<Resource>graphs = scanAllVersions(item.getRoot(), toModel(toDelete));
+        Set<Resource> entities = new HashSet<>();
+        Collection<Resource>graphs = scanAllVersions(item.getRoot(), toModel(toDelete), entities);
+        getDefaultModel().remove(toDelete);
+        for (Resource graph : graphs) {
+            store.asDataset().removeNamedModel( graph.getURI() );
+        }
+        
+        // Now need to reference count the entities
+        toDelete = ModelFactory.createDefaultModel();
+        graphs = new HashSet<>();
+        for (Iterator<Resource> ri = entities.iterator(); ri.hasNext();) {
+            Resource entity = ri.next();
+            ResIterator check = getDefaultModel().listSubjectsWithProperty(RegistryVocab.entity, entity);
+            if ( ! check.hasNext()) {
+                // No references so delete
+                graphs.addAll( scanAllVersions(entity, toModel(toDelete), null) );
+            } else {
+                check.close();
+            }
+        }
         getDefaultModel().remove(toDelete);
         for (Resource graph : graphs) {
             store.asDataset().removeNamedModel( graph.getURI() );
@@ -937,12 +958,15 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     /**
      * Scan the tree streaming all the triples in the default graph to the given stream
      * and return a collection of the associated named graphs (entity definitions and annotations)
+     * If the entities argument is null then all entities are included in the scan, otherwise only the 
+     * reference to the entity is included and the entity is returned in the entities collection for
+     * a post-scan cleanup. This is needed to allow for multiple references to entities.
      */
-    private Collection<Resource> scanAllVersions(Resource root, StreamRDF stream) {
-        return scanAllVersions(root, stream, new HashSet<Resource>());
+    private Collection<Resource> scanAllVersions(Resource root, StreamRDF stream, Collection<Resource> entities) {
+        return scanAllVersions(root, stream, new HashSet<Resource>(), entities);
     }
     
-    private Collection<Resource> scanAllVersions(Resource root, StreamRDF stream, Collection<Resource> sofar) {
+    private Collection<Resource> scanAllVersions(Resource root, StreamRDF stream, Collection<Resource> sofar, Collection<Resource> entities) {
         addRefClosure(stream, root);
         for (Resource version : getDefaultModel().listSubjectsWithProperty(DCTerms.isVersionOf, root).toList()) {
             addRefClosure(stream, version);
@@ -955,7 +979,13 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                 }
                 Resource entity = getResourceValue(definition, RegistryVocab.entity);
                 if (entity != null) {
-                    scanAllVersions(entity, stream, sofar);
+                    if ( entities == null ) {
+                        scanAllVersions(entity, stream, sofar, entities);
+                    } else {
+                        // Defer deleting entities because we have to reference count them
+                        stream.triple( new Triple(definition.asNode(), RegistryVocab.entity.asNode(), entity.asNode()) );
+                        entities.add( entity );
+                    }
                 }
             }
             Resource graph = getResourceValue(version, RegistryVocab.annotation);
@@ -1006,7 +1036,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             }
         }
         
-        Collection<Resource> graphs = scanAllVersions(item.getRoot(), out);
+        Collection<Resource> graphs = scanAllVersions(item.getRoot(), out, null);
         for (Resource g : graphs) {
             Iterator<Quad> i = store.asDataset().asDatasetGraph().findNG(g.asNode(), Node.ANY, Node.ANY, Node.ANY);
             while (i.hasNext()){

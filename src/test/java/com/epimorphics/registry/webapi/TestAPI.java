@@ -41,6 +41,7 @@ import javax.ws.rs.core.Response;
 import org.apache.jena.riot.RDFDataMgr;
 import org.junit.Test;
 
+import com.epimorphics.rdfutil.QueryUtil;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.core.Status;
@@ -56,6 +57,8 @@ import com.epimorphics.util.FileUtil;
 import com.epimorphics.util.TestUtil;
 import com.epimorphics.vocabs.API;
 import com.epimorphics.vocabs.SKOS;
+
+import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
@@ -1072,6 +1075,37 @@ public class TestAPI extends TomcatTestBase {
         }
 
       }
+    
+    /**
+     * Test handling of shared entity references in real_delete
+     */
+    public void doRefCountDeleteTest() throws IOException {
+        assertEquals(201, postFileStatus("test/bugs/delete-bug-id-reg.ttl", BASE_URL) );
+        assertEquals(201, postFileStatus("test/bugs/delete-bug-id-content.ttl", BASE_URL + "shared") );
+        assertEquals(201, postFileStatus("test/bugs/delete-bug-a-reg.ttl", BASE_URL) );
+        assertEquals(201, postFileStatus("test/bugs/delete-bug-a-content.ttl", BASE_URL + "A") );
+        
+        checkSchemeMembers("shared", "Entity 1", "Entity 2", "Entity 3");
+        checkSchemeMembers("A", "Entity 1", "Entity 2");
+        
+        assertEquals(303, post(BASE_URL + "A/1" + "?real_delete").getStatus());
+        checkSchemeMembers("A", "Entity 2");
+        checkSchemeMembers("shared", "Entity 1", "Entity 2", "Entity 3");
+        
+        assertEquals(303, post(BASE_URL + "shared/2" + "?real_delete").getStatus());
+        checkSchemeMembers("A", "Entity 2");
+        checkSchemeMembers("shared", "Entity 1", "Entity 3");        
+    }
+    
+    private void checkSchemeMembers(String reg, String...members) {
+        Model model = getModelResponse(BASE_URL + reg + "?status=any");
+        List<String> actualEntries = new ArrayList<String>();
+        ResultSet rs = QueryUtil.selectAll(model, "SELECT ?label WHERE {[] rdfs:label ?label; skos:inScheme ?register}", Prefixes.getDefault(), "register", ROOT_REGISTER + reg);
+        while (rs.hasNext()) {
+            actualEntries.add( rs.next().getLiteral("label").getLexicalForm() );
+        }
+        TestUtil.testArray(actualEntries, members);
+    }
     
     private void checkStatus(String status, String successor) {
         Status s = Status.forString(status, null);

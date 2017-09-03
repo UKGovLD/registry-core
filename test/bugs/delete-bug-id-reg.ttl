@@ -1,0 +1,18 @@
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dct:   <http://purl.org/dc/terms/> .
+@prefix ui:    <http://purl.org/linked-data/registry-ui#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix reg:   <http://purl.org/linked-data/registry#> .
+@prefix ldp:   <http://www.w3.org/ns/ldp#> .
+
+<shared>        a                          ldp:Container , skos:ConceptScheme , reg:Register ;
+        rdfs:label                 "Sahred Register"@en ;
+        reg:inverseMembershipPredicate  skos:inScheme ;
+        reg:notation                    "shared";
+        reg:status      reg:statusExperimental ;
+        skos:notation                   "sharted"; 
+        .
+      
