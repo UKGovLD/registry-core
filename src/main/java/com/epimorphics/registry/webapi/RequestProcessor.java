@@ -26,6 +26,8 @@ package com.epimorphics.registry.webapi;
 import static com.epimorphics.webapi.marshalling.RDFXMLMarshaller.FULL_MIME_RDFXML;
 import static com.epimorphics.webapi.marshalling.RDFXMLMarshaller.MIME_RDFXML;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -479,6 +481,14 @@ public class RequestProcessor extends BaseEndpoint {
                 payload = CSVPayloadRead.readCSVStream(uploadedInputStream, base);
             } else if (!action.equals("import")) {
                 payload.read(uploadedInputStream, base, FileUtils.langXML);
+            }
+            // TEMP
+            try {
+                FileOutputStream fos = new FileOutputStream("/tmp/mac-allergens.ttl");
+                payload.write(fos, "Turtle");
+                fos.close();
+            } catch (IOException e) {
+                System.out.println("Error " + e);
             }
             Command command = null;
             if (action.equals("register")) {

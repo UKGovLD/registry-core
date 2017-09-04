@@ -329,10 +329,11 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     }
 
     static String ENTITY_FIND_QUERY = "SELECT * WHERE { "
-            + "?item reg:register ?register; "
-            + "      version:currentVersion ?itemVer . "
-            + "?itemVer reg:status ?status; "
-            + "         reg:definition [reg:entity ?entity] . " + "}";
+            + "?entity ^reg:entity/^reg:definition ?itemVer . "
+            + "?itemVer reg:status ?status . "
+            + "?itemVer ^version:currentVersion ?item ."
+            + "?item reg:register ?register . "
+            + "}";
 
     @Override
     public RegisterItem getItem(String uri, boolean withEntity) {
