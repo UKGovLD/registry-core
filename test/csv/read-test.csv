@@ -1,5 +1,5 @@
-@id,eg:test
-<a>,don't break
-<b>,'hello'@en|'bonjour'@fr|'don\'t'@en
-<c>,but/not
-<d>,<a> | <b>
+@id,eg:test,eg-alt:test
+<a>,don't break,eg-alt:hello
+<b>,'hello'@en|'bonjour'@fr|'don\'t'@en,
+<c>,but/not,
+<d>,<a> | <b>,

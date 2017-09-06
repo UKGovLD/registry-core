@@ -1,4 +1,5 @@
-@prefix eg:    <http://localhost/def/> .
+@prefix eg:     <http://localhost/def/> .
+@prefix eg-alt: <http://localhost/alt/> .
 
 <http://localhost/test/c>
         eg:test  "but/not" .
@@ -7,7 +8,8 @@
         eg:test  "don't"@en , "bonjour"@fr , "hello"@en .
 
 <http://localhost/test/a>
-        eg:test  "don't break" .
+        eg:test  "don't break" ;
+        eg-alt:test eg-alt:hello .
 
 <http://localhost/test/d>
         eg:test  <http://localhost/test/b> , <http://localhost/test/a> .

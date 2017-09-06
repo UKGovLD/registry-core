@@ -147,6 +147,7 @@ public class TestCSVSupport {
     private void doTestRDFRead(String source, String expected) throws IOException {
         Model prefixes = ModelFactory.createDefaultModel();
         prefixes.setNsPrefix("eg", "http://localhost/def/");
+        prefixes.setNsPrefix("eg-alt", "http://localhost/alt/");
        
         String baseURI = "http://localhost/test/";
         FileInputStream in = new FileInputStream( source );

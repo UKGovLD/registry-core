@@ -131,9 +131,9 @@ public class RDFCSVUtil {
         }
     }
     protected static final Pattern NUMBER_PATTERN = Pattern.compile("(-\\s*)?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+(\\.[0-9]+)?)?");
-    protected static final Pattern TRAP_PATTERN = Pattern.compile("(-\\s*)?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+(\\.[0-9]+)?)?|true|TRUE|false|FALSE|\\w+:\\S*");
+    protected static final Pattern TRAP_PATTERN = Pattern.compile("(-\\s*)?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+(\\.[0-9]+)?)?|true|TRUE|false|FALSE|[a-zA-Z_0-9\\-]+:\\S*");
     protected static final Pattern URI_PATTERN = Pattern.compile("<.*>|\\[.*\\]");
-    protected static final Pattern QNAME_PATTERN = Pattern.compile("\\w+:\\S*");
+    protected static final Pattern QNAME_PATTERN = Pattern.compile("[a-zA-Z_0-9\\-]+:\\S*");
     
     private static String asPrefixOrURI(String uri, PrefixMapping prefixes) {
         String prefixed = prefixes.shortForm(uri);
