@@ -49,14 +49,14 @@ public class RegisterCache {
         if (register == null) {
             register = new Register(root);
             cache.put(root.getURI(), register);
-            log.info("Caching register: " + root.getURI());
+            log.debug("Caching register: " + root.getURI());
             listenForChanges();
         }
         return register;
     }
     
     private static synchronized void clear() {
-        log.info("Clearing register cache");
+        log.debug("Clearing register cache");
         cache.clear();
     }
     

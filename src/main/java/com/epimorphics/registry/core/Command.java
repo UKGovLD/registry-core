@@ -107,7 +107,7 @@ import com.epimorphics.util.NameUtils;
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public abstract class Command {
-    static final Logger log = LoggerFactory.getLogger( Command.class );
+    static final protected Logger log = LoggerFactory.getLogger( Command.class );
 
     public enum Operation {
         Read(CommandRead.class),
@@ -348,16 +348,7 @@ public abstract class Command {
             store.end();
         }
         
-
-        Date now = new Date(System.currentTimeMillis());
-        log.info(String.format("%s [%s] %s \"%s?%s\"%s %d",
-                requestor == null ? null : NameUtils.decodeSafeName(requestor),
-                new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z").format(now),
-                operation.toString(),
-                target,
-                makeParamString(parameters),
-                (response.getStatus() == 201) ? " -> " + response.getMetadata().get("Location") : "",
-                response.getStatus()));
+        logResponse(response);
 
         if ( operation.isUpdate && registry.getRequestLogger() != null ) {
             try {
@@ -368,6 +359,24 @@ public abstract class Command {
         }
 
         return response;
+    }
+    
+    protected void logResponse(Response response) {
+        String responseText = 
+                ((response.getStatus() == 201) ? " -> " + response.getMetadata().get("Location") : "") 
+                + " " + response.getStatus();
+        logResponse(responseText);
+    }
+    
+    protected void logResponse(String response) {
+        Date now = new Date(System.currentTimeMillis());
+        log.info( String.format("%s [%s] %s \"%s?%s\"%s",
+                requestor == null ? null : NameUtils.decodeSafeName(requestor),
+                new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z").format(now),
+                operation.toString(),
+                target,
+                makeParamString(parameters),
+                response) );
     }
 
     /**

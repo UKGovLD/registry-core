@@ -114,6 +114,7 @@ public class CommandStatusUpdate extends Command {
         // TODO handle verification for accepted
         Resource status = parameters.containsKey(Parameters.FORCE) ? ri.forceStatus(requestedStatus): ri.setStatus(requestedStatus);
         if (status == null) {
+            logResponse("Rejecting status update");
             throw new WebApplicationException(Response.Status.FORBIDDEN);
         }
         if (status.equals(RegistryVocab.statusExperimental) || status.equals(RegistryVocab.statusStable)) {
