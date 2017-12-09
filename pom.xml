@@ -88,6 +88,9 @@
     <oltu.oauth2.version>1.0.2</oltu.oauth2.version>
     <oltu.oidc.version>0.1-SNAPSHOT</oltu.oidc.version>
     <jersey.version>2.21</jersey.version>
+    <appbase.version>2.2.0</appbase.version>
+    <jena.version>3.1.1</jena.version>
+    <fuseki.version>1.4.1</fuseki.version>
   </properties>
 
   <dependencies>
@@ -102,13 +105,14 @@
     <dependency>
       <groupId>com.epimorphics</groupId>
       <artifactId>appbase</artifactId>
-      <version>2.1.1-SNAPSHOT</version>
+      <!-- <version>2.1.1-SNAPSHOT</version> -->
+      <version>${appbase.version}</version>
     </dependency>
     
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-querybuilder</artifactId>
-      <version>3.1.1</version>
+      <version>${jena.version}</version>
     </dependency>
     
     <dependency>
@@ -252,7 +256,7 @@
      <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-fuseki1</artifactId>
-      <version>1.4.1</version>
+      <version>${fuseki.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.eclipse.jetty</groupId>
