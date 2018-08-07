@@ -1,30 +1,26 @@
 
 package com.epimorphics.registry.webapi;
 
+import com.epimorphics.appbase.core.AppConfig;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.security.RegToken;
 import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.security.UserStore;
-import com.epimorphics.registry.util.OAuthParams;
-import com.epimorphics.registry.util.Oauth2Util;
 import com.epimorphics.appbase.webapi.WebApiException;
+import com.epimorphics.registry.webapi.oauth2.OAuth2Config;
+import com.epimorphics.registry.webapi.oauth2.OAuth2Service;
+import com.epimorphics.registry.webapi.oauth2.OAuth2Provider;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.oltu.oauth2.client.OAuthClient;
 import org.apache.oltu.oauth2.client.URLConnectionClient;
 import org.apache.oltu.oauth2.client.request.OAuthBearerClientRequest;
 import org.apache.oltu.oauth2.client.request.OAuthClientRequest;
-import org.apache.oltu.oauth2.client.response.OAuthAccessTokenResponse;
 import org.apache.oltu.oauth2.client.response.OAuthAuthzResponse;
 import org.apache.oltu.oauth2.client.response.OAuthJSONAccessTokenResponse;
 import org.apache.oltu.oauth2.client.response.OAuthResourceResponse;
 import org.apache.oltu.oauth2.common.message.types.GrantType;
 import org.apache.oltu.oauth2.common.message.types.ResponseType;
-import org.apache.oltu.oauth2.common.OAuthProviderType;
-import org.apache.oltu.oauth2.jwt.JWT;
-import org.apache.oltu.oauth2.jwt.io.JWTClaimsSetWriter;
-import org.apache.oltu.oauth2.jwt.io.JWTHeaderWriter;
-import org.apache.oltu.openidconnect.client.response.OpenIdConnectResponse;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
@@ -39,29 +35,22 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-import java.net.URL;
 import java.util.Map;
 import java.util.UUID;
 
 public class ProcessOauth2 {
     static final Logger log = LoggerFactory.getLogger( Login.class );
 
-    public static final String DEFAULT_PROVIDER = "https://accounts.google.com/o/oauth2/auth";
-    public static final String PROVIDER_COOKIE = "ukgovld-login-provider";
-
-    public static final String NOCACHE_COOKIE = "nocache";
-
-    public static final String OPENID_CONNECT_DISCOVERY_LOC = "https://accounts.google.com/.well-known/openid-configuration";
-
-    public static final String GOOGLE_SCOPE = "openid email";
+    private static final String PROVIDER_COOKIE = "ukgovld-login-provider";
+    private static final String SCOPE = "openid email";
 
 
     // Session attribute names
-    public static final String SA_OPENID_PROVIDER = "openid_provider";
-    public static final String SA_REGISTRATION = "isRegistration";
-    public static final String SA_RETURN_URL = "returnURL";
-    public static final String SA_RESPONSE_URL = "responseURL";
-    public static final String SA_STATE = "state";
+    private static final String SA_OPENID_PROVIDER = "openid_provider";
+    private static final String SA_REGISTRATION = "isRegistration";
+    private static final String SA_RETURN_URL = "returnURL";
+    private static final String SA_RESPONSE_URL = "responseURL";
+    private static final String SA_STATE = "state";
 
 
     // Velocity binding names
@@ -71,25 +60,32 @@ public class ProcessOauth2 {
     public static final String RS_ALREADY_REGISTERED = "already";
     public static final String RS_LOGIN = "login";
 
-    protected UriInfo uriInfo;
-    protected ServletContext servletContext;
+    private final UriInfo uriInfo;
+    private final ServletContext servletContext;
+    private final OAuth2Config config;
 
     public ProcessOauth2(UriInfo uriInfo, ServletContext servletContext) {
         this.uriInfo = uriInfo;
         this.servletContext = servletContext;
+        this.config = AppConfig.getApp().getComponentAs("oauth2", OAuth2Service.class).getConfig();
     }
 
-    protected void processOpenID(HttpServletRequest request, HttpServletResponse response, String provider, String returnURL, boolean isRegister) {
+    protected void processOpenID(HttpServletRequest request, HttpServletResponse response, String providerName, String returnURL, boolean isRegister) {
+        OAuth2Provider provider = config.getProvider(providerName);
+        if (provider == null) {
+            // error
+        }
+
         HttpSession session = request.getSession();
         String state = generateState();
         session.setAttribute(SA_REGISTRATION, isRegister);
-        session.setAttribute(SA_OPENID_PROVIDER, provider);
+        session.setAttribute(SA_OPENID_PROVIDER, providerName);
         session.setAttribute(SA_STATE, state);
 
         if (returnURL == null || returnURL.isEmpty()) {
             returnURL = "/ui/admin";
         }
-        if (Oauth2Util.istUseHttps()) {
+        if (config.getUseHttps()) {
             returnURL = returnURL.replaceFirst("^/", "");
             returnURL = uriInfo.getBaseUri().toString() + returnURL;
             log.info(String.format("OAuth returnURL is %s", returnURL));
@@ -99,30 +95,28 @@ public class ProcessOauth2 {
             session.setAttribute(SA_RETURN_URL, returnURL);
         }
 
-        if (provider == null || provider.isEmpty()) {
-            provider = DEFAULT_PROVIDER;
+        if (providerName == null || providerName.isEmpty()) {
+            //provider = DEFAULT_PROVIDER; TODO
         }
-        log.info("Authentication request for " + provider + (isRegister ? " (registration)" : ""));
-
+        log.info("Authentication request for " + providerName + (isRegister ? " (registration)" : ""));
 
         String responseURL = uriInfo.getBaseUri().toString() + "system/security/responseoa";
-        if (Oauth2Util.istUseHttps()) {
+        if (config.getUseHttps()) {
             responseURL = responseURL.replace("http://", "https://");
         }
 
         log.info(String.format("response URL for auth request: %s", responseURL));
         session.setAttribute(SA_RESPONSE_URL, responseURL);
 
-
         try
         {
             // obtain a AuthRequest message to be sent to the OpenID provider
             OAuthClientRequest oauthRequest = OAuthClientRequest
-                    .authorizationProvider(OAuthProviderType.GOOGLE)
-                    .setClientId(Oauth2Util.getClientId())
+                    .authorizationLocation(provider.getAuthEndpoint())
+                    .setClientId(provider.getClientId())
                     .setRedirectURI(responseURL)
                     .setResponseType(ResponseType.CODE.toString())
-                    .setScope(GOOGLE_SCOPE)
+                    .setScope(SCOPE)
                     .setState(state)
                     .buildQueryMessage();
 
@@ -137,92 +131,61 @@ public class ProcessOauth2 {
     }
 
     public Response verifyResponse(HttpServletRequest request, HttpServletResponse httpresponse) {
-        OAuthParams oauthParams = new OAuthParams();
+        HttpSession session = request.getSession();
+        String providerName = session.getAttribute(SA_OPENID_PROVIDER).toString();
+        OAuth2Provider provider = config.getProvider(providerName);
 
         try {
-            oauthParams.setClientId(Oauth2Util.getClientId());
-	    oauthParams.setTokenEndpoint(OAuthProviderType.GOOGLE.getTokenEndpoint());
-	    oauthParams.setResourceUrl("https://www.googleapis.com/oauth2/v3/userinfo");
-            HttpSession session = request.getSession();
-
-
-
-            // Create the response wrapperhttps://accounts.google.com/o/oauth2/auth
-            // to the parameters from the authentication response
-            // (which comes in as a HTTP request from the OAuth provider)
             OAuthAuthzResponse oar = OAuthAuthzResponse.oauthCodeAuthzResponse(request);
-
-
-            // Get Authorization Code
             String code = oar.getCode();
-//            oauthParams.setAuthzCode(code);
             String responseUrl = (String) session.getAttribute(SA_RESPONSE_URL);
 
-//            String accessToken = oar.getAccessToken();
-
             OAuthClientRequest authzRequest = OAuthClientRequest
-                    .tokenProvider(OAuthProviderType.GOOGLE)
-                    .setClientId(Oauth2Util.getClientId())
-                    .setClientSecret(Oauth2Util.getClientSecret())
+                    .tokenLocation(provider.getTokenEndpoint())
+                    .setClientId(provider.getClientId())
+                    .setClientSecret(provider.getClientSecret())
                     .setRedirectURI(responseUrl)
                     .setCode(code)
                     .setGrantType(GrantType.AUTHORIZATION_CODE)
                     .buildBodyMessage();
 
+            authzRequest.setHeader("Accept", "application/json");
             OAuthClient client = new OAuthClient(new URLConnectionClient());
+            OAuthJSONAccessTokenResponse oauthResponse = client.accessToken(authzRequest, OAuthJSONAccessTokenResponse.class);
 
-
-            OAuthAccessTokenResponse oauthResponse = null;
-            Class<? extends OAuthAccessTokenResponse> cl = OAuthJSONAccessTokenResponse.class;
-            cl = OpenIdConnectResponse.class;
-
-            oauthResponse = client.accessToken(authzRequest, cl);
-
-
-            oauthParams.setAccessToken(oauthResponse.getAccessToken());
-            oauthParams.setExpiresIn(oauthResponse.getExpiresIn());
-            oauthParams.setRefreshToken(Oauth2Util.isIssued(oauthResponse.getRefreshToken()));
-
-
-            OpenIdConnectResponse openIdConnectResponse = ((OpenIdConnectResponse) oauthResponse);
-            JWT idToken = openIdConnectResponse.getIdToken();
-            oauthParams.setIdToken(idToken.getRawString());
-
-            oauthParams.setHeader(new JWTHeaderWriter().write(idToken.getHeader()));
-            oauthParams.setClaimsSet(new JWTClaimsSetWriter().write(idToken.getClaimsSet()));
-
-            URL url = new URL(oauthParams.getTokenEndpoint());
-
-            oauthParams.setIdTokenValid(openIdConnectResponse.checkId(url.getHost(), oauthParams.getClientId()));
-
-            OAuthClientRequest resRequest = new OAuthBearerClientRequest(oauthParams.getResourceUrl()).setAccessToken(oauthParams.getAccessToken()).buildHeaderMessage();
+            OAuthClientRequest resRequest = new OAuthBearerClientRequest(provider.getUserInfoEndpoint())
+                    .setAccessToken(oauthResponse.getAccessToken())
+                    .buildHeaderMessage();
 
             OAuthClient resClient = new OAuthClient(new URLConnectionClient());
-
-            OAuthResourceResponse resourceResponse = resClient.resource(resRequest, oauthParams.getRequestMethod(), OAuthResourceResponse.class);
+            OAuthResourceResponse resourceResponse = resClient.resource(resRequest, null, OAuthResourceResponse.class);
 
             boolean verified = false;
             if (resourceResponse.getResponseCode() == 200) {
-                oauthParams.setResource(resourceResponse.getBody());
                 verified = true;
             } else {
-                oauthParams.setErrorMessage(
-                        "Could not access resource: " + resourceResponse.getResponseCode() + " " + resourceResponse.getBody());
+                // TODO error "Could not access resource: " + resourceResponse.getResponseCode() + " " + resourceResponse.getBody());
             }
 
             if (verified) {
                 ObjectMapper mapper = new ObjectMapper();
-                Map<String, Object> mapObject = mapper.readValue(oauthParams.getResource(), new TypeReference<Map<String, Object>>() {
-                });
-                String name = (String) mapObject.get("name");
-//                String email = (String) mapObject.get("email");
-                String identifier = (String) mapObject.get("profile");
+                Map<String, Object> mapObject = mapper.readValue(resourceResponse.getBody(), new TypeReference<Map<String, Object>>() {});
+                String identifier = provider.getUserId(mapObject);
+                String name = provider.getUserName(mapObject);
 
-                log.info(String.format("Verified identity https://accounts.google.com/o/oauth2/authy %s = %s", identifier, name));
+                Boolean isRegistration = ((Boolean) session.getAttribute(SA_REGISTRATION));
 
+                if (identifier == null) {
+                    String msg = isRegistration ?
+                            "Unable to register user. Make sure you have access to the provider's OAuth services."
+                            : "Unable to identify user. Make sure you are logging in with the same provider that you registered with.";
+                    return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", msg);
+                }
+
+                log.info(String.format("Verified identity via %s: %s = %s", provider.getLabel(), identifier, name));
 
                 UserStore userstore = Registry.get().getUserStore();
-                boolean isRegistration = ((Boolean) session.getAttribute(SA_REGISTRATION)).booleanValue();
+
                 String registrationStatus = RS_LOGIN;
                 if (isRegistration) {
                     UserInfo userinfo = new UserInfo(identifier, name);
@@ -238,28 +201,27 @@ public class ProcessOauth2 {
                 try {
                     subject.login(token);
                     session.setAttribute(VN_REGISTRATION_STATUS, registrationStatus);
-                    String provider = (String) session.getAttribute(SA_OPENID_PROVIDER);
-                    if (provider != null && !provider.isEmpty()) {
-                        Cookie cookie = new Cookie(PROVIDER_COOKIE, provider);
-                        cookie.setComment("Records the openid provider you last used to log in to a UKGovLD registry");
+                    if (providerName != null && !providerName.isEmpty()) {
+                        Cookie cookie = new Cookie(PROVIDER_COOKIE, providerName);
+                        cookie.setComment("Records the OAuth provider you last used to log in to a UKGovLD registry");
                         cookie.setMaxAge(60 * 60 * 24 * 30);
                         cookie.setHttpOnly(true);
                         cookie.setPath("/");
                         httpresponse.addCookie(cookie);
                     }
+
                     Login.setNocache(httpresponse);
                     return Login.redirectTo(session.getAttribute(SA_RETURN_URL).toString());
-                    //                    return RequestProcessor.render("admin.vm", uriInfo, servletContext, request, VN_SUBJECT, subject, VN_REGISTRATION_STATUS, registrationStatus);
                 } catch (Exception e) {
                     log.error("Authentication failure: " + e);
                     return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "Could not find a registration for you.");
                 }
             }
-
         } catch (Exception e) {
             throw new WebApplicationException(e);
         }
-        return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "OpenID Connect login failed");
+
+        return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "OAuth login failed");
     }
 
     private static String generateState() {
