@@ -17,25 +17,30 @@ import org.slf4j.LoggerFactory;
  * Exposes OAuth2 configuration.
  */
 public class OAuth2Service {
-	private static final String CONFIG_LOC = "/opt/ldregistry/config/oauth.conf";
-	private static final String PROVIDERS_DIR = "/opt/ldregistry/config/oauth2/provider";
-
 	private final Logger log = LoggerFactory.getLogger(OAuth2Service.class);
-	private final OAuth2Config config = createConfig();
+	private final OAuth2Config config;
 
-	private OAuth2Config createConfig() {
+	public OAuth2Service() {
+		this("/opt/ldregistry/config/oauth.conf", "/opt/ldregistry/config/oauth2/provider");
+	}
+
+	public OAuth2Service(String configLoc, String providersDir) {
+		this.config = createConfig(configLoc, providersDir);
+	}
+
+	private OAuth2Config createConfig(String configLoc, String providersDir) {
 		try {
-			FileReader reader = new FileReader(CONFIG_LOC);
+			FileReader reader = new FileReader(configLoc);
 			try {
 				Properties props = readProperties(reader);
-				Collection<OAuth2Provider> providers = getProviders();
+				Collection<OAuth2Provider> providers = getProviders(providersDir);
 
 				return new OAuth2ConfigProperties(props, providers);
 			} catch (IOException ioe) {
 				throw new RuntimeException("Unable to read OAuth2 configuration", ioe);
 			}
 		} catch (IOException ioe) {
-			log.info("OAuth configuration file not found at " + CONFIG_LOC + ". OAuth2 login will not be available: " + ioe.getMessage());
+			log.info("OAuth configuration file not found at " + configLoc + ". OAuth2 login will not be available: " + ioe.getMessage());
 			return null; // TODO empty impl?
 		}
 	}
@@ -51,8 +56,8 @@ public class OAuth2Service {
 		return props;
 	}
 
-	private Collection<OAuth2Provider> getProviders() {
-		File providersDir = new File(PROVIDERS_DIR);
+	private Collection<OAuth2Provider> getProviders(String providersDirLoc) {
+		File providersDir = new File(providersDirLoc);
 		File[] providerFiles = providersDir.listFiles((FileFilter)new SuffixFileFilter("properties"));
 
 		return Arrays.asList(providerFiles).stream().map(file -> {
