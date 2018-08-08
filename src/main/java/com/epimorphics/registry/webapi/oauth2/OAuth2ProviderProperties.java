@@ -44,7 +44,7 @@ class OAuth2ProviderProperties implements OAuth2Provider {
 	}
 
 	@Override public String getUserInfoEndpoint() {
-		return get("userInfo.url");
+		return get("userInfo.endpoint");
 	}
 
 	@Override public String getUserId(Map<String, Object> entity) {
