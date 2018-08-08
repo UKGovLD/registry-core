@@ -1,13 +1,20 @@
 package com.epimorphics.registry.webapi.oauth2;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.*;
+import java.util.stream.Collectors;
 
 class OAuth2ConfigProperties implements OAuth2Config {
+	private final Logger log = LoggerFactory.getLogger(OAuth2ConfigProperties.class);
 	private final Properties props;
+	private final List<String> enabled;
 	private final Map<String, OAuth2Provider> providersByName;
 
 	OAuth2ConfigProperties(Properties props, Collection<OAuth2Provider> providers) {
 		this.props = props;
+		this.enabled = Arrays.asList(getEnabledProviders());
 		this.providersByName = getProvidersByName(providers);
 	}
 
@@ -21,13 +28,9 @@ class OAuth2ConfigProperties implements OAuth2Config {
 
 	private Map<String, OAuth2Provider> getProvidersByName(Collection<OAuth2Provider> providers) {
 		Map<String, OAuth2Provider> providersByName = new HashMap<>();
-		List<String> enabled = Arrays.asList(getEnabledProviders());
-
-		providers.stream().filter(provider ->
-			enabled.contains(provider.getName())
-		).forEach(provider ->
-			providersByName.put(provider.getName(), provider)
-		);
+		for (OAuth2Provider provider : providers) {
+			providersByName.put(provider.getName(), provider);
+		}
 
 		return providersByName;
 	}
@@ -37,10 +40,10 @@ class OAuth2ConfigProperties implements OAuth2Config {
 	}
 
 	@Override public Collection<OAuth2Provider> getProviders() {
-		return providersByName.values();
+		return enabled.stream().map(providersByName::get).collect(Collectors.toList());
 	}
 
 	@Override public OAuth2Provider getProvider(String name) {
-		return providersByName.get(name);
+		return enabled.contains(name) ? providersByName.get(name) : null;
 	}
 }
