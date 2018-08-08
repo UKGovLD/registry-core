@@ -6,7 +6,7 @@ import java.util.Properties;
 class OAuth2ProviderProperties implements OAuth2Provider {
 	private final Properties props;
 
-	public OAuth2ProviderProperties(Properties props) {
+	OAuth2ProviderProperties(Properties props) {
 		this.props = props;
 	}
 
