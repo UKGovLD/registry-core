@@ -27,8 +27,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import com.epimorphics.registry.store.Storex;
 import org.apache.jena.fuseki.server.DatasetRef;
 import org.apache.jena.fuseki.server.DatasetRegistry;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.query.*;
 import org.apache.jena.query.text.DatasetGraphText;
 import org.apache.jena.query.text.Entity;
 import org.apache.jena.query.text.EntityDefinition;
@@ -78,7 +81,7 @@ import org.apache.jena.vocabulary.RDFS;
 // This obsolete code, based on a poor store abstraction
 // It's here to facilitate a first port to appbase
 // but should be removed once we've switched to using SparqlStore
-public class TDBStore  extends ComponentBase implements Store {
+public class TDBStore  extends ComponentBase implements Store, Storex, Storex.ReadTransaction, Storex.WriteTransaction {
     static final Logger log = LoggerFactory.getLogger( TDBStore.class );
 
     public static final String MEMORY_LOCATION = "mem";
@@ -386,5 +389,64 @@ public class TDBStore  extends ComponentBase implements Store {
             }
         }
         return count;
+    }
+
+
+    @Override public <T> T read(ReadOperation<T> operation) {
+        ReadTransaction txn = this;
+        lock();
+        try {
+            return operation.execute(txn);
+        } finally {
+            dataset.end();
+        }
+    }
+
+    @Override public void write(WriteOperation operation) {
+        WriteTransaction txn = this;
+        lockWrite();
+        try {
+            operation.execute(txn);
+            dataset.commit();
+        } finally {
+            dataset.end();
+        }
+    }
+
+    @Override public Model getGraph(String graphURI) {
+        return dataset.getNamedModel(graphURI);
+    }
+
+    @Override public Model getDefaultModel() {
+        return dataset.getDefaultModel();
+    }
+
+    @Override public ResultSet query(String sparql) {
+        QueryExecution query = QueryExecutionFactory.create(sparql, dataset);
+        return query.execSelect();
+    }
+
+    @Override public void insertTriple(Triple t) {
+        dataset.asDatasetGraph().add(Quad.defaultGraphIRI, t.getSubject(), t.getPredicate(), t.getObject());
+    }
+
+    @Override public void insertQuad(Quad q) {
+        dataset.asDatasetGraph().add(q);
+    }
+
+    @Override public void insertGraph(String name, Model graph) {
+        logAction(ADD_ACTION, name, graph);
+        dataset.getNamedModel(name).add(graph);
+    }
+
+    @Override public void updateGraph(String name, Model graph) {
+        logAction(UPDATE_ACTION, name, graph);
+        deleteGraph(name);
+        insertGraph(name, graph);
+    }
+
+    @Override public void deleteGraph(String graphname) {
+        Model store = dataset.getNamedModel(graphname);
+        store.removeAll();
     }
 }
