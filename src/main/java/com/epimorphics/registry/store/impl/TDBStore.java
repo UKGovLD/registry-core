@@ -54,9 +54,6 @@ import com.epimorphics.util.FileUtil;
 import com.epimorphics.util.NameUtils;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.query.ARQ;
-import org.apache.jena.query.Dataset;
-import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.tdb.TDB;
@@ -242,43 +239,6 @@ public class TDBStore  extends ComponentBase implements Store {
     @Override
     public Dataset asDataset() {
         return dataset;
-    }
-
-    @Override
-    public Model getUnionModel() {
-        return dataset.getNamedModel("urn:x-arq:UnionGraph");
-    }
-
-    @Override
-    public void addGraph(String graphname, Model graph) {
-        logAction(ADD_ACTION, graphname, graph);
-        doAddGraph(graphname, graph);
-    }
-
-    @Override
-    public void updateGraph(String graphname, Model graph) {
-        logAction(UPDATE_ACTION, graphname, graph);
-        doDeleteGraph(graphname);
-        doAddGraph(graphname, graph);
-    }
-
-    @Override
-    public void deleteGraph(String graphname) {
-        logAction(DELETE_ACTION, graphname, null);
-        doDeleteGraph(graphname);
-    }
-
-    @Override
-    public void addGraph(String graphname, InputStream input, String mimeType) {
-        doAddGraph(graphname, input, mimeType);
-        logNamed(ADD_ACTION, graphname);
-    }
-
-    @Override
-    public void updateGraph(String graphname, InputStream input, String mimeType) {
-        doDeleteGraph(graphname);
-        doAddGraph(graphname, input, mimeType);
-        logNamed(UPDATE_ACTION, graphname);
     }
 
     /** Lock the dataset for reading */

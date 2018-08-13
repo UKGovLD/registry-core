@@ -33,17 +33,7 @@ import org.apache.jena.rdf.model.Model;
 // TODO replace with SparqSource
 public interface Store {
 
-    public void addGraph(String graphname, Model graph);
-    public void addGraph(String graphname, InputStream input, String mimeType);
-
-    public void updateGraph(String graphname, Model graph);
-    public void updateGraph(String graphname, InputStream input, String mimeType);
-
-    public void deleteGraph(String graphname);
-
     public Dataset asDataset();
-
-    public Model getUnionModel();
 
     public void lock();
     public void lockWrite();
