@@ -6,16 +6,24 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.sparql.core.Quad;
 
 public interface Storex {
+	<T> T read(ReadOperation<T> operation);
 	void write(WriteOperation operation);
-	Model getGraph(String name);
-	Model getDefaultModel();
-	ResultSet query(String sparql);
 
-	interface WriteOperation {
-		void execute(Transaction txn);
+	interface ReadOperation<T> {
+		T execute(ReadTransaction txn);
 	}
 
-	interface Transaction {
+	interface ReadTransaction {
+		Model getGraph(String name);
+		Model getDefaultModel();
+		ResultSet query(String sparql);
+	}
+
+	interface WriteOperation {
+		void execute(WriteTransaction txn);
+	}
+
+	interface WriteTransaction {
 		void insertTriple(Triple t);
 		void insertQuad(Quad t);
 
