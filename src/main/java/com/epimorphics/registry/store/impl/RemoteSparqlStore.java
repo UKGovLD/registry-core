@@ -1,24 +1,35 @@
 package com.epimorphics.registry.store.impl;
 
 import com.epimorphics.appbase.data.impl.RemoteSparqlSource;
+import com.epimorphics.registry.store.Store;
 import com.epimorphics.registry.store.Storex;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.sparql.core.Quad;
 
-public class RemoteSparqlStore implements Storex, Storex.ReadTransaction, Storex.WriteTransaction {
+public class RemoteSparqlStore implements Store, Storex, Storex.ReadTransaction, Storex.WriteTransaction {
 
     private RemoteSparqlSource source = new RemoteSparqlSource();
 
-    public RemoteSparqlStore(String endpoint, String updateEndpoint, String graphEndpoint, Long timeout) {
+    public void setEndpoint(String endpoint) {
         source.setEndpoint(endpoint);
-        source.setUpdateEndpoint(updateEndpoint);
-        source.setGraphEndpoint(graphEndpoint);
+    }
+
+    public void setUpdateEndpoint(String endpoint) {
+        source.setUpdateEndpoint(endpoint);
+    }
+
+    public void setGraphEndpoint(String endpoint) {
+        source.setGraphEndpoint(endpoint);
+    }
+
+    public void setRemoteTimeout(Long timeout) {
         source.setRemoteTimeout(timeout);
     }
 
@@ -112,5 +123,36 @@ public class RemoteSparqlStore implements Storex, Storex.ReadTransaction, Storex
         builder.addWhere(new Triple(subject, predicate, objekt));
 
         return builder;
+    }
+
+
+    @Override
+    public Dataset asDataset() {
+        return null;
+    }
+
+    @Override
+    public void abort() {
+
+    }
+
+    @Override
+    public void commit() {
+
+    }
+
+    @Override
+    public void end() {
+
+    }
+
+    @Override
+    public void lock() {
+
+    }
+
+    @Override
+    public void lockWrite() {
+
     }
 }
