@@ -4,14 +4,12 @@ import com.epimorphics.appbase.data.impl.RemoteSparqlSource;
 import com.epimorphics.registry.store.Storex;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
-import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.sparql.core.Quad;
-import org.apache.jena.sparql.core.TriplePath;
 
 public class RemoteSparqlStore implements Storex, Storex.ReadTransaction, Storex.WriteTransaction {
 
@@ -79,21 +77,23 @@ public class RemoteSparqlStore implements Storex, Storex.ReadTransaction, Storex
     @Override
     public void insertGraph(String name, Model graph) {
         UpdateBuilder builder = new UpdateBuilder();
-        builder.with(name);
-        graph.listStatements().forEachRemaining(stm -> builder.addInsert(stm.asTriple()));
+        graph.listStatements().forEachRemaining(
+                stm -> builder.addInsert(Quad.create(NodeFactory.createURI(name), stm.asTriple()))
+        );
         source.update(builder.buildRequest());
     }
 
     @Override
     public void deleteGraph(String name) {
         UpdateBuilder builder = new UpdateBuilder();
+
         Node graph = NodeFactory.createURI(name);
-        WhereHandler subQuery = new WhereHandler();
         Node subject = NodeFactory.createVariable("s");
         Node predicate = NodeFactory.createVariable("p");
         Node objekt = NodeFactory.createVariable("o");
-        subQuery.addWhere(new TriplePath( new Triple(subject, predicate, objekt)));
-        builder.addGraph(graph, subQuery);
+
+        builder.addDelete(Quad.create(graph, subject, predicate, objekt));
+        builder.addWhere(subject, predicate, objekt);
         source.update(builder.buildRequest());
     }
 
