@@ -85,13 +85,11 @@ public class Register extends Description {
      * according the given flags.
      *
      * @param model model in which to store the results
-     * @param withVersion  if true then versioning information is included, if false the Version/VersionedThing pairs are merged
      * @param withMetadata if true then both RegisterItems and the entities are included, if false then just entities are shown
      * @param status only return members which are specializations of this status, use null as a wildcard
      * @param offset offset in the list to start the return window
      * @param length then maximum number of members to return, -1 for no limit
      * @param timestamp the time at which the values should be valid, -1 for current value
-     * @param filters set of filters to apply to the register view, may be null if no filtering needed
      * @param results an array in which to return an ordered list of the items, if null if not required
      * @return whether the view is complete
      */
@@ -105,7 +103,6 @@ public class Register extends Description {
      * according the given flags.
      *
      * @param model model in which to store the results
-     * @param withVersion  if true then versioning information is included, if false the Version/VersionedThing pairs are merged
      * @param withMetadata if true then both RegisterItems and the entities are included, if false then just entities are shown
      * @param status only return members which are specializations of this status, use null as a wildcard
      * @param offset offset in the list to start the return window
@@ -218,7 +215,7 @@ public class Register extends Description {
      * Fetch all the members of a delegated register and construct an RDF view
      * according the given flags.
      *
-     * @param model model in which to store the results
+     * @param view model in which to store the results
      * @param delegation description of the source delegated to
      * @param offset offset in the list to start the return window
      * @param length then maximum number of members to return, -1 for no limit
