@@ -81,7 +81,7 @@ import org.apache.jena.vocabulary.RDFS;
 // This obsolete code, based on a poor store abstraction
 // It's here to facilitate a first port to appbase
 // but should be removed once we've switched to using SparqlStore
-public class TDBStore  extends ComponentBase implements Store, Storex, Storex.ReadTransaction, Storex.WriteTransaction {
+public class TDBStore extends ComponentBase implements Store, Storex, Storex.ReadTransaction, Storex.WriteTransaction {
     static final Logger log = LoggerFactory.getLogger( TDBStore.class );
 
     public static final String MEMORY_LOCATION = "mem";
@@ -434,13 +434,20 @@ public class TDBStore  extends ComponentBase implements Store, Storex, Storex.Re
         dataset.asDatasetGraph().add(q);
     }
 
+    @Override public void addAll(Model model) {
+        getDefaultModel().add(model);
+    }
+
+    @Override public void removeAll(Model model) {
+        getDefaultModel().remove(model);
+    }
+
     @Override public void insertGraph(String name, Model graph) {
-        logAction(ADD_ACTION, name, graph);
         dataset.getNamedModel(name).add(graph);
     }
 
+
     @Override public void updateGraph(String name, Model graph) {
-        logAction(UPDATE_ACTION, name, graph);
         deleteGraph(name);
         insertGraph(name, graph);
     }

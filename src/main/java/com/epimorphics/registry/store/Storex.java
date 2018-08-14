@@ -9,9 +9,13 @@ public interface Storex {
 	<T> T read(ReadOperation<T> operation);
 	void write(WriteOperation operation);
 
-	interface ReadOperation<T> {
-		T execute(ReadTransaction txn);
+	interface Operation<T, R> {
+		R execute(T txn);
 	}
+
+	interface ReadOperation<R> extends Operation<ReadTransaction, R> {}
+	interface WriteOperation extends Operation<WriteTransaction, Void> {}
+	interface UpdateOperation extends Operation<Model, Void> {}
 
 	interface ReadTransaction {
 		Model getGraph(String name);
@@ -19,13 +23,12 @@ public interface Storex {
 		ResultSet query(String sparql);
 	}
 
-	interface WriteOperation {
-		void execute(WriteTransaction txn);
-	}
+	interface WriteTransaction extends ReadTransaction {
+		void insertTriple(Triple t); // default graph
+		void insertQuad(Quad q);
 
-	interface WriteTransaction {
-		void insertTriple(Triple t);
-		void insertQuad(Quad t);
+		void addAll(Model model); // default graph
+		void removeAll(Model model); // default graph
 
 		void insertGraph(String name, Model graph);
 		void updateGraph(String name, Model graph);
