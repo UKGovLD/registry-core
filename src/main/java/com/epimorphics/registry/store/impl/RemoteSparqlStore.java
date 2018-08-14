@@ -13,7 +13,7 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.sparql.core.Quad;
 
-public class RemoteSparqlStore implements Store, Storex, Storex.ReadTransaction, Storex.WriteTransaction {
+public class RemoteSparqlStore implements Store, Storex, Storex.WriteTransaction {
 
     private RemoteSparqlSource source = new RemoteSparqlSource();
 
@@ -108,6 +108,23 @@ public class RemoteSparqlStore implements Store, Storex, Storex.ReadTransaction,
         source.update(builder.buildRequest());
     }
 
+    @Override
+    public void addAll(Model model) {
+        UpdateBuilder builder = new UpdateBuilder();
+        model.listStatements().forEachRemaining(
+                stm -> builder.addInsert(stm.asTriple())
+        );
+        source.update(builder.buildRequest());
+    }
+
+    @Override
+    public void removeAll(Model model) {
+        UpdateBuilder builder = new UpdateBuilder();
+        model.listStatements().forEachRemaining(
+                stm -> builder.addDelete(stm.asTriple())
+        );
+        source.update(builder.buildRequest());
+    }
 
     private SelectBuilder selectAllBuilder() {
         SelectBuilder builder = new SelectBuilder();
