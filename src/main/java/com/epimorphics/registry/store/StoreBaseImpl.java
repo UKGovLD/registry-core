@@ -639,7 +639,6 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     }
 
     private boolean removeGraphFor(Resource oldVersion) {
-        Model st = getDefaultModel();
         Resource definition = mod(oldVersion).getPropertyResourceValue(
                 RegistryVocab.definition);
         if (definition != null) {

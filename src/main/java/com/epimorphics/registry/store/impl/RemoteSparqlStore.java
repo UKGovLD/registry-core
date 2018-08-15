@@ -13,6 +13,8 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.Quad;
 
+import javax.ws.rs.NotSupportedException;
+
 public class RemoteSparqlStore implements Store {
 
     private final Node SUBJECT_G = NodeFactory.createVariable("s");
@@ -138,7 +140,7 @@ public class RemoteSparqlStore implements Store {
 
     @Override
     public Dataset asDataset() {
-        return null;
+        throw new NotSupportedException("asDataset() not supported on RemoteSparqlStore");
     }
 
     @Override
