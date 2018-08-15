@@ -11,9 +11,14 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.Quad;
 
 public class RemoteSparqlStore implements Store, Storex, Storex.WriteTransaction {
+
+    private final Node SUBJECT_G = NodeFactory.createVariable("s");
+    private final Node PREDICATE_G = NodeFactory.createVariable("p");
+    private final Node OBJECT_G = NodeFactory.createVariable("o");
 
     private RemoteSparqlSource source = new RemoteSparqlSource();
 
@@ -86,6 +91,22 @@ public class RemoteSparqlStore implements Store, Storex, Storex.WriteTransaction
     }
 
     @Override
+    public void addResource(Resource resource) {
+        UpdateBuilder builder = new UpdateBuilder();
+        resource.listProperties().forEachRemaining( statement -> builder.addInsert(statement.asTriple()) );
+        source.update(builder.buildRequest());
+    }
+
+    @Override
+    public void patchResource(Resource resource) {
+        UpdateBuilder builder = new UpdateBuilder();
+        builder.addDelete(new Triple(SUBJECT_G, PREDICATE_G, OBJECT_G));
+        builder.addWhere(NodeFactory.createURI(resource.getURI()), PREDICATE_G, OBJECT_G);
+        resource.listProperties().forEachRemaining( statement -> builder.addInsert(statement.asTriple()) );
+        source.update(builder.buildRequest());
+    }
+
+    @Override
     public void insertGraph(String name, Model graph) {
         UpdateBuilder builder = new UpdateBuilder();
         graph.listStatements().forEachRemaining(
@@ -99,12 +120,9 @@ public class RemoteSparqlStore implements Store, Storex, Storex.WriteTransaction
         UpdateBuilder builder = new UpdateBuilder();
 
         Node graph = NodeFactory.createURI(name);
-        Node subject = NodeFactory.createVariable("s");
-        Node predicate = NodeFactory.createVariable("p");
-        Node objekt = NodeFactory.createVariable("o");
 
-        builder.addDelete(Quad.create(graph, subject, predicate, objekt));
-        builder.addWhere(subject, predicate, objekt);
+        builder.addDelete(Quad.create(graph, SUBJECT_G, PREDICATE_G, OBJECT_G));
+        builder.addWhere(SUBJECT_G, PREDICATE_G, OBJECT_G);
         source.update(builder.buildRequest());
     }
 
@@ -129,15 +147,11 @@ public class RemoteSparqlStore implements Store, Storex, Storex.WriteTransaction
     private SelectBuilder selectAllBuilder() {
         SelectBuilder builder = new SelectBuilder();
 
-        Node subject = NodeFactory.createVariable("s");
-        Node predicate = NodeFactory.createVariable("p");
-        Node objekt = NodeFactory.createVariable("o");
+        builder.addVar(SUBJECT_G);
+        builder.addVar(PREDICATE_G);
+        builder.addVar(OBJECT_G);
 
-        builder.addVar(subject);
-        builder.addVar(predicate);
-        builder.addVar(objekt);
-
-        builder.addWhere(new Triple(subject, predicate, objekt));
+        builder.addWhere(new Triple(SUBJECT_G, PREDICATE_G, OBJECT_G));
 
         return builder;
     }

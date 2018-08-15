@@ -28,8 +28,8 @@ public interface Storex {
 		void insertTriple(Triple t); // default graph
 		void insertQuad(Quad q);
 
-		void addResource(Resource resource);
-		void patchResource(Resource resource);
+		void addResource(Resource resource); // default graph
+		void patchResource(Resource resource); // default graph
 
 		void addAll(Model model); // default graph
 		void removeAll(Model model); // default graph

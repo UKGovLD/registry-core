@@ -38,6 +38,7 @@ import org.apache.jena.query.text.EntityDefinition;
 import org.apache.jena.query.text.TextDatasetFactory;
 import org.apache.jena.query.text.TextIndex;
 import org.apache.jena.query.text.TextQueryFuncs;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -432,6 +433,16 @@ public class TDBStore extends ComponentBase implements Store, Storex, Storex.Rea
 
     @Override public void insertQuad(Quad q) {
         dataset.asDatasetGraph().add(q);
+    }
+
+    @Override
+    public void addResource(Resource resource) {
+        // TODO: Implement
+    }
+
+    @Override
+    public void patchResource(Resource resource) {
+        // TODO: Implement
     }
 
     @Override public void addAll(Model model) {
