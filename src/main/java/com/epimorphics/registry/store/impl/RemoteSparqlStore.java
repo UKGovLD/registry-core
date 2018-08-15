@@ -9,6 +9,7 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;
+import org.apache.jena.query.DatasetAccessor;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -71,12 +72,6 @@ public class RemoteSparqlStore implements Store, Storex, Storex.WriteTransaction
     }
 
     @Override
-    public void updateGraph(String name, Model graph) {
-        deleteGraph(name);
-        insertGraph(name, graph);
-    }
-
-    @Override
     public void insertTriple(Triple t) {
         UpdateBuilder builder = new UpdateBuilder();
         builder.addInsert(t);
@@ -99,6 +94,7 @@ public class RemoteSparqlStore implements Store, Storex, Storex.WriteTransaction
 
     @Override
     public void patchResource(Resource resource) {
+        // TODO: Review this to make sure it makes sense!
         UpdateBuilder builder = new UpdateBuilder();
         builder.addDelete(new Triple(SUBJECT_G, PREDICATE_G, OBJECT_G));
         builder.addWhere(NodeFactory.createURI(resource.getURI()), PREDICATE_G, OBJECT_G);
@@ -108,22 +104,18 @@ public class RemoteSparqlStore implements Store, Storex, Storex.WriteTransaction
 
     @Override
     public void insertGraph(String name, Model graph) {
-        UpdateBuilder builder = new UpdateBuilder();
-        graph.listStatements().forEachRemaining(
-                stm -> builder.addInsert(Quad.create(NodeFactory.createURI(name), stm.asTriple()))
-        );
-        source.update(builder.buildRequest());
+        source.getAccessor().add(name, graph);
     }
 
     @Override
     public void deleteGraph(String name) {
-        UpdateBuilder builder = new UpdateBuilder();
+        source.getAccessor().deleteModel(name);
+    }
 
-        Node graph = NodeFactory.createURI(name);
-
-        builder.addDelete(Quad.create(graph, SUBJECT_G, PREDICATE_G, OBJECT_G));
-        builder.addWhere(SUBJECT_G, PREDICATE_G, OBJECT_G);
-        source.update(builder.buildRequest());
+    @Override
+    public void updateGraph(String name, Model graph) {
+        deleteGraph(name);
+        insertGraph(name, graph);
     }
 
     @Override
