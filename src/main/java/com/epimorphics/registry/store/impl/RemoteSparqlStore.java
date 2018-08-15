@@ -138,7 +138,7 @@ public class RemoteSparqlStore implements Store {
 
     @Override
     public Dataset asDataset() {
-        return null;
+        return null; // TODO throw
     }
 
     @Override
