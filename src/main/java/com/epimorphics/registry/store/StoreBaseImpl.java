@@ -168,11 +168,11 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     @Override
     public void storeGraph(String graphURI,Model entityModel) {
         // Avoids Store.updateGraph because we are already in a transaction
-        Model graphModel = store.asDataset().getNamedModel(graphURI);
+        Model graphModel = store.getGraph(graphURI);
         if (graphModel == null) {
             // Probably an in-memory test store
             graphModel = ModelFactory.createDefaultModel();
-            store.asDataset().addNamedModel(graphURI, graphModel);
+            store.insertGraph(graphURI, graphModel);
         } else {
             graphModel.removeAll();
         }
@@ -182,7 +182,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     @Override
     public Model getGraph(String graphURI) {
         Model result = ModelFactory.createDefaultModel();
-        result.add(store.asDataset().getNamedModel(graphURI));
+        result.add(store.getGraph(graphURI));
         return result;
     }
 
@@ -204,7 +204,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     }
 
     protected Model getDefaultModel() {
-        return store.asDataset().getDefaultModel();
+        return store.getDefaultModel();
     }
 
     protected Description asDescription(Resource root) {
@@ -362,7 +362,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             Resource srcGraph = entityRef
                     .getPropertyResourceValue(RegistryVocab.sourceGraph);
             if (srcGraph != null) {
-                dest.add(store.asDataset().getNamedModel(srcGraph.getURI()));
+                dest.add(store.getGraph(srcGraph.getURI()));
                 entity = entity.inModel(dest);
             } else {
                 // Occurs for versioned things i.e. Registers
@@ -409,37 +409,6 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         }
         return results;
     }
-
-    // public List<RegisterItem> doFetchMembers(Register register, boolean
-    // withEntity) {
-    // lockStore();
-    // try {
-    // // A shared model would save having 2N models around but makes filtering
-    // painful
-    // // Model shared = ModelFactory.createDefaultModel();
-    // List<RDFNode> items = selectAllVar("ri", getDefaultModel(),
-    // REGISTER_ENUM_QUERY, Prefixes.getDefault(),
-    // "register", register.getRoot() );
-    // List<RegisterItem> results = new ArrayList<RegisterItem>(items.size());
-    // for ( RDFNode itemR : items) {
-    // if (itemR.isURIResource()) {
-    // Resource itemRoot = doGetCurrentVersion(itemR.asResource().getURI(),
-    // null);
-    // RegisterItem item = new RegisterItem(itemRoot);
-    // doGetEntity(item, null);
-    // results.add(item);
-    // } else {
-    // throw new EpiException("Found item which isn't a resource");
-    // }
-    // }
-    // return results;
-    // } finally {
-    // unlockStore();
-    // }
-    // }
-    // static String REGISTER_ENUM_QUERY =
-    // "SELECT ?ri WHERE { ?ri reg:register ?register. }";
-
 
     @Override
     public List<RegisterEntryInfo> listMembers(Register register) {
@@ -589,20 +558,6 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         return newVersion.inModel(st);
     }
 
-    // protected void doIndex(Resource root, String graph) {
-    // if (indexer != null) {
-    // // If use updateGraph then get one entry per entity, which is much more
-    // efficient
-    // // However, then can't search on older names for entities which have been
-    // updated
-    // if (Registry.TEXT_INDEX_INCLUDES_HISTORY) {
-    // indexer.addGraph(graph, root.getModel());
-    // } else {
-    // indexer.updateGraph(graph, root.getModel());
-    // }
-    // }
-    // }
-
     @Override
     public String update(RegisterItem item, boolean withEntity,
             Calendar timestamp) {
@@ -673,7 +628,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                 storeGraph(graphURI, entityModel);
 
                 if (!item.isGraph()) {
-                    getDefaultModel().add(entityModel);
+                    store.addAll(entityModel);
                 }
                 Resource graph = ResourceFactory.createResource(graphURI);
                 entityRef.removeAll(RegistryVocab.sourceGraph);
@@ -691,7 +646,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             Resource graph = definition
                     .getPropertyResourceValue(RegistryVocab.sourceGraph);
             if (graph != null) {
-                st.remove(store.asDataset().getNamedModel(graph.getURI()));
+                store.deleteGraph(graph.getURI());
                 return true;
             }
         }
@@ -726,19 +681,13 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
             log.debug("Search query = " + query.toString());
 
-            QueryExecution exec = QueryExecutionFactory.create( query, store.asDataset() );
-            try {
-                ResultSet results = exec.execSelect();
-                List<String> matches = new ArrayList<String>();
-                while (results.hasNext()) {
-                    QuerySolution row = results.next();
-                    matches.add(row.getResource("item").getURI());
-                }
-                return matches;
-            } finally {
-                exec.close();
+            ResultSet results = store.query(query);
+            List<String> matches = new ArrayList<String>();
+            while (results.hasNext()) {
+                QuerySolution row = results.next();
+                matches.add(row.getResource("item").getURI());
             }
-
+            return matches;
         } catch (Exception e) {
             log.error("Search query failed, misconfigured store?", e);
             return Collections.emptyList();
@@ -882,13 +831,8 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     @Override
     public ResultSet query(String query) {
         log.debug("Query: " + query);
-        QueryExecution exec = QueryExecutionFactory.create(query,
-                store.asDataset());
-        try {
-            return ResultSetFactory.copyResults(exec.execSelect());
-        } finally {
-            exec.close();
-        }
+        ResultSet results = store.query(query);
+        return ResultSetFactory.copyResults(results);
     }
 
     @Override
@@ -921,9 +865,9 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         Model toDelete = ModelFactory.createDefaultModel();
         Set<Resource> entities = new HashSet<>();
         Collection<Resource>graphs = scanAllVersions(item.getRoot(), toModel(toDelete), entities);
-        getDefaultModel().remove(toDelete);
+        store.removeAll(toDelete);
         for (Resource graph : graphs) {
-            store.asDataset().removeNamedModel( graph.getURI() );
+            store.deleteGraph(graph.getURI());
         }
         
         // Now need to reference count the entities
@@ -939,15 +883,16 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                 check.close();
             }
         }
-        getDefaultModel().remove(toDelete);
+
+        store.removeAll(toDelete);
         for (Resource graph : graphs) {
-            store.asDataset().removeNamedModel( graph.getURI() );
+            store.deleteGraph(graph.getURI());
         }
     }
     
     private StreamRDF toModel(final Model model) {
         return new StreamRDF() {
-            @Override public void triple(Triple triple) { model.add( model.asStatement(triple) ); }
+            @Override public void triple(Triple triple) {  model.add( model.asStatement(triple) ); }
             @Override public void start() { }
             @Override public void quad(Quad quad) { throw new UnsupportedOperationException();  }
             @Override public void prefix(String prefix, String iri) {  model.setNsPrefix(prefix, iri); }
@@ -1039,9 +984,10 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         
         Collection<Resource> graphs = scanAllVersions(item.getRoot(), out, null);
         for (Resource g : graphs) {
-            Iterator<Quad> i = store.asDataset().asDatasetGraph().findNG(g.asNode(), Node.ANY, Node.ANY, Node.ANY);
-            while (i.hasNext()){
-                out.quad( i.next() );
+            StmtIterator stIt = store.getGraph(g.getURI()).listStatements();
+            while (stIt.hasNext()){
+                Triple triple = stIt.next().asTriple();
+                out.quad(new Quad(g.asNode(), triple));
             }
         }
     }
@@ -1052,9 +998,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         if (item != null) {
             delete(item);
         }
-        
-        final DatasetGraph dsg = store.asDataset().asDatasetGraph();
-        
+
         return new StreamRDF() {
             @Override
             public void start() {
@@ -1062,12 +1006,12 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
             @Override
             public void triple(Triple triple) {
-                dsg.add(Quad.defaultGraphIRI, triple.getSubject(), triple.getPredicate(), triple.getObject());
+                store.insertTriple(triple);
             }
 
             @Override
             public void quad(Quad quad) {
-                dsg.add(quad);
+                store.insertQuad(quad);
             }
 
             @Override

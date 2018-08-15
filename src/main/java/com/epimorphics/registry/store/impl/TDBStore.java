@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import com.epimorphics.registry.store.Storex;
 import org.apache.jena.fuseki.server.DatasetRef;
 import org.apache.jena.fuseki.server.DatasetRegistry;
 import org.apache.jena.graph.Triple;
@@ -83,7 +82,7 @@ import org.apache.jena.vocabulary.RDFS;
 // This obsolete code, based on a poor store abstraction
 // It's here to facilitate a first port to appbase
 // but should be removed once we've switched to using SparqlStore
-public class TDBStore extends ComponentBase implements Store, Storex, Storex.ReadTransaction, Storex.WriteTransaction {
+public class TDBStore extends ComponentBase implements Store {
     static final Logger log = LoggerFactory.getLogger( TDBStore.class );
 
     public static final String MEMORY_LOCATION = "mem";
@@ -299,25 +298,6 @@ public class TDBStore extends ComponentBase implements Store, Storex, Storex.Rea
         }
     }
 
-    protected void doAddGraph(String graphname, InputStream input,
-            String mimeType) {
-        Lang lang = RDFLanguages.contentTypeToLang(mimeType);
-        if (lang == null) {
-            throw new EpiException("Cannot read MIME type: " + mimeType);
-        }
-        lockWrite();
-        try {
-            dataset.getNamedModel(graphname).read(input, graphname, lang.getName());
-            commit();
-            try { input.close(); } catch (IOException eio) {}
-        } catch (Exception e) {
-            abort();
-            throw new EpiException(e);
-        } finally {
-            end();
-        }
-    }
-
     protected void logAction(String action, String graph, Model data) {
         if (logDirectory != null) {
             String dir = logDirectory + File.separator + NameUtils.encodeSafeName(graph);
@@ -393,28 +373,6 @@ public class TDBStore extends ComponentBase implements Store, Storex, Storex.Rea
         return count;
     }
 
-
-    @Override public <T> T read(ReadOperation<T> operation) {
-        ReadTransaction txn = this;
-        lock();
-        try {
-            return operation.execute(txn);
-        } finally {
-            dataset.end();
-        }
-    }
-
-    @Override public void write(WriteOperation operation) {
-        WriteTransaction txn = this;
-        lockWrite();
-        try {
-            operation.execute(txn);
-            dataset.commit();
-        } finally {
-            dataset.end();
-        }
-    }
-
     @Override public Model getGraph(String graphURI) {
         return dataset.getNamedModel(graphURI);
     }
@@ -458,17 +416,18 @@ public class TDBStore extends ComponentBase implements Store, Storex, Storex.Rea
     }
 
     @Override public void insertGraph(String name, Model graph) {
-        dataset.getNamedModel(name).add(graph);
+        doAddGraph(name, graph);
+        logNamed(ADD_ACTION, name);
     }
-
 
     @Override public void updateGraph(String name, Model graph) {
-        deleteGraph(name);
-        insertGraph(name, graph);
+        doDeleteGraph(name);
+        doAddGraph(name, graph);
+        logNamed(UPDATE_ACTION, name);
     }
 
-    @Override public void deleteGraph(String graphname) {
-        Model store = dataset.getNamedModel(graphname);
-        store.removeAll();
+    @Override public void deleteGraph(String name) {
+        logAction(DELETE_ACTION, name, null);
+        doDeleteGraph(name);
     }
 }

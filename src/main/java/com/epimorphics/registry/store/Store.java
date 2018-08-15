@@ -19,10 +19,12 @@
 
 package com.epimorphics.registry.store;
 
-import java.io.InputStream;
-
+import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;
+import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.sparql.core.Quad;
 
 
 /**
@@ -32,12 +34,31 @@ import org.apache.jena.rdf.model.Model;
  */
 // TODO replace with SparqSource
 public interface Store {
+    /* read */
 
-    public Dataset asDataset();
+    Dataset asDataset();
+    Model getGraph(String name);
+    Model getDefaultModel();
+    ResultSet query(String sparql);
 
-    public void lock();
-    public void lockWrite();
-    public void abort();
-    public void commit();
-    public void end();
+    void insertTriple(Triple t); // default graph
+    void insertQuad(Quad q);
+
+    void addResource(Resource resource); // default graph
+    void patchResource(Resource resource); // default graph
+
+    void addAll(Model model); // default graph
+    void removeAll(Model model); // default graph
+
+    /* write */
+
+    void insertGraph(String name, Model graph);
+    void updateGraph(String name, Model graph);
+    void deleteGraph(String name);
+
+    void lock();
+    void lockWrite();
+    void abort();
+    void commit();
+    void end();
 }

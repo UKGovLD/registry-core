@@ -2,20 +2,18 @@ package com.epimorphics.registry.store.impl;
 
 import com.epimorphics.appbase.data.impl.RemoteSparqlSource;
 import com.epimorphics.registry.store.Store;
-import com.epimorphics.registry.store.Storex;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;
-import org.apache.jena.query.DatasetAccessor;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.Quad;
 
-public class RemoteSparqlStore implements Store, Storex, Storex.WriteTransaction {
+public class RemoteSparqlStore implements Store {
 
     private final Node SUBJECT_G = NodeFactory.createVariable("s");
     private final Node PREDICATE_G = NodeFactory.createVariable("p");
@@ -59,16 +57,6 @@ public class RemoteSparqlStore implements Store, Storex, Storex.WriteTransaction
     @Override
     public ResultSet query(String sparql) {
         return source.select(sparql);
-    }
-
-    @Override
-    public void write(WriteOperation operation) {
-        operation.execute(this);
-    }
-
-    @Override
-    public <T> T read(ReadOperation<T> operation) {
-        return operation.execute(this);
     }
 
     @Override
@@ -148,7 +136,6 @@ public class RemoteSparqlStore implements Store, Storex, Storex.WriteTransaction
         return builder;
     }
 
-
     @Override
     public Dataset asDataset() {
         return null;
@@ -156,26 +143,26 @@ public class RemoteSparqlStore implements Store, Storex, Storex.WriteTransaction
 
     @Override
     public void abort() {
-
+        // TODO
     }
 
     @Override
     public void commit() {
-
+        // TODO
     }
 
     @Override
     public void end() {
-
+        // TODO
     }
 
     @Override
     public void lock() {
-
+        // TODO
     }
 
     @Override
     public void lockWrite() {
-
+        // TODO
     }
 }
