@@ -3,6 +3,7 @@ package com.epimorphics.registry.store;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.Quad;
 
 public interface Storex {
@@ -26,6 +27,9 @@ public interface Storex {
 	interface WriteTransaction extends ReadTransaction {
 		void insertTriple(Triple t); // default graph
 		void insertQuad(Quad q);
+
+		void addResource(Resource resource);
+		void patchResource(Resource resource);
 
 		void addAll(Model model); // default graph
 		void removeAll(Model model); // default graph
