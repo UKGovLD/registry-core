@@ -477,7 +477,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                                                                  // errors
         beginWrite();
         try {
-            getDefaultModel().add(bootmodel);
+            store.addAll(bootmodel);
             commit();
         } finally {
             end();
