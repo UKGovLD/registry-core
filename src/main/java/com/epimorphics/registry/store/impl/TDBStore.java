@@ -274,25 +274,13 @@ public class TDBStore extends ComponentBase implements Store {
 
     protected
     void doAddGraph(String graphname, Model graph) {
-        lockWrite();
-        try {
-            dataset.getNamedModel(graphname).add(graph);
-            commit();
-        } finally {
-            end();
-        }
+        dataset.getNamedModel(graphname).add(graph);
     }
 
     protected
     void doDeleteGraph(String graphname) {
-        lockWrite();
-        try {
-            Model store = dataset.getNamedModel(graphname);
-            store.removeAll();
-            commit();
-        } finally {
-            end();
-        }
+        Model store = dataset.getNamedModel(graphname);
+        store.removeAll();
     }
 
     protected void logAction(String action, String graph, Model data) {
