@@ -105,14 +105,14 @@ public class FacetService extends ComponentBase {
         String state = StringEscapeUtils.unescapeHtml(stateIn);
         try {
             store.lock();
-            FacetResult fr =  new FacetResult(baseQuery, state, specList, store.asDataset().getDefaultModel());
+            FacetResult fr =  new FacetResult(baseQuery, state, specList, store.getDefaultModel());
             fr.setPageSize( (int) Registry.get().getPageSize() );
             return fr;
         } catch (Exception e) {
             // Log error here so trace doesn't appear in UI
             log.error("Illegal facet state", e);
             // Return base state 
-            return new FacetResult(baseQuery, "", specList, store.asDataset().getDefaultModel());
+            return new FacetResult(baseQuery, "", specList, store.getDefaultModel());
         } finally {
             store.end();
         }

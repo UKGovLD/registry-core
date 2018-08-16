@@ -40,20 +40,38 @@ public class RemoteSparqlStore implements Store {
     }
 
     @Override
-    public Model getDefaultModel() {
-        SelectBuilder builder = selectAllBuilder();
+    public void abort() {
+        // TODO
+    }
 
-        ResultSet result = query(builder.buildString());
-        return result.getResourceModel();
+    @Override
+    public void commit() {
+        // TODO
+    }
+
+    @Override
+    public void end() {
+        // TODO
+    }
+
+    @Override
+    public void lock() {
+        // TODO
+    }
+
+    @Override
+    public void lockWrite() {
+        // TODO
+    }
+
+    @Override
+    public Model getDefaultModel() {
+        return source.getAccessor().getModel();
     }
 
     @Override
     public Model getGraph(String name) {
-        SelectBuilder builder = selectAllBuilder();
-        builder.from(name);
-
-        ResultSet result = query(builder.buildString());
-        return result.getResourceModel();
+        return source.getAccessor().getModel(name);
     }
 
     @Override
@@ -126,45 +144,9 @@ public class RemoteSparqlStore implements Store {
         source.update(builder.buildRequest());
     }
 
-    private SelectBuilder selectAllBuilder() {
-        SelectBuilder builder = new SelectBuilder();
-
-        builder.addVar(SUBJECT_G);
-        builder.addVar(PREDICATE_G);
-        builder.addVar(OBJECT_G);
-
-        builder.addWhere(new Triple(SUBJECT_G, PREDICATE_G, OBJECT_G));
-
-        return builder;
-    }
-
     @Override
     public Dataset asDataset() {
         throw new NotSupportedException("asDataset() not supported on RemoteSparqlStore");
     }
 
-    @Override
-    public void abort() {
-        // TODO
-    }
-
-    @Override
-    public void commit() {
-        // TODO
-    }
-
-    @Override
-    public void end() {
-        // TODO
-    }
-
-    @Override
-    public void lock() {
-        // TODO
-    }
-
-    @Override
-    public void lockWrite() {
-        // TODO
-    }
 }
