@@ -274,7 +274,7 @@ public class TDBStore extends ComponentBase implements Store {
 
     protected
     void doAddGraph(String graphname, Model graph) {
-        dataset.getNamedModel(graphname).add(graph);
+        dataset.addNamedModel(graphname, graph);
     }
 
     protected

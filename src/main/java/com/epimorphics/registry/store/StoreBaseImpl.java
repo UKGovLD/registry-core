@@ -645,7 +645,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             Resource graph = definition
                     .getPropertyResourceValue(RegistryVocab.sourceGraph);
             if (graph != null) {
-                store.deleteGraph(graph.getURI());
+                store.removeAll(store.getGraph(graph.getURI()));
                 return true;
             }
         }
