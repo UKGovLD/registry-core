@@ -21,20 +21,22 @@
 
 package com.epimorphics.registry.store;
 
-import com.epimorphics.appbase.core.ComponentBase;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.store.impl.RemoteSparqlStore;
-import com.epimorphics.registry.store.impl.TDBStore;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
 import com.epimorphics.util.NameUtils;
 import com.epimorphics.util.TestUtil;
 import com.epimorphics.vocabs.SKOS;
+import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.*;
@@ -42,6 +44,7 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWriter;
+import org.apache.jena.update.UpdateExecutionFactory;
 import org.apache.jena.util.FileUtils;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OWL;
@@ -87,8 +90,24 @@ public class TestStoreImplRemoteSparqlStore {
     public void tearDown() {
         store.commit();
         store.end();
+        emptyRemoteFusekiStore();
         basestore = null;
         store = null;
+    }
+
+    private void emptyRemoteFusekiStore() {
+        UpdateBuilder builder = new UpdateBuilder();
+
+        Node subject = NodeFactory.createVariable("s");
+        Node predicate = NodeFactory.createVariable("p");
+        Node objekt = NodeFactory.createVariable("o");
+
+        Triple generic = new Triple(subject, predicate, objekt);
+
+        builder.addDelete(generic);
+        builder.addWhere(generic);
+
+        UpdateExecutionFactory.createRemote(builder.buildRequest(), "http://localhost:3030/ds/update").execute();
     }
 
 
