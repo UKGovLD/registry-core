@@ -11,12 +11,10 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.Quad;
-import org.apache.jena.update.Update;
 import org.apache.jena.update.UpdateRequest;
 
 import javax.ws.rs.NotSupportedException;
 import java.util.ArrayList;
-import java.util.List;
 
 public class RemoteSparqlStore implements Store {
 
@@ -26,7 +24,7 @@ public class RemoteSparqlStore implements Store {
 
     private RemoteSparqlSource source = new RemoteSparqlSource();
 
-    private List<Runnable> runQueue = new ArrayList<>();
+    private ArrayList<String> queryQueue = new ArrayList<>();
 
     public void setEndpoint(String endpoint) {
         source.setEndpoint(endpoint);
@@ -46,13 +44,15 @@ public class RemoteSparqlStore implements Store {
 
     @Override
     public void abort() {
-        runQueue = new ArrayList<>();
+        queryQueue = new ArrayList<>();
     }
 
     @Override
     public void commit() {
-        runQueue.forEach(Runnable::run);
-        runQueue = new ArrayList<>();
+        UpdateRequest request = new UpdateRequest();
+        request.add(String.join(";", queryQueue));
+        source.update(request);
+        queryQueue = new ArrayList<>();
     }
 
     @Override
@@ -89,21 +89,21 @@ public class RemoteSparqlStore implements Store {
     public void insertTriple(Triple t) {
         UpdateBuilder builder = new UpdateBuilder();
         builder.addInsert(t);
-        runQueue.add(() -> source.update(builder.buildRequest()));
+        queryQueue.add(builder.buildRequest().toString());
     }
 
     @Override
     public void insertQuad(Quad t) {
         UpdateBuilder builder = new UpdateBuilder();
         builder.addInsert(t);
-        runQueue.add(() -> source.update(builder.buildRequest()));
+        queryQueue.add(builder.buildRequest().toString());
     }
 
     @Override
     public void addResource(Resource resource) {
         UpdateBuilder builder = new UpdateBuilder();
         resource.listProperties().forEachRemaining( statement -> builder.addInsert(statement.asTriple()) );
-        runQueue.add(() -> source.update(builder.buildRequest()));
+        queryQueue.add(builder.buildRequest().toString());
     }
 
     @Override
@@ -112,22 +112,33 @@ public class RemoteSparqlStore implements Store {
             "  <" + resource.getURI() + "> ?p ?o .\n" +
             "}";
         UpdateRequest request = new UpdateRequest().add(query);
-        runQueue.add(() -> source.update(request));
+        queryQueue.add(request.toString());
 
         UpdateBuilder insertBuilder = new UpdateBuilder();
         resource.listProperties().forEachRemaining( statement -> insertBuilder.addInsert(statement.asTriple()) );
-        runQueue.add(() -> source.update(insertBuilder.buildRequest()));
+        queryQueue.add(insertBuilder.buildRequest().toString());
     }
 
     @Override
     public void insertGraph(String name, Model graph) {
-        runQueue.add(() -> source.getAccessor().add(name, graph));
+        UpdateBuilder builder = new UpdateBuilder();
+        graph.listStatements().forEachRemaining(
+                stm -> builder.addInsert(Quad.create(NodeFactory.createURI(name), stm.asTriple()))
+        );
+        queryQueue.add(builder.buildRequest().toString());
     }
 
     @Override
     public void deleteGraph(String name) {
-        runQueue.add(() -> source.getAccessor().deleteModel(name));
+        UpdateBuilder builder = new UpdateBuilder();
+
+        Node graph = NodeFactory.createURI(name);
+
+        builder.addDelete(Quad.create(graph, SUBJECT_G, PREDICATE_G, OBJECT_G));
+        builder.addWhere(SUBJECT_G, PREDICATE_G, OBJECT_G);
+        queryQueue.add(builder.buildRequest().toString());
     }
+
 
     @Override
     public void updateGraph(String name, Model graph) {
@@ -141,7 +152,7 @@ public class RemoteSparqlStore implements Store {
         model.listStatements().forEachRemaining(
                 stm -> builder.addInsert(stm.asTriple())
         );
-        runQueue.add(() -> source.update(builder.buildRequest()));
+        queryQueue.add(builder.buildRequest().toString());
     }
 
     @Override
@@ -150,7 +161,7 @@ public class RemoteSparqlStore implements Store {
         model.listStatements().forEachRemaining(
                 stm -> builder.addDelete(stm.asTriple())
         );
-        runQueue.add(() -> source.update(builder.buildRequest()));
+        queryQueue.add(builder.buildRequest().toString());
     }
 
     @Override
