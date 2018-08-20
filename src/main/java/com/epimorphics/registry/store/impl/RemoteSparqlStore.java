@@ -11,6 +11,8 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.update.Update;
+import org.apache.jena.update.UpdateRequest;
 
 import javax.ws.rs.NotSupportedException;
 import java.util.ArrayList;
@@ -106,12 +108,15 @@ public class RemoteSparqlStore implements Store {
 
     @Override
     public void patchResource(Resource resource) {
-        // TODO: Review this to make sure it makes sense!
-        UpdateBuilder builder = new UpdateBuilder();
-        builder.addDelete(new Triple(SUBJECT_G, PREDICATE_G, OBJECT_G));
-        builder.addWhere(NodeFactory.createURI(resource.getURI()), PREDICATE_G, OBJECT_G);
-        resource.listProperties().forEachRemaining( statement -> builder.addInsert(statement.asTriple()) );
-        runQueue.add(() -> source.update(builder.buildRequest()));
+        String query = "DELETE WHERE {\n" +
+            "  <" + resource.getURI() + "> ?p ?o .\n" +
+            "}";
+        UpdateRequest request = new UpdateRequest().add(query);
+        runQueue.add(() -> source.update(request));
+
+        UpdateBuilder insertBuilder = new UpdateBuilder();
+        resource.listProperties().forEachRemaining( statement -> insertBuilder.addInsert(statement.asTriple()) );
+        runQueue.add(() -> source.update(insertBuilder.buildRequest()));
     }
 
     @Override
