@@ -555,6 +555,8 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         root.inModel(st).removeAll(OWL.versionInfo)
                 .removeAll(Version.currentVersion);
         st.add(newVersion.getModel());
+        store.addResource(newVersion);
+        store.patchResource(root);
         return newVersion.inModel(st);
     }
 

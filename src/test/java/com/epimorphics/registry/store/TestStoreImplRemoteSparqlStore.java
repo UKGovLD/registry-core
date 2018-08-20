@@ -127,6 +127,7 @@ public class TestStoreImplRemoteSparqlStore {
         rootreg.setProperty(RDFS.label, ResourceFactory.createPlainLiteral("new root"));
         
         String uri = store.update(rootreg);
+        store.commit();
 
         Resource updatedroot = store.getDescription(ROOT_REGISTER).getRoot();
         assertTrue( TestUtil.isOnlyValue(updatedroot, Version.currentVersion, null) );
@@ -191,7 +192,9 @@ public class TestStoreImplRemoteSparqlStore {
         Calendar now = Calendar.getInstance();
         RegisterItem subregItem = RegisterItem.fromEntityRequest(subregR, target, true, now);
 
+        store.beginWrite();
         store.addToRegister(parent, subregItem, now);
+        store.commit();
         return now.getTimeInMillis();
     }
 

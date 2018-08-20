@@ -108,15 +108,12 @@ public class RemoteSparqlStore implements Store {
 
     @Override
     public void patchResource(Resource resource) {
-        String query = "DELETE WHERE {\n" +
-            "  <" + resource.getURI() + "> ?p ?o .\n" +
-            "}";
-        UpdateRequest request = new UpdateRequest().add(query);
-        queryQueue.add(request.toString());
-
-        UpdateBuilder insertBuilder = new UpdateBuilder();
-        resource.listProperties().forEachRemaining( statement -> insertBuilder.addInsert(statement.asTriple()) );
-        queryQueue.add(insertBuilder.buildRequest().toString());
+        UpdateBuilder builder = new UpdateBuilder();
+        Node resourceNode = NodeFactory.createURI(resource.getURI());
+        builder.addDelete(new Triple(resourceNode, PREDICATE_G, OBJECT_G));
+        builder.addOptional(resourceNode, PREDICATE_G, OBJECT_G);
+        resource.listProperties().forEachRemaining( statement -> builder.addInsert(statement.asTriple()) );
+        queryQueue.add(builder.buildRequest().toString());
     }
 
     @Override
