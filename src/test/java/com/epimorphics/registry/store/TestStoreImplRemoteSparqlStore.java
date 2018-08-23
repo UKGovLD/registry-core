@@ -254,7 +254,7 @@ public class TestStoreImplRemoteSparqlStore {
         String base = NameUtils.ensureLastSlash(REG1);
         Model m = ModelFactory.createDefaultModel();
         m.read("file:test/red-submitter-test.ttl", base, FileUtils.langTurtle);
-        
+
         Calendar now = Calendar.getInstance();
         for (ResIterator i = m.listResourcesWithProperty(RDF.type, RegistryVocab.RegisterItem); i.hasNext();) {
             RegisterItem item = RegisterItem.fromRIRequest(i.next(), REG1, true, now);
@@ -316,7 +316,7 @@ public class TestStoreImplRemoteSparqlStore {
     }
 
     private void checkLiveVersion(String label, String uri) {
-        Resource current = basestore.asDataset().getDefaultModel().getResource(uri);
+        Resource current = basestore.getDefaultModel().getResource(uri);
         assertEquals(label, RDFUtil.getStringValue(current, RDFS.label));
     }
 
@@ -332,7 +332,7 @@ public class TestStoreImplRemoteSparqlStore {
         Calendar now = Calendar.getInstance();
         ri.updateForEntity(false, now);
         store.update(ri, true, now);
-        
+
         return now.getTimeInMillis();
     }
 

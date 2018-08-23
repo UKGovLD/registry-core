@@ -228,6 +228,8 @@ public class TestStoreImpl {
         ri = store.getItem(ROOT_REGISTER + "reg1/_red", true);
         assertTrue(ri.getRoot().hasProperty(RegistryVocab.status, RegistryVocab.statusAccepted));
         assertEquals("reddish", RDFUtil.getStringValue(ri.getRoot(), RDFS.label));
+        String modelAsString = basestore.getDefaultModel().listStatements().toList().toString().replace("],", "],\n");
+
         assertEquals("reddish", RDFUtil.getStringValue(ri.getEntity(), RDFS.label));
         assertEquals(ts, RDFUtil.asTimestamp( ri.getRoot().getProperty(DCTerms.modified).getObject() ) );
 
@@ -244,7 +246,7 @@ public class TestStoreImpl {
         String base = NameUtils.ensureLastSlash(REG1);
         Model m = ModelFactory.createDefaultModel();
         m.read("file:test/red-submitter-test.ttl", base, FileUtils.langTurtle);
-        
+
         Calendar now = Calendar.getInstance();
         for (ResIterator i = m.listResourcesWithProperty(RDF.type, RegistryVocab.RegisterItem); i.hasNext();) {
             RegisterItem item = RegisterItem.fromRIRequest(i.next(), REG1, true, now);

@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.jena.fuseki.server.DatasetRef;
@@ -36,8 +37,7 @@ import org.apache.jena.query.text.EntityDefinition;
 import org.apache.jena.query.text.TextDatasetFactory;
 import org.apache.jena.query.text.TextIndex;
 import org.apache.jena.query.text.TextQueryFuncs;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.rdf.model.*;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -55,7 +55,6 @@ import com.epimorphics.util.FileUtil;
 import com.epimorphics.util.NameUtils;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.rdf.model.Model;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.tdb.TDB;
 import org.apache.jena.tdb.TDBFactory;
@@ -380,16 +379,23 @@ public class TDBStore extends ComponentBase implements Store {
     }
 
     @Override
+    public void removeTriple(Triple t) {
+        dataset.asDatasetGraph().delete(Quad.defaultGraphIRI, t.getSubject(), t.getPredicate(), t.getObject());
+    }
+
+    @Override
+    public void removeQuad(Quad q) {
+        dataset.asDatasetGraph().delete(q);
+    }
+
+    @Override
     public void addResource(Resource resource) {
         getDefaultModel().add(resource.listProperties());
     }
 
     @Override
-    public void patchResource(Resource resource) {
-        Model model = getDefaultModel();
-        StmtIterator oldResourceStatements = model.getResource(resource.getURI()).listProperties();
-        model.remove(oldResourceStatements);
-        model.add(resource.listProperties());
+    public void addPropertyToResource(Resource resource, Property property, Resource object) {
+        resource.addProperty(property, object);
     }
 
     @Override public void addAll(Model model) {

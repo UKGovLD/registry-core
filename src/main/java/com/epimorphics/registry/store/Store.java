@@ -23,6 +23,7 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.Quad;
 
@@ -44,8 +45,11 @@ public interface Store {
     void insertTriple(Triple t); // default graph
     void insertQuad(Quad q);
 
+    void removeTriple(Triple t);
+    void removeQuad(Quad q);
+
+    void addPropertyToResource(Resource resource, Property property, Resource object);
     void addResource(Resource resource); // default graph
-    void patchResource(Resource resource); // default graph
 
     void addAll(Model model); // default graph
     void removeAll(Model model); // default graph

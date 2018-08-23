@@ -172,11 +172,11 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         if (graphModel == null) {
             // Probably an in-memory test store
             graphModel = ModelFactory.createDefaultModel();
-            store.insertGraph(graphURI, graphModel);
         } else {
             graphModel.removeAll();
         }
         graphModel.add(entityModel);
+        store.insertGraph(graphURI, graphModel);
     }
 
     @Override
@@ -495,10 +495,10 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         // Don't automatically update register, we want the option to do batch
         // updates
         // doUpdate(register.getRoot(), now);
-        mod(item).addProperty(RegistryVocab.register, register.getRoot());
+        store.addPropertyToResource(mod(item), RegistryVocab.register, register.getRoot());
         Resource entity = item.getEntity();
         if (entity.hasProperty(RDF.type, RegistryVocab.Register)) {
-            modCurrent(register).addProperty(RegistryVocab.subregister, entity);
+            store.addPropertyToResource(modCurrent(register), RegistryVocab.subregister, entity);
         }
         // Don't automatically update register, we want the option to do batch
         // updates
@@ -552,11 +552,16 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     protected Resource doUpdate(Resource root, Calendar cal, Property... rigids) {
         Resource newVersion = VersionUtil.nextVersion(root, cal, rigids);
         Model st = getDefaultModel();
-        root.inModel(st).removeAll(OWL.versionInfo)
-                .removeAll(Version.currentVersion);
-        st.add(newVersion.getModel());
-        store.addResource(newVersion);
-        store.patchResource(root);
+        Resource rootInDefault = root.inModel(st);
+
+        rootInDefault.listProperties(OWL.versionInfo).toList().forEach(
+                prop -> store.removeTriple(prop.asTriple())
+        );
+        rootInDefault.listProperties(Version.currentVersion).toList().forEach(
+                prop -> store.removeTriple(prop.asTriple())
+        );
+
+        store.addAll(newVersion.getModel());
         return newVersion.inModel(st);
     }
 
@@ -573,19 +578,19 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     private String doUpdateItem(RegisterItem item, boolean withEntity,
             Calendar now) {
-        Model storeModel = getDefaultModel();
+        Model newGraph = ModelFactory.createDefaultModel();
         Resource oldVersion = mod(item).getPropertyResourceValue(
                 Version.currentVersion);
 
         Resource newVersion = doUpdate(item.getRoot(), now,
                 RegisterItem.RIGID_PROPS);
-
+        newVersion = newVersion.inModel(newGraph);
         if (withEntity) {
             Resource entity = item.getEntity();
             Resource entityRef = newVersion
                     .getPropertyResourceValue(RegistryVocab.definition);
             if (entityRef == null) {
-                entityRef = storeModel.createResource();
+                entityRef = newGraph.createResource();
                 entityRef.addProperty(RegistryVocab.entity, entity);
                 newVersion.addProperty(RegistryVocab.definition, entityRef);
             } else {
@@ -600,7 +605,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             }
             if (entity.hasProperty(RDF.type, RegistryVocab.Register)) {
                 doUpdateRegister(entity, now);
-                Resource currentRegVersion = entity.inModel(storeModel)
+                Resource currentRegVersion = entity.inModel(getDefaultModel())
                         .getPropertyResourceValue(Version.currentVersion);
                 if (currentRegVersion != null) {
                     entityRef.removeAll(RegistryVocab.entityVersion);
@@ -636,6 +641,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                 entityRef.removeAll(RegistryVocab.sourceGraph);
                 entityRef.addProperty(RegistryVocab.sourceGraph, graph);
             }
+            store.addAll(newGraph);
         }
         return newVersion.getURI();
     }
@@ -862,7 +868,6 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                 delete( getCurrentVersion(ei.getItemURI()).asRegisterItem() );
             }
         }
-    
         Model toDelete = ModelFactory.createDefaultModel();
         Set<Resource> entities = new HashSet<>();
         Collection<Resource>graphs = scanAllVersions(item.getRoot(), toModel(toDelete), entities);
@@ -956,7 +961,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     }
     
     private Resource getResourceValue( Resource root, Property prop) {
-        NodeIterator ni = getDefaultModel().listObjectsOfProperty(root, prop);
+        NodeIterator ni = root.getModel().listObjectsOfProperty(root, prop);
         if (ni.hasNext()) {
             return ni.next().asResource();
         } else {

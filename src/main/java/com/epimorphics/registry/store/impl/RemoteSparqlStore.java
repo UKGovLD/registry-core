@@ -2,19 +2,26 @@ package com.epimorphics.registry.store.impl;
 
 import com.epimorphics.appbase.data.impl.RemoteSparqlSource;
 import com.epimorphics.registry.store.Store;
+import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;
+import org.apache.jena.query.DatasetAccessor;
+import org.apache.jena.query.DatasetAccessorFactory;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.update.UpdateRequest;
 
 import javax.ws.rs.NotSupportedException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class RemoteSparqlStore implements Store {
 
@@ -51,7 +58,7 @@ public class RemoteSparqlStore implements Store {
     public void commit() {
         UpdateRequest request = new UpdateRequest();
         request.add(String.join(";", queryQueue));
-        source.update(request);
+//        source.update(request);
         queryQueue = new ArrayList<>();
     }
 
@@ -89,40 +96,62 @@ public class RemoteSparqlStore implements Store {
     public void insertTriple(Triple t) {
         UpdateBuilder builder = new UpdateBuilder();
         builder.addInsert(t);
-        queryQueue.add(builder.buildRequest().toString());
+//        queryQueue.add(builder.buildRequest().toString());
+        source.update(builder.buildRequest());
     }
 
     @Override
     public void insertQuad(Quad t) {
         UpdateBuilder builder = new UpdateBuilder();
         builder.addInsert(t);
-        queryQueue.add(builder.buildRequest().toString());
+//        queryQueue.add(builder.buildRequest().toString());
+        source.update(builder.buildRequest());
+    }
+
+    @Override
+    public void removeQuad(Quad q) {
+        UpdateBuilder builder = new UpdateBuilder();
+        builder.addDelete(q);
+//        queryQueue.add(builder.buildRequest().toString());
+        source.update(builder.buildRequest());
+    }
+
+    @Override
+    public void removeTriple(Triple t) {
+        UpdateBuilder builder = new UpdateBuilder();
+        builder.addDelete(t);
+//        queryQueue.add(builder.buildRequest().toString());
+        source.update(builder.buildRequest());
     }
 
     @Override
     public void addResource(Resource resource) {
         UpdateBuilder builder = new UpdateBuilder();
         resource.listProperties().forEachRemaining( statement -> builder.addInsert(statement.asTriple()) );
-        queryQueue.add(builder.buildRequest().toString());
+//        queryQueue.add(builder.buildRequest().toString());
+        source.update(builder.buildRequest());
     }
 
     @Override
-    public void patchResource(Resource resource) {
+    public void addPropertyToResource(Resource resource, Property property, Resource object) {
         UpdateBuilder builder = new UpdateBuilder();
-        Node resourceNode = NodeFactory.createURI(resource.getURI());
-        builder.addDelete(new Triple(resourceNode, PREDICATE_G, OBJECT_G));
-        builder.addOptional(resourceNode, PREDICATE_G, OBJECT_G);
-        resource.listProperties().forEachRemaining( statement -> builder.addInsert(statement.asTriple()) );
-        queryQueue.add(builder.buildRequest().toString());
+        builder.addInsert(
+                new Triple(resource.asNode(), property.asNode(), object.asNode())
+        );
+//            queryQueue.add(builder.buildRequest().toString());
+        source.update(builder.buildRequest());
     }
 
     @Override
     public void insertGraph(String name, Model graph) {
-        UpdateBuilder builder = new UpdateBuilder();
-        graph.listStatements().forEachRemaining(
-                stm -> builder.addInsert(Quad.create(NodeFactory.createURI(name), stm.asTriple()))
-        );
-        queryQueue.add(builder.buildRequest().toString());
+        if (!graph.isEmpty()) {
+            UpdateBuilder builder = new UpdateBuilder();
+            graph.listStatements().forEachRemaining(
+                    stm -> builder.addInsert(Quad.create(NodeFactory.createURI(name), stm.asTriple()))
+            );
+//            queryQueue.add(builder.buildRequest().toString());
+            source.update(builder.buildRequest());
+        }
     }
 
     @Override
@@ -133,7 +162,8 @@ public class RemoteSparqlStore implements Store {
 
         builder.addDelete(Quad.create(graph, SUBJECT_G, PREDICATE_G, OBJECT_G));
         builder.addWhere(SUBJECT_G, PREDICATE_G, OBJECT_G);
-        queryQueue.add(builder.buildRequest().toString());
+//        queryQueue.add(builder.buildRequest().toString());
+        source.update(builder.buildRequest());
     }
 
 
@@ -149,16 +179,35 @@ public class RemoteSparqlStore implements Store {
         model.listStatements().forEachRemaining(
                 stm -> builder.addInsert(stm.asTriple())
         );
-        queryQueue.add(builder.buildRequest().toString());
+//        queryQueue.add(builder.buildRequest().toString());
+        source.update(builder.buildRequest());
     }
 
     @Override
     public void removeAll(Model model) {
+        if (model.isEmpty()) return;
         UpdateBuilder builder = new UpdateBuilder();
-        model.listStatements().forEachRemaining(
-                stm -> builder.addDelete(stm.asTriple())
-        );
-        queryQueue.add(builder.buildRequest().toString());
+        for (Statement stm : model.listStatements().toList()) {
+            if (stm.getSubject().isURIResource() && !stm.getObject().asNode().isBlank()) {
+                builder.addDelete(stm.asTriple());
+            } else {
+                Node subject = stm.getSubject().asNode();
+                Node objekt = stm.getObject().asNode();
+                if (!stm.getSubject().isURIResource()) {
+                    subject = NodeFactory.createVariable(stm.getSubject().getId().getLabelString());
+                    Expr filter = new ExprFactory().isBlank(subject);
+                    builder.addFilter(filter);
+                }
+                if (stm.getObject().asNode().isBlank()) {
+                    objekt = NodeFactory.createVariable(stm.getObject().toString());
+                    Expr filter = new ExprFactory().isBlank(objekt);
+                    builder.addFilter(filter);
+                }
+                builder.addDelete(subject, stm.getPredicate(), objekt);
+                builder.addWhere(subject, stm.getPredicate(), objekt);
+            }
+        }
+        source.update(builder.buildRequest());
     }
 
     @Override
