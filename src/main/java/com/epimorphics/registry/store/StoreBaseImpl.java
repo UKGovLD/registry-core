@@ -495,10 +495,14 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         // Don't automatically update register, we want the option to do batch
         // updates
         // doUpdate(register.getRoot(), now);
-        store.addPropertyToResource(mod(item), RegistryVocab.register, register.getRoot());
+        Resource mod = mod(item).addProperty(RegistryVocab.register, register.getRoot());
+        store.addResource(mod);
+//        store.addPropertyToResource(mod(item), RegistryVocab.register, register.getRoot());
         Resource entity = item.getEntity();
         if (entity.hasProperty(RDF.type, RegistryVocab.Register)) {
-            store.addPropertyToResource(modCurrent(register), RegistryVocab.subregister, entity);
+            Resource modCurrent = modCurrent(register).addProperty(RegistryVocab.subregister, entity);
+            store.addResource(modCurrent);
+//            store.addPropertyToResource(modCurrent(register), RegistryVocab.subregister, entity);
         }
         // Don't automatically update register, we want the option to do batch
         // updates
@@ -553,7 +557,6 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         Resource newVersion = VersionUtil.nextVersion(root, cal, rigids);
         Model st = getDefaultModel();
         Resource rootInDefault = root.inModel(st);
-
         rootInDefault.listProperties(OWL.versionInfo).toList().forEach(
                 prop -> store.removeTriple(prop.asTriple())
         );

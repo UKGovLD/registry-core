@@ -40,11 +40,13 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.*;
+import org.apache.jena.rdf.model.impl.ResourceImpl;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWriter;
 import org.apache.jena.update.UpdateExecutionFactory;
+import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.util.FileUtils;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OWL;
@@ -87,12 +89,13 @@ public class TestStoreImplRemoteSparqlStore {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws InterruptedException {
         store.commit();
         store.end();
         emptyRemoteFusekiStore();
         basestore = null;
         store = null;
+        Thread.sleep(1000);
     }
 
     private void emptyRemoteFusekiStore() {
@@ -107,7 +110,10 @@ public class TestStoreImplRemoteSparqlStore {
         builder.addDelete(generic);
         builder.addWhere(generic);
 
-        UpdateExecutionFactory.createRemote(builder.buildRequest(), "http://localhost:3030/ds/update").execute();
+        UpdateRequest request = new UpdateRequest();
+        request.add("DROP ALL");
+
+        UpdateExecutionFactory.createRemote(request, "http://localhost:3030/ds/update").execute();
     }
 
 
@@ -266,7 +272,9 @@ public class TestStoreImplRemoteSparqlStore {
         assertEquals(1, submitters.size());
 
         ri.getEntity().addProperty(RDFS.comment, "Updated");
-        store.update(ri, true);
+//        basestore.addPropertyToResource(ri.getEntity(), RDFS.comment, ResourceFactory.createStringLiteral("Updated"));
+        basestore.addResource(ri.getEntity());
+        store.update(ri, true); // TODO: Find where is additional submitter added
 
         ri = store.getItem(REG1 + "/_red", true);
         submitters = ri.getRoot().listProperties(RegistryVocab.submitter).toList();
@@ -294,13 +302,10 @@ public class TestStoreImplRemoteSparqlStore {
 
         long ts1 = doUpdate(itemURI, "red1");
         checkLiveVersion("red1", entity);
-
         long ts2 = doUpdate(itemURI, "red2");
         checkLiveVersion("red2", entity);
-
         long ts3 = doUpdate(itemURI, "red3");
         checkLiveVersion("red3", entity);
-
         checkVersionAt(itemURI, ts1-1, "red");
         checkVersionAt(itemURI, ts2-1, "red1");
         checkVersionAt(itemURI, ts3-1, "red2");

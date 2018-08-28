@@ -11,13 +11,12 @@ import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetAccessor;
 import org.apache.jena.query.DatasetAccessorFactory;
 import org.apache.jena.query.ResultSet;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.*;
+import org.apache.jena.rdf.model.impl.StatementImpl;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.util.iterator.ExtendedIterator;
 
 import javax.ws.rs.NotSupportedException;
 import java.util.ArrayList;
@@ -133,7 +132,7 @@ public class RemoteSparqlStore implements Store {
     }
 
     @Override
-    public void addPropertyToResource(Resource resource, Property property, Resource object) {
+    public void addPropertyToResource(Resource resource, Property property, RDFNode object) {
         UpdateBuilder builder = new UpdateBuilder();
         builder.addInsert(
                 new Triple(resource.asNode(), property.asNode(), object.asNode())
@@ -143,11 +142,11 @@ public class RemoteSparqlStore implements Store {
     }
 
     @Override
-    public void insertGraph(String name, Model graph) {
+    public void insertGraph(String uri, Model graph) {
         if (!graph.isEmpty()) {
             UpdateBuilder builder = new UpdateBuilder();
             graph.listStatements().forEachRemaining(
-                    stm -> builder.addInsert(Quad.create(NodeFactory.createURI(name), stm.asTriple()))
+                    stm -> builder.addInsert(Quad.create(NodeFactory.createURI(uri), stm.asTriple()))
             );
 //            queryQueue.add(builder.buildRequest().toString());
             source.update(builder.buildRequest());
@@ -155,22 +154,18 @@ public class RemoteSparqlStore implements Store {
     }
 
     @Override
-    public void deleteGraph(String name) {
-        UpdateBuilder builder = new UpdateBuilder();
-
-        Node graph = NodeFactory.createURI(name);
-
-        builder.addDelete(Quad.create(graph, SUBJECT_G, PREDICATE_G, OBJECT_G));
-        builder.addWhere(SUBJECT_G, PREDICATE_G, OBJECT_G);
-//        queryQueue.add(builder.buildRequest().toString());
-        source.update(builder.buildRequest());
+    public void deleteGraph(String uri) {
+        UpdateRequest request = new UpdateRequest();
+        request.add("DROP GRAPH <" + uri + ">");
+//        queryQueue.add(request.toString());
+        source.update(request);
     }
 
 
     @Override
-    public void updateGraph(String name, Model graph) {
-        deleteGraph(name);
-        insertGraph(name, graph);
+    public void updateGraph(String uri, Model graph) {
+        deleteGraph(uri);
+        insertGraph(uri, graph);
     }
 
     @Override

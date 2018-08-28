@@ -24,6 +24,7 @@ import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.Quad;
 
@@ -48,7 +49,7 @@ public interface Store {
     void removeTriple(Triple t);
     void removeQuad(Quad q);
 
-    void addPropertyToResource(Resource resource, Property property, Resource object);
+    void addPropertyToResource(Resource resource, Property property, RDFNode object);
     void addResource(Resource resource); // default graph
 
     void addAll(Model model); // default graph
@@ -56,9 +57,9 @@ public interface Store {
 
     /* write */
 
-    void insertGraph(String name, Model graph);
-    void updateGraph(String name, Model graph);
-    void deleteGraph(String name);
+    void insertGraph(String uri, Model graph);
+    void updateGraph(String uri, Model graph);
+    void deleteGraph(String uri);
 
     void lock();
     void lockWrite();

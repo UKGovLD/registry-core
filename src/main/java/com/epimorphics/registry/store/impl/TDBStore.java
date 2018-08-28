@@ -394,7 +394,7 @@ public class TDBStore extends ComponentBase implements Store {
     }
 
     @Override
-    public void addPropertyToResource(Resource resource, Property property, Resource object) {
+    public void addPropertyToResource(Resource resource, Property property, RDFNode object) {
         resource.addProperty(property, object);
     }
 
@@ -406,19 +406,19 @@ public class TDBStore extends ComponentBase implements Store {
         getDefaultModel().remove(model);
     }
 
-    @Override public void insertGraph(String name, Model graph) {
-        doAddGraph(name, graph);
-        logNamed(ADD_ACTION, name);
+    @Override public void insertGraph(String uri, Model graph) {
+        doAddGraph(uri, graph);
+        logNamed(ADD_ACTION, uri);
     }
 
-    @Override public void updateGraph(String name, Model graph) {
-        doDeleteGraph(name);
-        doAddGraph(name, graph);
-        logNamed(UPDATE_ACTION, name);
+    @Override public void updateGraph(String uri, Model graph) {
+        doDeleteGraph(uri);
+        doAddGraph(uri, graph);
+        logNamed(UPDATE_ACTION, uri);
     }
 
-    @Override public void deleteGraph(String name) {
-        logAction(DELETE_ACTION, name, null);
-        doDeleteGraph(name);
+    @Override public void deleteGraph(String uri) {
+        logAction(DELETE_ACTION, uri, null);
+        doDeleteGraph(uri);
     }
 }
