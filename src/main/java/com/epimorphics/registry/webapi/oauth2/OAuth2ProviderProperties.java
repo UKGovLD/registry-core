@@ -47,14 +47,15 @@ class OAuth2ProviderProperties implements OAuth2Provider {
 		return get("userInfo.endpoint");
 	}
 
+	@Override public String getAuthScope() {
+		String value = get("auth.scope");
+		return value == null ? "openid email" : value;
+	}
+
 	@Override public String getUserId(Map<String, Object> entity) {
 		String prop = get("userInfo.key");
 		Object id = entity.get(prop);
-		if (id == null) {
-			return null;
-		}
-
-		return id.toString();
+		return id == null ? null : id.toString();
 	}
 
 	@Override public String getUserName(Map<String, Object> entity) {

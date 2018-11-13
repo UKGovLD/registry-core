@@ -1,13 +1,9 @@
 package com.epimorphics.registry.webapi.oauth2;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
 class OAuth2ConfigProperties implements OAuth2Config {
-	private final Logger log = LoggerFactory.getLogger(OAuth2ConfigProperties.class);
 	private final Properties props;
 	private final List<String> enabled;
 	private final Map<String, OAuth2Provider> providersByName;
@@ -40,7 +36,7 @@ class OAuth2ConfigProperties implements OAuth2Config {
 	}
 
 	@Override public Collection<OAuth2Provider> getProviders() {
-		return enabled.stream().map(providersByName::get).collect(Collectors.toList());
+		return enabled.stream().map(providersByName::get).filter(Objects::nonNull).collect(Collectors.toList());
 	}
 
 	@Override public OAuth2Provider getProvider(String name) {
