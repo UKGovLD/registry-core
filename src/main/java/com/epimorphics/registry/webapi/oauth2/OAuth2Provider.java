@@ -42,6 +42,11 @@ public interface OAuth2Provider {
 	String getUserInfoEndpoint();
 
 	/**
+	 * @return The name of the scope which defines what user information will be shared.
+	 */
+	String getAuthScope();
+
+	/**
 	 * @param entity The body of the response returned from the request to obtain user information.
 	 * @return The unique identifier for the user. Return null if and only if the provider is unable to identify the user.
 	 */

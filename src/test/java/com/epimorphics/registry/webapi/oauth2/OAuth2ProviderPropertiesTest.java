@@ -98,4 +98,17 @@ public class OAuth2ProviderPropertiesTest {
 		String result = provider.getUserName(entity);
 		assertEquals("user@test-prov.org", result);
 	}
+
+	@Test
+	public void getAuthScope_WithoutAuthScope_ReturnsDefault() {
+		String result = provider.getAuthScope();
+		assertEquals("openid email", result);
+	}
+
+	@Test
+	public void getAuthScope_WithAuthScope_ReturnsAuthScope() {
+		props.setProperty("auth.scope", "email");
+		String result = provider.getAuthScope();
+		assertEquals("email", result);
+	}
 }

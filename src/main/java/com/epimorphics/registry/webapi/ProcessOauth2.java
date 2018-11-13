@@ -42,8 +42,6 @@ public class ProcessOauth2 {
     static final Logger log = LoggerFactory.getLogger( Login.class );
 
     private static final String PROVIDER_COOKIE = "ukgovld-login-provider";
-    private static final String SCOPE = "openid email";
-
 
     // Session attribute names
     private static final String SA_OPENID_PROVIDER = "openid_provider";
@@ -108,24 +106,21 @@ public class ProcessOauth2 {
         log.info(String.format("response URL for auth request: %s", responseURL));
         session.setAttribute(SA_RESPONSE_URL, responseURL);
 
-        try
-        {
+        try {
             // obtain a AuthRequest message to be sent to the OpenID provider
             OAuthClientRequest oauthRequest = OAuthClientRequest
                     .authorizationLocation(provider.getAuthEndpoint())
                     .setClientId(provider.getClientId())
                     .setRedirectURI(responseURL)
                     .setResponseType(ResponseType.CODE.toString())
-                    .setScope(SCOPE)
+                    .setScope(provider.getAuthScope())
                     .setState(state)
                     .buildQueryMessage();
 
             // For version2 endpoints can do a form-redirect but this is easier,
             // Relies on payload being less ~ 2k, currently ~ 800 bytes
             response.sendRedirect(oauthRequest.getLocationUri());
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new WebApiException(Status.BAD_REQUEST, "Login/registration action failed: " + e);
         }
     }
