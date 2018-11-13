@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -21,7 +22,7 @@ public class OAuth2Service {
 	private final OAuth2Config config;
 
 	public OAuth2Service() {
-		this("/opt/ldregistry/config/oauth.conf", "/opt/ldregistry/config/oauth2/provider");
+		this("/opt/ldregistry/config/oauth2/oauth.conf", "/opt/ldregistry/config/oauth2/provider");
 	}
 
 	public OAuth2Service(String configLoc, String providersDir) {
@@ -31,6 +32,7 @@ public class OAuth2Service {
 	private OAuth2Config createConfig(String configLoc, String providersDir) {
 		try {
 			FileReader reader = new FileReader(configLoc);
+            log.info("Configuring OAuth2 properties at " + configLoc);
 			try {
 				Properties props = readProperties(reader);
 				Collection<OAuth2Provider> providers = getProviders(providersDir);
@@ -41,7 +43,7 @@ public class OAuth2Service {
 			}
 		} catch (IOException ioe) {
 			log.info("OAuth configuration file not found at " + configLoc + ". OAuth2 login will not be available: " + ioe.getMessage());
-			return null; // TODO empty impl?
+			return null;
 		}
 	}
 
@@ -58,6 +60,11 @@ public class OAuth2Service {
 
 	private Collection<OAuth2Provider> getProviders(String providersDirLoc) {
 		File providersDir = new File(providersDirLoc);
+		if (!providersDir.exists()) {
+			log.error("OAuth2 provider directory does not exist at " + providersDirLoc);
+			return Collections.emptyList();
+		}
+
 		File[] providerFiles = providersDir.listFiles((FileFilter)new SuffixFileFilter("properties"));
 
 		return Arrays.asList(providerFiles).stream().map(file -> {
@@ -74,7 +81,7 @@ public class OAuth2Service {
 		}).collect(Collectors.toList());
 	}
 
-	public OAuth2Config getConfig() {
+    public OAuth2Config getConfig() {
 		return config;
 	}
 }
