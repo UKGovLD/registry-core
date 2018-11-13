@@ -65,13 +65,20 @@ public class ProcessOauth2 {
     public ProcessOauth2(UriInfo uriInfo, ServletContext servletContext) {
         this.uriInfo = uriInfo;
         this.servletContext = servletContext;
-        this.config = AppConfig.getApp().getComponentAs("oauth2", OAuth2Service.class).getConfig();
+        OAuth2Service service = AppConfig.getApp().getComponentAs("oauth2", OAuth2Service.class);
+        this.config = (service == null ? new OAuth2Service() : service).getConfig();
     }
 
     protected void processOpenID(HttpServletRequest request, HttpServletResponse response, String providerName, String returnURL, boolean isRegister) {
+        if (config == null) {
+            throw new WebApplicationException("OAuth not configured.");
+        }
+
         OAuth2Provider provider = config.getProvider(providerName);
         if (provider == null) {
-            // error
+            String msg = "OAuth provider " + providerName + " not configured or not enabled.";
+            log.error("OAuth login failed: " + msg);
+            throw new WebApplicationException(msg);
         }
 
         HttpSession session = request.getSession();
@@ -93,10 +100,7 @@ public class ProcessOauth2 {
             session.setAttribute(SA_RETURN_URL, returnURL);
         }
 
-        if (providerName == null || providerName.isEmpty()) {
-            //provider = DEFAULT_PROVIDER; TODO
-        }
-        log.info("Authentication request for " + providerName + (isRegister ? " (registration)" : ""));
+        log.info("Authentication request for " + provider.getLabel() + (isRegister ? " (registration)" : ""));
 
         String responseURL = uriInfo.getBaseUri().toString() + "system/security/responseoa";
         if (config.getUseHttps()) {
@@ -159,7 +163,7 @@ public class ProcessOauth2 {
             if (resourceResponse.getResponseCode() == 200) {
                 verified = true;
             } else {
-                // TODO error "Could not access resource: " + resourceResponse.getResponseCode() + " " + resourceResponse.getBody());
+                log.error("Could not access user info resource: " + resourceResponse.getResponseCode() + " " + resourceResponse.getBody());
             }
 
             if (verified) {
@@ -172,12 +176,12 @@ public class ProcessOauth2 {
 
                 if (identifier == null) {
                     String msg = isRegistration ?
-                            "Unable to register user. Make sure you have access to the provider's OAuth services."
+                            "Unable to register user. Make sure your account is configured to support authentication using OAuth and OpenID Connect."
                             : "Unable to identify user. Make sure you are logging in with the same provider that you registered with.";
-                    return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", msg);
+                    return renderError(request, msg);
                 }
 
-                log.info(String.format("Verified identity via %s: %s = %s", provider.getLabel(), identifier, name));
+                log.info(String.format("Verified identity via %s: %s", provider.getLabel(), identifier));
 
                 UserStore userstore = Registry.get().getUserStore();
 
@@ -209,18 +213,22 @@ public class ProcessOauth2 {
                     return Login.redirectTo(session.getAttribute(SA_RETURN_URL).toString());
                 } catch (Exception e) {
                     log.error("Authentication failure: " + e);
-                    return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "Could not find a registration for you.");
+                    return renderError(request, "Could not find a registration for you.");
                 }
             }
         } catch (Exception e) {
-            throw new WebApplicationException(e);
+            log.error("OAuth login failed: " + e.getMessage());
+            return renderError(request, "OAuth login failed. The OAuth provider may not be configured correctly.");
         }
 
-        return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", "OAuth login failed");
+        return renderError(request, "OAuth login failed. Make sure your account is configured to support authentication using OAuth and OpenID Connect.");
+    }
+
+    private Response renderError(HttpServletRequest request, String msg) {
+        return RequestProcessor.render("error.vm", uriInfo, servletContext, request, "message", msg);
     }
 
     private static String generateState() {
         return UUID.randomUUID().toString();
     }
-
 }
