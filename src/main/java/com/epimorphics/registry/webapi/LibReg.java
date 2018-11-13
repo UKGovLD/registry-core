@@ -35,6 +35,7 @@ import java.util.Set;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.Permission;
 import org.apache.shiro.subject.Subject;
+import org.owasp.encoder.Encode;
 
 import com.epimorphics.appbase.core.ComponentBase;
 import com.epimorphics.rdfutil.PropertyValue;
@@ -93,6 +94,13 @@ public class LibReg extends ComponentBase implements LibPlugin {
         StoreAPI store = getStore();
         store.beginRead();
         return store;
+    }
+    
+    /**
+     * Escape user input to prevent xss scripting in URL hrefs
+     */
+    public String xssCleanURI(String uri) {
+        return Encode.forUriComponent(uri);
     }
     
     /**
