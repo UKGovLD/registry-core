@@ -45,6 +45,7 @@ public class RegRun {
 
         tomcat.setBaseDir(".");
 
+        // String contextPath = "/registry";  // Use for local testing without nginx/apache front end reverse proxy
         String contextPath = "/ldregistry";
 
         File rootF = new File(root);
