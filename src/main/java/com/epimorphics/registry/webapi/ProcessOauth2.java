@@ -60,13 +60,17 @@ public class ProcessOauth2 {
 
     private final UriInfo uriInfo;
     private final ServletContext servletContext;
-    private final OAuth2Config config;
+
+    private static OAuth2Config getConfig() {
+        OAuth2Service service = AppConfig.getApp().getComponentAs("oauth2", OAuth2Service.class);
+        return (service == null ? new OAuth2Service() : service).getConfig();
+    }
+
+    private static final OAuth2Config config = getConfig();
 
     public ProcessOauth2(UriInfo uriInfo, ServletContext servletContext) {
         this.uriInfo = uriInfo;
         this.servletContext = servletContext;
-        OAuth2Service service = AppConfig.getApp().getComponentAs("oauth2", OAuth2Service.class);
-        this.config = (service == null ? new OAuth2Service() : service).getConfig();
     }
 
     protected void processOpenID(HttpServletRequest request, HttpServletResponse response, String providerName, String returnURL, boolean isRegister) {
