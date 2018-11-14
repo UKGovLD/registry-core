@@ -52,7 +52,8 @@ public class OAuth2ServiceTest {
                 .append("auth.endpoint  = https://github.com/login/oauth/authorize\n")
                 .append("token.endpoint = https://github.com/login/oauth/access_token\n")
                 .append("userInfo.endpoint   = https://api.github.com/user\n")
-                .append("userInfo.key   = login")
+                .append("userInfo.key   = url")
+                .append("userInfo.name  = name")
                 .close();
 
         File bitbucketConfig = new File(providerDir, "bitbucket.properties");
