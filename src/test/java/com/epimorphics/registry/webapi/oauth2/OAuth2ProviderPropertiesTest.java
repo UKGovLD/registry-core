@@ -92,6 +92,8 @@ public class OAuth2ProviderPropertiesTest {
 
 	@Test
 	public void getUserName_WithoutName_ReturnsId() {
+		props.remove("userInfo.name");
+
 		HashMap<String, Object> entity = new HashMap<>();
 		entity.put("email", "user@test-prov.org");
 

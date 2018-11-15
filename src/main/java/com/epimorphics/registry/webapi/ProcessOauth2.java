@@ -75,7 +75,9 @@ public class ProcessOauth2 {
 
     protected void processOpenID(HttpServletRequest request, HttpServletResponse response, String providerName, String returnURL, boolean isRegister) {
         if (config == null) {
-            throw new WebApplicationException("OAuth not configured.");
+            String msg = "OAuth not configured.";
+            log.error(msg);
+            throw new WebApplicationException(msg);
         }
 
         OAuth2Provider provider = config.getProvider(providerName);
@@ -178,7 +180,7 @@ public class ProcessOauth2 {
 
                 Boolean isRegistration = ((Boolean) session.getAttribute(SA_REGISTRATION));
 
-                if (identifier == null) {
+                if (identifier == null || name == null) {
                     String msg = isRegistration ?
                             "Unable to register user. Make sure your account is configured to support authentication using OAuth and OpenID Connect."
                             : "Unable to identify user. Make sure you are logging in with the same provider that you registered with.";

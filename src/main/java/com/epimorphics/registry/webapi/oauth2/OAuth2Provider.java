@@ -47,13 +47,13 @@ public interface OAuth2Provider {
 	String getAuthScope();
 
 	/**
-	 * @param entity The body of the response returned from the request to obtain user information.
+	 * @param entity The body of the deserialized response returned from the user information request.
 	 * @return The unique identifier for the user. Return null if and only if the provider is unable to identify the user.
 	 */
 	String getUserId(Map<String, Object> entity);
 
 	/**
-	 * @param entity The body of the response returned from the request to obtain user information.
+	 * @param entity The body of the deserialized response returned from the user information request.
 	 * @return The user-friendly name of the user. Return null if and only if {@link #getUserId} returns null.
 	 */
 	String getUserName(Map<String, Object> entity);

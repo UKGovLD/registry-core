@@ -60,11 +60,11 @@ class OAuth2ProviderProperties implements OAuth2Provider {
 
 	@Override public String getUserName(Map<String, Object> entity) {
 		String prop = get("userInfo.name");
-		Object name = entity.get(prop);
-		if (name == null) {
+		if (prop == null) {
 			return getUserId(entity);
 		}
 
-		return name.toString();
+		Object name = entity.get(prop);
+		return name == null ? null : name.toString();
 	}
 }
