@@ -97,10 +97,10 @@ public class LibReg extends ComponentBase implements LibPlugin {
     }
     
     /**
-     * Escape user input to prevent xss scripting in URL hrefs
+     * Escape user input to prevent xss scripting in URL hrefs and form parameter attributes
      */
     public String xssCleanURI(String uri) {
-        return Encode.forUriComponent(uri);
+        return Encode.forHtmlAttribute(uri);
     }
     
     /**
