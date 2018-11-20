@@ -181,8 +181,9 @@ public class ProcessOauth2 {
                 Boolean isRegistration = ((Boolean) session.getAttribute(SA_REGISTRATION));
 
                 if (identifier == null || name == null) {
+                    log.error("User identifier or name was null on response.");
                     String msg = isRegistration ?
-                            "Unable to register user. Make sure your account is configured to support authentication using OAuth and OpenID Connect."
+                            "Unable to register user. Authentication succeeded but user information was not found. Make sure your account is configured to support authentication using OAuth and OpenID Connect."
                             : "Unable to identify user. Make sure you are logging in with the same provider that you registered with.";
                     return renderError(request, msg);
                 }
