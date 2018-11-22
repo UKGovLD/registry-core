@@ -76,6 +76,7 @@ public class CommandRead extends Command {
     boolean timestamped;
     boolean entityLookup;
     boolean tagRetieval;
+    private Status statusFilter;
     List<FilterSpec> filters = new ArrayList<>();
 
     public void init(Operation operation, String target,
@@ -87,6 +88,7 @@ public class CommandRead extends Command {
         timestamped = parameters.containsKey(VERSION_AT);
         entityLookup = parameters.containsKey(ENTITY_LOOKUP);
         tagRetieval = parameters.containsKey(Parameters.TAG);
+        statusFilter = Status.forString(parameters.getFirst(STATUS), Status.Any);
         for (String key: parameters.keySet()) {
             if (FilterSpec.isFilterSpec(key)) {
                 filters.add( FilterSpec.filterFor(key, parameters.getFirst(key)) );
@@ -123,7 +125,11 @@ public class CommandRead extends Command {
                     }
                 } else {
                     //  plain item
-                    d = store.getItem(target, true) ;
+                    d = store.getItem(target, true);
+                    if (!d.asRegisterItem().getStatus().isA(statusFilter)) {
+                        d = null;
+                        throw new NotFoundException();
+                    }
                     if (versionList) {
                         injectVersionHistory(d);
                     }
@@ -246,7 +252,6 @@ public class CommandRead extends Command {
     private Response entityLookup() {
         Model result = ModelFactory.createDefaultModel();
         String uri = parameters.getFirst(ENTITY_LOOKUP);
-        Status statusFilter = Status.forString(parameters.getFirst(STATUS), Status.Any);
         for (EntityInfo entityInfo : store.listEntityOccurences(uri)) {
             if (entityInfo.getStatus().isA(statusFilter)) {
                 if (entityInfo.getRegisterURI().startsWith(target)) {
