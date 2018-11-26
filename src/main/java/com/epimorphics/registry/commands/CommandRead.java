@@ -31,6 +31,7 @@ import static com.epimorphics.registry.webapi.Parameters.WITH_METADATA;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -47,6 +48,7 @@ import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.csv.RDFCSVUtil;
 import com.epimorphics.registry.store.EntityInfo;
 import com.epimorphics.registry.store.FilterSpec;
+import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.store.VersionInfo;
 import com.epimorphics.registry.util.Util;
 import com.epimorphics.registry.vocab.RegistryVocab;
@@ -96,6 +98,22 @@ public class CommandRead extends Command {
         }
     }
 
+    private Boolean acceptStatus(Description d) {
+        if (statusFilter == Status.Any) {
+            return true;
+        }
+
+        RegisterItem item = d.isRegisterItem() ? d.asRegisterItem()
+                : d.isEntity() ? getRegisterItem()
+                : null;
+
+        return item == null || item.getStatus().isA(statusFilter);
+    }
+
+    private RegisterItem getRegisterItem() {
+        return store.getItem(parent +"/_" + lastSegment, true);
+    }
+
     @Override
     public Response doExecute() {
         if (tagRetieval) {
@@ -126,10 +144,6 @@ public class CommandRead extends Command {
                 } else {
                     //  plain item
                     d = store.getItem(target, true);
-                    if (!d.asRegisterItem().getStatus().isA(statusFilter)) {
-                        d = null;
-                        throw new NotFoundException();
-                    }
                     if (versionList) {
                         injectVersionHistory(d);
                     }
@@ -142,24 +156,23 @@ public class CommandRead extends Command {
                 } else  if ( withMetadata ) {
                     // Entity with metadata
                     entityWithMetadata = true;
-                    d = store.getItem(parent +"/_" + lastSegment, true);
+                    d = getRegisterItem();
                 } else {
                     // plain entity
                     d = store.getCurrentVersion(target);
                     if (d == null) {
                         // Check for graph entities
-                        d = store.getItem(parent +"/_" + lastSegment, true);
+                        d = getRegisterItem();
                         graphEntity = true;
                     }
                 }
-                    
             }
         } catch (Exception e) {
             // Typically an attempt to retrieve the version of something which doesn't not exist
             // Fall through to "not found" case
         }
-        
-        if (d == null) {
+
+        if (d == null || !acceptStatus(d)) {
             throw new NotFoundException();
         }
 

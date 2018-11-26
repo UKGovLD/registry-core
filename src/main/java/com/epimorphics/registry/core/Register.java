@@ -80,6 +80,10 @@ public class Register extends Description {
         }
     }
 
+    public Boolean isEntity() {
+        return false;
+    }
+
     /**
      * Fetch all the members of the register and construct an RDF view
      * according the given flags.

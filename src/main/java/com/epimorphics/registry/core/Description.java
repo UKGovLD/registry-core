@@ -126,6 +126,15 @@ public class Description {
     public RegisterItem asRegisterItem() {
         return (RegisterItem)this;
     }
+
+    public Boolean isRegisterItem() {
+        return false;
+    }
+
+    public Boolean isEntity() {
+        return true;
+    }
+
     /**
      * Flatten versioning information
      */

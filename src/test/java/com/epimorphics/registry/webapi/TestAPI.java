@@ -543,11 +543,23 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(404, getResponse(REG1 + "/_red?status=notaccepted").getStatus());
         assertEquals(404, getResponse(REG1 + "/_red?status=invalid").getStatus());
 
+        assertEquals(200, getResponse(REG1 + "/red?status=any").getStatus());
+        assertEquals(200, getResponse(REG1 + "/red?status=accepted").getStatus());
+        assertEquals(200, getResponse(REG1 + "/red?status=valid").getStatus());
+        assertEquals(404, getResponse(REG1 + "/red?status=notaccepted").getStatus());
+        assertEquals(404, getResponse(REG1 + "/red?status=invalid").getStatus());
+
         assertEquals(200, getResponse(REG1 + "/_blue?status=any").getStatus());
         assertEquals(404, getResponse(REG1 + "/_blue?status=accepted").getStatus());
         assertEquals(404, getResponse(REG1 + "/_blue?status=valid").getStatus());
         assertEquals(200, getResponse(REG1 + "/_blue?status=notaccepted").getStatus());
         assertEquals(200, getResponse(REG1 + "/_blue?status=invalid").getStatus());
+
+        assertEquals(200, getResponse(REG1 + "/blue?status=any").getStatus());
+        assertEquals(404, getResponse(REG1 + "/blue?status=accepted").getStatus());
+        assertEquals(404, getResponse(REG1 + "/blue?status=valid").getStatus());
+        assertEquals(200, getResponse(REG1 + "/blue?status=notaccepted").getStatus());
+        assertEquals(200, getResponse(REG1 + "/blue?status=invalid").getStatus());
     }
 
     protected static final String PROXY_CONFIG = "/var/opt/ldregistry/proxy-registry.conf";
