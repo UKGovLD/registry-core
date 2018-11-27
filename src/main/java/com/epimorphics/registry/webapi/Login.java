@@ -63,20 +63,6 @@ public class Login {
     protected @Context HttpServletRequest request;
     protected @Context HttpServletResponse response;
 
-//    @Path("/login")
-//    @POST
-//    public Response login(@FormParam("provider") String provider, @FormParam("return") String returnURL) {
-//        new ProcessOpenID(uriInfo, servletContext).processOpenID(request, response, provider, returnURL, false);
-//        return Response.ok().build();
-//    }
-//
-//    @Path("/register")
-//    @POST
-//    public Response register(@FormParam("provider") String provider, @FormParam("return") String returnURL) {
-//        new ProcessOpenID(uriInfo, servletContext).processOpenID(request, response, provider, returnURL, true);
-//        return Response.ok().build();
-//    }
-
     @Path("/loginoa")
     @POST
     public Response loginOauth2(@FormParam("provider") String provider, @FormParam("return") String returnURL) {
