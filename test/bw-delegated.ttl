@@ -14,7 +14,7 @@
     reg:manager <http://reference.data.gov.uk/2011-09-30/id/public-body/environment-agency> ;
     ldp:membershipPredicate  rdfs:member;
 
-    reg:delegationTarget     <http://environment.data.gov.uk/sparql/bwq/query>;
+    reg:delegationTarget     <https://environment.data.gov.uk/sparql/bwq/query>;
     reg:enumerationObject    <http://environment.data.gov.uk/id/bathing-water/>;
     reg:enumerationPredicate <http://reference.data.gov.uk/def/reference/uriSet>;
     .
