@@ -89,8 +89,8 @@
     <oltu.oidc.version>0.1-SNAPSHOT</oltu.oidc.version>
     <jersey.version>2.21</jersey.version>
     <appbase.version>2.2.0</appbase.version>
-    <jena.version>3.1.1</jena.version>
-    <fuseki.version>1.4.1</fuseki.version>
+    <jena.version>3.5.0</jena.version>
+    <fuseki.version>3.5.0</fuseki.version>
   </properties>
 
   <dependencies>
@@ -107,6 +107,12 @@
       <artifactId>appbase</artifactId>
       <!-- <version>2.1.1-SNAPSHOT</version> -->
       <version>${appbase.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.epimorphics</groupId>
+      <artifactId>lib</artifactId>
+      <version>3.0.1-SNAPSHOT</version>
     </dependency>
     
     <dependency>
