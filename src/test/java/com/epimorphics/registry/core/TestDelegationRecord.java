@@ -38,7 +38,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 
 public class TestDelegationRecord {
-    public static final String BW_TEST_ENDPOINT = "http://environment.data.gov.uk/sparql/bwq/query";
+    public static final String BW_TEST_ENDPOINT = "https://environment.data.gov.uk/sparql/bwq/query";
 
     @Test
     public void testDelegation() {
