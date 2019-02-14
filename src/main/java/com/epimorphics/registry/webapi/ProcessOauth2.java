@@ -108,7 +108,8 @@ public class ProcessOauth2 {
 
         log.info("Authentication request for " + provider.getLabel() + (isRegister ? " (registration)" : ""));
 
-        String responseURL = uriInfo.getBaseUri().toString() + "system/security/responseoa";
+        String path = Registry.get().getRootPath();
+        String responseURL = uriInfo.getBaseUriBuilder().replacePath(path) + "/system/security/responseoa";
         if (config.getUseHttps()) {
             responseURL = responseURL.replace("http://", "https://");
         }
