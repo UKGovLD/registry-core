@@ -86,7 +86,6 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <oltu.oauth2.version>1.0.2</oltu.oauth2.version>
-    <oltu.oidc.version>0.1-SNAPSHOT</oltu.oidc.version>
     <jersey.version>2.21</jersey.version>
     <appbase.version>3.1.0</appbase.version>
     <jena.version>3.9.0</jena.version>
@@ -229,38 +228,7 @@
       <artifactId>org.apache.oltu.oauth2.jwt</artifactId>
       <version>${oltu.oauth2.version}</version>
     </dependency>
-    <!-- OpenId Connect Dependency -->
     <dependency>
-      <groupId>org.apache.oltu.openidconnect</groupId>
-      <artifactId>org.apache.oltu.openidconnect.common</artifactId>
-      <version>${oltu.oidc.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.oltu.oauth2</groupId>
-          <artifactId>org.apache.oltu.oauth2.client</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.oltu.oauth2</groupId>
-          <artifactId>org.apache.oltu.oauth2.jwt</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.oltu.openidconnect</groupId>
-      <artifactId>org.apache.oltu.openidconnect.client</artifactId>
-      <version>${oltu.oidc.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.oltu.oauth2</groupId>
-          <artifactId>org.apache.oltu.oauth2.client</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.oltu.oauth2</groupId>
-          <artifactId>org.apache.oltu.oauth2.jwt</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-fuseki1</artifactId>
       <version>${fuseki.version}</version>
