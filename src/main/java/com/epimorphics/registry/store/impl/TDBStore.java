@@ -205,10 +205,10 @@ public class TDBStore  extends ComponentBase implements Store {
                 log.warn("Opening memory based text index, will not preserved across restarts");
                 dir = new RAMDirectory(); 
             } else {
-                dir = FSDirectory.open(textIndex);
+                dir = FSDirectory.open(textIndex.toPath());
             }
             EntityDefinition entDef = makeEntityDef();
-            dataset = TextDatasetFactory.createLucene(baseDataset, dir, entDef, new StandardAnalyzer(org.apache.jena.query.text.TextIndexLucene.VER)) ;            
+            dataset = TextDatasetFactory.createLucene(baseDataset, dir, entDef, new StandardAnalyzer()) ;
         } catch (IOException e) {
             throw new EpiException("Failed to create jena-text lucence index area", e);
         }

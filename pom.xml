@@ -88,9 +88,9 @@
     <oltu.oauth2.version>1.0.2</oltu.oauth2.version>
     <oltu.oidc.version>0.1-SNAPSHOT</oltu.oidc.version>
     <jersey.version>2.21</jersey.version>
-    <appbase.version>2.2.0</appbase.version>
-    <jena.version>3.1.1</jena.version>
-    <fuseki.version>1.4.1</fuseki.version>
+    <appbase.version>3.0.1-SNAPSHOT</appbase.version>
+    <jena.version>3.5.0</jena.version>
+    <fuseki.version>3.5.0</fuseki.version>
   </properties>
 
   <dependencies>
