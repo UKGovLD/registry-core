@@ -176,6 +176,14 @@ public class RegisterItem extends Description {
         return Description.descriptionFrom( store.getEntity(this), store ).asRegister();
     }
 
+    public Boolean isRegisterItem() {
+        return true;
+    }
+
+    public Boolean isEntity() {
+        return false;
+    }
+
     /**
      * Takes a register item resource from a request payload, determines and checks
      * the intended URI for both it and the entity, fills in blanks on the register item,
