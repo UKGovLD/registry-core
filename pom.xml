@@ -88,9 +88,10 @@
     <oltu.oauth2.version>1.0.2</oltu.oauth2.version>
     <oltu.oidc.version>0.1-SNAPSHOT</oltu.oidc.version>
     <jersey.version>2.21</jersey.version>
-    <appbase.version>3.0.1-SNAPSHOT</appbase.version>
-    <jena.version>3.5.0</jena.version>
-    <fuseki.version>3.5.0</fuseki.version>
+    <appbase.version>3.1.0</appbase.version>
+    <jena.version>3.9.0</jena.version>
+    <fuseki.version>3.9.0</fuseki.version>
+    <tomcat.version>7.0.91</tomcat.version>
   </properties>
 
   <dependencies>
@@ -131,19 +132,19 @@
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-core</artifactId>
-      <version>7.0.26</version>
+      <version>${tomcat.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-logging-log4j</artifactId>
-      <version>7.0.26</version>
+      <version>${tomcat.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-jasper</artifactId>
-      <version>7.0.26</version>
+      <version>${tomcat.version}</version>
       <scope>provided</scope>
      </dependency>
      <dependency>
@@ -366,7 +367,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
-        <version>2.5</version>
+        <version>2.5.3</version>
       </plugin>
 
       <!-- Run in root context using maven tomcat plugin -->
@@ -384,7 +385,7 @@
       <extension>
         <groupId>org.apache.maven.wagon</groupId>
         <artifactId>wagon-ftp</artifactId>
-        <version>2.2</version>
+        <version>2.12</version>
       </extension>
       
      <extension>

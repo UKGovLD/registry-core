@@ -24,10 +24,11 @@ package com.epimorphics.registry.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import java.util.function.Predicate;
+
 import org.junit.Test;
 
 import com.epimorphics.util.TestUtil;
-import org.apache.jena.util.iterator.Filter;
 
 public class TestTrie {
 
@@ -55,9 +56,9 @@ public class TestTrie {
         TestUtil.testArray( trie.findAll("f", null), new String[] {"4"});
         TestUtil.testArray( trie.findAll("g", null), new String[] {});
         TestUtil.testArray( trie.findAll("", null), new String[] {"1", "2", "3", "4"});
-        TestUtil.testArray( trie.findAll("", new Filter<String>() {
+        TestUtil.testArray( trie.findAll("", new Predicate<String>() {
             @Override
-            public boolean accept(String o) {
+            public boolean test(String o) {
                 return Integer.parseInt(o) >= 3;
             }}), new String[] {"3", "4"});
 
