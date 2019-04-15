@@ -67,6 +67,9 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.UnavailableSecurityManagerException;
+
 import javax.ws.rs.NotFoundException;
 
 
@@ -98,8 +101,13 @@ public class CommandRead extends Command {
         }
     }
 
-    private Boolean acceptStatus(Description d) {
-        if (statusFilter == Status.Any) {
+    private Boolean isVisibleItem(Description d) {
+        try {
+            if (SecurityUtils.getSubject().isAuthenticated()) {
+                return true;
+            }
+        } catch (UnavailableSecurityManagerException usme) {
+            log.warn("Security is not configured, assuming test mode");
             return true;
         }
 
@@ -107,7 +115,7 @@ public class CommandRead extends Command {
                 : d.isEntity() ? getRegisterItem()
                 : null;
 
-        return item == null || item.getStatus().isA(statusFilter);
+        return item == null || item.getStatus().isA(Status.Accepted);
     }
 
     private RegisterItem getRegisterItem() {
@@ -172,7 +180,7 @@ public class CommandRead extends Command {
             // Fall through to "not found" case
         }
 
-        if (d == null || !acceptStatus(d)) {
+        if (d == null || !isVisibleItem(d)) {
             throw new NotFoundException();
         }
 
