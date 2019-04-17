@@ -999,7 +999,6 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     
     private void addRefClosure(StreamRDF accumulator, Resource root) {
         if (root == null) return;
-        emitAll(accumulator, getDefaultModel().listStatements(null, null, root) );
         emitAll(accumulator, Closure.closure(root.inModel(getDefaultModel()), false).listStatements() );
     }
     
