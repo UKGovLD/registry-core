@@ -935,6 +935,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             if ( ! check.hasNext()) {
                 // No references so delete
                 graphs.addAll( scanAllVersions(entity, toModel(toDelete), null) );
+                emitAll(toModel(toDelete), getDefaultModel().listStatements(null, RegistryVocab.subregister, entity));
             } else {
                 check.close();
             }
