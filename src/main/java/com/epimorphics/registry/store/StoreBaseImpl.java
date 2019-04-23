@@ -1002,6 +1002,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     }
 
     private void addReferencesTo(StreamRDF accumulator, Resource root) {
+        if (root == null) return;
         emitAll(accumulator, getDefaultModel().listStatements(null, null, root) );
     }
     
