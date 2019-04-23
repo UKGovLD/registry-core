@@ -920,7 +920,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     
         Model toDelete = ModelFactory.createDefaultModel();
         Set<Resource> entities = new HashSet<>();
-        Collection<Resource>graphs = scanAllVersions(item.getRoot(), toModel(toDelete), entities);
+        Collection<Resource>graphs = scanAllVersions(item.getRoot(), toModel(toDelete), entities, false);
         getDefaultModel().remove(toDelete);
         for (Resource graph : graphs) {
             store.asDataset().removeNamedModel( graph.getURI() );
@@ -934,7 +934,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             ResIterator check = getDefaultModel().listSubjectsWithProperty(RegistryVocab.entity, entity);
             if ( ! check.hasNext()) {
                 // No references so delete
-                graphs.addAll( scanAllVersions(entity, toModel(toDelete), null) );
+                graphs.addAll( scanAllVersions(entity, toModel(toDelete), null, false) );
                 emitAll(toModel(toDelete), getDefaultModel().listStatements(null, RegistryVocab.subregister, entity));
             } else {
                 check.close();
@@ -964,11 +964,14 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
      * reference to the entity is included and the entity is returned in the entities collection for
      * a post-scan cleanup. This is needed to allow for multiple references to entities.
      */
-    private Collection<Resource> scanAllVersions(Resource root, StreamRDF stream, Collection<Resource> entities) {
-        return scanAllVersions(root, stream, new HashSet<Resource>(), entities);
+    private Collection<Resource> scanAllVersions(Resource root, StreamRDF stream, Collection<Resource> entities, Boolean withBackRefs) {
+        return scanAllVersions(root, stream, new HashSet<Resource>(), entities, withBackRefs);
     }
     
-    private Collection<Resource> scanAllVersions(Resource root, StreamRDF stream, Collection<Resource> sofar, Collection<Resource> entities) {
+    private Collection<Resource> scanAllVersions(Resource root, StreamRDF stream, Collection<Resource> sofar, Collection<Resource> entities, Boolean withBackRefs) {
+        if (withBackRefs) {
+            addReferencesTo(stream, root);
+        }
         addRefClosure(stream, root);
         for (Resource version : getDefaultModel().listSubjectsWithProperty(DCTerms.isVersionOf, root).toList()) {
             addRefClosure(stream, version);
@@ -982,7 +985,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                 Resource entity = getResourceValue(definition, RegistryVocab.entity);
                 if (entity != null) {
                     if ( entities == null ) {
-                        scanAllVersions(entity, stream, sofar, entities);
+                        scanAllVersions(entity, stream, sofar, entities, withBackRefs);
                     } else {
                         // Defer deleting entities because we have to reference count them
                         stream.triple( new Triple(definition.asNode(), RegistryVocab.entity.asNode(), entity.asNode()) );
@@ -996,6 +999,10 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
             }
         }
         return sofar;
+    }
+
+    private void addReferencesTo(StreamRDF accumulator, Resource root) {
+        emitAll(accumulator, getDefaultModel().listStatements(null, null, root) );
     }
     
     private void addRefClosure(StreamRDF accumulator, Resource root) {
@@ -1036,8 +1043,8 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                 doExportTree( getCurrentVersion(ei.getItemURI()).asRegisterItem(), out );
             }
         }
-        
-        Collection<Resource> graphs = scanAllVersions(item.getRoot(), out, null);
+
+        Collection<Resource> graphs = scanAllVersions(item.getRoot(), out, null, true);
         for (Resource g : graphs) {
             Iterator<Quad> i = store.asDataset().asDatasetGraph().findNG(g.asNode(), Node.ANY, Node.ANY, Node.ANY);
             while (i.hasNext()){
