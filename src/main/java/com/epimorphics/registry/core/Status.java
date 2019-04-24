@@ -21,14 +21,9 @@
 
 package com.epimorphics.registry.core;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+import org.apache.jena.rdf.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,12 +31,9 @@ import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.vocabs.SKOS;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.StmtIterator;
+
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
 
 /**
  * The set of status values which a RegisterItem can have.
@@ -233,6 +225,8 @@ public class Status {
                 return;
             }
 
+            MultivaluedMap<RDFNode, RDFNode> successorsByStatus = new MultivaluedHashMap<>();
+
             StoreAPI store = Registry.get().getStore();
             store.beginSafeRead();
             try {
@@ -256,14 +250,10 @@ public class Status {
                             s.setParent( forResource(parent) );
                         }
                         s.setPresentation( RDFUtil.getStringValue(member, RegistryVocab.presentation, PRES_DEFAULT) );
-                        s.addSuccessor(Invalid);
-                        for (Status suc : getStatusValues(member, RegistryVocab.nextState)) {
-                            s.addSuccessor(suc);
-                        }
-                        for (Status p : getStatusValues(member, RegistryVocab.priorState)) {
-                            p.addSuccessor(s);
-                        }
+                        mapSuccessors(successorsByStatus, member);
                     }
+
+                    addSuccessors(successorsByStatus);
                 } else {
                     setDefaultLifecycle();
                 }
@@ -271,7 +261,23 @@ public class Status {
                 store.endSafeRead();
             }
 
-            printLifecycle(Reserved, new HashSet<Status>());
+            printLifecycle(Reserved, new HashSet<>());
+        }
+    }
+
+    private static void mapSuccessors(MultivaluedMap<RDFNode, RDFNode> m, Resource res) {
+        res.listProperties(RegistryVocab.nextState).forEachRemaining(stmt -> m.add(res, stmt.getObject()));
+        res.listProperties(RegistryVocab.priorState).forEachRemaining(stmt -> m.add(stmt.getObject(), res));
+    }
+
+    private static void addSuccessors(MultivaluedMap<RDFNode, RDFNode> successorsByStatus) {
+        for (RDFNode statusNode : successorsByStatus.keySet()) {
+            Status status = forResource(statusNode);
+            successorsByStatus.get(statusNode).forEach(successorNode -> {
+                Status successor = forResource(successorNode);
+                status.addSuccessor(successor);
+            });
+            status.addSuccessor(Invalid);
         }
     }
 
