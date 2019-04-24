@@ -147,13 +147,19 @@ public class Status {
         return label;
     }
     
-    public static Status forResource(Resource r) {
+    public static Status forResource(RDFNode r) {
         load();
-        for (Status s : statusIndex.values()) {
-            if (s.getResource().equals(r)) {
-                return s;
+        if (r.isLiteral()) {
+            String key = r.asLiteral().getString();
+            return statusIndex.get(key);
+        } else if (r.isURIResource()) {
+            for (Status s : statusIndex.values()) {
+                if (s.getResource().equals(r.asResource())) {
+                    return s;
+                }
             }
         }
+
         return NotAccepted;
     }
 
