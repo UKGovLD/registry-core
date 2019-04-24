@@ -80,8 +80,8 @@ public class Status {
     protected Resource resource;
     protected String label;
     protected Set<Status> successors = new HashSet<>();
-    protected Status parent;
-    protected String presentation = "";
+    protected Status parent = Any;
+    protected String presentation;
     
     protected Status(Resource resource, String label) {
         this(resource, label, PRES_DEFAULT, null);
@@ -90,7 +90,7 @@ public class Status {
     protected Status(Resource resource, String label, String presentation, Status parent, Status...successors) {
         this.resource = resource;
         this.label = label.toLowerCase();
-        this.parent = parent;
+        if (parent != null) this.parent = parent;
         this.presentation = presentation;
         for (Status successor : successors) {
             this.successors.add( successor );
