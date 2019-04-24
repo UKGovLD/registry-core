@@ -56,7 +56,7 @@ public class Status {
     public static final String PRES_WARNING = "warning";
     public static final String PRES_DANGER  = "danger";
     
-    public static Status Any          = new Status(RegistryVocab.Status,             "any");
+    public static Status Any          = new Status(RegistryVocab.statusAny,             "any");
     
     public static Status NotAccepted  = new Status(RegistryVocab.statusNotAccepted,  "notaccepted", PRES_DEFAULT, Any);
     public static Status Submitted    = new Status(RegistryVocab.statusSubmitted,    "submitted",   PRES_DEFAULT, NotAccepted);

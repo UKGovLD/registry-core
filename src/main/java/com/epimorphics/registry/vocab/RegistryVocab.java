@@ -234,7 +234,12 @@ public class RegistryVocab {
     
     /** <p>Concept scheme containing registry status codes</p> */
     public static final Individual StatusScheme = m_model.createIndividual( "http://purl.org/linked-data/registry#StatusScheme", m_model.createClass( "http://www.w3.org/2004/02/skos/core#ConceptScheme" ) );
-    
+
+    /**
+     * <p>Placeholder denoting any registry status.</p>
+     */
+    public static final Individual statusAny = m_model.createIndividual( "http://purl.org/linked-data/registry#statusAny", Status );
+
     /** <p>An entry that has been accepted for use and is visible in the default register 
      *  listing. Includes entries that have seen been retired or superseded.</p>
      */
