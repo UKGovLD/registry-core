@@ -266,8 +266,12 @@ public class Status {
     }
 
     private static void mapSuccessors(MultivaluedMap<RDFNode, RDFNode> m, Resource res) {
-        res.listProperties(RegistryVocab.nextState).forEachRemaining(stmt -> m.add(res, stmt.getObject()));
-        res.listProperties(RegistryVocab.priorState).forEachRemaining(stmt -> m.add(stmt.getObject(), res));
+        res.listProperties(RegistryVocab.nextState).forEachRemaining(stmt ->
+                m.add(res, stmt.getObject())
+        );
+        res.listProperties(RegistryVocab.priorState).forEachRemaining(stmt ->
+                m.add(stmt.getObject(), res)
+        );
     }
 
     private static void addSuccessors(MultivaluedMap<RDFNode, RDFNode> successorsByStatus) {
@@ -297,7 +301,7 @@ public class Status {
 
     private static void resetStatus() {
         // Reset back to just builtins
-        statusIndex = new HashMap<String, Status>();
+        statusIndex = new HashMap<>();
         for (Status s : new Status[]{Any, NotAccepted, Submitted, Reserved, Invalid, Accepted, Valid, Deprecated, Superseded, Retired,Stable, Experimental}) {
             s.reset();
             addStatus(s);
@@ -318,24 +322,6 @@ public class Status {
                 printLifecycle(s, seen);
             }
         }
-    }
-    
-    
-    protected static List<Status> getStatusValues(Resource root, Property p) {
-        List<Status> results = new ArrayList<>();
-        for (StmtIterator i = root.listProperties(p); i.hasNext();) {
-            RDFNode value = i.next().getObject();
-            Status s = null;
-            if (value.isLiteral()) {
-                s = forString(value.asLiteral().getLexicalForm(), null);
-            } else if (value.isURIResource()) {
-                s = forResource(value.asResource());
-            }
-            if (s != null) {
-                results.add( s );
-            }
-        }
-        return results;
     }
     
     protected static void addStatus(Status s) {
