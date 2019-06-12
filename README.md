@@ -10,9 +10,8 @@ For information on installing and operating a registry instance see the wiki:
    * [Configuration](https://github.com/UKGovLD/registry-core/wiki/Configuration)
    * [Operation](https://github.com/UKGovLD/registry-core/wiki/Operation)
  
-Download most recent full release: [registry-core-1.2.0.war](https://s3-eu-west-1.amazonaws.com/ukgovld/release/com/github/ukgovld/registry-core/1.2.0/registry-core-1.2.0.war)
-
-The next release will require java8 and so has bumped major version number, currently 2.0.0-SNAPSHOT.
+Download most recent full release: [registry-core-2.0.0.war](https://s3-eu-west-1.amazonaws.com/ukgovld/release/com/github/ukgovld/registry-core/2.0.0/registry-core-2.0.0.war) - 
+[Release Notes 2.0.0](https://github.com/UKGovLD/registry-core/wiki/Release-2.0.0)
 
 ## Project governance
 
