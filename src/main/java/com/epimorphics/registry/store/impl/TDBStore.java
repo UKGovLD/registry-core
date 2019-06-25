@@ -23,9 +23,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.jena.fuseki.server.DatasetRef;
 import org.apache.jena.fuseki.server.DatasetRegistry;
@@ -35,8 +34,11 @@ import org.apache.jena.query.text.EntityDefinition;
 import org.apache.jena.query.text.TextDatasetFactory;
 import org.apache.jena.query.text.TextIndex;
 import org.apache.jena.query.text.TextQueryFuncs;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
+import org.apache.jena.shared.PrefixMapping;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -81,7 +83,7 @@ import org.apache.jena.vocabulary.RDFS;
 // This obsolete code, based on a poor store abstraction
 // It's here to facilitate a first port to appbase
 // but should be removed once we've switched to using SparqlStore
-public class TDBStore  extends ComponentBase implements Store {
+public class TDBStore extends ComponentBase implements Store {
     static final Logger log = LoggerFactory.getLogger( TDBStore.class );
 
     public static final String MEMORY_LOCATION = "mem";
@@ -214,19 +216,29 @@ public class TDBStore  extends ComponentBase implements Store {
         }
     }
 
-    private EntityDefinition makeEntityDef() {
-        EntityDefinition entDef = new EntityDefinition("uri", "text", RDFS.label.asNode()) ;
-        if (indexSpec != null) {
-            for (String spec : indexSpec.split(",")) {
-                String uri = Prefixes.getDefault().expandPrefix(spec.trim());
-                if ( ! uri.equals("default") ) {
-                    Node predicate = NodeFactory.createURI(uri);
-                    if (!predicate.equals(RDFS.label.asNode())) {
-                        entDef.set("text", predicate);
-                    }
-                }
-            }
+    @Override
+    public List<Property> getIndexedProperties() {
+        LinkedHashSet<Property> props = new LinkedHashSet<>();
+        props.add(RDFS.label);
+
+        if (indexSpec != null && !indexSpec.equals("default")) {
+            PrefixMapping prefix = Prefixes.getDefault();
+            Arrays.stream(indexSpec.split(","))
+                    .map(String::trim)
+                    .map(prefix::expandPrefix)
+                    .map(ResourceFactory::createProperty)
+                    .forEach(props::add);
         }
+
+        return new ArrayList<>(props);
+    }
+
+    private EntityDefinition makeEntityDef() {
+        EntityDefinition entDef = new EntityDefinition("uri", "text");
+        getIndexedProperties().stream()
+                .map(Property::asNode)
+                .forEach( predicate -> entDef.set("text", predicate) );
+
         return entDef;
     }
 

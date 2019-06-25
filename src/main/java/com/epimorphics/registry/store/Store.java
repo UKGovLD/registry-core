@@ -20,9 +20,11 @@
 package com.epimorphics.registry.store;
 
 import java.io.InputStream;
+import java.util.List;
 
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
 
 
 /**
@@ -50,4 +52,6 @@ public interface Store {
     public void abort();
     public void commit();
     public void end();
+
+    List<Property> getIndexedProperties();
 }
