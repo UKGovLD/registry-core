@@ -743,7 +743,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         query.setPrefixMapping(Prefixes.get());
         query.setLimit(100);
 
-        log.info("Similarity query: \n" + query); // change back to debug
+        log.debug("Similarity query: \n" + query); // change back to debug
 
         try (QueryExecution exec = QueryExecutionFactory.create(query, store.asDataset())) {
             ResultSet results = exec.execSelect();
