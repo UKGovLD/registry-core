@@ -22,6 +22,7 @@
 package com.epimorphics.registry.store;
 
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.jena.riot.system.StreamRDF;
@@ -291,5 +292,6 @@ public interface StoreAPI {
      * Import a complete registry state, deletes the existing state if any
      */
     public StreamRDF importTree(String uri);
-    
+
+    Model findSimilar(Collection<Resource> resources, Boolean withEdits);
 }

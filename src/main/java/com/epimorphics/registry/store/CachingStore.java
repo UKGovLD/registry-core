@@ -22,6 +22,7 @@
 package com.epimorphics.registry.store;
 
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.jena.riot.system.StreamRDF;
@@ -250,4 +251,6 @@ public class CachingStore implements StoreAPI {
         return store.importTree(uri);
     }
 
+    @Override
+    public Model findSimilar(Collection<Resource> resources, Boolean withEdits) { return store.findSimilar(resources, withEdits); }
 }

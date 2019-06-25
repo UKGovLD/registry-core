@@ -25,41 +25,34 @@ import static com.epimorphics.rdfutil.QueryUtil.createBindings;
 import static com.epimorphics.rdfutil.QueryUtil.selectAll;
 import static com.epimorphics.rdfutil.QueryUtil.selectFirstVar;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.text.StrBuilder;
+import org.apache.derby.iapi.services.property.PropertyFactory;
+import org.apache.jena.arq.querybuilder.ExprFactory;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryExecutionFactory;
-import org.apache.jena.query.QuerySolution;
-import org.apache.jena.query.ResultSet;
-import org.apache.jena.query.ResultSetFactory;
-import org.apache.jena.rdf.model.Literal;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.NodeIterator;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.ResIterator;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.query.*;
+import org.apache.jena.query.text.TextQuery;
+import org.apache.jena.rdf.model.*;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.path.Path;
+import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.sparql.util.Closure;
 import org.apache.jena.util.FileManager;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.SKOS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -724,7 +717,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                 query +=  "OFFSET " + request.getOffset();
             }
 
-            log.debug("Search query = " + query.toString());
+            log.debug("Search query = " + query);
 
             QueryExecution exec = QueryExecutionFactory.create( query, store.asDataset() );
             try {
@@ -742,6 +735,35 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         } catch (Exception e) {
             log.error("Search query failed, misconfigured store?", e);
             return Collections.emptyList();
+        }
+    }
+
+    public Model findSimilar(Collection<Resource> resources, Boolean withEdits) {
+        Query query = FindSimilar.newInstance(store).build(resources, withEdits);
+        query.setPrefixMapping(Prefixes.get());
+        query.setLimit(100);
+
+        log.info("Similarity query: \n" + query); // change back to debug
+
+        try (QueryExecution exec = QueryExecutionFactory.create(query, store.asDataset())) {
+            ResultSet results = exec.execSelect();
+            Model resultModel = ModelFactory.createDefaultModel();
+            results.forEachRemaining(result -> {
+                Resource similar = result.getResource("similar").inModel(resultModel);
+                RegisterItem regItem = getItem(similar.getURI(), true);
+                Resource itemResource = regItem.getRoot();
+                Resource entityResource = regItem.getEntity();
+
+                resultModel.add(itemResource.getModel());
+                resultModel.add(entityResource.getModel());
+
+                Resource resource = result.getResource("resource").inModel(resultModel);
+                Boolean isExact = result.get("isMatch").asLiteral().getBoolean();
+                Property relation = isExact ? SKOS.exactMatch : SKOS.closeMatch;
+                resource.addProperty(relation, itemResource);
+            });
+
+            return resultModel;
         }
     }
 
