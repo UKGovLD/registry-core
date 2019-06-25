@@ -38,6 +38,8 @@ public class Parameters {
     public static final String EXPORT_TREE = "export";
     public static final String IMPORT_TREE = "import";
     public static final String EDIT = "edit";
+    public static final String COMPARE = "compare";
+    public static final String COMPARE_EDIT = "compare-edit";
 
     public static final String VIEW = "_view";
     public static final String WITH_METADATA = "with_metadata";
