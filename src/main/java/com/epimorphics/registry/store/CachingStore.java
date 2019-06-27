@@ -252,5 +252,5 @@ public class CachingStore implements StoreAPI {
     }
 
     @Override
-    public Model findSimilar(Collection<Resource> resources, Boolean withEdits) { return store.findSimilar(resources, withEdits); }
+    public Model findSimilar(Collection<RegisterItem> items, Boolean withEdits, Double similarity) { return store.findSimilar(items, withEdits, similarity); }
 }

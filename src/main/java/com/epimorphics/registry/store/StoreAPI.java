@@ -293,5 +293,15 @@ public interface StoreAPI {
      */
     public StreamRDF importTree(String uri);
 
-    Model findSimilar(Collection<Resource> resources, Boolean withEdits);
+    /**
+     * Query the store for registry items whose text indexed properties have similar values to the given resources.
+     * @param items     The register items to compare against the rest of the registry.
+     * @param withEdits Determines whether the given resources should be treated as updates to existing entities.
+     * @param similarity An optional value between 0 and 1 which determines the required similarity between strings.
+     *                   0 is the least similarity, 1 is the most. If null, a default parameter will be used.
+     *                   See https://lucene.apache.org/core/2_9_4/queryparsersyntax.html#Fuzzy%20Searches.
+     * @return A new model inferred from the results of the query. The model relates the given resources to existing
+     *         registry items by `skos:exactMatch` and `skos:closeMatch` relationships.
+     */
+    Model findSimilar(Collection<RegisterItem> items, Boolean withEdits, Double similarity);
 }

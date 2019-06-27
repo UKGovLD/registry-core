@@ -26,27 +26,15 @@ import static com.epimorphics.rdfutil.QueryUtil.selectAll;
 import static com.epimorphics.rdfutil.QueryUtil.selectFirstVar;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.text.StrBuilder;
-import org.apache.derby.iapi.services.property.PropertyFactory;
-import org.apache.jena.arq.querybuilder.ExprFactory;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.*;
-import org.apache.jena.query.text.TextQuery;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.Quad;
-import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.path.Path;
-import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.sparql.util.Closure;
 import org.apache.jena.util.FileManager;
 import org.apache.jena.vocabulary.DCTerms;
@@ -738,12 +726,12 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         }
     }
 
-    public Model findSimilar(Collection<Resource> resources, Boolean withEdits) {
-        Query query = FindSimilar.newInstance(store).build(resources, withEdits);
+    public Model findSimilar(Collection<RegisterItem> items, Boolean withEdits, Double similarity) {
+        Query query = FindSimilar.newInstance(store).build(items, withEdits, similarity);
         query.setPrefixMapping(Prefixes.get());
         query.setLimit(100);
 
-        log.debug("Similarity query: \n" + query); // change back to debug
+        log.debug("Similarity query: \n" + query);
 
         try (QueryExecution exec = QueryExecutionFactory.create(query, store.asDataset())) {
             ResultSet results = exec.execSelect();

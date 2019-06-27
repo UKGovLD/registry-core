@@ -30,18 +30,15 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -52,11 +49,12 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Resource;
+import com.epimorphics.registry.vocab.RegistryVocab;
+import org.apache.jena.rdf.model.*;
 import org.apache.jena.util.FileManager;
 import org.apache.jena.util.FileUtils;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.velocity.exception.ResourceNotFoundException;
@@ -64,6 +62,7 @@ import org.glassfish.jersey.internal.util.collection.MultivaluedStringMap;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -367,6 +366,9 @@ public class RequestProcessor extends BaseEndpoint {
         } else if (parameters.get(Parameters.EDIT) != null && body != null) {
             command = makeCommand(Operation.Edit);
             setPayload(command, hh, body, true);
+        } else if (parameters.get(Parameters.COMPARE) != null && body != null) {
+            command = makeCommand(Operation.Compare);
+            setPayload(command, hh, body, true);
         } else if (body != null) {
             command = makeCommand(Operation.Register);
             setPayload(command, hh, body, true);
@@ -421,40 +423,93 @@ public class RequestProcessor extends BaseEndpoint {
         return command.execute();
     }
 
-    @POST
-    @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
-    public Response simpleForm(@Context HttpHeaders hh, MultivaluedMap<String, String> form) {
-        // This might be a real form, an empty form (e.g. delete action) or a non-existent form (e.g. from test clients) cater for all cases
-        if ( form != null && "register-inline".equals( form.getFirst("action") ) ) {
-            String target = uriInfo.getPath();
-            target = Registry.get().getBaseURI() + (target.isEmpty() ? "/" : "/" + target + "/");
-            Resource r = UiForm.create(form, target);
-            Command command = makeCommand( Operation.Register );
-            command.setPayload( r.getModel() );
-            return command.execute();
+    private Command getRegisterCommand(MultivaluedMap<String, String> form, Operation op) {
+        String target = uriInfo.getPath();
+        target = Registry.get().getBaseURI() + (target.isEmpty() ? "/" : "/" + target + "/");
+        Resource r = UiForm.create(form, target);
+
+        Command command = makeCommand(op);
+        command.setPayload(r.getModel());
+
+        return command;
+    }
+
+    private Response getCompareResponse(HttpHeaders headers, Command cmd) {
+        Response response = cmd.execute();
+        if (headers.getAcceptableMediaTypes().contains(MediaType.TEXT_HTML_TYPE)) {
+            List<RDFNode> items = new ArrayList<>();
+            ((Model)response.getEntity()).listResourcesWithProperty(RDF.type, RegistryVocab.CompareResult).forEachRemaining(root ->
+                    root.listProperties(RDFS.member).forEachRemaining(stmt -> {
+                        Resource ent = stmt.getObject().asResource();
+                        items.add(ent);
+                    })
+            );
+
+            return render("registry-compare.vm", uriInfo, context, request, "response", response, "newItems", items);
         }
-        
-        // Doesn't seem to be a real form so fall through to same options as for generic POST but with empty body
-        return register(hh, null);
+
+        return response;
     }
 
     @POST
-    public Response nullForm(@Context HttpHeaders hh, InputStream body) {
-        MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
-        if ( parameters.containsKey(Parameters.REAL_DELETE) ) {
-            Command command = makeCommand( Operation.RealDelete );
-            return command.execute();
+    @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
+    public Response simpleForm(@Context HttpHeaders headers, MultivaluedMap<String, String> form) {
+        if (form != null) {
+            String action = form.getFirst("action");
+            if ("register-inline".equals(action)) {
+                return getRegisterCommand(form, Operation.Register).execute();
+            } else if (Parameters.COMPARE.equals(action)) {
+                Command cmd = getRegisterCommand(form, Operation.Compare);
+                return getCompareResponse(headers, cmd);
+            }
         }
-        // Default is to invoke register, e.g. for status update processing
-        return register(hh, body);
+
+        // Doesn't seem to be a real form so fall through to same options as for generic POST but with empty body
+        return register(headers, null);
+    }
+
+    private Model getFilePayload(InputStream in, String filename, String base, Boolean isImport) {
+        Model payload = ModelFactory.createDefaultModel();
+        if (filename.endsWith(".ttl")) {
+            payload.read(in, base, FileUtils.langTurtle);
+        } else if (filename.endsWith(".jsonld") || filename.endsWith(".json")) {
+            payload = JSONLDSupport.readModel(base, in);
+        } else if (filename.endsWith(".csv")) {
+            payload = CSVPayloadRead.readCSVStream(in, base);
+        } else if (!isImport) {
+            payload.read(in, base, FileUtils.langXML);
+        }
+
+        return payload;
+    }
+
+    private Response fileCompare(HttpHeaders headers, FormDataMultiPart multiPart) {
+        List<FormDataBodyPart> fields = multiPart.getFields("file");
+        String base = baseURI(true);
+
+        Model payload = ModelFactory.createDefaultModel();
+        fields.stream().map(field -> {
+            InputStream in = field.getValueAs(InputStream.class);
+            String filename = field.getContentDisposition().getFileName();
+            if (filename == null) {
+                throw new WebApiException(Status.BAD_REQUEST, "No filename to upload");
+            }
+
+            return getFilePayload(in, filename, base, false);
+        }).forEach(payload::add);
+
+        Command cmd = makeCommand(Operation.Compare);
+        cmd.setPayload(payload);
+
+        return getCompareResponse(headers, cmd);
     }
 
     @POST
     @Consumes({MediaType.MULTIPART_FORM_DATA})
-    public Response fileForm(@Context HttpHeaders hh, FormDataMultiPart multiPart,
-//            @FormDataParam("file") InputStream uploadedInputStream,
-//            @FormDataParam("file") FormDataContentDisposition fileDetail,
-            @FormDataParam("action") String action) {
+    public Response fileForm(@Context HttpHeaders hh, FormDataMultiPart multiPart, @FormDataParam("action") String action) {
+        if (action.equals(Parameters.COMPARE)) {
+            return fileCompare(hh, multiPart);
+        }
 
         List<FormDataBodyPart> fields = multiPart.getFields("file");
         List<String> successfullyProcessed = new ArrayList<>();
@@ -462,6 +517,7 @@ public class RequestProcessor extends BaseEndpoint {
         int failure = 0;
         Response response = null;
         StringBuffer errorMessages = new StringBuffer();
+
         for(FormDataBodyPart field : fields){
             InputStream uploadedInputStream       = field.getValueAs(InputStream.class);
             String filename = field.getContentDisposition().getFileName();
@@ -469,17 +525,9 @@ public class RequestProcessor extends BaseEndpoint {
             if (filename == null) {
                 throw new WebApiException(Status.BAD_REQUEST, "No filename to upload");
             }
-            Model payload = ModelFactory.createDefaultModel();
             String base = baseURI( ! action.equals("update") );
-            if (filename.endsWith(".ttl")) {
-                payload.read(uploadedInputStream, base, FileUtils.langTurtle);
-            } else if (filename.endsWith(".jsonld") || filename.endsWith(".json")) {
-                payload = JSONLDSupport.readModel(base, uploadedInputStream);
-            } else if (filename.endsWith(".csv")) {
-                payload = CSVPayloadRead.readCSVStream(uploadedInputStream, base);
-            } else if (!action.equals("import")) {
-                payload.read(uploadedInputStream, base, FileUtils.langXML);
-            }
+            Model payload = getFilePayload(uploadedInputStream, filename, base, action.equals("import"));
+
             Command command = null;
             if (action.equals("register")) {
                 command = makeCommand( Operation.Register );
@@ -537,6 +585,17 @@ public class RequestProcessor extends BaseEndpoint {
         return Response.ok().build();
     }
 
+    @POST
+    public Response nullForm(@Context HttpHeaders hh, InputStream body) {
+        MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
+        if ( parameters.containsKey(Parameters.REAL_DELETE) ) {
+            Command command = makeCommand( Operation.RealDelete );
+            return command.execute();
+        }
+        // Default is to invoke register, e.g. for status update processing
+        return register(hh, body);
+    }
+
     public Model getBodyModel(HttpHeaders hh, InputStream body, boolean isPOST) {
         MediaType mediaType = hh.getMediaType();
         if (mediaType == null) return null;
@@ -544,7 +603,7 @@ public class RequestProcessor extends BaseEndpoint {
 
         if (mime.equals(JSONLDSupport.MIME_JSONLD)) {
             return JSONLDSupport.readModel(baseURI(isPOST), body);
-            
+
         } else if (mime.equals(RDFCSVUtil.MEDIA_TYPE)) {
             return CSVPayloadRead.readCSVStream(body, baseURI(isPOST));
 
