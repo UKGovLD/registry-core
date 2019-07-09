@@ -20,6 +20,8 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 public class CommandCompare extends Command {
+    private static final Double DEFAULT_SIMILARITY = 0.7;
+
     private Register register;
 
     @Override
@@ -38,7 +40,7 @@ public class CommandCompare extends Command {
 
     private Double getSimilarityParam() {
         Object value = Registry.get().getConfigExtensions().get("compareSimilarity");
-        if (value == null) return null; else {
+        if (value == null) return DEFAULT_SIMILARITY; else {
             try {
                 return Double.valueOf(value.toString());
             } catch (NumberFormatException nfe) {
@@ -59,7 +61,8 @@ public class CommandCompare extends Command {
             });
         } else {
             findEntities().forEach(resource -> {
-                RegisterItem item = RegisterItem.fromEntityRequest(resource, parentURI, true);
+                RegisterItem item;
+                item = RegisterItem.fromEntityRequest(resource, parentURI, true);
                 items.add(item);
             });
         }
@@ -84,9 +87,11 @@ public class CommandCompare extends Command {
             Resource itemRes = item.getRoot().inModel(result);
             root.addProperty(RDFS.member, itemRes);
 
-            Description existing = store.getDescription(itemRes.getURI());
+            RegisterItem existing = store.getItem(itemRes.getURI(), true);
             if (existing != null) {
-                itemRes.addProperty(SKOS.exactMatch, itemRes.getURI());
+                result.add(existing.getRoot().getModel());
+                result.add(existing.getEntity().getModel());
+                itemRes.addProperty(SKOS.exactMatch, itemRes);
             }
         });
 

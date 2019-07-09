@@ -1,7 +1,9 @@
 package com.epimorphics.registry.store;
 
 import com.epimorphics.appbase.webapi.WebApiException;
+import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.RegisterItem;
+import com.epimorphics.registry.vocab.RegistryVocab;
 import org.apache.commons.lang.text.StrBuilder;
 import org.apache.jena.query.ParameterizedSparqlString;
 import org.apache.jena.query.Query;
@@ -52,34 +54,43 @@ class FindSimilar {
                 );
     }
 
-    private String getValuesRow(String uri, String text, Double similarity) {
+    private String getValuesRow(RegisterItem item, String text, Double similarity) {
+        String uri = item.getRoot().getURI();
+        if (IRIResolver.checkIRI(uri)) {
+            throw new WebApiException(Response.Status.BAD_REQUEST, "Unable to find similar entries: Resource URI " + uri + " is not valid.");
+        }
+
         String query = Arrays.stream(text.split(" "))
                 .map(word -> word + "~" + String.format("%.1f", similarity))
                 .collect(joining(" AND ", "(", ")"));
 
-        ParameterizedSparqlString pss = new ParameterizedSparqlString("( ?resource ?query ?text )");
+        ParameterizedSparqlString pss = new ParameterizedSparqlString("( ?resource ?query ?text ?isRegister )");
         pss.setIri("resource", uri);
         pss.setLiteral("query", query);
         pss.setLiteral("text", text);
+        pss.setLiteral("isRegister", item.isRegister());
 
         return pss.toString();
     }
 
+    private Resource getResource(Description desc) {
+        if (desc.isRegisterItem()) {
+            return desc.asRegisterItem().getEntity();
+        } else {
+            return desc.asRegister().getRegister();
+        }
+    }
+
     private Stream<String> getValuesRows(Collection<RegisterItem> items, Double similarity) {
         return items.stream().flatMap(item -> {
-            String uri = item.getRoot().getURI();
-            Resource resource = item.getEntity();
-            if (IRIResolver.checkIRI(uri)) {
-                throw new WebApiException(Response.Status.BAD_REQUEST, "Unable to find similar entries: Resource URI " + uri + " is not valid.");
-            }
-
+            Resource resource = getResource(item);
             Stream<Statement> statements = indexProps.stream().map(resource::getProperty).filter(Objects::nonNull);
             return statements
                     .map(Statement::getObject)
                     .filter(RDFNode::isLiteral)
                     .map(RDFNode::asLiteral)
                     .map(Literal::getLexicalForm)
-                    .map(text -> getValuesRow(uri, text, similarity));
+                    .map(text -> getValuesRow(item, text, similarity));
         });
     }
 
@@ -98,18 +109,14 @@ class FindSimilar {
      *
      * @throws WebApiException When no text index is defined.
      * @throws WebApiException When a resource has an invalid URI.
-     * @param items     The register items to compare against the rest of the registry.
+     * @param items     The registers and register items to compare against the rest of the registry.
      * @param withEdits Determines whether the given resources should be treated as updates to existing entities.
      * @param similarity An optional value between 0 and 1 which determines the required similarity between strings.
-     *                   0 is the least similarity, 1 is the most. If null, a default parameter will be used.
+     *                   0 is the least similarity, 1 is the most.
      *                   See https://lucene.apache.org/core/2_9_4/queryparsersyntax.html#Fuzzy%20Searches.
      * @return A valid SPARQL query with result columns: [resource (Resource) , similar (Resource), isMatch (Boolean)].
      */
     public Query build(Collection<RegisterItem> items, Boolean withEdits, Double similarity) {
-        if (similarity == null) {
-            similarity = 0.8;
-        }
-
         Stream<String> valuesRows = getValuesRows(items, similarity);
         String raw = new StrBuilder()
                 .appendln("PREFIX text:    <http://jena.apache.org/text#>")
@@ -117,7 +124,7 @@ class FindSimilar {
                 .appendln("PREFIX version: <http://purl.org/linked-data/version#>")
                 .appendln("SELECT DISTINCT ?resource ?similar ?isMatch")
                 .appendln("WHERE {")
-                .appendln("  VALUES (?resource ?query ?text) {")
+                .appendln("  VALUES (?resource ?query ?text ?isRegister) {")
                 .appendln(valuesRows.collect(joining("\n")))
                 .appendln("  }")
                 .appendln("  ?entity text:query ?query .")
@@ -131,6 +138,11 @@ class FindSimilar {
                 .appendln("  ?version reg:status ?status .")
                 .appendln("  ?similar version:currentVersion ?version .")
                 .appendln("  FILTER(?status != reg:statusInvalid)")
+                .appendln("  OPTIONAL {")
+                .appendln("    ?similar  reg:itemClass  reg:Register .")
+                .appendln("    BIND(true AS ?isRegisterEntity)")
+                .appendln("  }")
+                .appendln("  FILTER(BOUND(?isRegisterEntity) = ?isRegister)")
                 .appendln("}")
                 .toString();
 
