@@ -3,7 +3,6 @@ package com.epimorphics.registry.store;
 import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.RegisterItem;
-import com.epimorphics.registry.vocab.RegistryVocab;
 import org.apache.commons.lang.text.StrBuilder;
 import org.apache.jena.query.ParameterizedSparqlString;
 import org.apache.jena.query.Query;
@@ -138,11 +137,7 @@ class FindSimilar {
                 .appendln("  ?version reg:status ?status .")
                 .appendln("  ?similar version:currentVersion ?version .")
                 .appendln("  FILTER(?status != reg:statusInvalid)")
-                .appendln("  OPTIONAL {")
-                .appendln("    ?similar  reg:itemClass  reg:Register .")
-                .appendln("    BIND(true AS ?isRegisterEntity)")
-                .appendln("  }")
-                .appendln("  FILTER(BOUND(?isRegisterEntity) = ?isRegister)")
+                .appendln("  FILTER ( EXISTS { ?similar  reg:itemClass  reg:Register } = ?isRegister )")
                 .appendln("}")
                 .toString();
 
