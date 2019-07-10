@@ -87,11 +87,13 @@ public class CommandCompare extends Command {
             Resource itemRes = item.getRoot().inModel(result);
             root.addProperty(RDFS.member, itemRes);
 
-            RegisterItem existing = store.getItem(itemRes.getURI(), true);
-            if (existing != null) {
-                result.add(existing.getRoot().getModel());
-                result.add(existing.getEntity().getModel());
-                itemRes.addProperty(SKOS.exactMatch, itemRes);
+            if (!isEdit) {
+                RegisterItem existing = store.getItem(itemRes.getURI(), true);
+                if (existing != null) {
+                    result.add(existing.getRoot().getModel());
+                    result.add(existing.getEntity().getModel());
+                    itemRes.addProperty(SKOS.exactMatch, itemRes);
+                }
             }
         });
 
