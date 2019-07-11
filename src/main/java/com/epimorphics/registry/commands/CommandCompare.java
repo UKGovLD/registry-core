@@ -9,15 +9,14 @@ import com.epimorphics.vocabs.SKOS;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.apache.shiro.SecurityUtils;
 
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.Response.Status.*;
 
 public class CommandCompare extends Command {
     private static final Double DEFAULT_SIMILARITY = 0.7;
@@ -26,6 +25,10 @@ public class CommandCompare extends Command {
 
     @Override
     public ValidationResponse validate() {
+        if (!SecurityUtils.getSubject().isAuthenticated()) {
+            throw new WebApiException(UNAUTHORIZED, "You must be logged in to perform this action.");
+        }
+
         Description description = store.getCurrentVersion(target);
         if (description == null) {
             return new ValidationResponse(NOT_FOUND, "No such register");
