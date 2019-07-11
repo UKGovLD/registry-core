@@ -83,7 +83,12 @@ class FindSimilar {
     private Stream<String> getValuesRows(Collection<RegisterItem> items, Double similarity) {
         return items.stream().flatMap(item -> {
             Resource resource = getResource(item);
-            Stream<Statement> statements = indexProps.stream().map(resource::getProperty).filter(Objects::nonNull);
+            Stream<Statement> statements = indexProps.stream()
+                    .map(resource::listProperties)
+                    .map(StmtIterator::toList)
+                    .flatMap(List::stream)
+                    .filter(Objects::nonNull);
+
             return statements
                     .map(Statement::getObject)
                     .filter(RDFNode::isLiteral)
