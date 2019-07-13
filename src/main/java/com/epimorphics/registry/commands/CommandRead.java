@@ -332,7 +332,7 @@ public class CommandRead extends Command {
             } else {
 
                 // Status filter option
-                Status status = Status.forString( parameters.getFirst(STATUS), Status.Valid );
+                Status status = Status.forString( parameters.getFirst(STATUS), Status.Accepted );
 
                 // Select version of view
                 long timestamp = -1;
