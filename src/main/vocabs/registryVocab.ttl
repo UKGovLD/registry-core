@@ -206,6 +206,11 @@ reg:StatusScheme a skos:ConceptScheme;
     rdfs:comment "Concept scheme containing registry status codes"@en;
     .
 
+reg:statusAny a skos:Concept, reg:Status;
+    skos:prefLabel "any"@en;
+    rdfs:comment "Placeholder denoting any registry status."@en;
+    skos:topConceptOf reg:StatusScheme;
+
 reg:statusNotAccepted a skos:Concept, reg:Status;
     skos:prefLabel "notAccepted"@en;
     rdfs:comment "An entry that should not be visible in the default register listing. Corresponds to ISO 19135:2005 'notValid'"@en;
