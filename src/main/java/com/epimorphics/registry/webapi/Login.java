@@ -431,7 +431,7 @@ public class Login {
     }
     
     public static void setNocache(HttpServletResponse httpresponse) {
-        setNocache(httpresponse, "cache bypass", 60 * 60 *24);
+        setNocache(httpresponse, "cache-bypass", 60 * 60 *24);
     }
     
     private void removeNocache(HttpServletResponse httpresponse) {
