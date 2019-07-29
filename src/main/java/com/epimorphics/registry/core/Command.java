@@ -50,6 +50,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
+import com.epimorphics.registry.commands.*;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
@@ -66,20 +67,6 @@ import org.slf4j.LoggerFactory;
 import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.rdfutil.QueryUtil;
 import com.epimorphics.rdfutil.RDFUtil;
-import com.epimorphics.registry.commands.CommandAnnotate;
-import com.epimorphics.registry.commands.CommandDelete;
-import com.epimorphics.registry.commands.CommandEdit;
-import com.epimorphics.registry.commands.CommandExport;
-import com.epimorphics.registry.commands.CommandGraphRegister;
-import com.epimorphics.registry.commands.CommandImport;
-import com.epimorphics.registry.commands.CommandRead;
-import com.epimorphics.registry.commands.CommandRealDelete;
-import com.epimorphics.registry.commands.CommandRegister;
-import com.epimorphics.registry.commands.CommandSearch;
-import com.epimorphics.registry.commands.CommandStatusUpdate;
-import com.epimorphics.registry.commands.CommandTag;
-import com.epimorphics.registry.commands.CommandUpdate;
-import com.epimorphics.registry.commands.CommandValidate;
 import com.epimorphics.registry.csv.CSVRDFWriter;
 import com.epimorphics.registry.csv.RDFCSVUtil;
 import com.epimorphics.registry.message.Message;
@@ -123,7 +110,8 @@ public abstract class Command {
         Edit(CommandEdit.class, RegAction.Update),
         Export(CommandExport.class),
         Import(CommandImport.class, true),
-        RealDelete(CommandRealDelete.class, RegAction.RealDelete);
+        RealDelete(CommandRealDelete.class, RegAction.RealDelete),
+        Compare(CommandCompare.class);
 
         protected RegAction action;
         protected Class<?> implementation;

@@ -231,6 +231,8 @@ public class RegistryVocab {
     
     /** <p>Open set of status code for entries in a register</p> */
     public static final OntClass Status = m_model.createClass( "http://purl.org/linked-data/registry#Status" );
+
+    public static final OntClass CompareResult = m_model.createClass(NS + "CompareResult");
     
     /** <p>Concept scheme containing registry status codes</p> */
     public static final Individual StatusScheme = m_model.createIndividual( "http://purl.org/linked-data/registry#StatusScheme", m_model.createClass( "http://www.w3.org/2004/02/skos/core#ConceptScheme" ) );

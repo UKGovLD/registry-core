@@ -22,6 +22,7 @@
 package com.epimorphics.registry.store;
 
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.jena.riot.system.StreamRDF;
@@ -291,5 +292,16 @@ public interface StoreAPI {
      * Import a complete registry state, deletes the existing state if any
      */
     public StreamRDF importTree(String uri);
-    
+
+    /**
+     * Query the store for registry entries whose text indexed properties have similar values to the given resources.
+     * @param items     The registers and register items to compare against the rest of the registry.
+     * @param withEdits Determines whether the given resources should be treated as updates to existing entities.
+     * @param similarity An optional value between 0 and 1 which determines the required similarity between strings.
+     *                   0 is the least similarity, 1 is the most.
+     *                   See https://lucene.apache.org/core/2_9_4/queryparsersyntax.html#Fuzzy%20Searches.
+     * @return A new model inferred from the results of the query. The model relates the given resources to existing
+     *         registers and registry items by `skos:exactMatch` and `skos:closeMatch` relationships.
+     */
+    Model findSimilar(Collection<RegisterItem> items, Boolean withEdits, Double similarity);
 }

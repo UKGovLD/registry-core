@@ -102,6 +102,15 @@ public class LibReg extends ComponentBase implements LibPlugin {
     public String xssCleanURI(String uri) {
         return Encode.forHtmlAttribute(uri);
     }
+
+    /**
+     * Encodes a string to be embedded in Javascript.
+     * @param input A string potentially containing Javascript or HTML syntax, eg. quotes, script tags.
+     * @return A sanitised version of the given input.
+     */
+    public String jsEncode(String input) {
+        return Encode.forJavaScript(input);
+    }
     
     /**
      * Return a resource known to the store, wrapped for scripting
@@ -122,7 +131,7 @@ public class LibReg extends ComponentBase implements LibPlugin {
         }
     }
 
-    private ModelWrapper wrapModel(Model m) {
+    public ModelWrapper wrapModel(Model m) {
         m.setNsPrefixes( Prefixes.get() );
         return new ModelWrapper( m );
     }
