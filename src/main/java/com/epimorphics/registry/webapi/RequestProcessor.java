@@ -139,6 +139,9 @@ public class RequestProcessor extends BaseEndpoint {
             } else if (format.equals("csv")) {
                 mime = RDFCSVUtil.MEDIA_TYPE;
                 extension = "csv";
+            } else if (format.equals("ror")) {
+                mime = RdfXmlRorMarshaller.MIME_TYPE;
+                extension = "ror";
             }
             return readAsRDF(result, mime, extension);
         } else if (parameters.containsKey(Parameters.ANNOTATION)) {
@@ -216,7 +219,7 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     @GET
-    @Produces({FULL_MIME_TURTLE, FULL_MIME_RDFXML, JSONLDSupport.FULL_MIME_JSONLD, MediaType.APPLICATION_JSON})
+    @Produces({FULL_MIME_TURTLE, FULL_MIME_RDFXML, JSONLDSupport.FULL_MIME_JSONLD, MediaType.APPLICATION_JSON, "application/x-ror-rdf+xml"})
     public Response read() {
         PassThroughResult result = checkForPassThrough();
         if (result != null && result.isDone()) {
