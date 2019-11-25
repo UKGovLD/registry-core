@@ -40,7 +40,7 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
     </init-param>
     <init-param>
         <param-name>jersey.config.server.provider.classnames</param-name>
-        <param-value>com.epimorphics.webapi.marshalling.TurtleMarshaller,com.epimorphics.webapi.marshalling.RDFXMLMarshaller,org.glassfish.jersey.media.multipart.MultiPartFeature</param-value>
+        <param-value>com.epimorphics.webapi.marshalling.TurtleMarshaller,com.epimorphics.webapi.marshalling.RDFXMLMarshaller,com.epimorphics.registry.webapi.RdfXmlRorMarshaller,org.glassfish.jersey.media.multipart.MultiPartFeature</param-value>
     </init-param>
     <init-param>
       <param-name>jersey.config.servlet.filter.forwardOn404</param-name>
