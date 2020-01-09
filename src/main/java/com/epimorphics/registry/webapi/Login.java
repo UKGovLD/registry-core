@@ -65,6 +65,7 @@ public class Login {
 
     @Path("/loginoa")
     @POST
+    @Consumes("application/x-www-form-urlencoded")
     public Response loginOauth2(@FormParam("provider") String provider, @FormParam("return") String returnURL) {
         new ProcessOauth2(uriInfo, servletContext).processOpenID(request, response, provider, returnURL, false);
         return Response.ok().build();
@@ -72,6 +73,7 @@ public class Login {
 
     @Path("/registeroa")
     @POST
+    @Consumes("application/x-www-form-urlencoded")
     public Response registerOauth2(@FormParam("provider") String provider, @FormParam("return") String returnURL) {
         new ProcessOauth2(uriInfo, servletContext).processOpenID(request, response, provider, returnURL, true);
         return Response.ok().build();
@@ -109,6 +111,7 @@ public class Login {
 
     @Path("/pwlogin")
     @POST
+    @Consumes("application/x-www-form-urlencoded")
     public Response pwlogin(@FormParam("userid") String userid, @FormParam("password") String password, @FormParam("return") String returnURL) {
         try {
             RegToken token = new RegToken(userid, password);
@@ -135,6 +138,7 @@ public class Login {
 
     @Path("/pwregister")
     @POST
+    @Consumes("application/x-www-form-urlencoded")
     public Response pwregister(
             @FormParam("userid") String userid, 
             @FormParam("password") String password, 
@@ -167,6 +171,7 @@ public class Login {
     /* Register a user but don't login, must be run by an administrator */
     @Path("/pwregisterOther")
     @POST
+    @Consumes("application/x-www-form-urlencoded")
     public Response pwregisterOther(
             @FormParam("userid") String userid, 
             @FormParam("password") String password, 
@@ -194,6 +199,7 @@ public class Login {
 
     @Path("/apilogin")
     @POST
+    @Consumes("application/x-www-form-urlencoded")
     public Response apilogin(@FormParam("userid") String userid, @FormParam("password") String password) {
         try {
             RegToken token = new RegToken(userid, password);
@@ -246,6 +252,7 @@ public class Login {
 
     @Path("/grant")
     @POST
+    @Consumes("application/x-www-form-urlencoded")
     public Response grant(@FormParam("user") String id, @FormParam("grant") String action, @FormParam("path") String inpath) {
         String path = inpath;
         if (path == null || path.isEmpty()) {
@@ -267,6 +274,7 @@ public class Login {
 
     @Path("/ungrant")
     @POST
+    @Consumes("application/x-www-form-urlencoded")
     public Response ungrant(@FormParam("user") String id, @FormParam("path") String path) {
         UserStore userstore = Registry.get().getUserStore();
         try {
@@ -280,6 +288,7 @@ public class Login {
 
     @Path("/createpassword")
     @POST
+    @Consumes("application/x-www-form-urlencoded")
     public Response createpassword(@FormParam("minstolive") String minstolive) {
         int mins = 0;
         try {
@@ -305,6 +314,7 @@ public class Login {
 
     @Path("/setpassword")
     @POST
+    @Consumes("application/x-www-form-urlencoded")
     public Response setPassword(@FormParam("currentPassword") String currentPassword, @FormParam("newPassword") String newPassword, @FormParam("return") String returnURL) {
         Subject subject = SecurityUtils.getSubject();
         if (!subject.isAuthenticated()) {
@@ -337,6 +347,7 @@ public class Login {
 
     @Path("/resetpassword")
     @POST
+    @Consumes("application/x-www-form-urlencoded")
     public Response resetPassword(@FormParam("userid") String userid, @FormParam("newPassword") String newPassword, @FormParam("return") String returnURL) {
         if (userid == null || userid.isEmpty() || newPassword == null || newPassword.isEmpty()) {
             return error("Must give a user and a new password");
@@ -376,6 +387,7 @@ public class Login {
 
     @Path("/setrole")
     @POST
+    @Consumes("application/x-www-form-urlencoded")
     public Response setrole(@FormParam("id") String id, @FormParam("role") String role, @FormParam("return") String returnURL) {
         Subject subject = SecurityUtils.getSubject();
         if (subject.isAuthenticated() && subject.hasRole(RegAuthorizationInfo.ADMINSTRATOR_ROLE)) {
@@ -396,6 +408,7 @@ public class Login {
 
     @Path("/unregister")
     @POST
+    @Consumes("application/x-www-form-urlencoded")
     public Response unregister(@FormParam("id") String id, @FormParam("return") String returnURL) {
         Subject subject = SecurityUtils.getSubject();
         if (subject.isAuthenticated() && subject.hasRole(RegAuthorizationInfo.ADMINSTRATOR_ROLE)) {
