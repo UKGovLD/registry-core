@@ -90,7 +90,7 @@
     <appbase.version>3.1.0</appbase.version>
     <jena.version>3.9.0</jena.version>
     <fuseki.version>3.9.0</fuseki.version>
-    <tomcat.version>7.0.94</tomcat.version>
+    <tomcat.version>7.0.99</tomcat.version>
   </properties>
 
   <dependencies>
