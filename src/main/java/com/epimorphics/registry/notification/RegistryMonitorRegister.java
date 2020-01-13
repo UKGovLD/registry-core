@@ -9,6 +9,11 @@ import com.epimorphics.registry.message.MessagingService;
 import com.epimorphics.registry.message.ProcessIfChanges;
 import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.epimorphics.registry.store.StoreAPI;
+import com.epimorphics.registry.vocab.RegistryVocab;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,11 +54,27 @@ public class RegistryMonitorRegister implements RegistryMonitor.State, Startup {
         if (desc instanceof Register) {
             Register register = desc.asRegister();
             List<RegisterEntryInfo> members = register.getMembers();
-            members.stream().map(RegisterEntryInfo::getEntityURI).forEach(registers::add);
+            members.forEach(member -> addMonitoredRegister(member, store));
         } else {
             log.warn("System register " + uri + " does not exist - unable to monitor changes.");
         }
 
         store.endSafeRead();
+    }
+
+    private void addMonitoredRegister(RegisterEntryInfo entry, StoreAPI store) {
+        Resource root = store.getDescription(entry.getEntityURI()).getRoot();
+        if (root.hasProperty(RDF.type, RegistryVocab.MonitorSpec)) {
+            Statement stmt = root.getProperty(RegistryVocab.monitors);
+            if (stmt != null) {
+                String monitor = stmt.getObject().asResource().getURI();
+                registers.add(monitor);
+                log.info("Monitoring register: " + monitor);
+            } else {
+                log.warn("Unable to add monitor entry " + entry.getItemURI() + ": Resource must specify a reg:monitors value.");
+            }
+        } else {
+            log.warn("Unable to add monitor entry " + entry.getItemURI() + ": Resource must have a rdf:type value of reg:MonitorSpec.");
+        }
     }
 }
