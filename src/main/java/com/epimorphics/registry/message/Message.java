@@ -113,7 +113,7 @@ public class Message {
         this(command);
         Resource itemroot = item.getRoot();
         target = itemroot.getURI();
-        message = itemroot.getModel();
+        message = item.getModel();
         Resource entity = item.getEntity();
         if (entity != null) {
             setTypes(entity);
