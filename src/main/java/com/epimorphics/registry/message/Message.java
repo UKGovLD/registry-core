@@ -92,6 +92,11 @@ public class Message {
             message = ((CommandStatusUpdate)command).getRequestedStatus();
         }
     }
+
+    public Message(Command command, String target) {
+        this(command);
+        this.target = target;
+    }
     
     /**
      * Create a message corresponding to a command with a model payload.
