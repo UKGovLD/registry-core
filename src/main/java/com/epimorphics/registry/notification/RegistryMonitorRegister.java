@@ -39,7 +39,7 @@ public class RegistryMonitorRegister implements RegistryMonitor.State, Startup {
 
     @Override public Boolean isMonitored(String targetUri) {
         return registers.stream().anyMatch(register ->
-                targetUri.equals(register) || targetUri.startsWith(register + "/")
+                targetUri.equals(register) || targetUri.startsWith(register + "/") || targetUri.replace("/_", "/").equals(register)
         );
     }
 
