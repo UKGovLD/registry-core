@@ -280,8 +280,9 @@ public interface StoreAPI {
      * Delete all versions of an entry from the store.
      * For an item it deletes the associated entity (including it's graph).
      * For a register it recursively deletes all the register members as well.
+     * @return The URIs of resources that were deleted.
      */
-    public void delete(String uri);
+    public List<String> delete(String uri);
     
     /**
      * Generate an export of the complete registry state for some tree of registers

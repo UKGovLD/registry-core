@@ -27,11 +27,16 @@ import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Status;
+import com.epimorphics.registry.message.Message;
 import com.epimorphics.registry.store.RegisterEntryInfo;
 import javax.ws.rs.NotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class CommandDelete extends Command {
+
+    private List<String> deletedItems = new ArrayList<>();
 
     @Override
     public Response doExecute() {
@@ -48,6 +53,11 @@ public class CommandDelete extends Command {
                 doDelete(ri);
             }
             store.commit();
+
+            deletedItems.forEach(item -> {
+                notify(new Message(this, item));
+            });
+
             return Response.noContent().build();
         } else {
             throw new NotFoundException();
@@ -57,5 +67,6 @@ public class CommandDelete extends Command {
     private void doDelete(RegisterItem ri) {
         ri.setStatus(Status.Invalid);
         store.update(ri, false);
+        deletedItems.add(ri.getRoot().getURI());
     }
 }
