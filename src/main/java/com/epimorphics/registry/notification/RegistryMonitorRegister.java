@@ -105,7 +105,7 @@ public class RegistryMonitorRegister implements RegistryMonitor.State, Startup {
     }
 
     private List<String> getExclusions(Resource root) {
-        return root.listProperties(RegistryVocab.monitorExcludes)
+        return root.listProperties(RegistryVocab.ignores)
                 .mapWith(stmt -> stmt.getObject().asResource().getURI())
                 .mapWith(NameUtils::stripLastSlash)
                 .toList();
