@@ -114,9 +114,10 @@ public class Message {
         Resource itemroot = item.getRoot();
         target = itemroot.getURI();
         message = item.getModel();
-        Resource entity = item.getEntity();
-        if (entity != null) {
-            setTypes(entity);
+        Resource entityRes = item.getEntity();
+        if (entityRes != null) {
+            entity = entityRes.getURI();
+            setTypes(entityRes);
         }
     }
 
@@ -146,6 +147,13 @@ public class Message {
      */
     public String getOperation() {
         return operation;
+    }
+
+    /**
+     * @return The URI of the entity affected by the command, if there is one.
+     */
+    public String getEntity() {
+        return entity;
     }
 
     /**
