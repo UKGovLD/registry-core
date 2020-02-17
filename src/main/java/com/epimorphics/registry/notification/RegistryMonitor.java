@@ -5,12 +5,14 @@ import com.epimorphics.appbase.core.Startup;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.message.Message;
 import com.epimorphics.registry.message.MessagingService;
+import com.epimorphics.registry.store.StoreAPI;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.StringWriter;
+import java.util.List;
 
 public class RegistryMonitor implements Startup {
 
@@ -18,6 +20,7 @@ public class RegistryMonitor implements Startup {
 
     private State state;
     private NotificationAgent agent;
+    private StoreAPI store;
 
     public void setState(State state) {
         this.state = state;
@@ -29,6 +32,8 @@ public class RegistryMonitor implements Startup {
 
     @Override public void startup(App app) {
         Registry reg = app.getA(Registry.class);
+        this.store = reg.getStore();
+
         MessagingService msgSvc = reg.getMessagingService();
         msgSvc.processMessages(this::onRegisterChange);
     }
@@ -38,17 +43,16 @@ public class RegistryMonitor implements Startup {
         String targetUri = msg.getTarget();
         String operation = msg.getOperation();
 
-        if (state.isMonitored(targetUri)) {
-            try {
-                agent.send(content, targetUri, operation);
-            } catch (Exception e) {
-                log.error("Failed to send notification for monitored register " + targetUri + ".", e);
-            }
+        List<String> topics = state.getTopics(targetUri);
+        try {
+            topics.forEach(topic -> agent.send(topic, content, targetUri, operation));
+        } catch (Exception e) {
+            log.error("Failed to send notification for monitored register " + targetUri + ".", e);
         }
     }
 
     private String extractContent(Message msg) {
-        Model model = msg.getMessageAsModel();
+        Model model = getModel(msg);
         if (model != null) {
             StringWriter writer = new StringWriter();
             model.write(writer, FileUtils.langTurtle);
@@ -58,8 +62,21 @@ public class RegistryMonitor implements Startup {
         return msg.getMessageAsString();
     }
 
+    private Model getModel(Message msg) {
+        if (msg.getEntity() != null) {
+            // Retrieve full metadata
+            store.beginSafeRead();
+            try {
+                return store.getItem(msg.getTarget(), true).getModel();
+            } finally {
+                store.endSafeRead();
+            }
+        } else {
+            return msg.getMessageAsModel();
+        }
+    }
+
     interface State {
-        Boolean isMonitored(String targetUri);
+        List<String> getTopics(String targetUri);
     }
 }
-
