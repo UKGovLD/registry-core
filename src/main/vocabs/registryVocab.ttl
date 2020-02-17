@@ -318,12 +318,28 @@ reg:presentation a owl:DatatypeProperty;
 
 reg:MonitorSpec a owl:Class;
     rdfs:label "Monitor Spec"@en;
+    rdfs:comment "A specification for a register to be monitored."@en;
     .
 
 reg:monitors a owl:ObjectProperty;
     rdfs:label "monitors"@en;
+    rdfs:comment "A register to be monitored."@en;
     rdfs:domain reg:MonitorSpec;
     rdfs:range reg:Register;
+    .
+
+reg:ignores a owl:ObjectProperty;
+    rdfs:label "ignores"@en;
+    rdfs:comment "A sub-register to exclude from monitoring."@en;
+    rdfs:domain reg:MonitorSpec;
+    rdfs:range reg:Register;
+    .
+
+reg:notifies a owl:ObjectProperty;
+    rdfs:label "notifies"@en;
+    rdfs:comment "A topic or channel to be notified when the monitored register changes."@en;
+    rdfs:domain reg:MonitorSpec;
+    rdfs:range xsd:string;
     .
 
 # -- EntityReference ------------------------------------------------------

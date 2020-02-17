@@ -153,6 +153,8 @@ public class RegistryVocab {
     public static final ObjectProperty validationQuery = m_model.createObjectProperty( "http://purl.org/linked-data/registry#validationQuery" );
 
     public static final ObjectProperty monitors = m_model.createObjectProperty(NS + "monitors");
+    public static final ObjectProperty ignores = m_model.createObjectProperty(NS + "ignores");
+    public static final ObjectProperty notifies = m_model.createObjectProperty(NS + "notifies");
     
     /** <p>The HTTP status code to return the requester in order to forward the request.</p> */
     public static final DatatypeProperty forwardingCode = m_model.createDatatypeProperty( "http://purl.org/linked-data/registry#forwardingCode" );
