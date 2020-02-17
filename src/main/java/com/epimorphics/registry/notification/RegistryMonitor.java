@@ -39,16 +39,18 @@ public class RegistryMonitor implements Startup {
     }
 
     private void onRegisterChange(Message msg) {
-        String content = extractContent(msg);
         String targetUri = msg.getTarget();
         String operation = msg.getOperation();
-
         List<String> topics = state.getTopics(targetUri);
-        try {
-            topics.forEach(topic -> agent.send(topic, content, targetUri, operation));
-        } catch (Exception e) {
-            log.error("Failed to send notification for monitored register " + targetUri + ".", e);
+        if (!topics.isEmpty()) {
+            String content = extractContent(msg);
+            try {
+                topics.forEach(topic -> agent.send(topic, content, targetUri, operation));
+            } catch (Exception e) {
+                log.error("Failed to send notification for monitored register " + targetUri + ".", e);
+            }
         }
+
     }
 
     private String extractContent(Message msg) {
