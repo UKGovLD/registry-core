@@ -5,11 +5,9 @@ package com.epimorphics.registry.notification;
  */
 public interface NotificationAgent {
     /**
-     * Send a message with the given parameters.
-     * @param topic The topic on which to send the notification.
-     * @param msg The current state of the target item, if the operation was constructive. Otherwise, null.
-     * @param target The URI of the item which was changed.
-     * @param operation The operation that was performed on the registry item.
+     * Send a notification.
+     * @param notification The notification to send.
+     * @throws Exception When the notification failed.
      */
-    void send(String topic, String msg, String target, String operation);
+    void send(Notification notification) throws Exception;
 }

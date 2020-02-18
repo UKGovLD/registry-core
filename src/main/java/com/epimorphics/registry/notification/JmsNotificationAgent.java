@@ -19,7 +19,11 @@ public class JmsNotificationAgent implements NotificationAgent {
         this.disableMessageId = disableMessageId;
     }
 
-    @Override public void send(String topic, String msg, String target, String operation) {
+    @Override public void send(Notification notification) throws Exception {
+        String target = notification.getTarget();
+        String operation = notification.getOperation();
+        String msg = notification.getMessage();
+
         if (connectionFct == null) {
             log.error("Connection factory not configured - unable to send message for target " + target + ".");
         }
@@ -27,18 +31,22 @@ public class JmsNotificationAgent implements NotificationAgent {
         try (TopicConnection connection = connectionFct.createTopicConnection()) {
             connection.start();
             TopicSession session = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-            Topic topicObj = session.createTopic(topic);
-            TopicPublisher producer = session.createPublisher(topicObj);
-            producer.setDisableMessageID(disableMessageId);
 
-            Message jmsMsg = session.createTextMessage(msg);
-            jmsMsg.setStringProperty("target", target);
-            jmsMsg.setStringProperty("operation", operation);
+            for (String topic: notification.getTopics()) {
+                Topic topicObj = session.createTopic(topic);
+                TopicPublisher producer = session.createPublisher(topicObj);
+                producer.setDisableMessageID(disableMessageId);
 
-            log.debug("Sending JMS notification to topic: " + topic + " for target: " + target + ", operation: " + operation + ", message: " + msg);
-            producer.publish(jmsMsg);
+                Message jmsMsg = session.createTextMessage(msg);
+                jmsMsg.setStringProperty("target", target);
+                jmsMsg.setStringProperty("operation", operation);
+
+                log.debug("Sending JMS notification to topic: " + topic + " for target: " + target + ", operation: " + operation + ", message: " + msg);
+                producer.publish(jmsMsg);
+            }
         } catch (Exception e) {
             log.error("Failed to send JMS notification for target: " + target, e);
+            throw e;
         }
     }
 }
