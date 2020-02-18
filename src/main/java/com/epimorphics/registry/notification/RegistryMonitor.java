@@ -70,6 +70,9 @@ public class RegistryMonitor implements Startup {
             store.beginSafeRead();
             try {
                 return store.getItem(msg.getTarget(), true).getModel();
+            } catch (Exception e) {
+                log.error("Failed to read item metadata from store - reverting to original message.");
+                return msg.getMessageAsModel();
             } finally {
                 store.endSafeRead();
             }
