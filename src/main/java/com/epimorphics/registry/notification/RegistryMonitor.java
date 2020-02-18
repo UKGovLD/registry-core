@@ -48,7 +48,7 @@ public class RegistryMonitor implements Startup {
             try {
                 agent.send(notification);
             } catch (Exception e) {
-                log.error("Failed to send notification for monitored register " + targetUri + ".", e);
+                log.error("Failed to send notification for monitored register item " + targetUri + ".", e);
             }
         }
     }
