@@ -91,6 +91,7 @@
     <jena.version>3.9.0</jena.version>
     <fuseki.version>3.9.0</fuseki.version>
     <tomcat.version>7.0.94</tomcat.version>
+    <lib.version>3.1.1-SNAPSHOT</lib.version>
   </properties>
 
   <dependencies>
@@ -107,6 +108,12 @@
       <artifactId>appbase</artifactId>
       <!-- <version>2.1.1-SNAPSHOT</version> -->
       <version>${appbase.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.epimorphics</groupId>
+      <artifactId>lib</artifactId>
+      <version>${lib.version}</version>
     </dependency>
     
     <dependency>
