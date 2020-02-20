@@ -2,7 +2,6 @@ package com.epimorphics.registry.notification;
 
 import com.epimorphics.appbase.core.App;
 import com.epimorphics.appbase.core.Startup;
-import com.epimorphics.util.EpiException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
@@ -11,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.time.Instant;
 import java.util.*;
 
@@ -63,15 +63,15 @@ public class BacklogNotificationAgent implements NotificationAgent, Startup {
             try {
                 File file = writeToFile(notification);
                 queue.add(file.getAbsolutePath());
-            } catch (IOException ioe) {
-                log.error("Failed to add notification to backlog.", ioe);
+            } catch (Exception e) {
+                log.error("Failed to add notification to backlog.", e);
             }
         } else {
             log.error("Failed to add notification to backlog - backlog is full!");
         }
     }
 
-    private File writeToFile(Notification notification) throws IOException {
+    private File writeToFile(Notification notification) throws Exception {
         Map<String, String> properties = new HashMap<>();
         properties.put("topics", String.join(",", notification.getTopics()));
         properties.put("target", notification.getTarget());
@@ -81,14 +81,16 @@ public class BacklogNotificationAgent implements NotificationAgent, Startup {
             properties.put("message", notification.getMessage());
         }
 
-        File file = new File(location, nextFileName());
+        File file = new File(location, getFileName(notification));
         mapper.writeValue(file, properties);
 
         return file;
     }
 
-    private String nextFileName() {
-        return Instant.now().toString();
+    private String getFileName(Notification notification) throws Exception {
+        String timestamp = Instant.now().toString();
+        String target = URLEncoder.encode(notification.getTarget(), "UTF-8");
+        return timestamp + "_" + target;
     }
 
     private synchronized void clearBacklog() throws Exception {
