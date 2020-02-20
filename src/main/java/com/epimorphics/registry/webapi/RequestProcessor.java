@@ -166,11 +166,21 @@ public class RequestProcessor extends BaseEndpoint {
         return builder.build();
     }
 
-    public static Response render(String template, UriInfo uriInfo, ServletContext context, HttpServletRequest request, Object...params) {
-        String language = request.getLocale().getLanguage();
-        if (language.isEmpty()) {
-            language = "en";
+    private static String getRequestLanguage(HttpServletRequest request) {
+        String param = request.getParameter("lang");
+        if (param != null && !param.isEmpty()) {
+            return param;
         }
+        String header = request.getLocale().getLanguage();
+        if (header != null && !header.isEmpty()) {
+            return header;
+        }
+
+        return "en";
+    }
+
+    public static Response render(String template, UriInfo uriInfo, ServletContext context, HttpServletRequest request, Object...params) {
+        String language = getRequestLanguage(request);
         Object[] fullParams = new Object[params.length + 10];
         int i = 0;
         while (i < params.length) {
