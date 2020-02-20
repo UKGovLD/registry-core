@@ -36,6 +36,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
+import com.epimorphics.registry.language.LanguageManager;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.util.FileUtils;
@@ -125,6 +126,7 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
     protected GenericConfig configExtensions;
     protected RequestLogger requestLogger;
     protected boolean cacheRegisters = false;
+    protected LanguageManager languageManager = new LanguageManager.Default();
     
     public void setBaseUri(String uri) {
         baseURI = uri;
@@ -224,6 +226,14 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
         this.cacheRegisters = cacheRegisters;
     }
 
+    public void setLanguageManager(LanguageManager languageManager) {
+        this.languageManager = languageManager;
+    }
+
+    public LanguageManager getLanguageManager() {
+        return languageManager;
+    }
+
     @Override
     public void startup(App app) {
         super.startup(app);
@@ -290,6 +300,11 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
             backupService = new BackupService(backupDir, ((StoreBaseImpl)baseStore).getStore());
         } else {
             log.warn("No backup service configured");
+        }
+
+        LanguageManager languageManager = app.getA(LanguageManager.class);
+        if (languageManager != null) {
+            setLanguageManager(languageManager);
         }
     }
 
