@@ -18,12 +18,12 @@ public class RegistryMonitor implements Startup {
 
     private final Logger log = LoggerFactory.getLogger(RegistryMonitor.class);
 
-    private State state;
+    private Config config;
     private NotificationAgent agent;
     private StoreAPI store;
 
-    public void setState(State state) {
-        this.state = state;
+    public void setConfig(Config config) {
+        this.config = config;
     }
 
     public void setAgent(NotificationAgent agent) {
@@ -41,7 +41,7 @@ public class RegistryMonitor implements Startup {
     private void onRegisterChange(Message msg) {
         String targetUri = msg.getTarget();
         String operation = msg.getOperation();
-        List<String> topics = state.getTopics(targetUri);
+        List<String> topics = config.getTopics(targetUri);
         if (!topics.isEmpty()) { // If there are no topics to send to, then the entry is not monitored
             String content = extractContent(msg);
             Notification notification = new Notification.Base(topics, content, targetUri, operation);
@@ -84,7 +84,7 @@ public class RegistryMonitor implements Startup {
     /**
      * Defines the state of the registry monitoring configuration.
      */
-    interface State {
+    interface Config {
         /**
          * Determine the topics which should be notified when the item with the given URI changes.
          * @param targetUri The URI of a register item to check for monitors.

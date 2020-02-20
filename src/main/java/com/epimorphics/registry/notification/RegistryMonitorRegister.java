@@ -23,7 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class RegistryMonitorRegister implements RegistryMonitor.State, Startup {
+public class RegistryMonitorRegister implements RegistryMonitor.Config, Startup {
     private static final String MONITOR_REGISTER = "/system/monitor"; // relative to base URI
 
     private final Logger log = LoggerFactory.getLogger(RegistryMonitorRegister.class);
