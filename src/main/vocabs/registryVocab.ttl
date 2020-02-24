@@ -342,6 +342,11 @@ reg:notifies a owl:ObjectProperty;
     rdfs:range xsd:string;
     .
 
+reg:Topic a owl:Class;
+    rdfs:label "Topic"@en;
+    rdfs:comment "A messaging topic that can be notified of changes in the registry.";
+    .
+
 # -- EntityReference ------------------------------------------------------
 
 reg:EntityReference a owl:Class;

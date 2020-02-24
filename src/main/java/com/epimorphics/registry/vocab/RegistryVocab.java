@@ -239,6 +239,7 @@ public class RegistryVocab {
     public static final OntClass CompareResult = m_model.createClass(NS + "CompareResult");
 
     public static final OntClass MonitorSpec = m_model.createClass(NS + "MonitorSpec");
+    public static final OntClass Topic = m_model.createClass(NS + "Topic");
     
     /** <p>Concept scheme containing registry status codes</p> */
     public static final Individual StatusScheme = m_model.createIndividual( "http://purl.org/linked-data/registry#StatusScheme", m_model.createClass( "http://www.w3.org/2004/02/skos/core#ConceptScheme" ) );
