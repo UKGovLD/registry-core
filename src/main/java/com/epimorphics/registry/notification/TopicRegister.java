@@ -5,6 +5,8 @@ import com.epimorphics.appbase.core.Startup;
 import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.Register;
 import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.message.MessagingService;
+import com.epimorphics.registry.message.ProcessIfChanges;
 import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.vocab.RegistryVocab;
@@ -28,6 +30,11 @@ public class TopicRegister implements Startup {
     @Override public void startup(App app) {
         Registry reg = app.getA(Registry.class);
         initTopics(reg);
+
+        String register = reg.getBaseURI() + TOPIC_REGISTER;
+        MessagingService msgSvc = reg.getMessagingService();
+        MessagingService.Process onMonitorChange = new ProcessIfChanges(msg -> initTopics(reg), register);
+        msgSvc.processMessages(onMonitorChange);
     }
 
     private synchronized void initTopics(Registry reg) {
@@ -50,8 +57,8 @@ public class TopicRegister implements Startup {
     }
 
     private void addTopic(RegisterEntryInfo entry, StoreAPI store) {
-        String topicUri = entry.getItemURI();
-        Resource root = store.getDescription(entry.getEntityURI()).getRoot();
+        String topicUri = entry.getEntityURI();
+        Resource root = store.getDescription(topicUri).getRoot();
         if (root.hasProperty(RDF.type, RegistryVocab.Topic)) {
             Statement topicNameStmt = root.getProperty(DCTerms.identifier);
             if (topicNameStmt == null) {
