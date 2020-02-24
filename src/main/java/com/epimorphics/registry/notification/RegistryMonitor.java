@@ -18,11 +18,11 @@ public class RegistryMonitor implements Startup {
 
     private final Logger log = LoggerFactory.getLogger(RegistryMonitor.class);
 
-    private Config config;
+    private MonitorConfig config;
     private NotificationAgent agent;
     private StoreAPI store;
 
-    public void setConfig(Config config) {
+    public void setConfig(MonitorConfig config) {
         this.config = config;
     }
 
@@ -81,15 +81,4 @@ public class RegistryMonitor implements Startup {
         }
     }
 
-    /**
-     * Defines the state of the registry monitoring configuration.
-     */
-    interface Config {
-        /**
-         * Determine the topics which should be notified when the item with the given URI changes.
-         * @param targetUri The URI of a register item to check for monitors.
-         * @return The topics to be notified. If empty, the item is not monitored and no notification is required.
-         */
-        List<String> getTopics(String targetUri);
-    }
 }

@@ -11,27 +11,32 @@ import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.util.NameUtils;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
-public class RegistryMonitorRegister implements RegistryMonitor.Config, Startup {
+public class MonitorRegister implements MonitorConfig, Startup {
     private static final String MONITOR_REGISTER = "/system/monitor"; // relative to base URI
 
-    private final Logger log = LoggerFactory.getLogger(RegistryMonitorRegister.class);
+    private final Logger log = LoggerFactory.getLogger(MonitorRegister.class);
     private final List<RegisterMonitor> registers = new ArrayList<>();
     private List<String> defaultTopics = Collections.emptyList();
+    private TopicRegister topicRegister;
 
     public void setDefaultTopic(String topics) {
         this.defaultTopics = Arrays.asList(topics.split(","));
+    }
+
+    public void setTopicRegister(TopicRegister topicRegister) {
+        this.topicRegister = topicRegister;
     }
 
     @Override public void startup(App app) {
@@ -41,7 +46,6 @@ public class RegistryMonitorRegister implements RegistryMonitor.Config, Startup 
         String register = reg.getBaseURI() + MONITOR_REGISTER;
         MessagingService msgSvc = reg.getMessagingService();
         MessagingService.Process onMonitorChange = new ProcessIfChanges(msg -> initMonitor(reg), register);
-
         msgSvc.processMessages(onMonitorChange);
     }
 
@@ -110,15 +114,25 @@ public class RegistryMonitorRegister implements RegistryMonitor.Config, Startup 
     }
 
     private List<String> getTopics(Resource root) {
-        List<String> topics = root.listProperties(RegistryVocab.notifies)
-                .mapWith(stmt -> stmt.getObject().asLiteral().getLexicalForm())
-                .toList();
-
-        if (topics.isEmpty()) {
+        StmtIterator topicsIt = root.listProperties(RegistryVocab.notifies);
+        if (!topicsIt.hasNext()) {
             return defaultTopics;
-        } else {
-            return topics;
         }
+
+        return topicsIt.mapWith(stmt -> {
+            RDFNode topicRef = stmt.getObject();
+            if (topicRef.isLiteral()) {
+                return topicRef.asLiteral().getLexicalForm();
+            } else {
+                String topicUri = topicRef.asResource().getURI();
+                if (topicRegister == null) {
+                    log.error("Unable to resolve topic " + topicUri + ": Topic register is not configured.");
+                    return null;
+                }
+
+                return topicRegister.getTopicName(topicUri);
+            }
+        }).filterDrop(Objects::isNull).toList();
     }
 
     private static class RegisterMonitor {
