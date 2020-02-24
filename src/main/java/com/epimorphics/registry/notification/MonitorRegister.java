@@ -82,7 +82,7 @@ public class MonitorRegister implements MonitorConfig, Startup {
             String register = getRegisterUri(root);
             if (register != null) {
                 List<String> excludes = getExclusions(root);
-                List<String> topics = getTopics(root);
+                List<TopicRef> topics = getTopics(root);
                 RegisterMonitor monitor = new RegisterMonitor(register, excludes, topics);
 
                 registers.add(monitor);
@@ -113,16 +113,18 @@ public class MonitorRegister implements MonitorConfig, Startup {
                 .toList();
     }
 
-    private List<String> getTopics(Resource root) {
+    private List<TopicRef> getTopics(Resource root) {
         StmtIterator topicsIt = root.listProperties(RegistryVocab.notifies);
         if (!topicsIt.hasNext()) {
-            return defaultTopics;
+            return defaultTopics.stream()
+                    .map(LiteralTopicRef::new)
+                    .collect(Collectors.toList());
         }
 
         return topicsIt.mapWith(stmt -> {
             RDFNode topicRef = stmt.getObject();
             if (topicRef.isLiteral()) {
-                return topicRef.asLiteral().getLexicalForm();
+                return new LiteralTopicRef(topicRef.asLiteral().getLexicalForm());
             } else {
                 String topicUri = topicRef.asResource().getURI();
                 if (topicRegister == null) {
@@ -130,7 +132,7 @@ public class MonitorRegister implements MonitorConfig, Startup {
                     return null;
                 }
 
-                return topicRegister.getTopicName(topicUri);
+                return new ResourceTopicRef(topicUri);
             }
         }).filterDrop(Objects::isNull).toList();
     }
@@ -138,9 +140,9 @@ public class MonitorRegister implements MonitorConfig, Startup {
     private static class RegisterMonitor {
         private final String register;
         private final List<String> excludes;
-        private final List<String> topics;
+        private final List<TopicRef> topics;
 
-        RegisterMonitor(String register, List<String> excludes, List<String> topics) {
+        RegisterMonitor(String register, List<String> excludes, List<TopicRef> topics) {
             this.register = register;
             this.excludes = excludes;
             this.topics = topics;
@@ -151,7 +153,10 @@ public class MonitorRegister implements MonitorConfig, Startup {
         }
 
         List<String> topics() {
-            return topics;
+            return topics.stream()
+                    .map(TopicRef::getName)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
         }
 
         private Boolean excludes(String targetUri) {
@@ -161,5 +166,29 @@ public class MonitorRegister implements MonitorConfig, Startup {
         private Boolean isSubRegister(String parent, String child) {
             return child.equals(parent) || child.startsWith(parent + "/") || child.replace("/_", "/").equals(parent);
         }
+    }
+
+    private interface TopicRef {
+        String getName();
+    }
+
+    private static class LiteralTopicRef implements TopicRef {
+        private final String value;
+
+        LiteralTopicRef(String value) {
+            this.value = value;
+        }
+
+        public String getName() { return value; }
+    }
+
+    private class ResourceTopicRef implements TopicRef {
+        private final String uri;
+
+        ResourceTopicRef(String uri) {
+            this.uri = uri;
+        }
+
+        public String getName() { return topicRegister.getTopicName(uri); }
     }
 }
