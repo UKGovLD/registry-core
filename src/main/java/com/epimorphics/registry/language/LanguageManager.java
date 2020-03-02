@@ -18,8 +18,14 @@ public interface LanguageManager {
      */
     List<Language> getLanguages();
 
+    /**
+     * TODO
+     */
+    Boolean getUseCookies();
+
     class Default implements LanguageManager {
         @Override public Boolean isMultilingual() { return false; }
         @Override public List<Language> getLanguages() { return Collections.emptyList(); }
+        @Override public Boolean getUseCookies() { return null; }
     }
 }
