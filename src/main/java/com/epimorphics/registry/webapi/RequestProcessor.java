@@ -179,7 +179,7 @@ public class RequestProcessor extends BaseEndpoint {
             return header;
         }
 
-        return "en";
+        return languageManager.getDefaultLanguage();
     }
 
     private static void setLanguageCookie(LanguageManager languageManager, ResponseBuilder response, HttpServletRequest request) {
@@ -213,6 +213,8 @@ public class RequestProcessor extends BaseEndpoint {
         fullParams[i++] = request;
         fullParams[i++] = "language";
         fullParams[i++] = language;
+        fullParams[i++] = "msg";
+        fullParams[i++] = languageManager.getMessages(language);
 
         VelocityRender velocity = AppConfig.getApp().getA(VelocityRender.class);
         StreamingOutput out = velocity.render(template, uriInfo.getPath(), context, uriInfo.getQueryParameters(), fullParams);
