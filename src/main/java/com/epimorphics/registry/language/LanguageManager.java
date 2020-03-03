@@ -19,7 +19,8 @@ public interface LanguageManager {
     List<Language> getLanguages();
 
     /**
-     * TODO
+     * Determines whether to use cookies to store users' language preference.
+     * @return True if and only if cookies should be used. Otherwise, false.
      */
     Boolean getUseCookies();
 
