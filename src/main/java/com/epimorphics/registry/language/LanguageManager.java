@@ -1,6 +1,7 @@
 package com.epimorphics.registry.language;
 
 import com.epimorphics.registry.language.message.FileMessageManager;
+import com.epimorphics.registry.language.message.MessageManager;
 import com.epimorphics.registry.language.message.Messages;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +43,7 @@ public interface LanguageManager {
 
     class Default implements LanguageManager {
         private final Logger log = LoggerFactory.getLogger(Default.class);
-        private final FileMessageManager msgManager = new FileMessageManager();
+        private final MessageManager msgManager = new FileMessageManager();
         private final String defaultLang = "en";
 
         @Override public Boolean isMultilingual() { return false; }

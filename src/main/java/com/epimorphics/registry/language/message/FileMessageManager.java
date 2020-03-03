@@ -21,7 +21,7 @@ public class FileMessageManager implements MessageManager {
     private final Logger log = LoggerFactory.getLogger(FileMessageManager.class);
     private final Map<String, Messages> messagesByLang;
 
-    FileMessageManager() {
+    public FileMessageManager() {
         this("/opt/ldregistry/config/language/messages");
     }
 
@@ -40,7 +40,7 @@ public class FileMessageManager implements MessageManager {
         return Arrays.stream(msgFiles).map(msgFile -> {
             String lang = msgFile.getName().replace(".properties", "");
             try {
-                Messages msgs = getMessages(msgFile);
+                Messages msgs = getMessages(lang, msgFile);
                 return new Pair<>(lang, msgs);
             } catch (IOException ioe) {
                 throw new EpiException("Unable to read message files.", ioe);
@@ -48,14 +48,9 @@ public class FileMessageManager implements MessageManager {
         }).collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
     }
 
-    private Messages getMessages(File msgFile) throws IOException {
+    private Messages getMessages(String lang, File msgFile) throws IOException {
         Properties props = getProperties(msgFile);
-        MessageProperties msgs = new MessageProperties(props);
-        if (msgs.getLang() == null) {
-            log.error("The message file " + msgFile.getAbsolutePath() + " does not have an associated language!");
-        }
-
-        return msgs;
+        return new MessageProperties(lang, props);
     }
 
     private Properties getProperties(File msgFile) throws IOException {
