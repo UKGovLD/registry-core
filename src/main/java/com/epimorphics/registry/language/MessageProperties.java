@@ -23,6 +23,6 @@ public class MessageProperties implements Messages {
             return "[ MESSAGE MISSING ]";
         }
 
-        return String.format(msgFormat, (Object) params);
+        return String.format(msgFormat, (Object[]) params);
     }
 }

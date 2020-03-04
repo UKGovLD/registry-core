@@ -38,6 +38,7 @@ public class FileMessageManager implements MessageManager {
         }
 
         return Arrays.stream(msgFiles).map(msgFile -> {
+            log.info("Configuring messages file at " + msgFile.getAbsolutePath());
             String lang = msgFile.getName().replace(".properties", "");
             try {
                 Messages msgs = getMessages(lang, msgFile);

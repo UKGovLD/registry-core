@@ -197,7 +197,7 @@ public class RequestProcessor extends BaseEndpoint {
         LanguageManager languageManager = reg.getLanguageManager();
 
         String language = getRequestLanguage(languageManager, request);
-        Object[] fullParams = new Object[params.length + 10];
+        Object[] fullParams = new Object[params.length + 12];
         int i = 0;
         while (i < params.length) {
             fullParams[i] = params[i];
