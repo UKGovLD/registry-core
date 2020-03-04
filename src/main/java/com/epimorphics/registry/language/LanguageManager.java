@@ -27,6 +27,6 @@ public interface LanguageManager {
     class Default implements LanguageManager {
         @Override public Boolean isMultilingual() { return false; }
         @Override public List<Language> getLanguages() { return Collections.emptyList(); }
-        @Override public Boolean getUseCookies() { return null; }
+        @Override public Boolean getUseCookies() { return false; }
     }
 }
