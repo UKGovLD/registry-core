@@ -247,21 +247,26 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
         }
         registry = this;   // Assumes singleton registry
 
-        // Initialize the registry RDF store from the bootstrap registers if needed
-        Description root = store.getDescription(getBaseURI() + "/");
-        if (root == null) {
-            // Blank store, need to install a bootstrap root registers
-            for(String bootSrc : bootFile.split("\\|")) {
-                log.info("Loading bootstrap file " + expandFileLocation(bootSrc));
-                store.loadBootstrap( expandFileLocation(bootSrc) );
-            }
-            if (bootdirs != null) {
-                for (String bootdir : bootdirs.split("\\|")) {
-                    bootdir = expandFileLocation( bootdir );
-                    loadInitialRegisterTree(bootdir);
+        store.beginSafeRead();
+        try {
+            // Initialize the registry RDF store from the bootstrap registers if needed
+            Description root = store.getDescription(getBaseURI() + "/");
+            if (root == null) {
+                // Blank store, need to install a bootstrap root registers
+                for(String bootSrc : bootFile.split("\\|")) {
+                    log.info("Loading bootstrap file " + expandFileLocation(bootSrc));
+                    store.loadBootstrap( expandFileLocation(bootSrc) );
                 }
+                if (bootdirs != null) {
+                    for (String bootdir : bootdirs.split("\\|")) {
+                        bootdir = expandFileLocation( bootdir );
+                        loadInitialRegisterTree(bootdir);
+                    }
+                }
+                log.info("Installed bootstrap root register");
             }
-            log.info("Installed bootstrap root register");
+        } finally {
+            store.endSafeRead();
         }
 
         // Initialize the forwarding service from the stored forwarding records
@@ -302,10 +307,6 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
             log.warn("No backup service configured");
         }
 
-        LanguageManager languageManager = app.getA(LanguageManager.class);
-        if (languageManager != null) {
-            setLanguageManager(languageManager);
-        }
     }
 
     /**
