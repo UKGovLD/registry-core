@@ -37,6 +37,8 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import com.epimorphics.registry.language.LanguageManager;
+import com.epimorphics.registry.security.DBUserStore;
+import com.epimorphics.registry.security.RegPermission;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.util.FileUtils;
@@ -247,26 +249,28 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
         }
         registry = this;   // Assumes singleton registry
 
+        // Initialize the registry RDF store from the bootstrap registers if needed
+        Description root;
         store.beginSafeRead();
         try {
-            // Initialize the registry RDF store from the bootstrap registers if needed
-            Description root = store.getDescription(getBaseURI() + "/");
-            if (root == null) {
-                // Blank store, need to install a bootstrap root registers
-                for(String bootSrc : bootFile.split("\\|")) {
-                    log.info("Loading bootstrap file " + expandFileLocation(bootSrc));
-                    store.loadBootstrap( expandFileLocation(bootSrc) );
-                }
-                if (bootdirs != null) {
-                    for (String bootdir : bootdirs.split("\\|")) {
-                        bootdir = expandFileLocation( bootdir );
-                        loadInitialRegisterTree(bootdir);
-                    }
-                }
-                log.info("Installed bootstrap root register");
-            }
+            root = store.getDescription(getBaseURI() + "/");
         } finally {
             store.endSafeRead();
+        }
+
+        if (root == null) {
+            // Blank store, need to install a bootstrap root registers
+            for(String bootSrc : bootFile.split("\\|")) {
+                log.info("Loading bootstrap file " + expandFileLocation(bootSrc));
+                store.loadBootstrap( expandFileLocation(bootSrc) );
+            }
+            if (bootdirs != null) {
+                for (String bootdir : bootdirs.split("\\|")) {
+                    bootdir = expandFileLocation( bootdir );
+                    loadInitialRegisterTree(bootdir);
+                }
+            }
+            log.info("Installed bootstrap root register");
         }
 
         // Initialize the forwarding service from the stored forwarding records
@@ -306,7 +310,6 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
         } else {
             log.warn("No backup service configured");
         }
-
     }
 
     /**
