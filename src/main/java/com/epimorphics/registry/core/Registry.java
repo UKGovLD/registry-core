@@ -21,47 +21,15 @@
 
 package com.epimorphics.registry.core;
 
-import static com.epimorphics.registry.core.Status.LIFECYCLE_REGISTER;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-
-import com.epimorphics.registry.language.LanguageManager;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.util.FileUtils;
-import org.apache.jena.vocabulary.RDF;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.UnavailableSecurityManagerException;
-import org.glassfish.jersey.uri.UriComponent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.epimorphics.appbase.core.App;
-import com.epimorphics.appbase.core.ComponentBase;
-import com.epimorphics.appbase.core.GenericConfig;
 import com.epimorphics.appbase.core.Shutdown;
-import com.epimorphics.appbase.core.Startup;
+import com.epimorphics.appbase.core.*;
 import com.epimorphics.appbase.templates.VelocityRender;
 import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.rdfutil.ModelWrapper;
 import com.epimorphics.registry.core.Command.Operation;
 import com.epimorphics.registry.core.ForwardingRecord.Type;
-import com.epimorphics.registry.message.LocalMessagingService;
-import com.epimorphics.registry.message.Message;
-import com.epimorphics.registry.message.MessagingService;
-import com.epimorphics.registry.message.ProcessIfChanges;
-import com.epimorphics.registry.message.RequestLogger;
+import com.epimorphics.registry.language.LanguageManager;
+import com.epimorphics.registry.message.*;
 import com.epimorphics.registry.security.UserInfo;
 import com.epimorphics.registry.security.UserStore;
 import com.epimorphics.registry.store.BackupService;
@@ -73,6 +41,29 @@ import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.facets.FacetService;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.util.FileUtil;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.util.FileUtils;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.UnavailableSecurityManagerException;
+import org.glassfish.jersey.uri.UriComponent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.epimorphics.registry.core.Status.LIFECYCLE_REGISTER;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 /**
  * This the primary configuration point for the Registry.
@@ -248,7 +239,14 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
         registry = this;   // Assumes singleton registry
 
         // Initialize the registry RDF store from the bootstrap registers if needed
-        Description root = store.getDescription(getBaseURI() + "/");
+        Description root;
+        store.beginSafeRead();
+        try {
+            root = store.getDescription(getBaseURI() + "/");
+        } finally {
+            store.endSafeRead();
+        }
+
         if (root == null) {
             // Blank store, need to install a bootstrap root registers
             for(String bootSrc : bootFile.split("\\|")) {
@@ -300,11 +298,6 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
             backupService = new BackupService(backupDir, ((StoreBaseImpl)baseStore).getStore());
         } else {
             log.warn("No backup service configured");
-        }
-
-        LanguageManager languageManager = app.getA(LanguageManager.class);
-        if (languageManager != null) {
-            setLanguageManager(languageManager);
         }
     }
 

@@ -48,7 +48,8 @@ public interface LanguageManager {
 
         @Override public Boolean isMultilingual() { return false; }
         @Override public List<Language> getLanguages() { return Collections.emptyList(); }
-        @Override public Boolean getUseCookies() { return null; }
+
+        @Override public Boolean getUseCookies() { return false; }
         @Override public String getDefaultLanguage() { return defaultLang; }
 
         @Override public Messages getMessages(String lang) {
