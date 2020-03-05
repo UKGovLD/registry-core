@@ -1,6 +1,6 @@
 package com.epimorphics.registry.language.message;
 
-import com.epimorphics.registry.language.MessageProperties;
+import com.epimorphics.registry.language.MessagesProperties;
 import com.epimorphics.util.EpiException;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.jena.atlas.lib.Pair;
@@ -51,7 +51,7 @@ public class FileMessageManager implements MessageManager {
 
     private Messages getMessages(String lang, File msgFile) throws IOException {
         Properties props = getProperties(msgFile);
-        return new MessageProperties(lang, props);
+        return new MessagesProperties(lang, props);
     }
 
     private Properties getProperties(File msgFile) throws IOException {

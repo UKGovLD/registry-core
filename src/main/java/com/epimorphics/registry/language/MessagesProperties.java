@@ -7,12 +7,12 @@ import org.slf4j.LoggerFactory;
 import java.text.MessageFormat;
 import java.util.Properties;
 
-public class MessageProperties implements Messages {
-    private final Logger log = LoggerFactory.getLogger(MessageProperties.class);
+public class MessagesProperties implements Messages {
+    private final Logger log = LoggerFactory.getLogger(MessagesProperties.class);
     private final String lang;
     private final Properties props;
 
-    public MessageProperties(String lang, Properties props) {
+    public MessagesProperties(String lang, Properties props) {
         this.lang = lang;
         this.props = props;
     }
