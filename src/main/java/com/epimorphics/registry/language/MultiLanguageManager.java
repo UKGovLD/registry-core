@@ -1,6 +1,7 @@
 package com.epimorphics.registry.language;
 
 import com.epimorphics.registry.language.message.FileMessageManager;
+import com.epimorphics.registry.language.message.MessageManager;
 import com.epimorphics.registry.language.message.Messages;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,11 +10,19 @@ import java.util.List;
 
 public class MultiLanguageManager implements LanguageManager {
     private final Logger log = LoggerFactory.getLogger(MultiLanguageManager.class);
-    private FileMessageManager msgManager = new FileMessageManager();
+    private MessageManager msgManager;
 
     private String defaultLang = "en";
     private Boolean useCookies = false;
     private LanguageConfig config;
+
+    public MultiLanguageManager() {
+        this.msgManager = new FileMessageManager();
+    }
+
+    MultiLanguageManager(MessageManager msgManager) {
+        this.msgManager = msgManager;
+    }
 
     public void setUseCookies(Boolean useCookies) {
         this.useCookies = useCookies;
