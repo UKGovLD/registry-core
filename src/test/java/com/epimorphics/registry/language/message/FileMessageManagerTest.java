@@ -10,7 +10,6 @@ import java.nio.file.Files;
 import static org.junit.Assert.*;
 
 public class FileMessageManagerTest {
-    private String srcDirPath;
     private FileMessageManager file;
 
     public FileMessageManagerTest() throws IOException {
@@ -33,8 +32,7 @@ public class FileMessageManagerTest {
                 .append("welcome.heading = Bienvenue {0} {1}!")
                 .close();
 
-        this.srcDirPath = configDir.getAbsolutePath();
-        this.file = new FileMessageManager(srcDirPath);
+        this.file = new FileMessageManager(configDir.getAbsolutePath());
     }
 
     @Test
