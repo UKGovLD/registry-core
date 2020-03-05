@@ -6,18 +6,18 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
-public class MessageProperties implements Messages {
-    private final Logger log = LoggerFactory.getLogger(MessageProperties.class);
+public class MessagesProperties implements Messages {
+    private final Logger log = LoggerFactory.getLogger(MessagesProperties.class);
     private final String lang;
     private final Properties props;
 
-    public MessageProperties(String lang, Properties props) {
+    public MessagesProperties(String lang, Properties props) {
         this.lang = lang;
         this.props = props;
     }
 
     @Override public String get(String id, String... params) {
-        String msgFormat = props.get(id).toString();
+        String msgFormat = props.getProperty(id);
         if (msgFormat == null) {
             log.warn("A message with id: " + id + " was expected for language: " + lang + " but was not found.");
             return "[ MESSAGE MISSING ]";
