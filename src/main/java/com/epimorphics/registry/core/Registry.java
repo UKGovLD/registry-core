@@ -117,7 +117,7 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
     protected GenericConfig configExtensions;
     protected RequestLogger requestLogger;
     protected boolean cacheRegisters = false;
-    protected LanguageManager languageManager = new LanguageManager.Default();
+    protected LanguageManager languageManager;
     
     public void setBaseUri(String uri) {
         baseURI = uri;
@@ -222,6 +222,9 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
     }
 
     public LanguageManager getLanguageManager() {
+        if (languageManager == null) {
+            languageManager = new LanguageManager.Default();
+        }
         return languageManager;
     }
 
