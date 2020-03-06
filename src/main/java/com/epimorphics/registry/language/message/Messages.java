@@ -11,10 +11,10 @@ public interface Messages {
      * @param params The bindings to apply.
      * @return The formatted message.
      */
-    String get(String id, String... params);
+    String get(String id, Object... params);
 
     class Empty implements Messages {
-        @Override public String get(String id, String... params) {
+        @Override public String get(String id, Object... params) {
             return "";
         }
     }

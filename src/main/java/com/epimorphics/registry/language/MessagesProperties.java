@@ -17,7 +17,7 @@ public class MessagesProperties implements Messages {
         this.props = props;
     }
 
-    @Override public String get(String id, String... params) {
+    @Override public String get(String id, Object... params) {
         String msgFormat = props.getProperty(id);
         if (msgFormat == null) {
             log.warn("A message with id: " + id + " was expected for language: " + lang + " but was not found.");
