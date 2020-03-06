@@ -45,6 +45,17 @@ public interface LanguageManager {
         private final Logger log = LoggerFactory.getLogger(Default.class);
         private final MessageManager msgManager = new FileMessageManager();
         private final String defaultLang = "en";
+        private final Messages defaultMsgs;
+
+        Default() {
+            Messages defaultMsgs = msgManager.getMessages(defaultLang);
+            if (defaultMsgs == null) {
+                log.warn("Messages for default language (" + defaultLang + ") are not configured.");
+                defaultMsgs = new Messages.Empty();
+            }
+
+            this.defaultMsgs = defaultMsgs;
+        }
 
         @Override public Boolean isMultilingual() { return false; }
         @Override public List<Language> getLanguages() { return Collections.emptyList(); }
@@ -53,13 +64,7 @@ public interface LanguageManager {
         @Override public String getDefaultLanguage() { return defaultLang; }
 
         @Override public Messages getMessages(String lang) {
-            Messages msgs = msgManager.getMessages(defaultLang);
-            if (msgs != null) {
-                return msgs;
-            }
-
-            log.error("Messages for default language (" + defaultLang + ") are not configured.");
-            return new Messages.Empty();
+            return defaultMsgs;
         }
     }
 }

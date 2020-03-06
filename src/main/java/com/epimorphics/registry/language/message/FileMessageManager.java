@@ -33,7 +33,7 @@ public class FileMessageManager implements MessageManager {
     private Map<String, Messages> getMessagesByLang(File msgDir) {
         File[] msgFiles = msgDir.listFiles((FileFilter) new SuffixFileFilter("properties"));
         if (msgFiles == null) {
-            log.error("Messages directory does not exist: " + msgDir.getAbsolutePath());
+            log.warn("Messages directory does not exist: " + msgDir.getAbsolutePath());
             return new HashMap<>();
         }
 
