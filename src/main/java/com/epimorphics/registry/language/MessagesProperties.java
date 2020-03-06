@@ -24,6 +24,11 @@ public class MessagesProperties implements Messages {
             return "[ MESSAGE MISSING ]";
         }
 
-        return MessageFormat.format(msgFormat, (Object[]) params);
+        MessageFormat messageFormat = new MessageFormat(msgFormat);
+        if (messageFormat.getFormats().length != params.length) {
+            log.error("A message with id: " + id + " expects " + messageFormat.getFormats().length + " parameters but " + params.length + " are provided.");
+        }
+
+        return messageFormat.format((Object[]) params);
     }
 }

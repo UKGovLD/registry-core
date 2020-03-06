@@ -42,6 +42,8 @@ public class FileMessageManagerTest {
         assertEquals("Name", en.get("name.label"));
         assertEquals("Surname", en.get("surname.label"));
         assertEquals("Welcome John Smith!", en.get("welcome.heading", "John", "Smith"));
+        assertEquals("Welcome John {1}!", en.get("welcome.heading", "John"));
+        assertEquals("Welcome John Andrew!", en.get("welcome.heading", "John", "Andrew", "Smith"));
         assertEquals("[ MESSAGE MISSING ]", en.get("footer.email.field"));
 
         Messages fr = file.getMessages("fr");
