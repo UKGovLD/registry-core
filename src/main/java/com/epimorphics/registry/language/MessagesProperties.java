@@ -21,12 +21,12 @@ public class MessagesProperties implements Messages {
         String msgFormat = props.getProperty(id);
         if (msgFormat == null) {
             log.warn("A message with id: " + id + " was expected for language: " + lang + " but was not found.");
-            return "[ MESSAGE MISSING ]";
+            return "";
         }
 
         MessageFormat messageFormat = new MessageFormat(msgFormat);
         if (messageFormat.getFormats().length != params.length) {
-            log.error("A message with id: " + id + " expects " + messageFormat.getFormats().length + " parameters but " + params.length + " are provided.");
+            log.warn("A message with id: " + id + " expects " + messageFormat.getFormats().length + " parameters but " + params.length + " are provided.");
         }
 
         return messageFormat.format((Object[]) params);
