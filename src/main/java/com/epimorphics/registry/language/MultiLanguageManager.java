@@ -1,5 +1,7 @@
 package com.epimorphics.registry.language;
 
+import com.epimorphics.appbase.core.App;
+import com.epimorphics.appbase.core.Startup;
 import com.epimorphics.registry.language.message.FileMessageManager;
 import com.epimorphics.registry.language.message.MessageManager;
 import com.epimorphics.registry.language.message.Messages;
@@ -8,13 +10,14 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class MultiLanguageManager implements LanguageManager {
+public class MultiLanguageManager implements LanguageManager, Startup {
     private final Logger log = LoggerFactory.getLogger(MultiLanguageManager.class);
     private MessageManager msgManager;
 
     private String defaultLang = "en";
     private Boolean useCookies = false;
     private LanguageConfig config;
+    private Messages defaultMsgs;
 
     public MultiLanguageManager() {
         this.msgManager = new FileMessageManager();
@@ -52,18 +55,22 @@ public class MultiLanguageManager implements LanguageManager {
         return config.getLanguages();
     }
 
+    @Override public void startup(App app) {
+        Messages defaultMsgs = msgManager.getMessages(defaultLang);
+        if (defaultMsgs == null) {
+            log.error("Messages for default language (" + defaultLang + ") are not configured.");
+            defaultMsgs = new Messages.Empty();
+        }
+
+        this.defaultMsgs = defaultMsgs;
+    }
+
     @Override public Messages getMessages(String lang) {
         Messages msgs = msgManager.getMessages(lang);
-        if (msgs != null) {
-            return msgs;
+        if (msgs == null) {
+            return defaultMsgs;
+        } else {
+            return new Messages.WithDefault(msgs, defaultMsgs);
         }
-
-        msgs = msgManager.getMessages(defaultLang);
-        if (msgs != null) {
-            return msgs;
-        }
-
-        log.error("Messages for language " + lang + " not found, and default language (" + defaultLang + ") messages are not configured.");
-        return new Messages.Empty();
     }
 }

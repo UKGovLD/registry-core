@@ -1,9 +1,11 @@
 package com.epimorphics.registry.language;
 
+import com.epimorphics.appbase.core.App;
 import com.epimorphics.registry.language.message.MessageManager;
 import com.epimorphics.registry.language.message.Messages;
 import org.junit.Test;
 import java.io.IOException;
+import java.util.Properties;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -12,38 +14,50 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 public class MultiLanguageManagerTest {
 
     private MultiLanguageManager langManager;
-    private Messages enMessages = mock(Messages.class);
-    private Messages frMessages = mock(Messages.class);
 
-    public MultiLanguageManagerTest() throws IOException {
+    public MultiLanguageManagerTest() {
+        Properties en = new Properties();
+        en.setProperty("test.msg", "Test message en");
+        en.setProperty("test.new", "New message en");
+
+        Properties fr = new Properties();
+        fr.setProperty("test.msg", "Test message fr");
+
         MessageManager msgManager = mock(MessageManager.class);
-        when(msgManager.getMessages("en")).thenReturn(enMessages);
-        when(msgManager.getMessages("fr")).thenReturn(frMessages);
+        when(msgManager.getMessages("en")).thenReturn(new MessagesProperties("en", en));
+        when(msgManager.getMessages("fr")).thenReturn(new MessagesProperties("fr", fr));
 
         this.langManager = new MultiLanguageManager(msgManager);
+        this.langManager.startup(mock(App.class));
     }
 
     @Test
     public void getExistingLanguage_expectSuccess() {
-        assertEquals(enMessages, langManager.getMessages("en"));
-        assertEquals(frMessages, langManager.getMessages("fr"));
+        assertEquals("Test message en", langManager.getMessages("en").get("test.msg"));
+        assertEquals("Test message fr", langManager.getMessages("fr").get("test.msg"));
     }
 
     @Test
-    public void getNonExistingLanguage_expectDefaultDefault() {
-        assertEquals(enMessages, langManager.getMessages("it"));
+    public void getNonExistingLanguage_expectEnglish() {
+        assertEquals("Test message en", langManager.getMessages("it").get("test.msg"));
     }
 
     @Test
-    public void getNonExistingLanguage_defaultExists_expectSetDefault() {
+    public void getNonExistingLanguage_setDefault_expectDefault() {
         langManager.setDefaultLanguage("fr");
-        assertEquals(frMessages, langManager.getMessages("gr"));
+        langManager.startup(mock(App.class));
+        assertEquals("Test message fr", langManager.getMessages("gr").get("test.msg"));
     }
 
     @Test
     public void getNonExistingLanguage_defaultDoesNotExist_expectEmptyMessage() {
         langManager.setDefaultLanguage("pl");
-        assertThat(langManager.getMessages("jp"), instanceOf(Messages.Empty.class));
+        langManager.startup(mock(App.class));
+        assertEquals("", langManager.getMessages("gr").get("test.msg"));
     }
 
+    @Test
+    public void getNewMessage_fallsBackToDefaultLanguage() {
+        assertEquals("New message en", langManager.getMessages("fr").get("test.new"));
+    }
 }
