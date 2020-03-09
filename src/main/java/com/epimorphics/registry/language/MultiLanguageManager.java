@@ -66,11 +66,15 @@ public class MultiLanguageManager implements LanguageManager, Startup {
     }
 
     @Override public Messages getMessages(String lang) {
-        Messages msgs = msgManager.getMessages(lang);
-        if (msgs == null) {
+        if (lang.equals(defaultLang)) {
             return defaultMsgs;
         } else {
-            return new Messages.WithDefault(msgs, defaultMsgs);
+            Messages msgs = msgManager.getMessages(lang);
+            if (msgs == null) {
+                return defaultMsgs;
+            } else {
+                return new Messages.WithDefault(msgs, defaultMsgs);
+            }
         }
     }
 }
