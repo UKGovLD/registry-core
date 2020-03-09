@@ -6,7 +6,7 @@ package com.epimorphics.registry.language.message;
 public interface Messages {
     /**
      * Returns the message for the given id, formatted with the given bindings (if appropriate),
-     * or null if the message is not configured.
+     * or an empty string if the message is not configured.
      * @param id The uniquely identifying ID of the message.
      * @param params The bindings to apply.
      * @return The formatted message.
@@ -30,11 +30,8 @@ public interface Messages {
 
         @Override public String get(String id, Object... params) {
             String msg = msgs.get(id, params);
-            if (msg == null) {
+            if (msg.isEmpty()) {
                 msg = deflt.get(id, params);
-                if (msg == null) {
-                    msg = "";
-                }
             }
 
             return msg;
