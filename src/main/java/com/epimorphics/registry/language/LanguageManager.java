@@ -47,7 +47,7 @@ public interface LanguageManager {
         private final String defaultLang = "en";
         private final Messages defaultMsgs;
 
-        Default() {
+        public Default() {
             Messages defaultMsgs = msgManager.getMessages(defaultLang);
             if (defaultMsgs == null) {
                 log.warn("Messages for default language (" + defaultLang + ") are not configured.");
