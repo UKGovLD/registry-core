@@ -219,7 +219,7 @@ public class RequestProcessor extends BaseEndpoint {
         VelocityRender velocity = AppConfig.getApp().getA(VelocityRender.class);
         StreamingOutput out = velocity.render(template, uriInfo.getPath(), context, uriInfo.getQueryParameters(), fullParams);
         
-        ResponseBuilder builder = Response.ok().type("text/html");
+        ResponseBuilder builder = Response.ok().type("text/html;charset=utf-8");
         if (SecurityUtils.getSubject().isAuthenticated()) {
             builder.header("Cache-control", "no-cache");
         }
