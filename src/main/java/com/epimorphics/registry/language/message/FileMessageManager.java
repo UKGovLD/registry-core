@@ -7,10 +7,8 @@ import org.apache.jena.atlas.lib.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,7 +53,8 @@ public class FileMessageManager implements MessageManager {
     }
 
     private Properties getProperties(File msgFile) throws IOException {
-        try (FileReader reader = new FileReader(msgFile)) {
+        try (InputStream input = new FileInputStream(msgFile)) {
+            Reader reader = new InputStreamReader(input, StandardCharsets.UTF_8);
             Properties props = new Properties();
             props.load(reader);
 
