@@ -43,6 +43,8 @@ public class GenericRequestLogger implements RequestLogger {
     }
     
     public void setLogDir(String logDir) {
+        File file = new File(logDir);
+        if (!file.exists()) file.mkdir();
         this.logDir = logDir;
     }
     
