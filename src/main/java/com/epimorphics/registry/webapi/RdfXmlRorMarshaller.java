@@ -28,6 +28,16 @@ public class RdfXmlRorMarshaller implements MessageBodyWriter<Model> {
 
     public static final String MIME_TYPE = "application/x-ror-rdf+xml";
 
+    private final Registry registry;
+
+    public RdfXmlRorMarshaller(Registry registry) {
+        this.registry = registry;
+    }
+
+    public RdfXmlRorMarshaller() {
+        this(Registry.get());
+    }
+
     @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return Arrays.asList(type.getInterfaces()).contains(Model.class);
@@ -50,7 +60,7 @@ public class RdfXmlRorMarshaller implements MessageBodyWriter<Model> {
     ) throws IOException, WebApplicationException {
         RorDescriptor descriptor = RorDescriptor.getInstance(model);
 
-        StoreAPI store = Registry.get().getStore();
+        StoreAPI store = registry.getStore();
         store.beginSafeRead();
         Model description = descriptor.describe(store, model);
         store.endSafeRead();

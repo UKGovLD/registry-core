@@ -1,19 +1,35 @@
 package com.epimorphics.registry.webapi;
 
+import com.epimorphics.registry.core.Description;
+import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.store.StoreAPI;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.util.FileUtils;
+import org.junit.Before;
 import org.junit.Test;
+import static org.mockito.Mockito.*;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.MessageBodyWriter;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 public class RdfXmlRorMarshallerTest {
-    private MessageBodyWriter<Model> writer = new RdfXmlRorMarshaller();
+    private Registry registry = mock(Registry.class);
+    private StoreAPI store = mock(StoreAPI.class);
+    private RdfXmlRorMarshaller writer = new RdfXmlRorMarshaller(registry);
+
+    @Before
+    public void before() {
+        when(registry.getStore()).thenReturn(store);
+        when(store.getDescription(any())).thenReturn(new Description());
+    }
 
     @Test
     public void producesRdfXml() {
@@ -46,14 +62,14 @@ public class RdfXmlRorMarshallerTest {
     }
 
     @Test
-    public void putsRootTypesAtTopLevel() {
+    public void register_putsRootTypesAtTopLevel() {
         String ttl =
                 "@prefix ex: <http://example.org/> ." +
                 "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> ." +
                 "@prefix skos: <http://www.w3.org/2004/02/skos/core#> ." +
                 "ex:x a skos:Concept; skos:inScheme ex:y; skos:broader ex:z ." +
-                "ex:y a skos:ConceptScheme; rdfs:label \"yankee\" ." +
-                "ex:z a skos:Concept; rdfs:label \"zulu\".";
+                "ex:y a skos:ConceptScheme; skos:prefLabel \"yankee\" ." +
+                "ex:z a skos:Concept; skos:prefLabel \"zulu\"  ; skos:inScheme ex:y .";
         InputStream input = new ByteArrayInputStream(ttl.getBytes());
         Model model = ModelFactory.createDefaultModel().read(input, null, FileUtils.langTurtle);
 
@@ -81,10 +97,13 @@ public class RdfXmlRorMarshallerTest {
                 "    </skos:inScheme>\n" +
                 "  </skos:Concept>\n" +
                 "  <skos:Concept rdf:about=\"http://example.org/z\">\n" +
-                "    <rdfs:label>zulu</rdfs:label>\n" +
+                "    <skos:prefLabel>zulu</skos:prefLabel>\n" +
+                "    <skos:inScheme>\n" +
+                "      <skos:ConceptScheme rdf:about=\"http://example.org/y\"/>\n" +
+                "    </skos:inScheme>\n" +
                 "  </skos:Concept>\n" +
                 "  <skos:ConceptScheme rdf:about=\"http://example.org/y\">\n" +
-                "    <rdfs:label>yankee</rdfs:label>\n" +
+                "    <skos:prefLabel>yankee</skos:prefLabel>\n" +
                 "  </skos:ConceptScheme>\n" +
                 "</rdf:RDF>\n";
         assertEquals(expected, result);
