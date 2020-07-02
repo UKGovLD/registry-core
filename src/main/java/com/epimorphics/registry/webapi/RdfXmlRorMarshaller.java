@@ -1,5 +1,9 @@
 package com.epimorphics.registry.webapi;
 
+import com.epimorphics.registry.core.Registry;
+import com.epimorphics.registry.ror.RorDescriptor;
+import com.epimorphics.registry.store.StoreAPI;
+import com.epimorphics.registry.vocab.RegistryVocab;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFWriter;
 import org.apache.jena.rdf.model.Resource;
@@ -34,21 +38,26 @@ public class RdfXmlRorMarshaller implements MessageBodyWriter<Model> {
         return -1;
     }
 
-    private final Resource[] rootTypes = new Resource[] { SKOS.Concept, SKOS.ConceptScheme };
-
     @Override
     public void writeTo(
-            Model t,
-            Class<?> type,
-            Type genericType,
-            Annotation[] annotations,
-            MediaType mediaType,
-            MultivaluedMap<String, Object> httpHeaders,
-            OutputStream entityStream
+        Model model,
+        Class<?> type,
+        Type genericType,
+        Annotation[] annotations,
+        MediaType mediaType,
+        MultivaluedMap<String, Object> httpHeaders,
+        OutputStream entityStream
     ) throws IOException, WebApplicationException {
-        RDFWriter writer = t.getWriter(FileUtils.langXMLAbbrev);
-        writer.setProperty("prettyTypes", rootTypes);
-        writer.write(t, entityStream, null);
+        RorDescriptor descriptor = RorDescriptor.getInstance(model);
+
+        StoreAPI store = Registry.get().getStore();
+        store.beginSafeRead();
+        Model description = descriptor.describe(store, model);
+        store.endSafeRead();
+
+        RDFWriter writer = description.getWriter(FileUtils.langXML);
+        writer.setProperty("prettyTypes", descriptor.rootTypes());
+        writer.write(description, entityStream, null);
     }
 }
 
