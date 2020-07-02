@@ -15,7 +15,6 @@ public class RegistryRorDescriptor implements RorDescriptor {
     private static String RDF_FORMAT = "http://publications.europa.eu/resource/authority/file-type/RDF_XML";
 
     private static ProjectionBuilder REGISTRY_PROJECTION = new ModelProjectionBuilder()
-            .property(RDF.type)
             .property(DCTerms.title)
             .property(DCTerms.description)
             .property(DCTerms.accrualPeriodicity)
@@ -52,6 +51,7 @@ public class RegistryRorDescriptor implements RorDescriptor {
         Model result = ModelFactory.createDefaultModel();
         result.setNsPrefixes(model);
         Resource catalog = this.catalog.inModel(result);
+        catalog.addProperty(RDF.type, DCAT.Catalog);
 
         REGISTRY_PROJECTION.build(store, model).project(catalog);
 
