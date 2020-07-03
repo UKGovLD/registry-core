@@ -1,0 +1,27 @@
+@prefix ex: <http://example.org/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix voaf: <http://purl.org/vocommons/voaf#> .
+
+ex:x-ray a skos:Concept ;
+  skos:inScheme ex:yankee ;
+  skos:broader ex:zulu
+  .
+
+ex:yankee a skos:ConceptScheme ;
+  skos:prefLabel "yankee" ;
+  skos:definition "define y" ;
+  dct:accrualPeriodicity <http://publications.europa.eu/resource/authority/frequency/DAILY> ;
+  dct:isPartOf ex:catalog ;
+  dct:publisher ex:org ;
+  voaf:reliesOn ex:alpha
+  .
+
+ex:zulu a skos:Concept ;
+  skos:prefLabel "zulu" ;
+  skos:inScheme ex:yankee ;
+  foaf:name "Zulu"@en
+  .
