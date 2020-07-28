@@ -118,7 +118,7 @@ public class CommandStatusUpdate extends Command {
             logResponse("Rejecting status update");
             throw new WebApplicationException(Response.Status.FORBIDDEN);
         }
-        if (!previous.isA(Status.Valid) && Status.forResource(status).isA(Status.Valid)) {
+        if (!previous.isA(Status.Accepted) && Status.forResource(status).isA(Status.Accepted)) {
             RDFUtil.timestamp(ri.getRoot(), DCTerms.dateAccepted);
         }
         if ( parameters.containsKey(Parameters.SUCCESSOR) ) {
