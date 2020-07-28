@@ -112,12 +112,13 @@ public class CommandStatusUpdate extends Command {
 
     private void doStatusUpdate(RegisterItem ri, String requestedStatus) {
         // TODO handle verification for accepted
+        Status previous = ri.getStatus();
         Resource status = parameters.containsKey(Parameters.FORCE) ? ri.forceStatus(requestedStatus): ri.setStatus(requestedStatus);
         if (status == null) {
             logResponse("Rejecting status update");
             throw new WebApplicationException(Response.Status.FORBIDDEN);
         }
-        if (status.equals(RegistryVocab.statusExperimental) || status.equals(RegistryVocab.statusStable)) {
+        if (!previous.isA(Status.Valid) && Status.forResource(status).isA(Status.Valid)) {
             RDFUtil.timestamp(ri.getRoot(), DCTerms.dateAccepted);
         }
         if ( parameters.containsKey(Parameters.SUCCESSOR) ) {
