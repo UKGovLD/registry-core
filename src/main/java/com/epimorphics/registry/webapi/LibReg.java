@@ -745,4 +745,9 @@ public class LibReg extends ComponentBase implements LibPlugin {
             return words[0];
         }
     }
+
+    public List<RDFNodeWrapper> sortLanguages(List<RDFNodeWrapper> nodes) {
+        nodes.sort(Comparator.comparing(RDFNodeWrapper::getLanguage));
+        return nodes;
+    }
 }
