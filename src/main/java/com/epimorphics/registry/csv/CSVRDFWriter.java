@@ -19,18 +19,13 @@
 package com.epimorphics.registry.csv;
 
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import com.epimorphics.util.EpiException;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.rdf.model.*;
 import org.apache.jena.shared.PrefixMapping;
+
+import javax.ws.rs.core.MultivaluedHashMap;
 
 /**
  * Support for writing RDF resources encoded into CSV files.
@@ -120,16 +115,27 @@ public class CSVRDFWriter extends CSVBaseWriter {
             }
         }
         write(ID_COL, "<" + uri + ">");
-        for (StmtIterator i = r.listProperties(); i.hasNext();) {
-            Statement s = i.next();
-            String header = RDFCSVUtil.encode(s.getPredicate(), prefixes);
-            String value = RDFCSVUtil.encode(s.getObject(), prefixes);
-            try {
-                write(header, value);
-            } catch (EpiException e) {
-                // Ignore
-            }
-        }
+        MultivaluedHashMap<Property, RDFNode> valuesByProp = new MultivaluedHashMap<>();
+        r.listProperties().forEachRemaining(stmt -> {
+            valuesByProp.add(stmt.getPredicate(), stmt.getObject());
+        });
+        valuesByProp.forEach((prop, nodes) -> {
+            nodes.sort(Comparator.comparing((node) -> {
+                if (node.isLiteral()) {
+                    return node.asLiteral().getLanguage();
+                } else {
+                    return null;
+                }
+            }));
+            String header = RDFCSVUtil.encode(prop, prefixes);
+            nodes.forEach(node -> {
+                String value = RDFCSVUtil.encode(node, prefixes);
+                try {
+                    write(header, value);
+                } catch (EpiException e) {
+                    // Ignore
+                }
+            });
+        });
     }
-    
 }
