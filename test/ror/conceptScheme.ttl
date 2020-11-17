@@ -15,7 +15,7 @@ ex:yankee a skos:ConceptScheme ;
   skos:prefLabel "yankee" ;
   skos:definition "define y" ;
   dct:accrualPeriodicity <http://publications.europa.eu/resource/authority/frequency/DAILY> ;
-  dct:isPartOf ex:catalog ;
+  dct:isPartOf ex: ;
   dct:publisher ex:org ;
   voaf:reliesOn ex:alpha
   .

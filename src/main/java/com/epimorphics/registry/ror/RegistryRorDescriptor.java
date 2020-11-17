@@ -1,5 +1,6 @@
 package com.epimorphics.registry.ror;
 
+import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.ror.projection.ModelProjectionBuilder;
 import com.epimorphics.registry.ror.projection.ProjectionBuilder;
 import com.epimorphics.registry.store.StoreAPI;
@@ -47,13 +48,15 @@ public class RegistryRorDescriptor implements RorDescriptor {
         this.catalog = catalog;
     }
 
-    @Override public Model describe(StoreAPI store, Model model) {
+    @Override public Model describe(Registry registry, StoreAPI store, Model model) {
         Model result = ModelFactory.createDefaultModel();
         result.setNsPrefixes(model);
-        Resource catalog = this.catalog.inModel(result);
-        catalog.addProperty(RDF.type, DCAT.Catalog);
+        Resource catalog = this.catalog.inModel(model);
 
-        REGISTRY_PROJECTION.build(store, model).project(catalog);
+        Resource registryRes = result.createResource(registry.getBaseURI() + "/");
+        registryRes.addProperty(RDF.type, DCAT.Catalog);
+
+        REGISTRY_PROJECTION.build(store, catalog).project(registryRes);
 
         return result;
     }

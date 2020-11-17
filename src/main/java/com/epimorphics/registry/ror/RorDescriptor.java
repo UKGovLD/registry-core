@@ -1,5 +1,6 @@
 package com.epimorphics.registry.ror;
 
+import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.vocabs.SKOS;
@@ -10,14 +11,14 @@ import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.RDF;
 
 public interface RorDescriptor {
-    Model describe(StoreAPI store, Model model);
+    Model describe(Registry registry, StoreAPI store, Model model);
 
     default Resource[] rootTypes() {
         return new Resource[]{};
     }
 
     class Empty implements RorDescriptor {
-        @Override public Model describe(StoreAPI store, Model model) {
+        @Override public Model describe(Registry registry, StoreAPI store, Model model) {
             return model;
         }
     }

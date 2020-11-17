@@ -34,6 +34,7 @@ public class RdfXmlRorMarshallerTest {
                 .addProperty(FOAF.homepage, "http://example.org/org/home");
 
         when(registry.getStore()).thenReturn(store);
+        when(registry.getBaseURI()).thenReturn("http://example.org");
         when(store.getDescription("http://example.org/org")).thenReturn(new Description(org));
     }
 
@@ -85,26 +86,28 @@ public class RdfXmlRorMarshallerTest {
         String expected =
                 "<rdf:RDF\n" +
                 "    xmlns:dct=\"http://purl.org/dc/terms/\"\n" +
+                "    xmlns:structure=\"http://example.org/structure/\"\n" +
                 "    xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n" +
                 "    xmlns:ex=\"http://example.org/\"\n" +
                 "    xmlns:skos=\"http://www.w3.org/2004/02/skos/core#\"\n" +
                 "    xmlns:voaf=\"http://purl.org/vocommons/voaf#\"\n" +
                 "    xmlns:dcat=\"http://www.w3.org/ns/dcat#\"\n" +
                 "    xmlns:rdfs=\"http://www.w3.org/2000/01/rdf-schema#\"\n" +
+                "    xmlns:catalog=\"http://example.org/structure/catalog/\"\n" +
                 "    xmlns:foaf=\"http://xmlns.com/foaf/0.1/\">\n" +
-                "  <dcat:Catalog rdf:about=\"http://example.org/catalog\">\n" +
+                "  <dcat:Catalog rdf:about=\"http://example.org/\">\n" +
                 "    <dcat:dataset>\n" +
-                "      <rdf:Description rdf:about=\"http://example.org/alpha\">\n" +
+                "      <rdf:Description rdf:about=\"http://example.org/structure/catalog/alpha\">\n" +
                 "        <dcat:distribution rdf:parseType=\"Resource\">\n" +
-                "          <dcat:downloadURL rdf:resource=\"http://example.org/alpha?_format=ror\"/>\n" +
+                "          <dcat:downloadURL rdf:resource=\"http://example.org/structure/catalog/alpha?_format=ror\"/>\n" +
                 "          <dct:format rdf:resource=\"http://publications.europa.eu/resource/authority/file-type/RDF_XML\"/>\n" +
                 "        </dcat:distribution>\n" +
                 "      </rdf:Description>\n" +
                 "    </dcat:dataset>\n" +
                 "    <dcat:dataset>\n" +
-                "      <rdf:Description rdf:about=\"http://example.org/yankee\">\n" +
+                "      <rdf:Description rdf:about=\"http://example.org/structure/catalog/yankee\">\n" +
                 "        <dcat:distribution rdf:parseType=\"Resource\">\n" +
-                "          <dcat:downloadURL rdf:resource=\"http://example.org/yankee?_format=ror\"/>\n" +
+                "          <dcat:downloadURL rdf:resource=\"http://example.org/structure/catalog/yankee?_format=ror\"/>\n" +
                 "          <dct:format rdf:resource=\"http://publications.europa.eu/resource/authority/file-type/RDF_XML\"/>\n" +
                 "        </dcat:distribution>\n" +
                 "      </rdf:Description>\n" +
@@ -172,7 +175,7 @@ public class RdfXmlRorMarshallerTest {
                 "      </foaf:Agent>\n" +
                 "    </dct:publisher>\n" +
                 "    <dct:isPartOf>\n" +
-                "      <dcat:Catalog rdf:about=\"http://example.org/catalog\"/>\n" +
+                "      <dcat:Catalog rdf:about=\"http://example.org/\"/>\n" +
                 "    </dct:isPartOf>\n" +
                 "    <dct:accrualPeriodicity rdf:resource=\"http://publications.europa.eu/resource/authority/frequency/DAILY\"/>\n" +
                 "    <skos:definition>define y</skos:definition>\n" +

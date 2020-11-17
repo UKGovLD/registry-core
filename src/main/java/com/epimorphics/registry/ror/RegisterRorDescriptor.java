@@ -1,5 +1,6 @@
 package com.epimorphics.registry.ror;
 
+import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.ror.projection.ModelProjectionBuilder;
 import com.epimorphics.registry.ror.projection.ProjectionBuilder;
 import com.epimorphics.registry.store.StoreAPI;
@@ -29,13 +30,13 @@ public class RegisterRorDescriptor implements RorDescriptor {
     }
 
     @Override
-    public Model describe(StoreAPI store, Model model) {
+    public Model describe(Registry registry, StoreAPI store, Model model) {
         Model result = ModelFactory.createDefaultModel();
         result.setNsPrefixes(model);
         Resource conceptScheme = this.conceptScheme.inModel(result);
         conceptScheme.addProperty(RDF.type, SKOS.ConceptScheme);
 
-        REGISTER_PROJECTION.build(store, model).project(conceptScheme);
+        REGISTER_PROJECTION.build(store, this.conceptScheme).project(conceptScheme);
 
         return result;
     }

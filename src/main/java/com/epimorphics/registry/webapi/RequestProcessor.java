@@ -219,7 +219,7 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     @GET
-    @Produces({FULL_MIME_TURTLE, FULL_MIME_RDFXML, JSONLDSupport.FULL_MIME_JSONLD, MediaType.APPLICATION_JSON, "application/x-ror-rdf+xml"})
+    @Produces({FULL_MIME_TURTLE, FULL_MIME_RDFXML, JSONLDSupport.FULL_MIME_JSONLD, MediaType.APPLICATION_JSON, RdfXmlRorMarshaller.MIME_TYPE})
     public Response read() {
         PassThroughResult result = checkForPassThrough();
         if (result != null && result.isDone()) {
@@ -277,6 +277,8 @@ public class RequestProcessor extends BaseEndpoint {
         Command command = null;
         if (uriInfo.getQueryParameters().containsKey(Parameters.QUERY)) {
             command = makeCommand( Operation.Search );
+        } else if (mediaType.equals(RdfXmlRorMarshaller.MIME_TYPE) && path.isEmpty()) {
+            command = Registry.get().make(Operation.Read, "structure/catalog", uriInfo.getQueryParameters());
         } else {
             command = makeCommand( Operation.Read );
             if (ptr != null) {

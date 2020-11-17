@@ -1,8 +1,8 @@
 package com.epimorphics.registry.ror.projection;
 
 import com.epimorphics.registry.store.StoreAPI;
-import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +16,7 @@ public class StoreProjectionBuilder implements ProjectionBuilder {
     }
 
     @Override
-    public Projection build(StoreAPI store, Model model) {
+    public Projection build(StoreAPI store, Resource resource) {
         return new StoreProjection(store, nodes);
     }
 }

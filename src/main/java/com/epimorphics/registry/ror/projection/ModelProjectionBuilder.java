@@ -1,7 +1,6 @@
 package com.epimorphics.registry.ror.projection;
 
 import com.epimorphics.registry.store.StoreAPI;
-import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 
@@ -49,9 +48,9 @@ public class ModelProjectionBuilder implements ProjectionBuilder {
         return this;
     }
 
-    public Projection build(StoreAPI store, Model model) {
+    public Projection build(StoreAPI store, Resource resource) {
         List<Projection> projections = builders.stream().map((builder) -> {
-            return builder.build(store, model);
+            return builder.build(store, resource);
         }).collect(Collectors.toList());
 
         return new Projection.Composite(projections);

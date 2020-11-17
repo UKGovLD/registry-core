@@ -3,12 +3,9 @@ package com.epimorphics.registry.webapi;
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.ror.RorDescriptor;
 import com.epimorphics.registry.store.StoreAPI;
-import com.epimorphics.registry.vocab.RegistryVocab;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFWriter;
-import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.util.FileUtils;
-import org.apache.jena.vocabulary.SKOS;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
@@ -62,12 +59,14 @@ public class RdfXmlRorMarshaller implements MessageBodyWriter<Model> {
 
         StoreAPI store = registry.getStore();
         store.beginSafeRead();
-        Model description = descriptor.describe(store, model);
-        store.endSafeRead();
-
-        RDFWriter writer = description.getWriter(FileUtils.langXML);
-        writer.setProperty("prettyTypes", descriptor.rootTypes());
-        writer.write(description, entityStream, null);
+        try {
+            Model description = descriptor.describe(registry, store, model);
+            RDFWriter writer = description.getWriter(FileUtils.langXML);
+            writer.setProperty("prettyTypes", descriptor.rootTypes());
+            writer.write(description, entityStream, null);
+        } finally {
+            store.endSafeRead();
+        }
     }
 }
 
