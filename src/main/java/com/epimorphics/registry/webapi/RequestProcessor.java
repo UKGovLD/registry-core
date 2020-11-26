@@ -277,7 +277,7 @@ public class RequestProcessor extends BaseEndpoint {
         Command command = null;
         if (uriInfo.getQueryParameters().containsKey(Parameters.QUERY)) {
             command = makeCommand( Operation.Search );
-        } else if (mediaType.equals(RdfXmlRorMarshaller.MIME_TYPE) && path.isEmpty()) {
+        } else if (mediaType != null && mediaType.equals(RdfXmlRorMarshaller.MIME_TYPE) && path.isEmpty()) {
             command = Registry.get().make(Operation.Read, "structure/catalog", uriInfo.getQueryParameters());
         } else {
             command = makeCommand( Operation.Read );
