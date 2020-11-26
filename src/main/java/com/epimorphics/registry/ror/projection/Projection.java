@@ -6,6 +6,9 @@ import org.apache.jena.rdf.model.Resource;
 import java.util.List;
 
 public interface Projection {
+    /**
+     * Build a graph rooted at a given resource.
+     */
     void project(Resource res);
 
     Empty EMPTY = new Empty();

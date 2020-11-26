@@ -12,7 +12,7 @@ import org.apache.jena.vocabulary.SKOS;
 
 public class RegisterRorDescriptor implements RorDescriptor {
 
-    private static ProjectionBuilder REGISTER_PROJECTION = new ModelProjectionBuilder()
+    private static final ProjectionBuilder REGISTER_PROJECTION = new ModelProjectionBuilder()
             .property(SKOS.prefLabel)
             .property(SKOS.definition)
             .property(DCTerms.accrualPeriodicity)

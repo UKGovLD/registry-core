@@ -13,9 +13,9 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 
 public class RegistryRorDescriptor implements RorDescriptor {
-    private static String RDF_FORMAT = "http://publications.europa.eu/resource/authority/file-type/RDF_XML";
+    private static final String RDF_FORMAT = "http://publications.europa.eu/resource/authority/file-type/RDF_XML";
 
-    private static ProjectionBuilder REGISTRY_PROJECTION = new ModelProjectionBuilder()
+    private static final ProjectionBuilder REGISTRY_PROJECTION = new ModelProjectionBuilder()
             .property(DCTerms.title)
             .property(DCTerms.description)
             .property(DCTerms.accrualPeriodicity)
