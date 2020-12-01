@@ -21,6 +21,7 @@ package com.epimorphics.registry.csv;
 import java.io.OutputStream;
 import java.util.*;
 
+import com.epimorphics.registry.webapi.LibReg;
 import com.epimorphics.util.EpiException;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.shared.PrefixMapping;
@@ -33,7 +34,7 @@ import javax.ws.rs.core.MultivaluedHashMap;
  */
 public class CSVRDFWriter extends CSVBaseWriter {
     public static final String ID_COL = "@id";
-    
+
     protected PrefixMapping prefixes;
     protected String baseURI;
     protected Set<String> headers = new HashSet<>();
@@ -122,11 +123,15 @@ public class CSVRDFWriter extends CSVBaseWriter {
         valuesByProp.forEach((prop, nodes) -> {
             nodes.sort(Comparator.comparing((node) -> {
                 if (node.isLiteral()) {
-                    return node.asLiteral().getLanguage();
+                    String lang = node.asLiteral().getLanguage();
+                    return lang == null ? null
+                        : lang.isEmpty() ? null
+                        : lang.equals("en") ? "" // first
+                        : lang;
                 } else {
                     return null;
                 }
-            }));
+            }, Comparator.nullsLast(String::compareTo)));
             String header = RDFCSVUtil.encode(prop, prefixes);
             nodes.forEach(node -> {
                 String value = RDFCSVUtil.encode(node, prefixes);

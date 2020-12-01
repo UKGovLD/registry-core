@@ -739,17 +739,18 @@ public class LibReg extends ComponentBase implements LibPlugin {
     }
 
     public List<RDFNodeWrapper> sortLanguages(List<RDFNodeWrapper> nodes, String prefLang) {
-        nodes.sort((node1, node2) -> {
-            String lang1 = node1.getLanguage();
-            lang1 = (lang1 == null || lang1.isEmpty()) ? null : lang1;
-            String lang2 = node2.getLanguage();
-            lang2 = (lang2 == null || lang2.isEmpty()) ? null : lang2;
+        nodes.sort(Comparator.comparing((node) -> {
+            if (node.isLiteral()) {
+                String lang = node.asLiteral().getLanguage();
+                return lang == null ? null
+                        : lang.isEmpty() ? null
+                        : lang.equals(prefLang) ? "" // first
+                        : lang;
+            } else {
+                return null;
+            }
+        }, Comparator.nullsLast(String::compareTo)));
 
-            return Objects.equals(lang1, lang2) ? 0
-                    : Objects.equals(lang1, prefLang) ? -1
-                    : Objects.equals(lang2, prefLang) ? 1
-                    : Objects.compare(lang1, lang2, Comparator.nullsLast(String::compareTo));
-        });
         return nodes;
     }
 }
