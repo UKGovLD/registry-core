@@ -86,6 +86,8 @@ public class RegistryVocab {
      *  of type is available.</p>
      */
     public static final ObjectProperty itemClass = m_model.createObjectProperty( "http://purl.org/linked-data/registry#itemClass" );
+
+    public static final ObjectProperty languageCode = m_model.createObjectProperty("http://dbpedia.org/ontology/languageCode");
     
     /** <p>The manager of the register, may be a person (foaf:Person) or an organization 
      *  (org:Organization). Operates the register on behalf of the owner, makes day 
@@ -203,6 +205,8 @@ public class RegistryVocab {
      *  which traverse the register hierarchy such as entity search will also be forwarded</p>
      */
     public static final OntClass FederatedRegister = m_model.createClass( "http://purl.org/linked-data/registry#FederatedRegister" );
+
+    public static final OntClass Language = m_model.createClass("http://dbpedia.org/ontology/Language");
     
     /** <p>A registerable entity which simply forwards all requests to the delegation 
      *  target.</p>
