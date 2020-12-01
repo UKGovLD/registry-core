@@ -902,8 +902,8 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
     }
 
     @Override
-    public void delete(String uri) {
-        delete( asItem(uri) );
+    public List<String> delete(String uri) {
+        return delete( asItem(uri) );
     }
     
     private RegisterItem asItem(String uri) {
@@ -920,11 +920,12 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         }
     }
     
-    protected void delete(RegisterItem item) {
+    protected List<String> delete(RegisterItem item) {
+        List<String> deletedItems = new ArrayList<>();
         if ( item.isRegister() ) {
             Register register = item.getAsRegister(this);
             for (RegisterEntryInfo ei : listMembers(register )) {
-                delete( getCurrentVersion(ei.getItemURI()).asRegisterItem() );
+                deletedItems.addAll(delete( getCurrentVersion(ei.getItemURI()).asRegisterItem() ));
             }
         }
     
@@ -954,6 +955,9 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         for (Resource graph : graphs) {
             store.asDataset().removeNamedModel( graph.getURI() );
         }
+
+        deletedItems.add(item.getRoot().getURI());
+        return deletedItems;
     }
     
     private StreamRDF toModel(final Model model) {
