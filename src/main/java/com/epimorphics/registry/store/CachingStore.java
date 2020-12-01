@@ -237,8 +237,8 @@ public class CachingStore implements StoreAPI {
     }
 
     @Override
-    public void delete(String uri) {
-        store.delete(uri);
+    public List<String> delete(String uri) {
+        return store.delete(uri);
     }
 
     @Override

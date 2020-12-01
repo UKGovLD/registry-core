@@ -184,6 +184,16 @@ public class RegisterItem extends Description {
         return false;
     }
 
+    public Model getModel() {
+        Model model = ModelFactory.createDefaultModel();
+        model.add(root.getModel());
+        model.add(entity.getModel());
+        Resource entityRef = model.createResource().addProperty(RegistryVocab.entity, entity);
+        model.add(root, RegistryVocab.definition, entityRef);
+
+        return model;
+    }
+
     /**
      * Takes a register item resource from a request payload, determines and checks
      * the intended URI for both it and the entity, fills in blanks on the register item,

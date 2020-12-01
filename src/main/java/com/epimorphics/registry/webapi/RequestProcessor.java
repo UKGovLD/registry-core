@@ -359,17 +359,43 @@ public class RequestProcessor extends BaseEndpoint {
     public Response validate(@Context HttpHeaders hh, InputStream body) {
         MultivaluedMap<String, String> parameters = new MultivaluedStringMap( uriInfo.getQueryParameters() );
         if ( parameters.get(Parameters.VALIDATE) != null ) {
-            if (body != null) {
-                for (String uri : FileManager.get().readWholeFileAsUTF8(body).split("\\s")) {
-                    parameters.add(Parameters.VALIDATE, uri);
-                }
-            }
-            Command command = Registry.get().make(Operation.Validate, uriInfo.getPath(), parameters);
-            command.setRequestor(getRequestor(request));
-            return command.execute();
+            return doValidate(body);
+        } else if (parameters.get(Parameters.REAL_DELETE) != null) {
+            return doRealDelete();
         } else {
-            throw new WebApiException(Response.Status.BAD_REQUEST, "No operations supported on text/plain other than validate");
+            Command commmand;
+            if (parameters.get(Parameters.TAG) != null) {
+                commmand = makeCommand(Operation.Tag);
+            } else if (parameters.get(Parameters.STATUS_UPDATE) != null) {
+                commmand = makeCommand(Operation.StatusUpdate);
+            } else {
+                throw new WebApiException(Response.Status.BAD_REQUEST, "Invalid request for content type.");
+            }
+
+            return commmand.execute();
         }
+    }
+
+    private Response doValidate(InputStream body) {
+        MultivaluedMap<String, String> parameters = new MultivaluedStringMap( uriInfo.getQueryParameters() );
+        if (body != null) {
+            for (String uri : FileManager.get().readWholeFileAsUTF8(body).split("\\s")) {
+                parameters.add(Parameters.VALIDATE, uri);
+            }
+        }
+        Command command = Registry.get().make(Operation.Validate, uriInfo.getPath(), parameters);
+        command.setRequestor(getRequestor(request));
+        return command.execute();
+    }
+
+    private Response doRealDelete() {
+        Command command = makeCommand( Operation.RealDelete );
+        Response response = command.execute();
+        if (response.getStatus() == 204) {
+            // For UI level actions then redirect
+            return redirectTo("/");
+        }
+        return response;
     }
 
     @POST
@@ -378,15 +404,9 @@ public class RequestProcessor extends BaseEndpoint {
         MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
         Command command = null;
         if ( parameters.get(Parameters.VALIDATE) != null ) {
-            return validate(hh , body);
+            return doValidate(body);
         } else if ( parameters.containsKey(Parameters.REAL_DELETE) ) {
-            command = makeCommand( Operation.RealDelete );
-            Response response = command.execute();
-            if (response.getStatus() == 204) {
-                // For UI level actions then redirect
-                return redirectTo("/");
-            } 
-            return response;
+            return doRealDelete();
         } else if ( parameters.get(Parameters.TAG) != null ) {
             // TODO to support tagging delegated register would need a checkForPassThrough here
             command = makeCommand(Operation.Tag);
