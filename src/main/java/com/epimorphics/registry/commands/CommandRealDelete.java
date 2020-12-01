@@ -20,10 +20,12 @@ package com.epimorphics.registry.commands;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 
 import javax.ws.rs.core.Response;
 
 import com.epimorphics.registry.core.Command;
+import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.message.Message;
 
 public class CommandRealDelete extends Command {
@@ -31,10 +33,13 @@ public class CommandRealDelete extends Command {
     @Override
     public Response doExecute() {
         try {
-            store.delete(target);
+            List<String> deletedItems = store.delete(target);
             store.commit();
-            
-            notify( new Message(this) );
+
+            deletedItems.forEach(item -> {
+                notify(new Message(this, item));
+            });
+
             return Response.noContent().location(new URI("/")).build();
         } catch (URISyntaxException e) {
             return Response.noContent().build();

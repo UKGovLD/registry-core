@@ -86,6 +86,8 @@ public class RegistryVocab {
      *  of type is available.</p>
      */
     public static final ObjectProperty itemClass = m_model.createObjectProperty( "http://purl.org/linked-data/registry#itemClass" );
+
+    public static final ObjectProperty languageCode = m_model.createObjectProperty("http://dbpedia.org/ontology/languageCode");
     
     /** <p>The manager of the register, may be a person (foaf:Person) or an organization 
      *  (org:Organization). Operates the register on behalf of the owner, makes day 
@@ -151,6 +153,10 @@ public class RegistryVocab {
      *  register. Returns true of an error is found.</p>
      */
     public static final ObjectProperty validationQuery = m_model.createObjectProperty( "http://purl.org/linked-data/registry#validationQuery" );
+
+    public static final ObjectProperty monitors = m_model.createObjectProperty(NS + "monitors");
+    public static final ObjectProperty ignores = m_model.createObjectProperty(NS + "ignores");
+    public static final ObjectProperty notifies = m_model.createObjectProperty(NS + "notifies");
     
     /** <p>The HTTP status code to return the requester in order to forward the request.</p> */
     public static final DatatypeProperty forwardingCode = m_model.createDatatypeProperty( "http://purl.org/linked-data/registry#forwardingCode" );
@@ -199,6 +205,8 @@ public class RegistryVocab {
      *  which traverse the register hierarchy such as entity search will also be forwarded</p>
      */
     public static final OntClass FederatedRegister = m_model.createClass( "http://purl.org/linked-data/registry#FederatedRegister" );
+
+    public static final OntClass Language = m_model.createClass("http://dbpedia.org/ontology/Language");
     
     /** <p>A registerable entity which simply forwards all requests to the delegation 
      *  target.</p>
@@ -233,6 +241,9 @@ public class RegistryVocab {
     public static final OntClass Status = m_model.createClass( "http://purl.org/linked-data/registry#Status" );
 
     public static final OntClass CompareResult = m_model.createClass(NS + "CompareResult");
+
+    public static final OntClass MonitorSpec = m_model.createClass(NS + "MonitorSpec");
+    public static final OntClass Topic = m_model.createClass(NS + "Topic");
     
     /** <p>Concept scheme containing registry status codes</p> */
     public static final Individual StatusScheme = m_model.createIndividual( "http://purl.org/linked-data/registry#StatusScheme", m_model.createClass( "http://www.w3.org/2004/02/skos/core#ConceptScheme" ) );

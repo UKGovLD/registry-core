@@ -23,34 +23,27 @@
 
 package com.epimorphics.registry.webapi;
 
-import static com.epimorphics.webapi.marshalling.RDFXMLMarshaller.FULL_MIME_RDFXML;
-import static com.epimorphics.webapi.marshalling.RDFXMLMarshaller.MIME_RDFXML;
-
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.StreamingOutput;
-import javax.ws.rs.core.UriInfo;
-
+import com.epimorphics.appbase.core.AppConfig;
+import com.epimorphics.appbase.templates.VelocityRender;
+import com.epimorphics.appbase.webapi.BaseEndpoint;
+import com.epimorphics.appbase.webapi.WebApiException;
+import com.epimorphics.registry.commands.CommandUpdate;
+import com.epimorphics.registry.core.*;
+import com.epimorphics.registry.core.Command.Operation;
+import com.epimorphics.registry.core.ForwardingRecord.Type;
+import com.epimorphics.registry.csv.CSVPayloadRead;
+import com.epimorphics.registry.csv.RDFCSVUtil;
+import com.epimorphics.registry.language.LanguageManager;
+import com.epimorphics.registry.security.UserInfo;
+import com.epimorphics.registry.util.JSONLDSupport;
+import com.epimorphics.registry.util.PATCH;
+import com.epimorphics.registry.util.UiForm;
 import com.epimorphics.registry.vocab.RegistryVocab;
-import org.apache.jena.rdf.model.*;
+import com.epimorphics.util.NameUtils;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.util.FileManager;
 import org.apache.jena.util.FileUtils;
 import org.apache.jena.vocabulary.RDF;
@@ -62,29 +55,27 @@ import org.glassfish.jersey.internal.util.collection.MultivaluedStringMap;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.epimorphics.appbase.core.AppConfig;
-import com.epimorphics.appbase.templates.VelocityRender;
-import com.epimorphics.appbase.webapi.BaseEndpoint;
-import com.epimorphics.appbase.webapi.WebApiException;
-import com.epimorphics.registry.commands.CommandUpdate;
-import com.epimorphics.registry.core.Command;
-import com.epimorphics.registry.core.Command.Operation;
-import com.epimorphics.registry.core.ForwardingRecord;
-import com.epimorphics.registry.core.ForwardingRecord.Type;
-import com.epimorphics.registry.core.ForwardingService;
-import com.epimorphics.registry.core.MatchResult;
-import com.epimorphics.registry.core.Registry;
-import com.epimorphics.registry.csv.CSVPayloadRead;
-import com.epimorphics.registry.csv.RDFCSVUtil;
-import com.epimorphics.registry.security.UserInfo;
-import com.epimorphics.registry.util.JSONLDSupport;
-import com.epimorphics.registry.util.PATCH;
-import com.epimorphics.registry.util.UiForm;
-import com.epimorphics.util.NameUtils;
+import javax.servlet.ServletContext;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static com.epimorphics.webapi.marshalling.RDFXMLMarshaller.FULL_MIME_RDFXML;
+import static com.epimorphics.webapi.marshalling.RDFXMLMarshaller.MIME_RDFXML;
+import static javax.ws.rs.core.Cookie.DEFAULT_VERSION;
+import static javax.ws.rs.core.NewCookie.DEFAULT_MAX_AGE;
 
 /**
  * Filter all requests as possible register API requests.
@@ -101,6 +92,7 @@ public class RequestProcessor extends BaseEndpoint {
     public static final String VARY_HEADER = "Vary";
     public static final String UI_PATH = "ui";
     private static final String SYSTEM_QUERY = "system/query";
+    private static final String LANGUAGE_COOKIE = "registry-pref-lang";
 
     @GET
     @Produces("text/html")
@@ -166,11 +158,45 @@ public class RequestProcessor extends BaseEndpoint {
         return builder.build();
     }
 
-    public static Response render(String template, UriInfo uriInfo, ServletContext context, HttpServletRequest request, Object...params) {
-        String language = request.getLocale().getLanguage();
-        if (language.isEmpty()) {
-            language = "en";
+    private static String getRequestLanguage(LanguageManager languageManager, HttpServletRequest request) {
+        String param = request.getParameter("lang");
+        if (param != null && !param.isEmpty()) {
+            return param;
         }
+
+        if (languageManager.getUseCookies()) {
+            Cookie cookie = Arrays.stream(request.getCookies())
+                    .filter(c -> c.getName().equals(LANGUAGE_COOKIE))
+                    .findFirst()
+                    .orElse(null);
+            if (cookie != null) {
+                return cookie.getValue();
+            }
+        }
+
+        String header = request.getLocale().getLanguage();
+        if (header != null && !header.isEmpty()) {
+            return header;
+        }
+
+        return "en";
+    }
+
+    private static void setLanguageCookie(LanguageManager languageManager, ResponseBuilder response, HttpServletRequest request) {
+        if (languageManager.getUseCookies()) {
+            String param = request.getParameter("lang");
+            if (param != null && !param.isEmpty()) {
+                NewCookie cookie = new NewCookie(LANGUAGE_COOKIE, param, "/", null, DEFAULT_VERSION, null, DEFAULT_MAX_AGE, null, false, false);
+                response.cookie(cookie);
+            }
+        }
+    }
+
+    public static Response render(String template, UriInfo uriInfo, ServletContext context, HttpServletRequest request, Object...params) {
+        Registry reg = Registry.get();
+        LanguageManager languageManager = reg.getLanguageManager();
+
+        String language = getRequestLanguage(languageManager, request);
         Object[] fullParams = new Object[params.length + 10];
         int i = 0;
         while (i < params.length) {
@@ -178,7 +204,7 @@ public class RequestProcessor extends BaseEndpoint {
             i++;
         }
         fullParams[i++] = "registry";
-        fullParams[i++] = Registry.get();
+        fullParams[i++] = reg;
         fullParams[i++] = "subject";
         fullParams[i++] = SecurityUtils.getSubject();
         fullParams[i++] = "requestor";
@@ -195,6 +221,9 @@ public class RequestProcessor extends BaseEndpoint {
         if (SecurityUtils.getSubject().isAuthenticated()) {
             builder.header("Cache-control", "no-cache");
         }
+
+        setLanguageCookie(languageManager, builder, request);
+
         return builder.entity(out).build();
     }
 
@@ -330,17 +359,43 @@ public class RequestProcessor extends BaseEndpoint {
     public Response validate(@Context HttpHeaders hh, InputStream body) {
         MultivaluedMap<String, String> parameters = new MultivaluedStringMap( uriInfo.getQueryParameters() );
         if ( parameters.get(Parameters.VALIDATE) != null ) {
-            if (body != null) {
-                for (String uri : FileManager.get().readWholeFileAsUTF8(body).split("\\s")) {
-                    parameters.add(Parameters.VALIDATE, uri);
-                }
-            }
-            Command command = Registry.get().make(Operation.Validate, uriInfo.getPath(), parameters);
-            command.setRequestor(getRequestor(request));
-            return command.execute();
+            return doValidate(body);
+        } else if (parameters.get(Parameters.REAL_DELETE) != null) {
+            return doRealDelete();
         } else {
-            throw new WebApiException(Response.Status.BAD_REQUEST, "No operations supported on text/plain other than validate");
+            Command commmand;
+            if (parameters.get(Parameters.TAG) != null) {
+                commmand = makeCommand(Operation.Tag);
+            } else if (parameters.get(Parameters.STATUS_UPDATE) != null) {
+                commmand = makeCommand(Operation.StatusUpdate);
+            } else {
+                throw new WebApiException(Response.Status.BAD_REQUEST, "Invalid request for content type.");
+            }
+
+            return commmand.execute();
         }
+    }
+
+    private Response doValidate(InputStream body) {
+        MultivaluedMap<String, String> parameters = new MultivaluedStringMap( uriInfo.getQueryParameters() );
+        if (body != null) {
+            for (String uri : FileManager.get().readWholeFileAsUTF8(body).split("\\s")) {
+                parameters.add(Parameters.VALIDATE, uri);
+            }
+        }
+        Command command = Registry.get().make(Operation.Validate, uriInfo.getPath(), parameters);
+        command.setRequestor(getRequestor(request));
+        return command.execute();
+    }
+
+    private Response doRealDelete() {
+        Command command = makeCommand( Operation.RealDelete );
+        Response response = command.execute();
+        if (response.getStatus() == 204) {
+            // For UI level actions then redirect
+            return redirectTo("/");
+        }
+        return response;
     }
 
     @POST
@@ -349,15 +404,9 @@ public class RequestProcessor extends BaseEndpoint {
         MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
         Command command = null;
         if ( parameters.get(Parameters.VALIDATE) != null ) {
-            return validate(hh , body);
+            return doValidate(body);
         } else if ( parameters.containsKey(Parameters.REAL_DELETE) ) {
-            command = makeCommand( Operation.RealDelete );
-            Response response = command.execute();
-            if (response.getStatus() == 204) {
-                // For UI level actions then redirect
-                return redirectTo("/");
-            } 
-            return response;
+            return doRealDelete();
         } else if ( parameters.get(Parameters.TAG) != null ) {
             // TODO to support tagging delegated register would need a checkForPassThrough here
             command = makeCommand(Operation.Tag);

@@ -90,7 +90,8 @@
     <appbase.version>3.1.0</appbase.version>
     <jena.version>3.9.0</jena.version>
     <fuseki.version>3.9.0</fuseki.version>
-    <tomcat.version>7.0.94</tomcat.version>
+    <tomcat.version>7.0.99</tomcat.version>
+    <lib.version>3.1.1-SNAPSHOT</lib.version>
   </properties>
 
   <dependencies>
@@ -98,7 +99,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.8.2</version>
+      <version>4.13.1</version>
       <scope>provided</scope>
     </dependency>
      
@@ -107,6 +108,12 @@
       <artifactId>appbase</artifactId>
       <!-- <version>2.1.1-SNAPSHOT</version> -->
       <version>${appbase.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.epimorphics</groupId>
+      <artifactId>lib</artifactId>
+      <version>${lib.version}</version>
     </dependency>
     
     <dependency>
@@ -157,47 +164,10 @@
         <artifactId>jersey-media-multipart</artifactId>
         <version>2.21</version>
     </dependency>
-
-<!-- 
-    <dependency>
-      <groupId>com.github.jsonld-java</groupId>
-      <artifactId>jsonld-java</artifactId>
-      <version>0.3</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-jdk14</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.github.jsonld-java</groupId>
-      <artifactId>jsonld-java-jena</artifactId>
-      <version>0.3</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.jena</groupId>
-          <artifactId>jena-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.jena</groupId>
-          <artifactId>jena-arq</artifactId>
-        </exclusion>
-      </exclusions>
-     </dependency>
-     -->
-
-    <!-- 
-    <dependency>
-      <groupId>org.openid4java</groupId>
-      <artifactId>openid4java</artifactId>
-      <version>0.9.7</version>
-    </dependency>
- -->
      <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-core</artifactId>
-      <version>1.2.1</version>
+      <version>1.4.2</version>
     </dependency>
     <dependency>
       <groupId>org.apache.shiro</groupId>
@@ -209,15 +179,16 @@
       <artifactId>derby</artifactId>
       <version>10.9.1.0</version>
     </dependency>
-    
-        <!-- OAuth Dependency -->
-        <!-- 
     <dependency>
-      <groupId>org.apache.oltu.oauth2</groupId>
-      <artifactId>org.apache.oltu.oauth2.common</artifactId>
-      <version>${oltu.oauth2.version}</version>
+      <groupId>org.fusesource.stompjms</groupId>
+      <artifactId>stompjms-client</artifactId>
+      <version>1.19</version>
     </dependency>
-    -->
+    <dependency>
+      <groupId>javax.jms</groupId>
+      <artifactId>javax.jms-api</artifactId>
+			<version>2.0.1</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.oltu.oauth2</groupId>
       <artifactId>org.apache.oltu.oauth2.client</artifactId>
@@ -257,7 +228,6 @@
       <version>1.9.5</version>
       <scope>test</scope>
     </dependency>
-
   </dependencies>
 
   <build>

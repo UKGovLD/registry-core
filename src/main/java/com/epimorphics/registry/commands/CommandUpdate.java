@@ -126,7 +126,7 @@ public class CommandUpdate extends Command {
         // For registers can only update non-member properties this way
         if (isRegister && isEntityUpdate) {
             if (!parameters.containsKey(Parameters.COLLECTION_METADATA_ONLY)) {
-                return new ValidationResponse(BAD_REQUEST, "Can only PUT/PATCH register metadadata, use non-member-properties to signal this");
+                return new ValidationResponse(BAD_REQUEST, "Can only PUT/PATCH register metadata, use non-member-properties to signal this");
             }
         }
 

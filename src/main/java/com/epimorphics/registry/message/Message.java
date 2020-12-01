@@ -92,6 +92,11 @@ public class Message {
             message = ((CommandStatusUpdate)command).getRequestedStatus();
         }
     }
+
+    public Message(Command command, String target) {
+        this(command);
+        this.target = target;
+    }
     
     /**
      * Create a message corresponding to a command with a model payload.
@@ -108,10 +113,11 @@ public class Message {
         this(command);
         Resource itemroot = item.getRoot();
         target = itemroot.getURI();
-        message = itemroot.getModel();
-        Resource entity = item.getEntity();
-        if (entity != null) {
-            setTypes(entity);
+        message = item.getModel();
+        Resource entityRes = item.getEntity();
+        if (entityRes != null) {
+            entity = entityRes.getURI();
+            setTypes(entityRes);
         }
     }
 
@@ -141,6 +147,13 @@ public class Message {
      */
     public String getOperation() {
         return operation;
+    }
+
+    /**
+     * @return The URI of the entity affected by the command, if there is one.
+     */
+    public String getEntity() {
+        return entity;
     }
 
     /**
