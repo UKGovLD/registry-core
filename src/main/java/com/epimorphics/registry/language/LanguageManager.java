@@ -1,5 +1,11 @@
 package com.epimorphics.registry.language;
 
+import com.epimorphics.registry.language.message.FileMessageManager;
+import com.epimorphics.registry.language.message.MessageManager;
+import com.epimorphics.registry.language.message.Messages;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -24,9 +30,41 @@ public interface LanguageManager {
      */
     Boolean getUseCookies();
 
+    /**
+     * @return The default language in which to render messages and registry content.
+     */
+    String getDefaultLanguage();
+
+    /**
+     * @param lang The two-letter code for the language.
+     * @return The messages for the requested language, if available. Otherwise, a default language.
+     */
+    Messages getMessages(String lang);
+
     class Default implements LanguageManager {
+        private final Logger log = LoggerFactory.getLogger(Default.class);
+        private final MessageManager msgManager = new FileMessageManager();
+        private final String defaultLang = "en";
+        private final Messages defaultMsgs;
+
+        public Default() {
+            Messages defaultMsgs = msgManager.getMessages(defaultLang);
+            if (defaultMsgs == null) {
+                log.warn("Messages for default language (" + defaultLang + ") are not configured.");
+                defaultMsgs = new Messages.Empty();
+            }
+
+            this.defaultMsgs = defaultMsgs;
+        }
+
         @Override public Boolean isMultilingual() { return false; }
         @Override public List<Language> getLanguages() { return Collections.emptyList(); }
+
         @Override public Boolean getUseCookies() { return false; }
+        @Override public String getDefaultLanguage() { return defaultLang; }
+
+        @Override public Messages getMessages(String lang) {
+            return defaultMsgs;
+        }
     }
 }

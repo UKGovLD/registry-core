@@ -179,7 +179,7 @@ public class RequestProcessor extends BaseEndpoint {
             return header;
         }
 
-        return "en";
+        return languageManager.getDefaultLanguage();
     }
 
     private static void setLanguageCookie(LanguageManager languageManager, ResponseBuilder response, HttpServletRequest request) {
@@ -197,7 +197,7 @@ public class RequestProcessor extends BaseEndpoint {
         LanguageManager languageManager = reg.getLanguageManager();
 
         String language = getRequestLanguage(languageManager, request);
-        Object[] fullParams = new Object[params.length + 10];
+        Object[] fullParams = new Object[params.length + 12];
         int i = 0;
         while (i < params.length) {
             fullParams[i] = params[i];
@@ -213,11 +213,13 @@ public class RequestProcessor extends BaseEndpoint {
         fullParams[i++] = request;
         fullParams[i++] = "language";
         fullParams[i++] = language;
+        fullParams[i++] = "msg";
+        fullParams[i++] = languageManager.getMessages(language);
 
         VelocityRender velocity = AppConfig.getApp().getA(VelocityRender.class);
         StreamingOutput out = velocity.render(template, uriInfo.getPath(), context, uriInfo.getQueryParameters(), fullParams);
         
-        ResponseBuilder builder = Response.ok().type("text/html");
+        ResponseBuilder builder = Response.ok().type("text/html;charset=utf-8");
         if (SecurityUtils.getSubject().isAuthenticated()) {
             builder.header("Cache-control", "no-cache");
         }
