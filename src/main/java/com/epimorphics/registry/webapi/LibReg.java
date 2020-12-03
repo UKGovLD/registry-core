@@ -739,7 +739,12 @@ public class LibReg extends ComponentBase implements LibPlugin {
     }
 
     public List<RDFNodeWrapper> sortLanguages(List<RDFNodeWrapper> nodes, String prefLang) {
-        nodes.sort(Comparator.comparing((node) -> {
+        nodes.sort(Comparator.comparing(RDFNodeWrapper::asRDFNode, multilingualNodeComparator(prefLang)));
+        return nodes;
+    }
+
+    public static Comparator<RDFNode> multilingualNodeComparator(String prefLang) {
+        return Comparator.comparing((node) -> {
             if (node.isLiteral()) {
                 String lang = node.asLiteral().getLanguage();
                 return lang == null ? null
@@ -749,8 +754,6 @@ public class LibReg extends ComponentBase implements LibPlugin {
             } else {
                 return null;
             }
-        }, Comparator.nullsLast(String::compareTo)));
-
-        return nodes;
+        }, Comparator.nullsLast(String::compareTo));
     }
 }

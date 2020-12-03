@@ -28,6 +28,8 @@ import org.apache.jena.shared.PrefixMapping;
 
 import javax.ws.rs.core.MultivaluedHashMap;
 
+import static com.epimorphics.registry.webapi.LibReg.multilingualNodeComparator;
+
 /**
  * Support for writing RDF resources encoded into CSV files.
  * In typical use should set baseURI, any prefixes and then any headers before starting writing.
@@ -121,17 +123,7 @@ public class CSVRDFWriter extends CSVBaseWriter {
             valuesByProp.add(stmt.getPredicate(), stmt.getObject());
         });
         valuesByProp.forEach((prop, nodes) -> {
-            nodes.sort(Comparator.comparing((node) -> {
-                if (node.isLiteral()) {
-                    String lang = node.asLiteral().getLanguage();
-                    return lang == null ? null
-                        : lang.isEmpty() ? null
-                        : lang.equals("en") ? "" // first
-                        : lang;
-                } else {
-                    return null;
-                }
-            }, Comparator.nullsLast(String::compareTo)));
+            nodes.sort(multilingualNodeComparator("en"));
             String header = RDFCSVUtil.encode(prop, prefixes);
             nodes.forEach(node -> {
                 String value = RDFCSVUtil.encode(node, prefixes);
