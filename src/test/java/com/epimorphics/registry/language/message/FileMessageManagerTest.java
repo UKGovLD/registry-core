@@ -44,14 +44,14 @@ public class FileMessageManagerTest {
         assertEquals("Welcome John Smith!", en.get("welcome.heading", "John", "Smith"));
         assertEquals("Welcome John {1}!", en.get("welcome.heading", "John"));
         assertEquals("Welcome John Andrew!", en.get("welcome.heading", "John", "Andrew", "Smith"));
-        assertNull(en.get("footer.email.field"));
+        assertEquals("", en.get("footer.email.field"));
 
         Messages fr = file.getMessages("fr");
         assertNotNull(fr);
         assertEquals("Prenom", fr.get("name.label"));
         assertEquals("Nom", fr.get("surname.label"));
         assertEquals("Bienvenue Céline Renée!", fr.get("welcome.heading", "Céline", "Renée"));
-        assertNull(fr.get("footer.email.field"));
+        assertEquals("", fr.get("footer.email.field"));
 
         Messages gr = file.getMessages("gr");
         assertNull(gr);
