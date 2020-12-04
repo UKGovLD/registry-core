@@ -132,10 +132,27 @@ public abstract class TomcatTestBase {
     }
 
     protected Response postFile(String file, String uri, String mime) {
+        return postFile(file, uri, mime, 10);
+    }
+
+    protected Response postFile(String file, String uri, String mime, Integer retries) {
         WebTarget r = c.target(uri);
         File src = new File(file);
         Response response = r.request().post( Entity.entity(src, mime) );
-        return response;
+        if (response.getStatus() == 503) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ie) {
+
+            }
+            if (retries > 0) {
+                return postFile(file, uri, mime, retries - 1);
+            } else {
+                return response;
+            }
+        } else {
+            return response;
+        }
     }
 
     protected Response postModel(Model m, String uri) {

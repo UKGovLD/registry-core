@@ -903,7 +903,12 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public List<String> delete(String uri) {
-        return delete( asItem(uri) );
+        RegisterItem item = asItem(uri);
+        if (item != null) {
+            return delete(item);
+        } else {
+            return new ArrayList<>();
+        }
     }
     
     private RegisterItem asItem(String uri) {
