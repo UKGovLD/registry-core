@@ -187,9 +187,11 @@ public class RegisterItem extends Description {
     public Model getModel() {
         Model model = ModelFactory.createDefaultModel();
         model.add(root.getModel());
-        model.add(entity.getModel());
-        Resource entityRef = model.createResource().addProperty(RegistryVocab.entity, entity);
-        model.add(root, RegistryVocab.definition, entityRef);
+        if (entity != null) {
+            model.add(entity.getModel());
+            Resource entityRef = model.createResource().addProperty(RegistryVocab.entity, entity);
+            model.add(root, RegistryVocab.definition, entityRef);
+        }
 
         return model;
     }
