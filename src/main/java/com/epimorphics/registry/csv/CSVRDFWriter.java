@@ -19,18 +19,16 @@
 package com.epimorphics.registry.csv;
 
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+import com.epimorphics.registry.webapi.LibReg;
 import com.epimorphics.util.EpiException;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.rdf.model.*;
 import org.apache.jena.shared.PrefixMapping;
+
+import javax.ws.rs.core.MultivaluedHashMap;
+
+import static com.epimorphics.registry.webapi.LibReg.multilingualNodeComparator;
 
 /**
  * Support for writing RDF resources encoded into CSV files.
@@ -38,7 +36,7 @@ import org.apache.jena.shared.PrefixMapping;
  */
 public class CSVRDFWriter extends CSVBaseWriter {
     public static final String ID_COL = "@id";
-    
+
     protected PrefixMapping prefixes;
     protected String baseURI;
     protected Set<String> headers = new HashSet<>();
@@ -120,16 +118,21 @@ public class CSVRDFWriter extends CSVBaseWriter {
             }
         }
         write(ID_COL, "<" + uri + ">");
-        for (StmtIterator i = r.listProperties(); i.hasNext();) {
-            Statement s = i.next();
-            String header = RDFCSVUtil.encode(s.getPredicate(), prefixes);
-            String value = RDFCSVUtil.encode(s.getObject(), prefixes);
-            try {
-                write(header, value);
-            } catch (EpiException e) {
-                // Ignore
-            }
-        }
+        MultivaluedHashMap<Property, RDFNode> valuesByProp = new MultivaluedHashMap<>();
+        r.listProperties().forEachRemaining(stmt -> {
+            valuesByProp.add(stmt.getPredicate(), stmt.getObject());
+        });
+        valuesByProp.forEach((prop, nodes) -> {
+            nodes.sort(multilingualNodeComparator("en"));
+            String header = RDFCSVUtil.encode(prop, prefixes);
+            nodes.forEach(node -> {
+                String value = RDFCSVUtil.encode(node, prefixes);
+                try {
+                    write(header, value);
+                } catch (EpiException e) {
+                    // Ignore
+                }
+            });
+        });
     }
-    
 }

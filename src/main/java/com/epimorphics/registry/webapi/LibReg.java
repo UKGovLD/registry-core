@@ -21,16 +21,8 @@
 
 package com.epimorphics.registry.webapi;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.Permission;
@@ -744,5 +736,24 @@ public class LibReg extends ComponentBase implements LibPlugin {
         } else {
             return words[0];
         }
+    }
+
+    public List<RDFNodeWrapper> sortLanguages(List<RDFNodeWrapper> nodes, String prefLang) {
+        nodes.sort(Comparator.comparing(RDFNodeWrapper::asRDFNode, multilingualNodeComparator(prefLang)));
+        return nodes;
+    }
+
+    public static Comparator<RDFNode> multilingualNodeComparator(String prefLang) {
+        return Comparator.comparing((node) -> {
+            if (node.isLiteral()) {
+                String lang = node.asLiteral().getLanguage();
+                return lang == null ? null
+                        : lang.isEmpty() ? null
+                        : lang.equals(prefLang) ? "" // first
+                        : lang;
+            } else {
+                return null;
+            }
+        }, Comparator.nullsLast(String::compareTo));
     }
 }
