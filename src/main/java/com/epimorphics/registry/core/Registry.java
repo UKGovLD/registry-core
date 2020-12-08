@@ -368,7 +368,7 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
             }
             log.info("Loaded bootstrap file " + file.getPath());
         } catch (WebApiException e) {
-            throw new EpiException("Bootstrap error: " + e.getResponse().getEntity());
+            throw new EpiException("Bootstrap error on file " + file.getPath() + ": " + e.getResponse().getEntity());
         } catch (Exception e) {
             throw new EpiException("Bootstrap error on file " + file.getPath(), e);
         }

@@ -131,6 +131,9 @@ public class RequestProcessor extends BaseEndpoint {
             } else if (format.equals("csv")) {
                 mime = RDFCSVUtil.MEDIA_TYPE;
                 extension = "csv";
+            } else if (format.equals("ror")) {
+                mime = RdfXmlRorMarshaller.MIME_TYPE;
+                extension = "ror";
             }
             return readAsRDF(result, mime, extension);
         } else if (parameters.containsKey(Parameters.ANNOTATION)) {
@@ -247,7 +250,7 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     @GET
-    @Produces({FULL_MIME_TURTLE, FULL_MIME_RDFXML, JSONLDSupport.FULL_MIME_JSONLD, MediaType.APPLICATION_JSON})
+    @Produces({FULL_MIME_TURTLE, FULL_MIME_RDFXML, JSONLDSupport.FULL_MIME_JSONLD, MediaType.APPLICATION_JSON, RdfXmlRorMarshaller.MIME_TYPE})
     public Response read() {
         PassThroughResult result = checkForPassThrough();
         if (result != null && result.isDone()) {
@@ -305,6 +308,8 @@ public class RequestProcessor extends BaseEndpoint {
         Command command = null;
         if (uriInfo.getQueryParameters().containsKey(Parameters.QUERY)) {
             command = makeCommand( Operation.Search );
+        } else if (mediaType != null && mediaType.equals(RdfXmlRorMarshaller.MIME_TYPE) && path.isEmpty()) {
+            command = Registry.get().make(Operation.Read, "structure/catalog", uriInfo.getQueryParameters());
         } else {
             command = makeCommand( Operation.Read );
             if (ptr != null) {
