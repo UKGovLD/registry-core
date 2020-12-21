@@ -352,7 +352,7 @@ reg:Topic a owl:Class;
 
 reg:EntityReference a owl:Class;
     rdfs:label "Entity Reference"@en;
-    rdfs:comment "A reference to some internal or external Linked Data resource. The reg:reference gives the URI of the resource being referenced. If a reg:sourceGraph value is present then it is the URI for a named graph within the Registry containing the properties of the referenced entity. If reg:entityVersion is present it gives URI for the particular version:Version of the entity being referenced. Normally only one of reg:sourceGraph and reg:entityVersion is needed since versioned entities are normally stored in the default graph."@en;
+    rdfs:comment "A reference to some internal or external Linked Data resource. The reg:entity gives the URI of the resource being referenced. If a reg:sourceGraph value is present then it is the URI for a named graph within the Registry containing the properties of the referenced entity. If reg:entityVersion is present it gives URI for the particular version:Version of the entity being referenced. Normally only one of reg:sourceGraph and reg:entityVersion is needed since versioned entities are normally stored in the default graph."@en;
     rdfs:subClassOf [owl:onProperty reg:entity;        owl:cardinality 1];
     rdfs:subClassOf [owl:onProperty reg:sourceGraph;   owl:maxCardinality 1];
     rdfs:subClassOf [owl:onProperty reg:entityVersion; owl:maxCardinality 1];
