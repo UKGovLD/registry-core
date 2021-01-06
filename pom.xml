@@ -316,7 +316,15 @@
           <path>/</path>
         </configuration>
       </plugin>
-  
+
+      <plugin>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.2.3</version>
+        <configuration>
+          <attachClasses>true</attachClasses>
+          <webXml>${basedir}/src/main/webapp/WEB-INF/web.xml</webXml>
+        </configuration>
+      </plugin>
     </plugins>
 
     <extensions>
