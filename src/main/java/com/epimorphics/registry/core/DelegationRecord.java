@@ -62,7 +62,6 @@ public class DelegationRecord extends ForwardingRecord {
 
     /**
      * Enumerate all members of the delegated register
-     * @return
      */
     public List<Resource> listMembers() {
         log.debug("Fetch delegation members from " + getTarget());

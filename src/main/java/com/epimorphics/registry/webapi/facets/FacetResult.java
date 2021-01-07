@@ -64,7 +64,7 @@ public class FacetResult {
      *
      * @param query  graphpattern part of the query query which will bind ?item to the desired matching resource
      * @param state  serialized facet search state
-     * @param facetspec  base resource whose facet:facet values define the facets to be used
+     * @param specList  base resources whose facet:facet values define the facets to be used
      * @param model  the model to be queried, should be suitably locked until the constructor has finished the query
      */
     public FacetResult(String query, String state, List<FacetSpec> specList, Model model) {
@@ -189,7 +189,6 @@ public class FacetResult {
 
     /**
      * Return the list facets discovered, ordered by localname of the facet property name
-     * @return
      */
     public List<Facet> getFacets() {
         return facetList;
