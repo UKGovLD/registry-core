@@ -1,5 +1,6 @@
 package com.epimorphics.registry.language.message;
 
+import com.epimorphics.registry.core.RegistryDirBootstrap;
 import com.epimorphics.registry.language.MessagesProperties;
 import com.epimorphics.util.EpiException;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
@@ -20,7 +21,7 @@ public class FileMessageManager implements MessageManager {
     private final Map<String, Messages> messagesByLang;
 
     public FileMessageManager() {
-        this("/opt/ldregistry/config/language/messages");
+        this(RegistryDirBootstrap.fileRoot + "config/language/messages");
     }
 
     FileMessageManager(String msgsLoc) {
