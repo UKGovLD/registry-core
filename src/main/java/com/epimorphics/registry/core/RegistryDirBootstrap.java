@@ -49,7 +49,7 @@ public class RegistryDirBootstrap implements ServletContextListener {
     public static final String ROOT_DIR_PARAM = "registry-file-root";
 
     String filebase;
-    String fileRoot;
+    public static String fileRoot;
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
