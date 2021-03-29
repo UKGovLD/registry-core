@@ -1,5 +1,7 @@
 package com.epimorphics.registry.language.message;
 
+import com.epimorphics.appbase.core.App;
+import com.epimorphics.appbase.core.Startup;
 import com.epimorphics.registry.core.RegistryDirBootstrap;
 import com.epimorphics.registry.language.MessagesProperties;
 import com.epimorphics.util.EpiException;
@@ -16,20 +18,33 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-public class FileMessageManager implements MessageManager {
+public class FileMessageManager implements MessageManager, Startup {
     private final Logger log = LoggerFactory.getLogger(FileMessageManager.class);
-    private final Map<String, Messages> messagesByLang;
+    private File msgDir;
+    private Map<String, Messages> messagesByLang;
 
     public FileMessageManager() {
         this(RegistryDirBootstrap.fileRoot + "config/language/messages");
     }
 
     FileMessageManager(String msgsLoc) {
-        File msgDir = new File(msgsLoc);
-        this.messagesByLang = getMessagesByLang(msgDir);
+        this.msgDir = new File(msgsLoc);
     }
 
-    private Map<String, Messages> getMessagesByLang(File msgDir) {
+    public void setMessageDir(String path) {
+        this.msgDir = new File(path);
+    }
+
+    @Override public void startup(App app) {
+        init();
+    }
+
+    public FileMessageManager init() {
+        this.messagesByLang = getMessagesByLang();
+        return this;
+    }
+
+    private Map<String, Messages> getMessagesByLang() {
         File[] msgFiles = msgDir.listFiles((FileFilter) new SuffixFileFilter("properties"));
         if (msgFiles == null) {
             log.warn("Messages directory does not exist: " + msgDir.getAbsolutePath());

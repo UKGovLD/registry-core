@@ -19,11 +19,7 @@ public class MultiLanguageManager implements LanguageManager, Startup {
     private LanguageConfig config;
     private Messages defaultMsgs;
 
-    public MultiLanguageManager() {
-        this.msgManager = new FileMessageManager();
-    }
-
-    MultiLanguageManager(MessageManager msgManager) {
+    public void setMessageManager(MessageManager msgManager) {
         this.msgManager = msgManager;
     }
 
@@ -56,6 +52,9 @@ public class MultiLanguageManager implements LanguageManager, Startup {
     }
 
     @Override public void startup(App app) {
+        if (msgManager == null) {
+            msgManager = new FileMessageManager().init();
+        }
         Messages defaultMsgs = msgManager.getMessages(defaultLang);
         if (defaultMsgs == null) {
             log.error("Messages for default language (" + defaultLang + ") are not configured.");
