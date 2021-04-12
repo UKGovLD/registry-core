@@ -1,6 +1,8 @@
 package com.epimorphics.registry.language.message;
 
+import com.epimorphics.appbase.core.App;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -33,6 +35,7 @@ public class FileMessageManagerTest {
                 .close();
 
         this.file = new FileMessageManager(configDir.getAbsolutePath());
+        file.startup(Mockito.mock(App.class));
     }
 
     @Test

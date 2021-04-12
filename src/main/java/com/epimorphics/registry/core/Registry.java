@@ -28,6 +28,7 @@ import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.rdfutil.ModelWrapper;
 import com.epimorphics.registry.core.Command.Operation;
 import com.epimorphics.registry.core.ForwardingRecord.Type;
+import com.epimorphics.registry.language.DefaultLanguageManager;
 import com.epimorphics.registry.language.LanguageManager;
 import com.epimorphics.registry.message.*;
 import com.epimorphics.registry.security.UserInfo;
@@ -223,7 +224,7 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
 
     public LanguageManager getLanguageManager() {
         if (languageManager == null) {
-            languageManager = new LanguageManager.Default();
+            this.languageManager = new DefaultLanguageManager().init();
         }
         return languageManager;
     }

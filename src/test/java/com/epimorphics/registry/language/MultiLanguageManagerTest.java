@@ -27,7 +27,8 @@ public class MultiLanguageManagerTest {
         when(msgManager.getMessages("en")).thenReturn(new MessagesProperties("en", en));
         when(msgManager.getMessages("fr")).thenReturn(new MessagesProperties("fr", fr));
 
-        this.langManager = new MultiLanguageManager(msgManager);
+        this.langManager = new MultiLanguageManager();
+        this.langManager.setMessageManager(msgManager);
         this.langManager.startup(mock(App.class));
     }
 
