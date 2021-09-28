@@ -91,7 +91,7 @@
     <jena.version>3.9.0</jena.version>
     <fuseki.version>3.9.0</fuseki.version>
     <tomcat.version>7.0.107</tomcat.version>
-    <lib.version>3.1.1-SNAPSHOT</lib.version>
+    <lib.version>3.1.1</lib.version>
   </properties>
 
   <dependencies>
