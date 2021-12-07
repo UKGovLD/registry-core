@@ -41,7 +41,7 @@
       </snapshots>
       <id>epi-public-repo</id>
       <name>Epimorphics Public Repository</name>
-      <url>http://repository.epimorphics.com</url>
+      <url>https://repository.epimorphics.com</url>
     </repository>
     
     <repository>  
@@ -102,12 +102,27 @@
       <version>4.13.1</version>
       <scope>provided</scope>
     </dependency>
-     
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>2.14.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-1.2-api</artifactId>
+      <version>2.14.1</version>
+    </dependency>
     <dependency>
       <groupId>com.epimorphics</groupId>
       <artifactId>appbase</artifactId>
       <!-- <version>2.1.1-SNAPSHOT</version> -->
       <version>${appbase.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j</artifactId>
+          <groupId>log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -172,17 +187,22 @@
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-web</artifactId>
-      <version>1.2.1</version>
+      <version>1.7.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.derby</groupId>
       <artifactId>derby</artifactId>
-      <version>10.9.1.0</version>
+      <version>10.12.1.1</version>
     </dependency>
     <dependency>
       <groupId>org.fusesource.stompjms</groupId>
       <artifactId>stompjms-client</artifactId>
       <version>1.19</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.9.10.4</version>
     </dependency>
     <dependency>
       <groupId>javax.jms</groupId>
@@ -219,6 +239,10 @@
         <exclusion>
           <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-xml</artifactId>
+        </exclusion>
+        <exclusion>
+          <artifactId>log4j</artifactId>
+          <groupId>log4j</groupId>
         </exclusion>
       </exclusions>
      </dependency>
@@ -288,22 +312,22 @@
         </executions>
       </plugin>
 
-     <plugin>
-       <groupId>org.apache.maven.plugins</groupId>
-       <artifactId>maven-javadoc-plugin</artifactId>
-       <configuration>
-         <doclint>none</doclint>
-       </configuration>
-       <executions>
-         <execution>
-           <id>attach-javadocs</id>
-           <phase>verify</phase>
-           <goals>
-             <goal>jar</goal>
-           </goals>
-         </execution>
-       </executions>
-     </plugin>
+<!--     <plugin>-->
+<!--       <groupId>org.apache.maven.plugins</groupId>-->
+<!--       <artifactId>maven-javadoc-plugin</artifactId>-->
+<!--       <configuration>-->
+<!--         <doclint>none</doclint>-->
+<!--       </configuration>-->
+<!--       <executions>-->
+<!--         <execution>-->
+<!--           <id>attach-javadocs</id>-->
+<!--           <phase>verify</phase>-->
+<!--           <goals>-->
+<!--             <goal>jar</goal>-->
+<!--           </goals>-->
+<!--         </execution>-->
+<!--       </executions>-->
+<!--     </plugin>-->
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
