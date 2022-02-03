@@ -168,12 +168,15 @@ public class RequestProcessor extends BaseEndpoint {
         }
 
         if (languageManager.getUseCookies()) {
-            Cookie cookie = Arrays.stream(request.getCookies())
-                    .filter(c -> c.getName().equals(LANGUAGE_COOKIE))
-                    .findFirst()
-                    .orElse(null);
-            if (cookie != null) {
-                return cookie.getValue();
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                Cookie cookie = Arrays.stream(cookies)
+                        .filter(c -> c.getName().equals(LANGUAGE_COOKIE))
+                        .findFirst()
+                        .orElse(null);
+                if (cookie != null) {
+                    return cookie.getValue();
+                }
             }
         }
 
