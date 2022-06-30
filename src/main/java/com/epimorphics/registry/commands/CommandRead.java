@@ -203,6 +203,20 @@ public class CommandRead extends Command {
             } else if (ri.getEntity() != null) {
                 m.add( ri.getEntity().getModel() );
             }
+
+            // Full solution here would also apply this to the case where entityWithMetadata is set
+            // that's why the check is inject at this point.
+            // That full solution currently disabled due to test case issues.
+//            if (graphEntity || entityWithMetadata) {
+            if (graphEntity ) {
+                // Validate that the graph contains a matching entity definition with a type property.
+                // For both plain and graph registered entities this is enforced at registration time.
+                // If this is an external entity then the graph will not contain a matching root resource
+                // and we prefer to return a 404 in that case.
+                if ( ! m.getResource(target).hasProperty(RDF.type) ) {
+                    throw new NotFoundException();
+                }
+            }
         }
         
         List<Resource> members = (paged) ? new ArrayList<Resource>(length) : new ArrayList<Resource>() ;
