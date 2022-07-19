@@ -82,7 +82,7 @@ public class FacetService extends ComponentBase {
                 if (path == null) {
                     throw new EpiException("Could not find query for facet " + label);
                 }
-                specList.add( new FacetSpec(label, varname, path) );
+                specList.add( new FacetSpec(facetR, label, varname, path) );
             }
         } catch (UnsupportedPolymorphismException e) {
             throw new EpiException("Could not parse the list of facets as an RDF list");
@@ -100,19 +100,23 @@ public class FacetService extends ComponentBase {
     public String getBaseQuery() {
         return baseQuery;
     }
-    
+
     public FacetResult query(String stateIn) {
+        return query(stateIn, null);
+    }
+    
+    public FacetResult query(String stateIn, String lang) {
         String state = StringEscapeUtils.unescapeHtml(stateIn);
         try {
             store.lock();
-            FacetResult fr =  new FacetResult(baseQuery, state, specList, store.asDataset().getDefaultModel());
+            FacetResult fr =  new FacetResult(baseQuery, state, specList, lang, store.asDataset().getDefaultModel());
             fr.setPageSize( (int) Registry.get().getPageSize() );
             return fr;
         } catch (Exception e) {
             // Log error here so trace doesn't appear in UI
             log.error("Illegal facet state", e);
             // Return base state 
-            return new FacetResult(baseQuery, "", specList, store.asDataset().getDefaultModel());
+            return new FacetResult(baseQuery, "", specList, lang, store.asDataset().getDefaultModel());
         } finally {
             store.end();
         }

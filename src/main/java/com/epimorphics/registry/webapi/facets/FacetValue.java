@@ -35,10 +35,10 @@ public class FacetValue implements Comparable<FacetValue> {
     String lex;
     int count;
 
-    public FacetValue(RDFNode value) {
+    public FacetValue(RDFNode value, String lang) {
         this.value = value;
         count = 1;
-        lex = RDFUtil.getLabel(value);
+        lex = getLabel(value, lang);
     }
 
     public void inc() {
@@ -62,4 +62,11 @@ public class FacetValue implements Comparable<FacetValue> {
         return lex.compareTo( o.lex );
     }
 
+    private String getLabel(RDFNode node, String lang) {
+        if (node.isResource()) {
+            return RDFUtil.getLabel(node.asResource(), lang);
+        } else {
+            return RDFUtil.getLabel(node);
+        }
+    }
 }

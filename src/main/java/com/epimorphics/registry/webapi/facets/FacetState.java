@@ -39,12 +39,12 @@ public class FacetState {
 
     public static final int SEARCH_LENGTH_LIMIT = 500;
 
-    Map<String, FacetSpec> specs = new HashMap<String, FacetSpec>();
-    List<FacetSpec> specList = new ArrayList<FacetSpec>();
+    Map<String, FacetSpec> specs = new HashMap<>();
+    List<FacetSpec> specList = new ArrayList<>();
 
     public FacetState(List<FacetSpec> specList) {
         for (FacetSpec spec : specList) {
-            FacetSpec clone = new FacetSpec(spec.getName(), spec.getVarname(), spec.getPropertyPath());
+            FacetSpec clone = new FacetSpec(spec.spec, spec.getName(), spec.getVarname(), spec.getPropertyPath());
             this.specList.add(clone);
             specs.put(spec.getVarname(), clone);
         }
