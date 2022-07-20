@@ -21,7 +21,9 @@
 
 package com.epimorphics.registry.webapi.facets;
 
+import com.epimorphics.rdfutil.RDFUtil;
 import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
 
 /**
  * Specification for a single facet.
@@ -29,7 +31,7 @@ import org.apache.jena.rdf.model.RDFNode;
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public class FacetSpec implements Comparable<FacetSpec> {
-
+    Resource spec;
     String name;
     String varname;
     String propertyPath;
@@ -41,7 +43,8 @@ public class FacetSpec implements Comparable<FacetSpec> {
      * @param varname short name for the facet which will be used in state serialization
      * @param propertyPath sparql property path which links an item to the facet value
      */
-    public FacetSpec(String name, String varname, String propertyPath) {
+    public FacetSpec(Resource spec, String name, String varname, String propertyPath) {
+        this.spec = spec;
         this.name = name;
         this.varname = varname;
         this.propertyPath = propertyPath;
@@ -79,6 +82,9 @@ public class FacetSpec implements Comparable<FacetSpec> {
         this.value = value;
     }
 
+    public String getLabel(String lang) {
+        return RDFUtil.getLabel(spec, lang);
+    }
 
     public String getName() {
         return name;

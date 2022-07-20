@@ -49,16 +49,39 @@ public class TestFacets {
         assertEquals("<http://purl.org/linked-data/registry#itemClass>", spec.getPropertyPath());
 
         Model testData = FileManager.get().loadModel("test/facets/facet-test.ttl");
-//        check(service, testData, null, 4);
-        check(service, testData, "type=<http://example.com/test#type1>", 2);
-        check(service, testData, "type=<http://example.com/test#type2>", 2);
-        check(service, testData, "type=<http://example.com/test#type3>", 1);
-        check(service, testData, "category=<http://example.com/test#cat2>", 2);
-        check(service, testData, "type=<http://example.com/test#type1>|category=<http://example.com/test#cat2>", 1);
+        check(service, testData, "type=<http://example.com/test#type1>", null,2);
+        check(service, testData, "type=<http://example.com/test#type2>", null,2);
+        check(service, testData, "type=<http://example.com/test#type3>", null,1);
+        check(service, testData, "category=<http://example.com/test#cat2>", null,2);
+        check(service, testData, "type=<http://example.com/test#type1>|category=<http://example.com/test#cat2>", null,1);
     }
 
-    private void check(FacetService service, Model testData, String state, int expected) {
-        FacetResult result = new FacetResult(service.getBaseQuery(), state, service.getSpecList(), testData);
+    @Test
+    public void testMultilingualFacets() {
+        FacetService service = new FacetService();
+        service.setSpecFile("test/facets/dataset-facets-lang.ttl");
+
+        List<FacetSpec> facetSpecs = service.getSpecList();
+        assertEquals(2, facetSpecs.size());
+
+        FacetSpec spec1 = facetSpecs.get(0);
+        assertEquals("Type", spec1.getLabel("en"));
+        assertEquals("Genre", spec1.getLabel("fr"));
+
+        FacetSpec spec2 = facetSpecs.get(1);
+        assertEquals("Category", spec2.getLabel("en"));
+        assertEquals("Catégorie", spec2.getLabel("fr"));
+
+        Model testData = FileManager.get().loadModel("test/facets/facet-test-lang.ttl");
+        check(service, testData, "type=<http://example.com/test#type1>", "fr", 2);
+        check(service, testData, "type=<http://example.com/test#type2>", "fr", 2);
+        check(service, testData, "type=<http://example.com/test#type3>", "fr", 1);
+        check(service, testData, "category=<http://example.com/test#cat2>", "fr", 2);
+        check(service, testData, "type=<http://example.com/test#type1>|category=<http://example.com/test#cat2>", "fr", 1);
+    }
+
+    private void check(FacetService service, Model testData, String state, String lang, int expected) {
+        FacetResult result = new FacetResult(service.getBaseQuery(), state, service.getSpecList(), lang, testData);
         List<FacetResultEntry> page = result.getResultsPage(0);
         assertEquals(expected, page.size());
     }

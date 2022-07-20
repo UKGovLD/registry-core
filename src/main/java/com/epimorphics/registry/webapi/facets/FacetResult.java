@@ -51,8 +51,8 @@ public class FacetResult {
     String baseQuery;
 
     FacetState state;
-    Map<String, Facet> facets = new HashMap<String, Facet>();
-    List<Facet> facetList = new ArrayList<Facet>();
+    Map<String, Facet> facets = new HashMap<>();
+    List<Facet> facetList = new ArrayList<>();
     int pageSize = DEFAULT_PAGESIZE;
 
     List<FacetResultEntry> filteredResults;
@@ -67,17 +67,17 @@ public class FacetResult {
      * @param specList  base resources whose facet:facet values define the facets to be used
      * @param model  the model to be queried, should be suitably locked until the constructor has finished the query
      */
-    public FacetResult(String query, String state, List<FacetSpec> specList, Model model) {
+    public FacetResult(String query, String state, List<FacetSpec> specList, String lang, Model model) {
         this.baseQuery = query;
         this.state = new FacetState( specList );
         this.state.setState(state);
-        initFacets(model);
+        initFacets(model, lang);
         facetCounts(model);
     }
 
-    protected void initFacets(Model model) {
+    protected void initFacets(Model model, String lang) {
         for (FacetSpec fs : getFacetSpecs()) {
-            Facet facet = new Facet( fs );
+            Facet facet = new Facet(fs, lang);
             if (fs.isSet()) {
                 facet.setFixedValue( fs.getValue().inModel(model) );
             }
@@ -109,8 +109,8 @@ public class FacetResult {
             qexec.close();
         }
 
-        filteredResults = new ArrayList<FacetResultEntry>( results.size() );
-        Map<RDFNode, FacetResultEntry> index = new HashMap<RDFNode, FacetResultEntry>();
+        filteredResults = new ArrayList<>(results.size());
+        Map<RDFNode, FacetResultEntry> index = new HashMap<>();
         List<FacetSpec> facetSpecs = getFacetSpecs();
 
         for (Map<String, RDFNode> result : results) {
@@ -155,7 +155,7 @@ public class FacetResult {
      * variable names. There will only be one entry for each item, with the other values merged.
      */
     public List<FacetResultEntry> getResultsPage(int pagenum) {
-        List<FacetResultEntry> page = new ArrayList<FacetResultEntry>(pageSize);
+        List<FacetResultEntry> page = new ArrayList<>(pageSize);
         int offset = pagenum * pageSize;
         for (int i = 0; i < pageSize; i++) {
             int n = offset + i;

@@ -38,14 +38,16 @@ import org.apache.jena.rdf.model.RDFNode;
  */
 public class Facet implements Comparable<Facet> {
 
-    Map<RDFNode, FacetValue> values = new HashMap<RDFNode, FacetValue>();
+    Map<RDFNode, FacetValue> values = new HashMap<>();
     RDFNode fixedValue;
     FacetSpec spec;
     String valueLex;
+    String lang;
 
 
-    public Facet(FacetSpec spec) {
+    public Facet(FacetSpec spec, String lang) {
         this.spec = spec;
+        this.lang = lang;
     }
 
     /**
@@ -53,7 +55,7 @@ public class Facet implements Comparable<Facet> {
      */
     public void setFixedValue(RDFNode value) {
         fixedValue = value;
-        valueLex = RDFUtil.getLabel(value);
+        valueLex = getLabel(value);
     }
 
     /**
@@ -77,7 +79,7 @@ public class Facet implements Comparable<Facet> {
     public void inc(RDFNode item) {
         FacetValue value = values.get(item);
         if (value == null) {
-            value = new FacetValue(item);
+            value = new FacetValue(item, lang);
             values.put(item, value);
         } else {
             value.inc();
@@ -95,7 +97,7 @@ public class Facet implements Comparable<Facet> {
      * Return the name of this facet
      */
     public String getName() {
-        return spec.getName();
+        return spec.getLabel(lang);
     }
 
     /**
@@ -109,7 +111,7 @@ public class Facet implements Comparable<Facet> {
      * Return an ordered list of value objects for this facet
      */
     public List<FacetValue> getValues() {
-        List<FacetValue> results = new ArrayList<FacetValue>( values.values().size() );
+        List<FacetValue> results = new ArrayList<>(values.values().size());
         results.addAll( values.values() );
         Collections.sort( results );
         return results;
@@ -118,5 +120,13 @@ public class Facet implements Comparable<Facet> {
     @Override
     public int compareTo(Facet arg0) {
         return spec.name.compareTo( arg0.spec.name );
+    }
+
+    private String getLabel(RDFNode node) {
+        if (node.isResource()) {
+            return RDFUtil.getLabel(node.asResource(), lang);
+        } else {
+            return RDFUtil.getLabel(node);
+        }
     }
 }
