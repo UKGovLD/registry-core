@@ -39,9 +39,6 @@ import java.util.Map;
 import javax.ws.rs.core.Response;
 
 import org.apache.jena.riot.RDFDataMgr;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.epimorphics.rdfutil.QueryUtil;
@@ -104,6 +101,8 @@ public class TestAPI extends TomcatTestBase {
         // Puts red in reg1/red
         doItemRegistrationTests();
 
+        // Reference red from another register
+        testCrossRegisterReference();
         
         // Adds external resource reg1/black
         doExternalRegistrationTests();
@@ -263,6 +262,19 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(REG1_ITEM, response.getLocation().toString());
         assertEquals("Register in non-existant location", 404, postFileStatus("test/reg1.ttl", BASE_URL+"foo"));
         assertEquals("Register the same again", 403, postFileStatus("test/reg1.ttl", BASE_URL));
+    }
+
+    private void testCrossRegisterReference() {
+        Response response = postFile("test/reg4.ttl", BASE_URL, "text/turtle");
+        assertEquals("Register a register", 201, response.getStatus());
+        assertEquals(201, postFileStatus("test/reference.ttl", BASE_URL + "reg4"));
+
+        assertEquals(404, getResponse(BASE_URL + "reg4/reference").getStatus());
+
+        Model m = getModelResponse(BASE_URL + "reg4/_reference");
+        checkModelResponse(m, ROOT_REGISTER + "reg1/red", "test/expected/reference_red.ttl");
+
+        assertEquals(303, post(BASE_URL + "reg4?real_delete").getStatus());
     }
 
     // Assumes reg1 has been created
