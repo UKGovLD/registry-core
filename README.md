@@ -12,8 +12,8 @@ For information on installing and operating a registry instance see the wiki:
    * [Configuration](https://github.com/UKGovLD/registry-core/wiki/Configuration)
    * [Operation](https://github.com/UKGovLD/registry-core/wiki/Operation)
  
-Download most recent full release: [registry-core-2.3.11.war](https://s3-eu-west-1.amazonaws.com/ukgovld/release/com/github/ukgovld/registry-core/2.3.11/registry-core-2.3.11.war) - 
-[Release Notes 2.3.11](https://github.com/UKGovLD/registry-core/wiki/Release-2.3.11)
+Download most recent full release: [registry-core-2.3.12.war](https://s3-eu-west-1.amazonaws.com/ukgovld/release/com/github/ukgovld/registry-core/2.3.12/registry-core-2.3.12.war) - 
+[Release Notes 2.3.12](https://github.com/UKGovLD/registry-core/wiki/Release-2.3.12)
 
 Earlier release notes can be found at: [Release Notes](https://github.com/UKGovLD/registry-core/wiki#release-notes)
 
