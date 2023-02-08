@@ -144,6 +144,11 @@ public class TestCSVSupport {
         
     }
     
+    @Test
+    public void testBOMRead() throws IOException {
+        doTestRDFRead("test/csv/read-bom.csv", "test/csv/read-bom-expected.ttl");
+    }
+    
     private void doTestRDFRead(String source, String expected) throws IOException {
         Model prefixes = ModelFactory.createDefaultModel();
         prefixes.setNsPrefix("eg", "http://localhost/def/");
