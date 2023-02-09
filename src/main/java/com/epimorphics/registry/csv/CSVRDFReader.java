@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.io.input.BOMInputStream;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFLanguages;
 
@@ -54,7 +55,7 @@ public class CSVRDFReader {
     
     public CSVRDFReader(InputStream ins, PrefixMapping prefixes) {
         reader = new CSVReader(
-                    new InputStreamReader(ins, StandardCharsets.UTF_8), 
+                    new InputStreamReader(new BOMInputStream(ins), StandardCharsets.UTF_8), 
                     ',', '"', CSVParser.NULL_CHARACTER );
         this.prefixes = prefixes;
         try {
