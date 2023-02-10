@@ -1,0 +1,4 @@
+@prefix eg:     <http://localhost/def/> .
+
+<http://localhost/test/a>
+        eg:test  "café"@fr .
