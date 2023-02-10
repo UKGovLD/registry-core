@@ -1,3 +1,3 @@
-@dummy,@id,eg:blank,eg:decimal,eg:multiline,eg:number,eg:string,eg:typed,rdf:type,rdfs:label
-"",<r>,[rdfs:label 'blank'; eg:number 1; ],3.14,"a longer
-string",42,"a plain ' "" string",'abc'^^eg:type,eg:Thing,'a thing'@en
+@dummy,@id,eg:blank,eg:decimal,eg:markup,eg:multiline,eg:number,eg:place,eg:string,eg:typed,rdf:type,rdfs:label
+"",<r>,[rdfs:label 'blank'; eg:number 1; ],3.14,"'<span class=""place"">King\'s Lynn</span>'^^rdf:HTML","a longer
+string",42,'King\'s Lynn'@en,"a plain ' "" string",'abc'^^eg:type,eg:Thing,'a thing'@en

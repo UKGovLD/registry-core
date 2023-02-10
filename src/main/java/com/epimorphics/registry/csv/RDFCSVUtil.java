@@ -86,10 +86,10 @@ public class RDFCSVUtil {
                             return l.getLexicalForm();   // Treat numbers as plain, means round trip isn't safe TODO Review this 
                         }
                     }
-                    return String.format("'%s'^^%s", lex, asPrefixOrURI(dt, prefixes));
+                    return String.format("'%s'^^%s", lex.replace("'", "\\'"), asPrefixOrURI(dt, prefixes));
                 }
             } else {
-                return String.format("'%s'@%s", lex, l.getLanguage());
+                return String.format("'%s'@%s", lex.replace("'", "\\'"), l.getLanguage());
             }
         }
     }

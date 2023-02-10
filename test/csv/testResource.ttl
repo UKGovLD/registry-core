@@ -16,4 +16,6 @@
 string""";
     eg:typed "abc"^^eg:type;
     eg:blank [eg:number 1; rdfs:label "blank"];
+    eg:place "King's Lynn"@en;
+    eg:markup """<span class="place">King's Lynn</span>"""^^rdf:HTML
     .
