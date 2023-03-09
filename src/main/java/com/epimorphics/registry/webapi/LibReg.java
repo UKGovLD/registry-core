@@ -103,6 +103,13 @@ public class LibReg extends ComponentBase implements LibPlugin {
     }
 
     /**
+     * Escape user input to prevent xss scripting in HTML attribute
+     */
+    public String xssCleanHTMLAtribute(String text) {
+        return Encode.forHtmlAttribute(text);
+    }
+
+    /**
      * Encodes a string to be embedded in Javascript.
      * @param input A string potentially containing Javascript or HTML syntax, eg. quotes, script tags.
      * @return A sanitised version of the given input.
