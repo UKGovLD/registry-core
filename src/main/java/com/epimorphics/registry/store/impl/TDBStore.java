@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.epimorphics.appbase.webapi.WebApiException;
 import org.apache.jena.fuseki.server.DatasetRef;
 import org.apache.jena.fuseki.server.DatasetRegistry;
 import org.apache.jena.query.text.DatasetGraphText;
@@ -39,6 +40,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.shared.PrefixMapping;
+import org.apache.jena.tdb.StoreConnection;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -65,6 +67,8 @@ import org.apache.jena.tdb.TDB;
 import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.util.FileUtils;
 import org.apache.jena.vocabulary.RDFS;
+
+import javax.ws.rs.core.Response;
 
 /**
  * Store implementation using TDB.
@@ -158,14 +162,7 @@ public class TDBStore extends ComponentBase implements Store {
     public void startup(App app) {
         super.startup(app);
 
-        if (tdbDir != null) {
-            log.info("Opening database at tdbDir");
-            dataset = TDBFactory.createDataset( tdbDir );
-        } else {
-            log.warn("Opening in-memory database");
-            dataset = TDBFactory.createDataset( );
-        }
-        baseDataset = dataset;
+        makeBaseDataset();
 
         if (isUnionDefault) {
             // Nasty global side effect, in normal implementation this is done per query
@@ -183,6 +180,17 @@ public class TDBStore extends ComponentBase implements Store {
         if (qEndpoint != null) {
             bindFusekiRef();
         }
+    }
+
+    private void makeBaseDataset() {
+        if (tdbDir != null) {
+            log.info("Opening database at tdbDir");
+            dataset = TDBFactory.createDataset( tdbDir );
+        } else {
+            log.warn("Opening in-memory database");
+            dataset = TDBFactory.createDataset( );
+        }
+        baseDataset = dataset;
     }
 
     private void bindFusekiRef() {
@@ -396,11 +404,14 @@ public class TDBStore extends ComponentBase implements Store {
         }
     }
     
-    public long textReindex() {
+    public synchronized long textReindex() {
+        if (tdbDir == null) {
+            throw new WebApiException(Response.Status.BAD_REQUEST, "You cannot reindex an in-memory dataset.");
+        }
+
         long count = 0;
         if (textIndex != null || indexSpec != null) {
-            DatasetGraphText ds = (DatasetGraphText) dataset.asDatasetGraph();
-            ds.getTextIndex().close();
+            dataset.close();
 
             if (textIndex != null) {
                 try {
@@ -409,10 +420,14 @@ public class TDBStore extends ComponentBase implements Store {
                     log.warn("Problem deleting old textindex, continuing anyway", e);
                 }
             }
-            
+
+            // Reset the StoreConnection cache to remove references to the previous text index.
+            StoreConnection.reset();
+            makeBaseDataset();
             makeTextDataset();
             bindFusekiRef();
-            ds = (DatasetGraphText) dataset.asDatasetGraph();
+
+            DatasetGraphText ds = (DatasetGraphText) dataset.asDatasetGraph();
             TextIndex index = ds.getTextIndex();
             EntityDefinition entDef = makeEntityDef();
             
