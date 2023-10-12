@@ -255,6 +255,7 @@ public class RequestProcessor extends BaseEndpoint {
     @GET
     @Produces({FULL_MIME_TURTLE, FULL_MIME_RDFXML, JSONLDSupport.FULL_MIME_JSONLD, MediaType.APPLICATION_JSON, RdfXmlRorMarshaller.MIME_TYPE})
     public Response read() {
+        if (inlineConnegRequest()) return htmlrender();
         PassThroughResult result = checkForPassThrough();
         if (result != null && result.isDone()) {
             return result.getResponse();
@@ -286,6 +287,7 @@ public class RequestProcessor extends BaseEndpoint {
     @GET
     @Produces({RDFCSVUtil.MEDIA_TYPE})
     public Response readCSV() {
+        if (inlineConnegRequest()) return htmlrender();
         PassThroughResult result = checkForPassThrough();
         if (result != null && result.isDone()) {
             return result.getResponse();
@@ -300,6 +302,15 @@ public class RequestProcessor extends BaseEndpoint {
         return htmlrender();
     }
 
+    /**
+     * Test whether this is a plain HTTP request with no explicit Accept: header or wildcard header
+     * and has a _format query parameter override. In that case will want to pass back to the normal html rendering.
+     */
+    private boolean inlineConnegRequest() {
+        String acceptHeader = request.getHeader("accept");
+        return (acceptHeader == null || acceptHeader.equals("*/*")) &&
+                uriInfo.getQueryParameters().containsKey(Parameters.FORMAT);
+    }
 
     private Response doRead(PassThroughResult ptr, String mediaType) {
         String path = uriInfo.getPath();
