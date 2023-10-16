@@ -195,6 +195,9 @@ public class TestAPI extends TomcatTestBase {
         // CSV output
         doTestCSVOut();
 
+        // Overriding content type with _format flag
+        doTestFormatOverride();
+
         // Graph entities and annotations
         doGraphEntityTest();
         doGraphAnnotationTest();
@@ -881,7 +884,18 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(200, response.getStatus());
         assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3-red-no-metadata.csv"), response.readEntity(String.class).replace("\r", ""));
     }
-    
+
+    /**
+     * Test _format override for content negotation
+     */
+    private void doTestFormatOverride() {
+        Response response = getResponse(BASE_URL + "reg3/red?_format=csv", "*/*");
+        assertEquals(200, response.getStatus());
+        assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3-red-no-metadata.csv"), response.readEntity(String.class).replace("\r", ""));
+
+        checkModelResponse(BASE_URL + "reg3/red?_format=ttl", "test/csv/reg3-red-no-metadata.ttl");
+    }
+
     /**
      * Test input from CSV for update 
      */
