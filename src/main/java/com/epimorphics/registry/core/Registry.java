@@ -42,6 +42,7 @@ import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.facets.FacetService;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.util.FileUtil;
+import com.epimorphics.webapi.marshalling.RDFXMLMarshaller;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.util.FileUtils;
@@ -119,6 +120,7 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
     protected RequestLogger requestLogger;
     protected boolean cacheRegisters = false;
     protected LanguageManager languageManager;
+    protected boolean useAbbrevXML = true;
     
     public void setBaseUri(String uri) {
         baseURI = uri;
@@ -229,6 +231,14 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
         return languageManager;
     }
 
+    public void setUseAbbrevXML(boolean useAbbrevXML) {
+        this.useAbbrevXML = useAbbrevXML;
+    }
+
+    public boolean isUseAbbrevXML() {
+        return useAbbrevXML;
+    }
+
     @Override
     public void startup(App app) {
         super.startup(app);
@@ -303,6 +313,9 @@ public class Registry extends ComponentBase implements Startup, Shutdown {
         } else {
             log.warn("No backup service configured");
         }
+
+        // Global override of RDF/XML serialization format
+        RDFXMLMarshaller.setUseAbbreviatedWriter(useAbbrevXML);
     }
 
     /**
