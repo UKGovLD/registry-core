@@ -38,6 +38,7 @@ import java.util.Map;
 
 import javax.ws.rs.core.Response;
 
+import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.junit.Test;
 
@@ -194,6 +195,9 @@ public class TestAPI extends TomcatTestBase {
         
         // CSV output
         doTestCSVOut();
+
+        // Overriding content type with _format flag
+        doTestFormatOverride();
 
         // Graph entities and annotations
         doGraphEntityTest();
@@ -881,7 +885,24 @@ public class TestAPI extends TomcatTestBase {
         assertEquals(200, response.getStatus());
         assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3-red-no-metadata.csv"), response.readEntity(String.class).replace("\r", ""));
     }
-    
+
+    /**
+     * Test _format override for content negotiation
+     */
+    private void doTestFormatOverride() {
+        // Test CSV requests
+        Response response = getResponse(BASE_URL + "reg3/red?_format=csv", "*/*");
+        assertEquals(200, response.getStatus());
+        assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3-red-no-metadata.csv"), response.readEntity(String.class).replace("\r", ""));
+
+        // Test ttl requests 
+        response = getResponse(BASE_URL + "reg3/red?_format=ttl", "*/*");
+        assertEquals(200, response.getStatus());
+        Model model = ModelFactory.createDefaultModel();
+        RDFDataMgr.read(model, response.readEntity(InputStream.class), Lang.TURTLE);
+        checkModelResponse(model,"test/csv/reg3-red-no-metadata.ttl");
+    }
+
     /**
      * Test input from CSV for update 
      */
