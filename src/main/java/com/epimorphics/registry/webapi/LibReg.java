@@ -21,8 +21,9 @@
 
 package com.epimorphics.registry.webapi;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.Permission;
@@ -116,6 +117,40 @@ public class LibReg extends ComponentBase implements LibPlugin {
      */
     public String jsEncode(String input) {
         return Encode.forJavaScript(input);
+    }
+
+    /**
+     * Sanitise a return URI to be rendered in a HTML attribute.
+     * @param uri The URI to sanitise.
+     * @return The sanitised URI.
+     */
+    public String xssCleanReturnUriAttribute(String uri) {
+        String returnUri = returnUri(uri);
+        return xssCleanHTMLAtribute(returnUri);
+    }
+
+    /**
+     * Obtain an acceptable return URI to render as a link on a HTML page.
+     * If the preferred URI is not acceptable (it links to a resource outside the registry), return the registry base URI as a default.
+     * @param uri The preferred URI.
+     */
+    public String returnUri(String uri) {
+        String baseUri = Registry.get().getBaseURI();
+        try {
+            URI _uri = new URI(uri);
+            URI _baseUri = new URI(baseUri);
+
+            Boolean isSafeHost = !_uri.isAbsolute() || (_uri.getHost().equals(_baseUri.getHost()));
+            Boolean isSafePath = _uri.getPath().startsWith(_baseUri.getPath());
+
+            if (isSafeHost && isSafePath) {
+                return uri;
+            } else {
+                return _baseUri.toString();
+            }
+        } catch (URISyntaxException e) {
+            return baseUri;
+        }
     }
     
     /**
