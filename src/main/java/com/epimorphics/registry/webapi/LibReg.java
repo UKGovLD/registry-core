@@ -140,17 +140,27 @@ public class LibReg extends ComponentBase implements LibPlugin {
             URI _uri = new URI(uri);
             URI _baseUri = new URI(baseUri);
 
-            Boolean isSafeHost = !_uri.isAbsolute() || (_uri.getHost().equals(_baseUri.getHost()));
-            Boolean isSafePath = _uri.getPath().startsWith(_baseUri.getPath());
-
-            if (isSafeHost && isSafePath) {
+            if (isSafeScheme(_uri) && isSafeReturnHost(_uri, _baseUri) && isSafeReturnPath(_uri, _baseUri)) {
                 return uri;
             } else {
-                return _baseUri.toString();
+                return baseUri;
             }
         } catch (URISyntaxException e) {
             return baseUri;
         }
+    }
+
+    private Boolean isSafeScheme(URI uri) {
+        String scheme = uri.getScheme();
+        return scheme == null || scheme.equals("http") || scheme.equals("https");
+    }
+
+    private Boolean isSafeReturnHost(URI uri, URI baseUri) {
+        return !uri.isAbsolute() || (uri.getHost().equals(baseUri.getHost()));
+    }
+
+    private Boolean isSafeReturnPath(URI uri, URI baseUri) {
+        return uri.getPath().startsWith(baseUri.getPath());
     }
     
     /**
