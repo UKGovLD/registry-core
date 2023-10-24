@@ -136,6 +136,10 @@ public class LibReg extends ComponentBase implements LibPlugin {
      */
     public String returnUri(String uri) {
         String baseUri = Registry.get().getBaseURI();
+        return returnUri(uri, baseUri);
+    }
+
+    public String returnUri(String uri, String baseUri) {
         try {
             URI _uri = new URI(uri);
             URI _baseUri = new URI(baseUri);

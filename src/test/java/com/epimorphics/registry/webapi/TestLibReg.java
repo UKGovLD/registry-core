@@ -27,7 +27,11 @@ import static org.junit.Assert.*;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.ResourceFactory;
 
+import java.util.function.BiConsumer;
+
 public class TestLibReg {
+    private LibReg lr = new LibReg();
+
     @Test
     public void testReservations() {
         LibReg.ReservationList rl = new LibReg.ReservationList();
@@ -59,5 +63,31 @@ public class TestLibReg {
 
     private RDFNode nodeFor(String s) {
         return ResourceFactory.createPlainLiteral(s);
+    }
+
+    @Test
+    public void returnUri() {
+        String baseUri = "https://example.org/registry";
+        BiConsumer<String, String> verifyReturnUri = new BiConsumer<String, String>() {
+            @Override
+            public void accept(String uri, String expected) {
+                String result = lr.returnUri(uri, baseUri);
+                assertEquals(expected, result);
+            }
+        };
+
+        verifyReturnUri.accept("/registry", "/registry");
+        verifyReturnUri.accept("/registry/index", "/registry/index");
+        verifyReturnUri.accept("/registry/index?page=3", "/registry/index?page=3");
+        verifyReturnUri.accept("/api", baseUri);
+        verifyReturnUri.accept("/api/doc", baseUri);
+        verifyReturnUri.accept(baseUri, baseUri);
+        verifyReturnUri.accept(baseUri + "/index", baseUri + "/index");
+        verifyReturnUri.accept("http://example.org/registry", "http://example.org/registry");
+        verifyReturnUri.accept("http://example.org/registry/index", "http://example.org/registry/index");
+        verifyReturnUri.accept("https://example.org/api", baseUri);
+        verifyReturnUri.accept("https://example.org/api/doc", baseUri);
+        verifyReturnUri.accept("javascript:alert('hello')", baseUri);
+        verifyReturnUri.accept("&*$--+=", baseUri);
     }
 }
