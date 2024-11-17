@@ -885,6 +885,11 @@ public class TestAPI extends TomcatTestBase {
         response = getResponse(BASE_URL + "reg3/red", "text/csv");
         assertEquals(200, response.getStatus());
         assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3-red-no-metadata.csv"), response.readEntity(String.class).replace("\r", ""));
+        // Test retrieval as if an external entity
+        response = getResponse(BASE_URL + "reg3?_view=with_metadata&_format=csv&entity=http://location.data.gov.uk/reg3/red");
+        assertEquals(200, response.getStatus());
+        response = getResponse(BASE_URL + "reg3?_view=with_metadata&_format=csv&entity=http://location.data.gov.uk/reg3/red-no-there");
+        assertEquals(404, response.getStatus());
     }
 
     /**
