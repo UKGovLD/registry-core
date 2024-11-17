@@ -56,6 +56,7 @@ import com.epimorphics.registry.vocab.Version;
 import com.epimorphics.registry.webapi.Parameters;
 import com.epimorphics.vocabs.API;
 import com.epimorphics.vocabs.Time;
+import jersey.repackaged.com.google.common.collect.Lists;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
@@ -320,7 +321,11 @@ public class CommandRead extends Command {
                 }
             }
         }
-        return returnModel(result, target);
+        if (RDFCSVUtil.MEDIA_TYPE.equals(getMediaType())) {
+            return serializeToCSV(Lists.newArrayList(entity), entity.getURI(), withMetadata);
+        } else {
+            return returnModel(result, target);
+        }
     }
 
     Model registerRead(Register register, List<Resource> members) {
