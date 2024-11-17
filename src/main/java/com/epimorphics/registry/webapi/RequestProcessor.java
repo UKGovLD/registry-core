@@ -253,7 +253,7 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     @GET
-    @Produces({FULL_MIME_TURTLE, FULL_MIME_RDFXML, JSONLDSupport.FULL_MIME_JSONLD, MediaType.APPLICATION_JSON, RdfXmlRorMarshaller.MIME_TYPE})
+    @Produces({FULL_MIME_TURTLE, FULL_MIME_RDFXML, JSONLDSupport.FULL_MIME_JSONLD, RdfXmlRorMarshaller.MIME_TYPE})
     public Response read() {
         if (inlineConnegRequest()) return htmlrender();
         PassThroughResult result = checkForPassThrough();
