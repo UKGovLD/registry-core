@@ -304,7 +304,7 @@ public class CommandRead extends Command {
         }
 
         // Check for contained delegation points
-        Resource entity = ResourceFactory.createResource(uri);
+        Resource entity = result.createResource(uri);
         for (DelegationRecord delegation : registry.getForwarder().listDelegations(path)) {
             Model member = delegation.describeMember(entity);
             if (member != null) {
@@ -321,6 +321,11 @@ public class CommandRead extends Command {
                 }
             }
         }
+
+        // Check for missing entity
+        if (result.isEmpty() || !entity.hasProperty(RDF.type))
+            throw new NotFoundException();
+
         if (RDFCSVUtil.MEDIA_TYPE.equals(getMediaType())) {
             return serializeToCSV(Lists.newArrayList(entity), entity.getURI(), withMetadata);
         } else {

@@ -151,6 +151,7 @@ public class RequestProcessor extends BaseEndpoint {
 
     private Response readAsRDF(PassThroughResult ptr, String mime, String ext) {
         Response response = doRead(ptr, mime);
+        if (response.getStatus() != 200) return response;
         Object location = response.getMetadata().getFirst(HttpHeaders.LOCATION);
         ResponseBuilder builder = Response.ok().type(mime).entity(response.getEntity());
         if (location != null) {
