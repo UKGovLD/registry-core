@@ -160,8 +160,9 @@ public class TestAPI extends TomcatTestBase {
         checkRegisterList(m, RDFS.member, ROOT_REGISTER, "system register", "register 1", "A test collection", "Long register", "A nice test collection", "A test concept scheme") ;
 
         // Delegation tests
-        doForwardingTest();
-        doDelegationTest();
+        // Disabled because the test Bathing Water service now behaves differently - need an alterantive way to test these
+        // doForwardingTest();
+        // doDelegationTest();
 
         // Check prefix system register
         doPrefixTests();
@@ -884,6 +885,11 @@ public class TestAPI extends TomcatTestBase {
         response = getResponse(BASE_URL + "reg3/red", "text/csv");
         assertEquals(200, response.getStatus());
         assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3-red-no-metadata.csv"), response.readEntity(String.class).replace("\r", ""));
+        // Test retrieval as if an external entity
+        response = getResponse(BASE_URL + "reg3?_view=with_metadata&_format=csv&entity=http://location.data.gov.uk/reg3/red");
+        assertEquals(200, response.getStatus());
+        response = getResponse(BASE_URL + "reg3?_view=with_metadata&_format=csv&entity=http://location.data.gov.uk/reg3/red-no-there");
+        assertEquals(404, response.getStatus());
     }
 
     /**

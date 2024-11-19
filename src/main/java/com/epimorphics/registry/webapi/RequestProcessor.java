@@ -151,6 +151,7 @@ public class RequestProcessor extends BaseEndpoint {
 
     private Response readAsRDF(PassThroughResult ptr, String mime, String ext) {
         Response response = doRead(ptr, mime);
+        if (response.getStatus() != 200) return response;
         Object location = response.getMetadata().getFirst(HttpHeaders.LOCATION);
         ResponseBuilder builder = Response.ok().type(mime).entity(response.getEntity());
         if (location != null) {
@@ -253,7 +254,7 @@ public class RequestProcessor extends BaseEndpoint {
     }
 
     @GET
-    @Produces({FULL_MIME_TURTLE, FULL_MIME_RDFXML, JSONLDSupport.FULL_MIME_JSONLD, MediaType.APPLICATION_JSON, RdfXmlRorMarshaller.MIME_TYPE})
+    @Produces({FULL_MIME_TURTLE, FULL_MIME_RDFXML, JSONLDSupport.FULL_MIME_JSONLD, RdfXmlRorMarshaller.MIME_TYPE})
     public Response read() {
         if (inlineConnegRequest()) return htmlrender();
         PassThroughResult result = checkForPassThrough();

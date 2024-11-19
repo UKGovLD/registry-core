@@ -30,6 +30,7 @@ import static com.epimorphics.registry.webapi.Parameters.VIEW;
 import static com.epimorphics.registry.webapi.Parameters.WITH_METADATA;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -48,7 +49,6 @@ import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.csv.RDFCSVUtil;
 import com.epimorphics.registry.store.EntityInfo;
 import com.epimorphics.registry.store.FilterSpec;
-import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.store.VersionInfo;
 import com.epimorphics.registry.util.Util;
 import com.epimorphics.registry.vocab.RegistryVocab;
@@ -61,7 +61,6 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OWL;
@@ -303,7 +302,7 @@ public class CommandRead extends Command {
         }
 
         // Check for contained delegation points
-        Resource entity = ResourceFactory.createResource(uri);
+        Resource entity = result.createResource(uri);
         for (DelegationRecord delegation : registry.getForwarder().listDelegations(path)) {
             Model member = delegation.describeMember(entity);
             if (member != null) {
@@ -320,7 +319,16 @@ public class CommandRead extends Command {
                 }
             }
         }
-        return returnModel(result, target);
+
+        // Check for missing entity
+        if (result.isEmpty() || !entity.hasProperty(RDF.type))
+            throw new NotFoundException();
+
+        if (RDFCSVUtil.MEDIA_TYPE.equals(getMediaType())) {
+            return serializeToCSV(Collections.singletonList(entity), entity.getURI(), withMetadata);
+        } else {
+            return returnModel(result, target);
+        }
     }
 
     Model registerRead(Register register, List<Resource> members) {
