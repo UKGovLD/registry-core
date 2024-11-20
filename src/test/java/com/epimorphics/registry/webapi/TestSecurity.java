@@ -74,9 +74,10 @@ public class TestSecurity extends TomcatTestBase {
         String user = c.target(BASE_URL + "system/security/username").request().get(String.class);
         assertEquals("Alice", user);
 
-        c.target(BASE_URL + "system/security/logout").request().post(null);
-        Response response = c.target(BASE_URL + "system/security/username").request().get();
-        assertTrue(response.getStatus() >= 400);
+        Response logoutResponse = c.target(BASE_URL + "system/security/logout").request().post(null);
+        assertEquals(BASE_URL, logoutResponse.getLocation().toString());
+        Response userResponse = c.target(BASE_URL + "system/security/username").request().get();
+        assertTrue(userResponse.getStatus() >= 400);
     }
 
     /**
