@@ -1,5 +1,5 @@
 /******************************************************************
- * File:        PassGetFilter.java
+ * File:        BasicAuthOnUpdateFilter.java
  * Created by:  Dave Reynolds
  * Created on:  24 Nov 2016
  * 
@@ -27,8 +27,8 @@ public class BasicAuthOnUpdateFilter extends BasicHttpAuthenticationFilter {
     @Override
     protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) {
         HttpServletRequest httpRequest = WebUtils.toHttp(request);
-        return  httpRequest.getMethod().equals( HttpMethod.GET ) || super.isAccessAllowed(httpRequest, response, mappedValue);
-
+        String method = httpRequest.getMethod();
+        return  method.equals( HttpMethod.GET ) || method.equals( HttpMethod.HEAD) || super.isAccessAllowed(httpRequest, response, mappedValue);
     }
     
 }
