@@ -87,17 +87,46 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <oltu.oauth2.version>1.0.2</oltu.oauth2.version>
     <jersey.version>2.21</jersey.version>
-    <appbase.version>3.1.4</appbase.version>
+    <appbase.version>3.1.13-SNAPSHOT</appbase.version>
     <jena.version>3.9.0</jena.version>
     <fuseki.version>3.9.0</fuseki.version>
     <tomcat.version>7.0.107</tomcat.version>
-    <lib.version>3.1.3</lib.version>
+    <lib.version>3.1.8-SNAPSHOT</lib.version>
     <shiro.version>1.13.0</shiro.version>
     <log4j.version>2.20.0</log4j.version>
   </properties>
 
   <dependencies>
-
+      <dependency>
+          <groupId>commons-io</groupId>
+          <artifactId>commons-io</artifactId>
+          <version>2.17.0</version>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.thrift</groupId>
+          <artifactId>libthrift</artifactId>
+          <version>0.14.0</version>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-compress</artifactId>
+          <version>1.27.1</version>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.velocity</groupId>
+          <artifactId>velocity-engine-core</artifactId>
+          <version>2.4.1</version>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-lang3</artifactId>
+          <version>3.18.0</version>
+      </dependency>
+      <dependency>
+          <groupId>commons-fileupload</groupId>
+          <artifactId>commons-fileupload</artifactId>
+          <version>1.6.0</version>
+      </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -209,18 +238,23 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.12.7.1</version>
+      <version>2.15.0</version>
     </dependency>
     <dependency>
       <groupId>javax.jms</groupId>
       <artifactId>javax.jms-api</artifactId>
-			<version>2.0.1</version>
+        <version>2.0.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.oltu.oauth2</groupId>
       <artifactId>org.apache.oltu.oauth2.client</artifactId>
       <version>${oltu.oauth2.version}</version>
     </dependency>
+      <dependency>
+          <groupId>org.json</groupId>
+          <artifactId>json</artifactId>
+          <version>20231013</version>
+      </dependency>
     <dependency>
       <groupId>org.apache.oltu.oauth2</groupId>
       <artifactId>org.apache.oltu.oauth2.jwt</artifactId>
