@@ -38,20 +38,20 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 
 public class TestDelegationRecord {
-    public static final String BW_TEST_ENDPOINT = "http://environment.data.gov.uk/sparql/bwq/query";
+    public static final String BW_TEST_ENDPOINT = "https://environment.data.gov.uk/wales/bathing-waters/sparql/bwq/query";
 
     @Test
     public void testDelegation() {
         DelegationRecord dr = new DelegationRecord("/def/bw", BW_TEST_ENDPOINT, Type.DELEGATE);
-        dr.setObject( ResourceFactory.createResource("http://environment.data.gov.uk/id/bathing-water/") );
+        dr.setObject( ResourceFactory.createResource("http://environment.data.gov.uk/wales/bathing-waters/so/BathingWaterProfileFeature/") );
         dr.setPredicate( ResourceFactory.createResource("http://reference.data.gov.uk/def/reference/uriSet") );
 
         List<Resource> members = dr.listMembers();
         assertTrue(members.size() > 300);
 
-        Resource bw1 = ResourceFactory.createResource("http://environment.data.gov.uk/id/bathing-water/ukc1101-06000");
+        Resource bw1 = ResourceFactory.createResource("http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl1100-40050");
         Model m = dr.describeMember( bw1 );
-        assertEquals("Seaton Carew North", RDFUtil.getStringValue(bw1.inModel(m), RDFS.label));
+        assertEquals("Cemaes", RDFUtil.getStringValue(bw1.inModel(m), RDFS.label));
 
         m = ModelFactory.createDefaultModel();
         dr.fetchMembers(m, Util.listWindow(members, 5, 2) );
