@@ -24,6 +24,8 @@ package com.epimorphics.registry.security;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.credential.CredentialsMatcher;
+import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.cache.Cache;
 import org.apache.shiro.crypto.hash.DefaultHashService;
@@ -45,8 +47,7 @@ public class BaseRegRealm extends AuthorizingRealm {
         setPermissionResolver( new RegPermissionResolver() );
         setCredentialsMatcher( new RegCredentialsMatcher() );
         DefaultHashService hashing = new DefaultHashService();
-        hashing.setHashAlgorithmName( RegCredentialsMatcher.DEFAULT_ALGORITHM );
-        hashing.setHashIterations( RegCredentialsMatcher.DEFAULT_ITERATIONS );
+        hashing.setDefaultAlgorithmName( RegCredentialsMatcher.DEFAULT_ALGORITHM );
         hashService = hashing;
     }
 
@@ -59,9 +60,21 @@ public class BaseRegRealm extends AuthorizingRealm {
      * Default is 1. See to high numbers (e.g. 10^5 or more) to increase cost of brute force attack
      */
     public void setHashIterations(int iterations) {
-        ((DefaultHashService) hashService).setHashIterations(iterations);
+        CredentialsMatcher cm = getCredentialsMatcher();
+        if (cm instanceof HashedCredentialsMatcher hcm) {
+            hcm.setHashIterations(iterations);
+        }
     }
-    
+
+    public int getHashIterations() {
+        CredentialsMatcher cm = getCredentialsMatcher();
+        if (cm instanceof HashedCredentialsMatcher hcm) {
+            return hcm.getHashIterations();
+        } else {
+            return 0;
+        }
+    }
+
     /**
      * Clear cached authentication and authorization information
      * for an individual. Should be called from UserStore implementation

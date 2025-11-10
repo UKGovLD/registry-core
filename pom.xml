@@ -3,7 +3,7 @@
   <groupId>com.github.ukgovld</groupId>
   <artifactId>registry-core</artifactId>
   <packaging>war</packaging>
-  <version>2.3.22-SNAPSHOT</version>
+  <version>3.0.0-SNAPSHOT</version>
   <name>Registry Core</name>
   <url>http://maven.apache.org</url>
 
@@ -86,24 +86,37 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <oltu.oauth2.version>1.0.2</oltu.oauth2.version>
-    <jersey.version>2.21</jersey.version>
-    <appbase.version>3.1.4</appbase.version>
-    <jena.version>3.9.0</jena.version>
-    <fuseki.version>3.9.0</fuseki.version>
-    <tomcat.version>7.0.107</tomcat.version>
-    <lib.version>3.1.3</lib.version>
-    <shiro.version>1.13.0</shiro.version>
-    <log4j.version>2.20.0</log4j.version>
+    <jersey.version>3.1.11</jersey.version>
+    <appbase.version>4.0.0-SNAPSHOT</appbase.version>
+    <jena.version>5.5.0</jena.version>
+    <tomcat.version>11.0.10</tomcat.version>
+    <lib.version>4.0.0-SNAPSHOT</lib.version>
+    <shiro.version>2.0.5</shiro.version>
+    <log4j.version>2.25.0</log4j.version>
+      <derby.version>10.17.1.0</derby.version>
+      <jackson.version>2.20.1</jackson.version>
+      <mockito.version>5.20.0</mockito.version>
   </properties>
 
-  <dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.apache.shiro</groupId>
+                <artifactId>shiro-bom</artifactId>
+                <version>${shiro.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.13.1</version>
-      <scope>provided</scope>
-    </dependency>
+  <dependencies>
+      <dependency>
+          <groupId>org.junit.jupiter</groupId>
+          <artifactId>junit-jupiter-api</artifactId>
+          <version>5.12.2</version>
+          <scope>test</scope>
+      </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
@@ -122,7 +135,6 @@
     <dependency>
       <groupId>com.epimorphics</groupId>
       <artifactId>appbase</artifactId>
-      <!-- <version>2.1.1-SNAPSHOT</version> -->
       <version>${appbase.version}</version>
       <exclusions>
         <exclusion>
@@ -143,29 +155,9 @@
       <artifactId>jena-querybuilder</artifactId>
       <version>${jena.version}</version>
     </dependency>
-    
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>3.0.1</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.owasp.encoder</groupId>
-      <artifactId>encoder</artifactId>
-      <version>1.2.1</version>
-    </dependency>
-
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-core</artifactId>
-      <version>${tomcat.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.tomcat.embed</groupId>
-      <artifactId>tomcat-embed-logging-log4j</artifactId>
       <version>${tomcat.version}</version>
       <scope>provided</scope>
     </dependency>
@@ -184,23 +176,53 @@
     <dependency>
         <groupId>org.glassfish.jersey.media</groupId>
         <artifactId>jersey-media-multipart</artifactId>
-        <version>2.21</version>
+        <version>${jersey.version}</version>
     </dependency>
+      <dependency>
+          <groupId>org.glassfish.jersey.inject</groupId>
+          <artifactId>jersey-hk2</artifactId>
+          <version>${jersey.version}</version>
+      </dependency>
+      <dependency>
+          <groupId>javax.servlet</groupId>
+          <artifactId>javax.servlet-api</artifactId>
+          <version>4.0.1</version>
+      </dependency>
+      <dependency>
+          <groupId>jakarta.activation</groupId>
+          <artifactId>jakarta.activation-api</artifactId>
+          <version>2.1.4</version>
+      </dependency>
+      <dependency>
+          <groupId>org.glassfish.jaxb</groupId>
+          <artifactId>jaxb-runtime</artifactId>
+          <version>2.3.3</version>
+      </dependency>
      <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-core</artifactId>
-      <version>${shiro.version}</version>
+         <classifier>jakarta</classifier>
     </dependency>
+      <dependency>
+          <groupId>org.apache.derby</groupId>
+          <artifactId>derby</artifactId>
+          <version>${derby.version}</version>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.derby</groupId>
+          <artifactId>derbytools</artifactId>
+          <version>${derby.version}</version>
+      </dependency>
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-web</artifactId>
-      <version>${shiro.version}</version>
+        <classifier>jakarta</classifier>
     </dependency>
-    <dependency>
-      <groupId>org.apache.derby</groupId>
-      <artifactId>derby</artifactId>
-      <version>10.14.3.0</version>
-    </dependency>
+      <dependency>
+          <groupId>org.apache.shiro</groupId>
+          <artifactId>shiro-jakarta-ee</artifactId>
+          <classifier>jakarta</classifier>
+      </dependency>
     <dependency>
       <groupId>org.fusesource.stompjms</groupId>
       <artifactId>stompjms-client</artifactId>
@@ -209,12 +231,32 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.12.7.1</version>
+      <version>${jackson.version}</version>
     </dependency>
+      <dependency>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-core</artifactId>
+          <version>${jackson.version}</version>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpclient</artifactId>
+          <version>4.5.14</version>
+      </dependency>
+      <dependency>
+          <groupId>commons-io</groupId>
+          <artifactId>commons-io</artifactId>
+          <version>2.20.0</version>
+      </dependency>
+      <dependency>
+          <groupId>commons-codec</groupId>
+          <artifactId>commons-codec</artifactId>
+          <version>1.19.0</version>
+      </dependency>
     <dependency>
       <groupId>javax.jms</groupId>
       <artifactId>javax.jms-api</artifactId>
-			<version>2.0.1</version>
+      <version>2.0.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.oltu.oauth2</groupId>
@@ -226,39 +268,47 @@
       <artifactId>org.apache.oltu.oauth2.jwt</artifactId>
       <version>${oltu.oauth2.version}</version>
     </dependency>
+      <dependency>
+          <groupId>org.json</groupId>
+          <artifactId>json</artifactId>
+          <version>20250107</version>
+      </dependency>
+      <dependency>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-classic</artifactId>
+          <version>1.5.20</version>
+      </dependency>
     <dependency>
       <groupId>org.apache.jena</groupId>
-      <artifactId>jena-fuseki1</artifactId>
-      <version>${fuseki.version}</version>
+      <artifactId>jena-fuseki-main</artifactId>
+      <version>${jena.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.eclipse.jetty</groupId>
-          <artifactId>jetty-servlet</artifactId>
+          <artifactId>jetty-ee10-servlet</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.eclipse.jetty</groupId>
-          <artifactId>jetty-server</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.eclipse.jetty</groupId>
-          <artifactId>jetty-servlets</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.eclipse.jetty</groupId>
-          <artifactId>jetty-xml</artifactId>
-        </exclusion>
-        <exclusion>
-          <artifactId>log4j</artifactId>
-          <groupId>log4j</groupId>
+          <artifactId>jetty-ee10-servlets</artifactId>
         </exclusion>
       </exclusions>
      </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <version>1.9.5</version>
-      <scope>test</scope>
-    </dependency>
+      <dependency>
+          <groupId>org.mockito</groupId>
+          <artifactId>mockito-core</artifactId>
+          <version>${mockito.version}</version>
+          <scope>test</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpclient-cache</artifactId>
+          <version>4.5.14</version>
+      </dependency>
+      <dependency>
+          <groupId>com.github.jsonld-java</groupId>
+          <artifactId>jsonld-java</artifactId>
+          <version>0.13.2</version>
+      </dependency>
   </dependencies>
 
   <build>
@@ -290,8 +340,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>2.3.2</version>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
+          <source>21</source>
+          <target>21</target>
         </configuration>
       </plugin>
 
@@ -359,6 +409,22 @@
           <webXml>${basedir}/src/main/webapp/WEB-INF/web.xml</webXml>
         </configuration>
       </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.5.3</version>
+            <configuration>
+                <properties>
+                    <excludeTags>slow</excludeTags>
+                </properties>
+                <argLine>
+                    -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar
+                    -Xshare:off
+                    -Dtomcat.util.scan.StandardJarScanFilter.jarsToSkip=derby*.jar
+                    --add-opens=java.base/java.net=ALL-UNNAMED
+                </argLine>
+            </configuration>
+        </plugin>
     </plugins>
 
     <extensions>

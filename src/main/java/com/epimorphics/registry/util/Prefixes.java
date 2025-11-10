@@ -24,6 +24,8 @@ package com.epimorphics.registry.util;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.util.XMLChar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,12 +39,9 @@ import com.epimorphics.registry.message.ProcessIfChanges;
 import com.epimorphics.registry.store.RegisterEntryInfo;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.webapi.JsonContext;
-
-import org.apache.jena.ext.xerces.util.XMLChar;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.shared.PrefixMapping;
-import org.apache.jena.util.FileManager;
 
 /**
  * Set of default prefixes used in registry descriptions and queries.
@@ -64,7 +63,7 @@ public class Prefixes {
     static Map<String, Object> jsonldContext;
     
     static {
-        defaultPrefixes = FileManager.get().loadModel(PREFIXES_FILE);
+        defaultPrefixes = RDFDataMgr.loadModel(PREFIXES_FILE);
     }
 
     /**
@@ -98,9 +97,7 @@ public class Prefixes {
         if (jsonldContext == null) {
             jsonldContext = new HashMap<String, Object>();
             Map<String, String> map = get().getNsPrefixMap();
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                jsonldContext.put(entry.getKey(), entry.getValue());
-            }
+            jsonldContext.putAll(map);
         }
         return jsonldContext;
     }

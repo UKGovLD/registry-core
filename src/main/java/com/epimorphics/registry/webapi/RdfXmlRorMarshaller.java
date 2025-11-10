@@ -4,15 +4,16 @@ import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.ror.RorDescriptor;
 import com.epimorphics.registry.store.StoreAPI;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.RDFWriter;
-import org.apache.jena.util.FileUtils;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFWriter;
+import org.apache.jena.sparql.util.Symbol;
 
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyWriter;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.ext.MessageBodyWriter;
+import jakarta.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
@@ -61,9 +62,8 @@ public class RdfXmlRorMarshaller implements MessageBodyWriter<Model> {
         store.beginSafeRead();
         try {
             Model description = descriptor.describe(registry, store, model);
-            RDFWriter writer = description.getWriter(FileUtils.langXML);
-            writer.setProperty("prettyTypes", descriptor.rootTypes());
-            writer.write(description, entityStream, null);
+            RDFWriter writer = RDFWriter.create().source(description).lang(Lang.RDFXML).set(Symbol.create("prettyTypes"), descriptor.rootTypes()).build();
+            writer.output(entityStream);
         } finally {
             store.endSafeRead();
         }

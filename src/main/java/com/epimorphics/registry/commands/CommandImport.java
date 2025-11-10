@@ -19,10 +19,10 @@ package com.epimorphics.registry.commands;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFParser;
 import org.apache.jena.riot.system.StreamRDF;
 
 import com.epimorphics.registry.core.Command;
@@ -47,7 +47,7 @@ public class CommandImport extends Command {
     public Response doExecute() {
         try {
             StreamRDF stream = store.importTree(target);
-            RDFDataMgr.parse(stream, payloadStream, Lang.NQUADS);
+            RDFParser.create().source(payloadStream).lang(Lang.NQUADS).parse(stream);
             store.commit();
             
             return Response.noContent().location(new URI(path)).build();

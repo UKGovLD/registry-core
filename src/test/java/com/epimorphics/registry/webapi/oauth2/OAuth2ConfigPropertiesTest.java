@@ -1,11 +1,11 @@
 package com.epimorphics.registry.webapi.oauth2;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.*;
 
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class OAuth2ConfigPropertiesTest {
 	private final Properties props = new Properties();

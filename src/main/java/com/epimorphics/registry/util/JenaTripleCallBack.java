@@ -68,7 +68,7 @@ public class JenaTripleCallBack implements JsonLdTripleCallback {
                     Node s = createNode(t, "subject") ;
                     Node p = createNode(t, "predicate") ;
                     Node o = createNode(t, "object") ;
-                    model.getGraph().add( new Triple(s,p,o) );
+                    model.getGraph().add( Triple.create(s,p,o) );
                 }
             } 
         }
@@ -97,11 +97,11 @@ public class JenaTripleCallBack implements JsonLdTripleCallback {
                 // During migration, we prefer simple literals to xsd:strings. 
                 datatype = null ;
             if ( lang == null && datatype == null )
-                return NodeFactory.createLiteral(lex);
+                return NodeFactory.createLiteralString(lex);
             if ( lang != null )
-                return NodeFactory.createLiteral(lex, lang);
+                return NodeFactory.createLiteralLang(lex, lang);
             RDFDatatype dt = NodeFactory.getType(datatype) ;
-            return NodeFactory.createLiteral(lex, dt);
+            return NodeFactory.createLiteralDT(lex, dt);
         } else
             throw new InternalErrorException("Node is not a IRI, bNode or a literal: " + type) ;
     }

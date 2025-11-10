@@ -44,7 +44,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.util.FileManager;
 import org.apache.jena.util.FileUtils;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
@@ -58,13 +57,14 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Response.Status;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
+import jakarta.ws.rs.core.Response.ResponseBuilder;
+import jakarta.ws.rs.core.Response.Status;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -74,8 +74,8 @@ import java.util.List;
 
 import static com.epimorphics.webapi.marshalling.RDFXMLMarshaller.FULL_MIME_RDFXML;
 import static com.epimorphics.webapi.marshalling.RDFXMLMarshaller.MIME_RDFXML;
-import static javax.ws.rs.core.Cookie.DEFAULT_VERSION;
-import static javax.ws.rs.core.NewCookie.DEFAULT_MAX_AGE;
+import static jakarta.ws.rs.core.Cookie.DEFAULT_VERSION;
+import static jakarta.ws.rs.core.NewCookie.DEFAULT_MAX_AGE;
 
 /**
  * Filter all requests as possible register API requests.
@@ -193,7 +193,14 @@ public class RequestProcessor extends BaseEndpoint {
         if (languageManager.getUseCookies()) {
             String param = request.getParameter("lang");
             if (param != null && !param.isEmpty()) {
-                NewCookie cookie = new NewCookie(LANGUAGE_COOKIE, param, "/", null, DEFAULT_VERSION, null, DEFAULT_MAX_AGE, null, false, false);
+                NewCookie cookie = new NewCookie.Builder(LANGUAGE_COOKIE)
+                        .value(param)
+                        .path("/")
+                        .version(DEFAULT_VERSION)
+                        .maxAge(DEFAULT_MAX_AGE)
+                        .secure(false)
+                        .httpOnly(false)
+                        .build();
                 response.cookie(cookie);
             }
         }
@@ -401,8 +408,12 @@ public class RequestProcessor extends BaseEndpoint {
     private Response doValidate(InputStream body) {
         MultivaluedMap<String, String> parameters = new MultivaluedStringMap( uriInfo.getQueryParameters() );
         if (body != null) {
-            for (String uri : FileManager.get().readWholeFileAsUTF8(body).split("\\s")) {
-                parameters.add(Parameters.VALIDATE, uri);
+            try {
+                for (String uri : FileUtils.readWholeFileAsUTF8(body).split("\\s")) {
+                    parameters.add(Parameters.VALIDATE, uri);
+                }
+            } catch (IOException ioe) {
+                throw new WebApiException(Status.BAD_REQUEST, "Failed to read request body.");
             }
         }
         Command command = Registry.get().make(Operation.Validate, uriInfo.getPath(), parameters);
@@ -587,7 +598,7 @@ public class RequestProcessor extends BaseEndpoint {
         int success = 0;
         int failure = 0;
         Response response = null;
-        StringBuffer errorMessages = new StringBuffer();
+        StringBuilder errorMessages = new StringBuilder();
 
         for(FormDataBodyPart field : fields){
             InputStream uploadedInputStream       = field.getValueAs(InputStream.class);
@@ -623,7 +634,7 @@ public class RequestProcessor extends BaseEndpoint {
                 response = command.execute();
                 if (response.getStatus() >= 400) {
                     failure++;
-                    errorMessages.append("<p>" + filename + " - " + response.getEntity() + "</p>");
+                    errorMessages.append("<p>").append(filename).append(" - ").append(response.getEntity()).append("</p>");
                 } else {
                     success++;
                     successfullyProcessed.add(filename);
@@ -632,19 +643,19 @@ public class RequestProcessor extends BaseEndpoint {
                 failure++;
                 log.warn("Error processing uploaded file", e);
                 String message = e.getResponse().getEntity().toString();
-                errorMessages.append("<p>" + filename + " - " + e.getResponse().getStatus() + " (" + message + ") </p>");
+                errorMessages.append("<p>").append(filename).append(" - ").append(e.getResponse().getStatus()).append(" (").append(message).append(") </p>");
                 throw e;
             } catch (Exception e) {
                 failure++;
                 log.warn("Error processing uploaded file", e);
-                errorMessages.append("<p>" + filename + " - internal error (" + e.getMessage() + ") </p>");
+                errorMessages.append("<p>").append(filename).append(" - internal error (").append(e.getMessage()).append(") </p>");
             }
         }
         if (failure != 0) {
             if (success > 0) {
                 errorMessages.append("<p>Other file were successfully processed: ");
                 for (String succeeded : successfullyProcessed) {
-                    errorMessages.append(" " + succeeded);
+                    errorMessages.append(" ").append(succeeded);
                 }
                 errorMessages.append("</p>");
             }

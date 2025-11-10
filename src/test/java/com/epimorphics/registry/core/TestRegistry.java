@@ -9,8 +9,8 @@
 
 package com.epimorphics.registry.core;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestRegistry {
 

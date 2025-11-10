@@ -21,8 +21,8 @@
 
 package com.epimorphics.registry.webapi;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -30,7 +30,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import java.util.function.BiConsumer;
 
 public class TestLibReg {
-    private LibReg lr = new LibReg();
+    private final LibReg lr = new LibReg();
 
     @Test
     public void testReservations() {

@@ -24,7 +24,7 @@ package com.epimorphics.registry.util;
 import java.io.InputStream;
 import java.util.Map;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 import org.apache.jena.rdf.model.Model;
 
@@ -67,9 +67,8 @@ public class JSONLDSupport {
                 }
             }
             JenaTripleCallBack callback = new JenaTripleCallBack();
-            Model m = (Model) JsonLdProcessor.toRDF(jsonObject, callback, new JsonLdOptions(baseURI));
-//            Model m = (Model) JSONLD.toRDF(jsonObject, callback, new Options(baseURI));
-            return m;
+            //            Model m = (Model) JSONLD.toRDF(jsonObject, callback, new Options(baseURI));
+            return (Model) JsonLdProcessor.toRDF(jsonObject, callback, new JsonLdOptions(baseURI));
         } catch (Exception e) {
             throw new EpiException(e);
         }

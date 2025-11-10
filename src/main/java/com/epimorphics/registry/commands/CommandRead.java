@@ -32,10 +32,9 @@ import static com.epimorphics.registry.webapi.Parameters.WITH_METADATA;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Supplier;
 
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response;
 
 import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.rdfutil.RDFUtil;
@@ -69,7 +68,7 @@ import org.apache.jena.vocabulary.RDFS;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
 
-import javax.ws.rs.NotFoundException;
+import jakarta.ws.rs.NotFoundException;
 
 
 public class CommandRead extends Command {

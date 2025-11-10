@@ -18,6 +18,7 @@ import org.apache.http.util.EntityUtils;
  * 
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
+@Deprecated
 public class HttpCache {
 
     private CachingHttpClient cachingClient;

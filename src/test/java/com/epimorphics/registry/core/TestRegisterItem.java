@@ -21,8 +21,8 @@
 
 package com.epimorphics.registry.core;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 // Mosts tests are in the TestStoreImpl code
 public class TestRegisterItem {
@@ -37,6 +37,6 @@ public class TestRegisterItem {
     }
     
     private void check(String target, boolean expected) {
-        assertEquals(target, expected, RegisterItem.LEGAL_NOTATION.matcher(target).matches());
+        assertEquals(expected, RegisterItem.LEGAL_NOTATION.matcher(target).matches(), target);
     }
 }

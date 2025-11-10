@@ -2,8 +2,8 @@ package com.epimorphics.registry.notification.stomp;
 
 import com.epimorphics.appbase.core.App;
 import org.fusesource.stomp.jms.StompJmsConnectionFactory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -11,13 +11,12 @@ import java.io.IOException;
 import java.util.Properties;
 
 import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
 
 public class StompAuthPropertiesTest {
     private App app = mock(App.class);
     private StompJmsConnectionFactory connectionFct = mock(StompJmsConnectionFactory.class);
 
-    @Before
+    @BeforeEach
     public void before() {
         when(app.getA(StompJmsConnectionFactory.class)).thenReturn(connectionFct);
     }

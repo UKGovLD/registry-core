@@ -21,7 +21,7 @@
 
 package com.epimorphics.registry.webapi;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,7 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.vocab.Ldbp_orig;
@@ -64,7 +64,7 @@ public class TestSearchAPI extends TomcatTestBase {
     @Test
     public void testSearch() {
         // Set up some examples
-        assertEquals("Register a register", 201, postFile("test/reg1.ttl", BASE_URL, "text/turtle").getStatus());
+        assertEquals(201, postFile("test/reg1.ttl", BASE_URL, "text/turtle").getStatus(), "Register a register");
         assertEquals(201, postFileStatus("test/red.ttl", REG1));
         assertEquals(201, postFileStatus("test/absolute-black.ttl", REG1));
         assertEquals(201, postFileStatus("test/blue.ttl", REG1));
@@ -105,7 +105,7 @@ public class TestSearchAPI extends TomcatTestBase {
      */
     protected void normalizeRoot(Model m, String base, String arg) {
         List<String> args = new ArrayList<>();
-        for (String a : arg.split("&")) args.add(a);
+        Collections.addAll(args, arg.split("&"));
         Set<String> perms = new HashSet<>();
         permute(args, 0, perms);
         for (String perm : perms) {

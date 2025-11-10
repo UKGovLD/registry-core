@@ -21,7 +21,7 @@
 
 package com.epimorphics.registry.core;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 /**
  * Struct used to return the results of validating a request.

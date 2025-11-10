@@ -9,8 +9,8 @@
 
 package com.epimorphics.registry.webapi;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OWL;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.message.GenericRequestLogger;
@@ -93,9 +93,7 @@ public class TestReplay extends TomcatTestBase  {
     
     protected void performReplay() {
         List<String> logs = new ArrayList<>();
-        for (String log :  logDir.list()) {
-            logs.add(log);
-        }
+        Collections.addAll(logs, logDir.list());
         Collections.sort(logs);
         for (String log : logs) {
             doReplay( new File(logDir, log).getPath() );

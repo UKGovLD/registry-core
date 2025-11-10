@@ -21,7 +21,7 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 
 import org.apache.commons.io.output.FileWriterWithEncoding;
 import org.apache.jena.rdf.model.Model;
@@ -56,15 +56,19 @@ public class GenericRequestLogger implements RequestLogger {
     public String writeLog(Command command) throws IOException {
         String logfile = logDir + File.separator + String.format( "on-%s-%s.ttl",
                 new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-S").format(new Date()), command.getOperation().name() );
-        BufferedWriter writer = new BufferedWriter( new FileWriterWithEncoding(logfile, StandardCharsets.UTF_8) );
-        try {
+        try (BufferedWriter writer = new BufferedWriter(
+                FileWriterWithEncoding.builder()
+                        .setFile(logfile)
+                        .setCharsetEncoder(StandardCharsets.UTF_8.newEncoder())
+                        .get()
+        )) {
             String operation = command.getOperation().name();
-            String target = command.getTarget().substring( registry.getBaseURI().length() + 1 );
+            String target = command.getTarget().substring(registry.getBaseURI().length() + 1);
             MultivaluedMap<String, String> parameters = command.getParameters();
-            StringBuffer specline = new StringBuffer();
+            StringBuilder specline = new StringBuilder();
             specline.append("# ");
-            specline.append(operation + "|");
-            specline.append(target + "?");
+            specline.append(operation).append("|");
+            specline.append(target).append("?");
             boolean started = false;
             for (String key : parameters.keySet()) {
                 for (String value : parameters.get(key)) {
@@ -73,16 +77,14 @@ public class GenericRequestLogger implements RequestLogger {
                     } else {
                         started = true;
                     }
-                    specline.append(key + "=" + value);
+                    specline.append(key).append("=").append(value);
                 }
             }
             specline.append("\n");
-            writer.write( specline.toString() );
+            writer.write(specline.toString());
             if (command.getPayload() != null) {
                 command.getPayload().write(writer, "Turtle");
             }
-        } finally {
-            writer.close();
         }
         if ( notificationScript != null ) {
             new RunShell(notificationScript).run( logfile );
@@ -92,8 +94,8 @@ public class GenericRequestLogger implements RequestLogger {
 
     @Override
     public Command getLog(InputStream in) throws IOException {
-        try {
-            BufferedReader reader = new BufferedReader( new InputStreamReader(in, StandardCharsets.UTF_8) );
+        try (in) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
             String commandLine = reader.readLine();
             Matcher matcher = COMMAND_PATTERN.matcher(commandLine);
             if (matcher.matches()) {
@@ -109,8 +111,6 @@ public class GenericRequestLogger implements RequestLogger {
             } else {
                 throw new EpiException("Illegal command log, command line format doesn't match");
             }
-        } finally {
-            in.close();
         }
     }
     static Pattern COMMAND_PATTERN = Pattern.compile("^# (\\w*)\\|([^?]*)\\?(.*)$");

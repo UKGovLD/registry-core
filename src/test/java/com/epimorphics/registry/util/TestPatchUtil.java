@@ -21,11 +21,11 @@
 
 package com.epimorphics.registry.util;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.jena.riot.RDFDataMgr;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.epimorphics.util.TestUtil;
 import org.apache.jena.rdf.model.Model;

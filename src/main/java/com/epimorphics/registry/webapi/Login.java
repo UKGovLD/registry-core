@@ -26,20 +26,20 @@ import com.epimorphics.registry.security.*;
 import com.epimorphics.appbase.webapi.WebApiException;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.ByteSource;
+import org.apache.shiro.lang.util.ByteSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -205,10 +205,10 @@ public class Login {
             RegToken token = new RegToken(userid, password);
             Subject subject = SecurityUtils.getSubject();
             subject.login(token);
-            log.info("API Login for userid " + userid);
+            log.info("API Login for userid {}", userid);
             return Response.ok().build();
         } catch (Exception e) {
-            log.warn(String.format("API Login failure for userid %s [%s]: %s", userid, e.getClass().toString(), e.getMessage()));
+            log.warn("API Login failure for userid {} [{}]: {}", userid, e.getClass().toString(), e.getMessage());
         }
         return Response.status(Response.Status.UNAUTHORIZED).build();
     }
@@ -453,7 +453,6 @@ public class Login {
     
     private static void setNocache(HttpServletResponse httpresponse, String value, int age) {
         Cookie cookie = new Cookie(NOCACHE_COOKIE, value);
-        cookie.setComment("Bypass proxy cache when logged in");
         cookie.setMaxAge(age);
         cookie.setHttpOnly(true);
         cookie.setPath("/");

@@ -24,11 +24,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import com.epimorphics.appbase.webapi.WebApiException;
-import org.apache.jena.fuseki.server.DatasetRef;
-import org.apache.jena.fuseki.server.DatasetRegistry;
+import jakarta.servlet.ServletContext;
+import org.apache.jena.fuseki.server.DataAccessPoint;
+import org.apache.jena.fuseki.server.DataAccessPointRegistry;
+import org.apache.jena.fuseki.server.DataService;
+import org.apache.jena.fuseki.server.Operation;
 import org.apache.jena.query.text.DatasetGraphText;
 import org.apache.jena.query.text.Entity;
 import org.apache.jena.query.text.EntityDefinition;
@@ -40,11 +42,11 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.shared.PrefixMapping;
-import org.apache.jena.tdb.StoreConnection;
+import org.apache.jena.tdb1.sys.StoreConnection;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.RAMDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,18 +59,15 @@ import com.epimorphics.util.EpiException;
 import com.epimorphics.util.FileUtil;
 import com.epimorphics.util.NameUtils;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.sparql.core.Quad;
-import org.apache.jena.tdb.TDB;
-import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.util.FileUtils;
 import org.apache.jena.vocabulary.RDFS;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 /**
  * Store implementation using TDB.
@@ -112,7 +111,7 @@ public class TDBStore extends ComponentBase implements Store {
     public void setEp(String endpoint) {
         qEndpoint = endpoint;
     }
-    
+
     public void setLog(String dir) {
         logDirectory = expandFileLocation(dir);
         FileUtil.ensureDir(logDirectory);
@@ -158,7 +157,7 @@ public class TDBStore extends ComponentBase implements Store {
         this.timeout = timeout;
     }
 
-    @Override
+    @Override @SuppressWarnings("removal")
     public void startup(App app) {
         super.startup(app);
 
@@ -166,7 +165,7 @@ public class TDBStore extends ComponentBase implements Store {
 
         if (isUnionDefault) {
             // Nasty global side effect, in normal implementation this is done per query
-            TDB.getContext().set(TDB.symUnionDefaultGraph, true) ;
+            org.apache.jena.tdb1.TDB1.getContext().set(org.apache.jena.tdb1.TDB1.symUnionDefaultGraph, true) ;
         }
         
         if (timeout != null) {
@@ -175,37 +174,36 @@ public class TDBStore extends ComponentBase implements Store {
         
         if (textIndex != null || indexSpec != null) {
             makeTextDataset();
-        }        
-        
+        }
+
         if (qEndpoint != null) {
             bindFusekiRef();
         }
     }
 
+    @SuppressWarnings("removal")
     private void makeBaseDataset() {
         if (tdbDir != null) {
             log.info("Opening database at tdbDir");
-            dataset = TDBFactory.createDataset( tdbDir );
+            dataset = org.apache.jena.tdb1.TDB1Factory.createDataset( tdbDir );
         } else {
             log.warn("Opening in-memory database");
-            dataset = TDBFactory.createDataset( );
+            dataset = org.apache.jena.tdb1.TDB1Factory.createDataset();
         }
         baseDataset = dataset;
     }
 
     private void bindFusekiRef() {
-        String base = AppConfig.getAppConfig().getContext().getContextPath();
-        if ( ! base.endsWith("/")) {
-            base += "/";
-        }
-        base += qEndpoint;
-        DatasetRef ds = new DatasetRef();
-        ds.name = base; // qEndpoint;
-        ds.query.endpoints.add("query" ); 
-        ds.init();
-        ds.dataset = dataset.asDatasetGraph();
-        DatasetRegistry.get().put(base, ds);
-        log.info("Installing SPARQL query endpoint at " + base + "/query");
+        ServletContext ctx = AppConfig.getAppConfig().getContext();
+        String path = "/" + qEndpoint;
+        DataService dataSvc = DataService.newBuilder()
+                .dataset(dataset.asDatasetGraph())
+                .addEndpoint(Operation.Query, "query")
+                .build();
+        DataAccessPoint dap = new DataAccessPoint(qEndpoint, dataSvc);
+        DataAccessPointRegistry.get(ctx).register(dap);
+
+        log.info("Installing SPARQL query endpoint at {}/query", path);
     }
 
     private void makeTextDataset() {
@@ -213,7 +211,7 @@ public class TDBStore extends ComponentBase implements Store {
             dir = null;
             if (textIndex == null) {
                 log.warn("Opening memory based text index, will not preserved across restarts");
-                dir = new RAMDirectory(); 
+                dir = new ByteBuffersDirectory();
             } else {
                 dir = FSDirectory.open(textIndex.toPath());
             }
@@ -253,8 +251,7 @@ public class TDBStore extends ComponentBase implements Store {
     private Set<Node> getIndexedProperties(EntityDefinition entityDefinition) {
         Set<Node> result = new HashSet<>() ;
         for (String f : entityDefinition.fields()) {
-            for ( Node p : entityDefinition.getPredicates(f) )
-                result.add(p) ;
+            result.addAll(entityDefinition.getPredicates(f));
         }
         return result ;
     }
@@ -388,7 +385,7 @@ public class TDBStore extends ComponentBase implements Store {
                     logFile.createNewFile();
                 }
             } catch (IOException e) {
-                log.error("Failed to create log file: " + logFile);
+                log.error("Failed to create log file: {}", logFile);
             }
         }
     }
@@ -436,8 +433,7 @@ public class TDBStore extends ComponentBase implements Store {
                 for ( Node property : getIndexedProperties(entDef) )
                 {
                     Iterator<Quad> quadIter = ds.find( Node.ANY, Node.ANY, property, Node.ANY );
-                    for (; quadIter.hasNext(); )
-                    {
+                    while (quadIter.hasNext()) {
                         Quad quad = quadIter.next();
                         Entity entity = TextQueryFuncs.entityFromQuad( entDef, quad );
                         if ( entity != null )

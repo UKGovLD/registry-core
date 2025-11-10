@@ -21,13 +21,13 @@
 
 package com.epimorphics.registry.commands;
 
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 
 import java.util.List;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Description;
@@ -64,7 +64,7 @@ public class CommandValidate extends Command {
             for (EntityInfo info : infos) {
                 if (info.getRegisterURI().startsWith(target) && info.getStatus().isA(Status.Valid)) {
                     thisValid = true;
-                    msg.append(uri + " is " + info.getItemURI() + "\n");
+                    msg.append(uri).append(" is ").append(info.getItemURI()).append("\n");
                 }
             }
             // TODO validate in delegated registers as well

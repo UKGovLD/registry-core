@@ -19,9 +19,9 @@ package com.epimorphics.registry.commands;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.system.StreamRDF;
@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.webapi.RequestProcessor;
-import javax.ws.rs.NotFoundException;
+import jakarta.ws.rs.NotFoundException;
 
 /**
  * Return an n-quad serialization of the entire internal RDF structure describing a register tree.

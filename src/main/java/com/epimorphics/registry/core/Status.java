@@ -32,8 +32,8 @@ import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.vocabs.SKOS;
 
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 
 /**
  * The set of status values which a RegisterItem can have.
@@ -84,9 +84,7 @@ public class Status {
         this.label = label.toLowerCase();
         if (parent != null) this.parent = parent;
         this.presentation = presentation;
-        for (Status successor : successors) {
-            this.successors.add( successor );
-        }
+        Collections.addAll(this.successors, successors);
     }
     
     public void addSuccessor(Status successor) {
@@ -234,8 +232,7 @@ public class Status {
     
                 String registerURI = Registry.get().getBaseURI() + LIFECYCLE_REGISTER;
                 Description d = store.getDescription(registerURI);
-                if (d instanceof Register) {
-                    Register register = (Register) d;
+                if (d instanceof Register register) {
                     log.info("Loading custom status lifecycle");
             
                     Model view = ModelFactory.createDefaultModel();

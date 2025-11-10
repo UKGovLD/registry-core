@@ -25,9 +25,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,31 +86,31 @@ public class RegistryDirBootstrap implements ServletContextListener {
 
     private void ensureFile(String dest, String src) {
         if (!new File(fileRoot + dest).exists()) {
-            log.info("Intializing " + dest);
+            log.info("Intializing {}", dest);
             try {
                 FileUtil.copyResource(filebase + src, fileRoot + dest);
                 if (dest.endsWith(".sh")) {
                     File script = new File(fileRoot + dest);
                     script.setExecutable(true);
                     try {
-                        Runtime.getRuntime().exec("chmod 755 " + fileRoot + dest);
+                        Runtime.getRuntime().exec(new String[]{"chmod 755 " + fileRoot + dest});
                     } catch (Exception e) {
-                        log.warn("Failed to set full execute permissions for " + dest, e);
+                        log.warn("Failed to set full execute permissions for {}", dest, e);
                     }
                 }
             } catch (IOException e) {
-                log.error("Failed to initialize " + dest, e);
+                log.error("Failed to initialize {}", dest, e);
             }
         }
     }
 
     private void ensureDirectory(String dest, String src)  {
         if (!new File(fileRoot + dest).exists()) {
-            log.info("Intializing " + dest);
+            log.info("Initializing {}", dest);
             try {
                 FileUtil.copyDirectory(Paths.get(filebase, src), Paths.get(fileRoot, dest));
             } catch (IOException e) {
-                log.error("Failed to initialize " + dest, e);
+                log.error("Failed to initialize {}", dest, e);
             }
         }
     }

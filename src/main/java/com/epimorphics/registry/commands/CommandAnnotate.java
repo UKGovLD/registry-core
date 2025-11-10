@@ -24,7 +24,7 @@ package com.epimorphics.registry.commands;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.RegisterItem;
@@ -33,7 +33,7 @@ import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.webapi.Parameters;
 import com.epimorphics.util.EpiException;
 import org.apache.jena.rdf.model.ResourceFactory;
-import javax.ws.rs.NotFoundException;
+import jakarta.ws.rs.NotFoundException;
 
 
 public class CommandAnnotate extends Command {

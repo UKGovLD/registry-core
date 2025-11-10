@@ -21,10 +21,10 @@
 
 package com.epimorphics.registry.webapi;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,11 +36,12 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
-import org.junit.Test;
+import org.apache.jena.util.FileUtils;
+import org.junit.jupiter.api.Test;
 
 import com.epimorphics.rdfutil.QueryUtil;
 import com.epimorphics.rdfutil.RDFUtil;
@@ -263,15 +264,15 @@ public class TestAPI extends TomcatTestBase {
     private void doRegisterRegistrationTests() {
         // Leaves register reg1 set up
         Response response = postFile("test/reg1.ttl", BASE_URL, "text/turtle");
-        assertEquals("Register a register", 201, response.getStatus());
+        assertEquals(201, response.getStatus(), "Register a register");
         assertEquals(REG1_ITEM, response.getLocation().toString());
-        assertEquals("Register in non-existant location", 404, postFileStatus("test/reg1.ttl", BASE_URL+"foo"));
-        assertEquals("Register the same again", 403, postFileStatus("test/reg1.ttl", BASE_URL));
+        assertEquals(404, postFileStatus("test/reg1.ttl", BASE_URL+"foo"), "Register in non-existant location");
+        assertEquals(403, postFileStatus("test/reg1.ttl", BASE_URL), "Register the same again");
     }
 
     private void testCrossRegisterReference() {
         Response response = postFile("test/reg4.ttl", BASE_URL, "text/turtle");
-        assertEquals("Register a register", 201, response.getStatus());
+        assertEquals(201, response.getStatus(), "Register a register");
         assertEquals(201, postFileStatus("test/reference.ttl", BASE_URL + "reg4"));
 
         assertEquals(404, getResponse(BASE_URL + "reg4/reference").getStatus());
@@ -442,7 +443,7 @@ public class TestAPI extends TomcatTestBase {
 
     // Leaves new registers /collection and /scheme
     private void doBulkRegistrationTest() {
-        assertEquals("Not a bulk type", 400, postFileStatus("test/blue.ttl", BASE_URL + "?batch-managed"));
+        assertEquals(400, postFileStatus("test/blue.ttl", BASE_URL + "?batch-managed"), "Not a bulk type");
 
 //        assertEquals(201, postFileStatus("test/bulk-skos-collection.ttl", BASE_URL + "?batch-managed"));
         Response response = postFile("test/bulk-skos-collection.ttl", BASE_URL + "?batch-managed");
@@ -557,7 +558,7 @@ public class TestAPI extends TomcatTestBase {
     
     // Set up a namespace forward to EA data and checks can access it
     // Relies on the EA service being up :)
-    private void doForwardingTest() {
+    private void doForwardingTest() throws IOException {
         // Skip test unless we are running in a set up with accessible configuration
         if (new File(PROXY_CONFIG).canWrite()) {
             assertEquals(201, postFileStatus("test/bw-forward.ttl", REG1));
@@ -570,13 +571,13 @@ public class TestAPI extends TomcatTestBase {
     
             // convert forwarding to proxying, will only actually function if nginx is up and test doesn't require that
             assertEquals(204, invoke("PATCH", "test/bw-proxy-patch.ttl", REG1 + "/eabw").getStatus());
-            String proxyConfig = FileManager.get().readWholeFileAsUTF8(PROXY_CONFIG);
+            String proxyConfig = FileUtils.readWholeFileAsUTF8(PROXY_CONFIG);
             assertTrue(proxyConfig.contains("location /reg1/eabw"));
             assertTrue(proxyConfig.contains("proxy_pass http://environment.data.gov.uk/doc/bathing-water/"));
     
             // Switch batch to forwarding mode to check switching off proxy works
             assertEquals(204, invoke("PATCH", "test/bw-forward-patch.ttl", REG1 + "/eabw").getStatus());
-            proxyConfig = FileManager.get().readWholeFileAsUTF8(PROXY_CONFIG);
+            proxyConfig = FileUtils.readWholeFileAsUTF8(PROXY_CONFIG);
             assertFalse(proxyConfig.contains("location /reg1/eabw"));
             assertEquals(200, getResponse(REG1 + "/eabw/ukc2102-03600").getStatus());
         }
@@ -632,7 +633,7 @@ public class TestAPI extends TomcatTestBase {
                 } else {
                     try {
                         Thread.sleep(50);
-                    } catch (InterruptedException e) {};
+                    } catch (InterruptedException ignored) {};
                 }
             }
         } finally {
@@ -875,16 +876,16 @@ public class TestAPI extends TomcatTestBase {
      * Test export to CSV, assumes a particular state for reg3 so has
      * be run after tagging test
      */
-    private void doTestCSVOut() {
+    private void doTestCSVOut() throws IOException {
         Response response = getResponse(BASE_URL + "reg3?_view=with_metadata", "text/csv");
         assertEquals(200, response.getStatus());
-        assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3.csv"), response.readEntity(String.class).replace("\r", ""));
+        assertEquals( FileUtils.readWholeFileAsUTF8("test/csv/reg3.csv"), response.readEntity(String.class).replace("\r", ""));
         response = getResponse(BASE_URL + "reg3/red?_view=with_metadata", "text/csv");
         assertEquals(200, response.getStatus());
-        assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3-red.csv"), response.readEntity(String.class).replace("\r", ""));
+        assertEquals( FileUtils.readWholeFileAsUTF8("test/csv/reg3-red.csv"), response.readEntity(String.class).replace("\r", ""));
         response = getResponse(BASE_URL + "reg3/red", "text/csv");
         assertEquals(200, response.getStatus());
-        assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3-red-no-metadata.csv"), response.readEntity(String.class).replace("\r", ""));
+        assertEquals( FileUtils.readWholeFileAsUTF8("test/csv/reg3-red-no-metadata.csv"), response.readEntity(String.class).replace("\r", ""));
         // Test retrieval as if an external entity
         response = getResponse(BASE_URL + "reg3?_view=with_metadata&_format=csv&entity=http://location.data.gov.uk/reg3/red");
         assertEquals(200, response.getStatus());
@@ -895,11 +896,11 @@ public class TestAPI extends TomcatTestBase {
     /**
      * Test _format override for content negotiation
      */
-    private void doTestFormatOverride() {
+    private void doTestFormatOverride() throws IOException {
         // Test CSV requests
         Response response = getResponse(BASE_URL + "reg3/red?_format=csv", "*/*");
         assertEquals(200, response.getStatus());
-        assertEquals( FileManager.get().readWholeFileAsUTF8("test/csv/reg3-red-no-metadata.csv"), response.readEntity(String.class).replace("\r", ""));
+        assertEquals( FileUtils.readWholeFileAsUTF8("test/csv/reg3-red-no-metadata.csv"), response.readEntity(String.class).replace("\r", ""));
 
         // Test ttl requests 
         response = getResponse(BASE_URL + "reg3/red?_format=ttl", "*/*");

@@ -25,7 +25,7 @@ import static com.epimorphics.rdfutil.RDFUtil.getAPropertyValue;
 import static com.epimorphics.rdfutil.RDFUtil.labelProps;
 import static com.epimorphics.registry.webapi.Parameters.FIRST_PAGE;
 import static com.epimorphics.registry.webapi.Parameters.PAGE_NUMBER;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -46,9 +46,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response;
 
 import com.epimorphics.registry.commands.*;
 import org.apache.jena.rdf.model.Model;
@@ -145,7 +145,7 @@ public abstract class Command {
         
         public Command makeCommandInstance() {
             try {
-                return (Command) implementation.newInstance();
+                return (Command) implementation.getDeclaredConstructor().newInstance();
             } catch (Exception e) {
                 throw new EpiException(e);
             }
@@ -209,7 +209,7 @@ public abstract class Command {
             try {
                 pagenum = Integer.parseInt( parameters.getFirst(PAGE_NUMBER) );
             } catch (NumberFormatException e) {
-                throw new WebApiException(javax.ws.rs.core.Response.Status.BAD_REQUEST, "Illegal page number");
+                throw new WebApiException(jakarta.ws.rs.core.Response.Status.BAD_REQUEST, "Illegal page number");
             }
         }
     }

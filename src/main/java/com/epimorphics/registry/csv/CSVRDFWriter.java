@@ -21,12 +21,11 @@ package com.epimorphics.registry.csv;
 import java.io.OutputStream;
 import java.util.*;
 
-import com.epimorphics.registry.webapi.LibReg;
 import com.epimorphics.util.EpiException;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.shared.PrefixMapping;
 
-import javax.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedHashMap;
 
 import static com.epimorphics.registry.webapi.LibReg.multilingualNodeComparator;
 

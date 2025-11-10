@@ -21,14 +21,14 @@
 
 package com.epimorphics.registry.security;
 
+import org.apache.shiro.lang.util.ByteSource;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.shiro.util.ByteSource;
 
 /**
  * Non-persistent memory implementation of a UserSore for testing use.
@@ -101,7 +101,7 @@ public class MemUserStore extends BaseUserStore implements UserStore {
                 toRemove.add(p);
             }
         }
-        perms.removeAll(toRemove);
+        toRemove.forEach(perms::remove);
     }
 
     @Override

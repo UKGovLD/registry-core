@@ -21,8 +21,8 @@
 
 package com.epimorphics.registry.commands;
 
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -33,7 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,14 +105,11 @@ public class CommandRegister extends Command {
         for (Resource validationQuery : RDFUtil.allResourceValues(parentRegister.getRoot(), RegistryVocab.validationQuery)) {
             String query = RDFUtil.getStringValue(validationQuery, RegistryVocab.query);
             String expquery = PrefixUtils.expandQuery(query, Prefixes.get());
-            QueryExecution qexec = QueryExecutionFactory.create(expquery, payload);
-            try {
-                if (qexec.execAsk() == true) {
+            try (QueryExecution qexec = QueryExecutionFactory.create(expquery, payload)) {
+                if (qexec.execAsk()) {
                     String querymsg = RDFUtil.getStringValue(validationQuery, RDFS.label, query);
-                    return new ValidationResponse(BAD_REQUEST, "Validation query found error in request: " + querymsg );
+                    return new ValidationResponse(BAD_REQUEST, "Validation query found error in request: " + querymsg);
                 }
-            } finally {
-                qexec.close();
             }
         }
 

@@ -21,18 +21,18 @@
 
 package com.epimorphics.registry.webapi;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 
-import org.junit.Test;
+import org.apache.jena.riot.RDFDataMgr;
+import org.junit.jupiter.api.Test;
 
 import com.epimorphics.registry.webapi.facets.FacetResult;
 import com.epimorphics.registry.webapi.facets.FacetResultEntry;
 import com.epimorphics.registry.webapi.facets.FacetService;
 import com.epimorphics.registry.webapi.facets.FacetSpec;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.util.FileManager;
 
 public class TestFacets {
 
@@ -48,7 +48,7 @@ public class TestFacets {
         assertEquals("type", spec.getVarname());
         assertEquals("<http://purl.org/linked-data/registry#itemClass>", spec.getPropertyPath());
 
-        Model testData = FileManager.get().loadModel("test/facets/facet-test.ttl");
+        Model testData = RDFDataMgr.loadModel("test/facets/facet-test.ttl");
         check(service, testData, "type=<http://example.com/test#type1>", null,2);
         check(service, testData, "type=<http://example.com/test#type2>", null,2);
         check(service, testData, "type=<http://example.com/test#type3>", null,1);
@@ -72,7 +72,7 @@ public class TestFacets {
         assertEquals("Category", spec2.getLabel("en"));
         assertEquals("Catégorie", spec2.getLabel("fr"));
 
-        Model testData = FileManager.get().loadModel("test/facets/facet-test-lang.ttl");
+        Model testData = RDFDataMgr.loadModel("test/facets/facet-test-lang.ttl");
         check(service, testData, "type=<http://example.com/test#type1>", "fr", 2);
         check(service, testData, "type=<http://example.com/test#type2>", "fr", 2);
         check(service, testData, "type=<http://example.com/test#type3>", "fr", 1);
