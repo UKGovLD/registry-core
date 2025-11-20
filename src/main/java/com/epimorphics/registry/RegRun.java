@@ -60,6 +60,7 @@ public class RegRun {
         org.apache.catalina.Context context = tomcat.addWebapp(contextPath,  rootF.getAbsolutePath());
         context.setConfigFile(new URI("file:src/main/webapp/META-INF/context.xml").toURL());
 
+        tomcat.getConnector();
         tomcat.start();
         tomcat.getServer().await();
       }
