@@ -201,6 +201,7 @@ public class TDBStore extends ComponentBase implements Store {
                 .addEndpoint(Operation.Query, "query")
                 .build();
         DataAccessPoint dap = new DataAccessPoint(qEndpoint, dataSvc);
+        DataAccessPointRegistry.set(ctx, new DataAccessPointRegistry());
         DataAccessPointRegistry.get(ctx).register(dap);
 
         log.info("Installing SPARQL query endpoint at {}/query", path);
