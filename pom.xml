@@ -309,6 +309,11 @@
           <artifactId>jsonld-java</artifactId>
           <version>0.13.2</version>
       </dependency>
+      <dependency>
+          <groupId>org.slf4j</groupId>
+          <artifactId>jul-to-slf4j</artifactId>
+          <version>2.0.17</version>
+      </dependency>
   </dependencies>
 
   <build>
