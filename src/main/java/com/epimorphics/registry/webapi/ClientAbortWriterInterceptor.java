@@ -12,6 +12,10 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+/**
+ * WriterInterceptor implementation which catches and handles ClientAbortExceptions.
+ * This prevents excessive error logs arising from normal server-client interactions.
+ */
 @Provider @Priority(11)
 public class ClientAbortWriterInterceptor implements WriterInterceptor {
 
@@ -22,9 +26,11 @@ public class ClientAbortWriterInterceptor implements WriterInterceptor {
         try {
             context.proceed();
         } catch (Exception e) {
-            if (e.getCause() instanceof ClientAbortException) {
-                log.warn("Client interrupted response writer.", e);
+            if (e instanceof ClientAbortException || e.getCause() instanceof ClientAbortException) {
+                log.warn("Client interrupted response writer (ClientAbortException): {}", e.getMessage());
                 context.getOutputStream().close();
+                // Overwrite the output stream with a placeholder since further interactions with the broken stream
+                // would raise unhandled errors.
                 context.setOutputStream(new ByteArrayOutputStream());
             } else {
                 throw e;
