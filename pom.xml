@@ -94,7 +94,7 @@
     <appbase.version>3.1.13</appbase.version>
     <jena.version>3.9.0</jena.version>
     <fuseki.version>3.9.0</fuseki.version>
-    <tomcat.version>7.0.107</tomcat.version>
+    <tomcat.version>9.0.112</tomcat.version>
     <lib.version>3.1.8</lib.version>
     <shiro.version>1.13.0</shiro.version>
     <log4j.version>2.20.0</log4j.version>
