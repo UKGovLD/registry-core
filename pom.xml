@@ -31,18 +31,22 @@
         <enabled>true</enabled>
       </snapshots>
     </repository>
-  
-    <repository>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <id>epi-public-repo</id>
-      <name>Epimorphics Public Repository</name>
-      <url>https://repository.epimorphics.com</url>
-    </repository>
+
+      <repository>
+          <id>epi-public-s3-release</id>
+          <name>Epimorphics S3 release repository</name>
+          <url>https://epi-repository.s3-eu-west-1.amazonaws.com/release</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>false</enabled></snapshots>
+      </repository>
+
+      <repository>
+          <id>epi-public-s3-snapshot</id>
+          <name>Epimorphics S3 snapshot repository</name>
+          <url>https://epi-repository.s3-eu-west-1.amazonaws.com/snapshot</url>
+          <releases><enabled>false</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
+      </repository>
     
     <repository>  
      <id>ukgovld-s3-snapshot</id>  
@@ -116,6 +120,36 @@
           <artifactId>junit-jupiter-api</artifactId>
           <version>5.12.2</version>
           <scope>test</scope>
+      </dependency>
+      <dependency>
+          <groupId>commons-io</groupId>
+          <artifactId>commons-io</artifactId>
+          <version>2.17.0</version>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.thrift</groupId>
+          <artifactId>libthrift</artifactId>
+          <version>0.14.0</version>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-compress</artifactId>
+          <version>1.27.1</version>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.velocity</groupId>
+          <artifactId>velocity-engine-core</artifactId>
+          <version>2.4.1</version>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-lang3</artifactId>
+          <version>3.18.0</version>
+      </dependency>
+      <dependency>
+          <groupId>commons-fileupload</groupId>
+          <artifactId>commons-fileupload</artifactId>
+          <version>1.6.0</version>
       </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
@@ -263,6 +297,11 @@
       <artifactId>org.apache.oltu.oauth2.client</artifactId>
       <version>${oltu.oauth2.version}</version>
     </dependency>
+      <dependency>
+          <groupId>org.json</groupId>
+          <artifactId>json</artifactId>
+          <version>20231013</version>
+      </dependency>
     <dependency>
       <groupId>org.apache.oltu.oauth2</groupId>
       <artifactId>org.apache.oltu.oauth2.jwt</artifactId>
