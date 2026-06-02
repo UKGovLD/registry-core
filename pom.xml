@@ -91,10 +91,10 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <oltu.oauth2.version>1.0.2</oltu.oauth2.version>
     <jersey.version>3.1.11</jersey.version>
-    <appbase.version>4.0.0-SNAPSHOT</appbase.version>
+    <appbase.version>4.0.5</appbase.version>
     <jena.version>5.5.0</jena.version>
     <tomcat.version>11.0.10</tomcat.version>
-    <lib.version>4.0.0-SNAPSHOT</lib.version>
+    <lib.version>4.0.1</lib.version>
     <shiro.version>2.0.5</shiro.version>
     <log4j.version>2.25.0</log4j.version>
       <derby.version>10.17.1.0</derby.version>
