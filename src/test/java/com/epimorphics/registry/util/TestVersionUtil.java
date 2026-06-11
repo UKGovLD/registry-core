@@ -21,13 +21,13 @@
 
 package com.epimorphics.registry.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Calendar;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
@@ -57,7 +57,7 @@ public class TestVersionUtil {
 
         Model copy = ModelFactory.createDefaultModel().add(m);
 
-        assertTrue("corrupted original data", copy.isIsomorphicWith(m));
+        assertTrue(copy.isIsomorphicWith(m), "corrupted original data");
 
         // Create first version and check
         Resource veritem = VersionUtil.nextVersion(item, Calendar.getInstance(), RegistryVocab.notation);

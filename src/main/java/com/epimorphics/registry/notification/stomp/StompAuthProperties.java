@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class StompAuthProperties implements Startup {
-    private static Logger log = LoggerFactory.getLogger(StompAuthProperties.class);
+    private static final Logger log = LoggerFactory.getLogger(StompAuthProperties.class);
 
     private final Properties props;
 
@@ -29,12 +29,12 @@ public class StompAuthProperties implements Startup {
 
     private static Properties getProperties(String authLoc) {
         Properties props = new Properties();
-        log.info("Configuring STOMP credentials at " + authLoc);
+        log.info("Configuring STOMP credentials at {}", authLoc);
         try (FileReader reader = new FileReader(authLoc)) {
             props.load(reader);
             return props;
         } catch (IOException ioe) {
-            log.info("STOMP credentials file not found at " + authLoc + ". Continuing without authentication.");
+            log.info("STOMP credentials file not found at {}. Continuing without authentication.", authLoc);
             return props;
         }
     }

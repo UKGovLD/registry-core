@@ -22,10 +22,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import com.epimorphics.registry.core.Command;
-import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.message.Message;
 
 public class CommandRealDelete extends Command {

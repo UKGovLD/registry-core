@@ -18,9 +18,9 @@
 
 package com.epimorphics.registry.csv;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -32,13 +32,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.jena.riot.RDFDataMgr;
-import org.junit.Test;
+import org.apache.jena.util.FileUtils;
+import org.junit.jupiter.api.Test;
 
 import com.epimorphics.util.TestUtil;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.util.FileManager;
 
 public class TestCSVSupport {
 
@@ -92,8 +92,8 @@ public class TestCSVSupport {
     public void testRDFSerialize() throws IOException {
         Model model = RDFDataMgr.loadModel("test/csv/testResource.ttl");
         Path path = writeCSV(model);        
-        String csv = FileManager.get().readWholeFileAsUTF8( path.toString() );
-        String expected = FileManager.get().readWholeFileAsUTF8( "test/csv/testResource.csv" );
+        String csv = FileUtils.readWholeFileAsUTF8( path.toString() );
+        String expected = FileUtils.readWholeFileAsUTF8( "test/csv/testResource.csv" );
         assertEquals(expected, csv);
         Files.delete(path);
     }

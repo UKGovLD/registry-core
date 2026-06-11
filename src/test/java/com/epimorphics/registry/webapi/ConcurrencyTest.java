@@ -18,13 +18,13 @@
 
 package com.epimorphics.registry.webapi;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Random;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -32,7 +32,7 @@ import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.util.NameUtils;
@@ -73,7 +73,7 @@ public class ConcurrencyTest extends TomcatTestBase {
             long start = System.currentTimeMillis();
             test.createTester(nthreads).run(nreads, nwrites, delay);
             long duration = System.currentTimeMillis() - start;
-            System.out.println( String.format("Completed %d reads in %s", nreads, NameUtils.formatDuration(duration)) );
+            System.out.printf("Completed %d reads in %s%n", nreads, NameUtils.formatDuration(duration));
         } finally {        
             test.containerStop();
         }
@@ -126,7 +126,7 @@ public class ConcurrencyTest extends TomcatTestBase {
     
         protected void initRegister() {
             Response response = postFile("test/reg1.ttl", BASE_URL, "text/turtle");
-            assertEquals("Register a register", 201, response.getStatus());
+            assertEquals(201, response.getStatus(), "Register a register");
             assertEquals(REG1_ITEM, response.getLocation().toString());
         }
         

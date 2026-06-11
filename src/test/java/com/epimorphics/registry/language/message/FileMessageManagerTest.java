@@ -1,7 +1,7 @@
 package com.epimorphics.registry.language.message;
 
 import com.epimorphics.appbase.core.App;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.io.File;
@@ -9,10 +9,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FileMessageManagerTest {
-    private FileMessageManager file;
+    private final FileMessageManager file;
 
     public FileMessageManagerTest() throws IOException {
         File configDir = Files.createTempDirectory("FileMessageManagerTest").toFile();

@@ -27,16 +27,16 @@ import static com.epimorphics.rdfutil.QueryUtil.selectFirstVar;
 
 import java.util.*;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.*;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.util.Closure;
-import org.apache.jena.util.FileManager;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
@@ -484,7 +484,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
     @Override
     public void loadBootstrap(String filename) {
-        Model bootmodel = FileManager.get().loadModel(filename); // Load first
+        Model bootmodel = RDFDataMgr.loadModel(filename); // Load first
                                                                  // in case of
                                                                  // errors
         beginWrite();
@@ -707,8 +707,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
 
             log.debug("Search query = " + query);
 
-            QueryExecution exec = QueryExecutionFactory.create( query, store.asDataset() );
-            try {
+            try (QueryExecution exec = QueryExecutionFactory.create(query, store.asDataset())) {
                 ResultSet results = exec.execSelect();
                 List<String> matches = new ArrayList<String>();
                 while (results.hasNext()) {
@@ -716,8 +715,6 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                     matches.add(row.getResource("item").getURI());
                 }
                 return matches;
-            } finally {
-                exec.close();
             }
 
         } catch (Exception e) {
@@ -746,7 +743,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                 resultModel.add(entityResource.getModel());
 
                 Resource resource = result.getResource("resource").inModel(resultModel);
-                Boolean isExact = result.get("isMatch").asLiteral().getBoolean();
+                boolean isExact = result.get("isMatch").asLiteral().getBoolean();
                 Property relation = isExact ? SKOS.exactMatch : SKOS.closeMatch;
                 resource.addProperty(relation, itemResource);
             });
@@ -858,9 +855,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                     results.add(fr);
                 }
             } catch (Exception e) {
-                log.error(
-                        "Bad delegation record for " + soln.get("record"),
-                        e);
+                log.error("Bad delegation record for {}", soln.get("record"), e);
             }
         }
         return results;
@@ -945,12 +940,11 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
         // Now need to reference count the entities
         toDelete = ModelFactory.createDefaultModel();
         graphs = new HashSet<>();
-        for (Iterator<Resource> ri = entities.iterator(); ri.hasNext();) {
-            Resource entity = ri.next();
+        for (Resource entity : entities) {
             ResIterator check = getDefaultModel().listSubjectsWithProperty(RegistryVocab.entity, entity);
-            if ( ! check.hasNext()) {
+            if (!check.hasNext()) {
                 // No references so delete
-                graphs.addAll( scanAllVersions(entity, toModel(toDelete), null, false) );
+                graphs.addAll(scanAllVersions(entity, toModel(toDelete), null, false));
                 emitAll(toModel(toDelete), getDefaultModel().listStatements(null, RegistryVocab.subregister, entity));
             } else {
                 check.close();
@@ -1007,7 +1001,7 @@ public class StoreBaseImpl extends ComponentBase implements StoreAPI {
                         scanAllVersions(entity, stream, sofar, entities, withBackRefs);
                     } else {
                         // Defer deleting entities because we have to reference count them
-                        stream.triple( new Triple(definition.asNode(), RegistryVocab.entity.asNode(), entity.asNode()) );
+                        stream.triple( Triple.create(definition.asNode(), RegistryVocab.entity.asNode(), entity.asNode()) );
                         entities.add( entity );
                     }
                 }

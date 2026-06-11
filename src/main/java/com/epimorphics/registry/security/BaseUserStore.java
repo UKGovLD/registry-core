@@ -34,12 +34,12 @@ import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.UnauthenticatedException;
 import org.apache.shiro.authz.UnauthorizedException;
-import org.apache.shiro.codec.Hex;
 import org.apache.shiro.crypto.SecureRandomNumberGenerator;
 import org.apache.shiro.crypto.hash.Hash;
 import org.apache.shiro.crypto.hash.HashRequest;
+import org.apache.shiro.lang.codec.Hex;
+import org.apache.shiro.lang.util.ByteSource;
 import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.ByteSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -177,9 +177,9 @@ public abstract class BaseUserStore extends ComponentBase implements UserStore {
     private void log(String message) {
         try {
             String user = ((UserInfo)SecurityUtils.getSubject().getPrincipal()).getName();
-            log.info(user + " " + message);
+            log.info("{} {}", user, message);
         } catch (Exception e) {
-            log.info("Bootstrap " + message);
+            log.info("Bootstrap {}", message);
         }
     }
 
@@ -340,6 +340,7 @@ class UserRecord {
         HashRequest request = new HashRequest.Builder()
             .setSource(password)
             .setSalt( getSalt() )
+                .addParameter("SimpleHash.iterations", realm.getHashIterations())
             .build();
         Hash hash = realm.getHashService().computeHash(request);
         this.password = hash.toHex();

@@ -21,27 +21,21 @@
 
 package com.epimorphics.registry.security;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.shiro.util.ByteSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.epimorphics.appbase.core.App;
 import com.epimorphics.appbase.core.Shutdown;
 import com.epimorphics.appbase.core.Startup;
 import com.epimorphics.util.EpiException;
-import org.apache.jena.util.FileManager;
+import org.apache.jena.atlas.web.TypedInputStream;
+import org.apache.jena.riot.system.stream.StreamManager;
+import org.apache.shiro.lang.util.ByteSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class DBUserStore extends BaseUserStore implements UserStore, Shutdown, Startup {
     static final Logger log = LoggerFactory.getLogger( DBUserStore.class );
@@ -65,7 +59,7 @@ public class DBUserStore extends BaseUserStore implements UserStore, Shutdown, S
     
     public void setDbfile(String dbName) {
         try {
-            Class.forName(driver).newInstance();
+            Class.forName(driver).getDeclaredConstructor().newInstance();
             conn = DriverManager.getConnection(protocol + dbName + ";create=true");
         } catch (Exception e) {
             log.error("*** Security configuration error ***", e);
@@ -87,7 +81,10 @@ public class DBUserStore extends BaseUserStore implements UserStore, Shutdown, S
 
                 if (!exists) {
                     startTransaction();
-                    String schema  = FileManager.get().readWholeFileAsUTF8(DATABASE_SCHEMA);
+                    String schema;
+                    try (TypedInputStream input = StreamManager.get().open(DATABASE_SCHEMA)) {
+                        schema = new String(input.readAllBytes());
+                    }
                     Statement s = conn.createStatement();
                     for (String statement : schema.split(";")) {
                         String sql = statement.trim();
@@ -359,11 +356,10 @@ public class DBUserStore extends BaseUserStore implements UserStore, Shutdown, S
                 // we got the expected exception
                 log.info("User database shut down normally");
             } else {
-                log.error(String.format("Failed to shut down user database cleanly - %s (err=%d, state=%s)", 
-                        se.getMessage(), se.getErrorCode(), se.getSQLState()), se);
+                log.error("Failed to shut down user database cleanly - {} (err={}, state={})", se.getMessage(), se.getErrorCode(), se.getSQLState(), se);
             }
         } catch (Exception e) {
-            log.error("Problem shutting down user database - " + e, e);
+            log.error("Problem shutting down user database - {}", e, e);
         }
     }
 

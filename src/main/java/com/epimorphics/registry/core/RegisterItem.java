@@ -25,13 +25,12 @@ import java.util.Calendar;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-
 import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.store.StoreAPI;
 import com.epimorphics.registry.vocab.RegistryVocab;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
@@ -464,8 +463,7 @@ public class RegisterItem extends Description {
     private static Resource findRequiredEntity(Resource ri) {
         Resource definition = ri.getPropertyResourceValue(RegistryVocab.definition);
         if (definition != null) {
-            Resource entity = definition.getPropertyResourceValue(RegistryVocab.entity);
-            return entity;
+            return definition.getPropertyResourceValue(RegistryVocab.entity);
         }
         return null;
     }

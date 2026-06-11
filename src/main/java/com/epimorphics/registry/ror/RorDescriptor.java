@@ -2,7 +2,6 @@ package com.epimorphics.registry.ror;
 
 import com.epimorphics.registry.core.Registry;
 import com.epimorphics.registry.store.StoreAPI;
-import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.vocabs.SKOS;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ResIterator;

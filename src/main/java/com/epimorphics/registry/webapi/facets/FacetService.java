@@ -24,6 +24,8 @@ package com.epimorphics.registry.webapi.facets;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.text.StringEscapeUtils;
+import org.apache.jena.riot.RDFDataMgr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,14 +37,12 @@ import com.epimorphics.registry.vocab.FacetVocab;
 import com.epimorphics.util.EpiException;
 import com.epimorphics.vocabs.SKOS;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.jena.enhanced.UnsupportedPolymorphismException;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFList;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.util.FileManager;
 
 public class FacetService extends ComponentBase {
     static Logger log = LoggerFactory.getLogger(FacetService.class);
@@ -53,7 +53,7 @@ public class FacetService extends ComponentBase {
 
     public void setSpecFile(String file) {
         String specFile = expandFileLocation(file);
-        Model spec = FileManager.get().loadModel( specFile );
+        Model spec = RDFDataMgr.loadModel( specFile );
         parseFacetSpec(spec);
         log.info("Loaded facet specification from " + specFile);
     }
@@ -106,7 +106,7 @@ public class FacetService extends ComponentBase {
     }
     
     public FacetResult query(String stateIn, String lang) {
-        String state = StringEscapeUtils.unescapeHtml(stateIn);
+        String state = StringEscapeUtils.unescapeHtml4(stateIn);
         try {
             store.lock();
             FacetResult fr =  new FacetResult(baseQuery, state, specList, lang, store.asDataset().getDefaultModel());

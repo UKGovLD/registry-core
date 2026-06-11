@@ -21,25 +21,23 @@
 
 package com.epimorphics.registry.security;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.shiro.authc.SaltedAuthenticationInfo;
 import org.apache.shiro.authz.Permission;
-import org.apache.shiro.util.ByteSource;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.shiro.lang.util.ByteSource;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.epimorphics.registry.security.BaseUserStore.UserRecord;
 
@@ -52,7 +50,7 @@ public class TestDBUserStore {
     static final String BOB_ID = "http://example.com/bob";
     static final String BOB_NAME = "Bob";
 
-    @Before
+    @BeforeEach
     public void setUp() {
         store = new DBUserStore();
         store.setHome("/var/opt/ldregistry");
@@ -111,15 +109,12 @@ public class TestDBUserStore {
 
         List<UserPermission> authusers = store.authorizedOn("/reg2");
         assertEquals(3, authusers.size());
-        Collections.sort(authusers, new Comparator<UserPermission>() {
-            @Override
-            public int compare(UserPermission o1, UserPermission o2) {
-                int nameCompare = o1.getUser().getName().compareTo(o2.getUser().getName());
-                if (nameCompare == 0) { 
-                    return o1.getPermissions().compareTo(o2.getPermissions());
-                } else {
-                    return nameCompare;
-                }
+        authusers.sort((o1, o2) -> {
+            int nameCompare = o1.getUser().getName().compareTo(o2.getUser().getName());
+            if (nameCompare == 0) {
+                return o1.getPermissions().compareTo(o2.getPermissions());
+            } else {
+                return nameCompare;
             }
         });
         assertEquals (ALICE_NAME, authusers.get(0).getUser().getName());
@@ -146,13 +141,13 @@ public class TestDBUserStore {
         assertEquals(RegAuthorizationInfo.ADMINSTRATOR_ROLE, roles.iterator().next());
         List<UserInfo> admins = store.listAdminUsers();
         assertEquals(1, admins.size());
-        assertEquals(ALICE_ID, admins.get(0).getOpenid());
+        assertEquals(ALICE_ID, admins.getFirst().getOpenid());
 
         // Check listing users
         store.register( new UserInfo("http://example.com/bob2", "Sponge Bob") );
         store.register( new UserInfo("http://example.com/bob3", "Bob Le Ponge") );
         List<UserInfo> bobs = store.listUsers("Bob");
-        assertTrue(bobs.size() == 3);
+        assertEquals(3, bobs.size());
         assertEquals(BOB_NAME, bobs.get(0).getName());
         assertEquals("Sponge Bob", bobs.get(2).getName());
 
@@ -161,8 +156,8 @@ public class TestDBUserStore {
         assertNull( store.checkUser(ALICE_ID) );
     }
 
-    @After
-    public void tearDown() throws SQLException {
+    @AfterEach
+    public void tearDown() {
         try {
             DriverManager.getConnection(DBUserStore.protocol + "memory:test;drop=true");
         } catch (SQLException se)  {

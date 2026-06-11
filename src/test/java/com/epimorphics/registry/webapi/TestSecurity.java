@@ -21,21 +21,21 @@
 
 package com.epimorphics.registry.webapi;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.InputStream;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Form;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.Form;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -44,7 +44,7 @@ import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.RDFS;
 import org.glassfish.jersey.apache.connector.ApacheConnectorProvider;
 import org.glassfish.jersey.client.ClientConfig;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.epimorphics.rdfutil.RDFUtil;
 import com.epimorphics.registry.vocab.RegistryVocab;
@@ -194,7 +194,7 @@ public class TestSecurity extends TomcatTestBase {
         loginform.param("password", password);
         WebTarget r = c.target(BASE_URL + "system/security/apilogin");
         Response response = r.request().post( Entity.entity(loginform, MediaType.APPLICATION_FORM_URLENCODED_TYPE) );
-        assertTrue("Login failed for " + userid, response.getStatus() < 400);
+        assertTrue(response.getStatus() < 400, "Login failed for " + userid);
         return c;
     }
 
@@ -288,7 +288,7 @@ public class TestSecurity extends TomcatTestBase {
             if (getStatus() >= 400) {
                 System.out.println("Failure response: " + response.readEntity(String.class) );
             }
-            assertTrue("Status was: " + getStatus(), getStatus() < 400);
+            assertTrue(getStatus() < 400, "Status was: " + getStatus());
             return this;
         }
 

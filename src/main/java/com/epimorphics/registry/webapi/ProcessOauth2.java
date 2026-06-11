@@ -16,9 +16,9 @@ import org.apache.oltu.oauth2.client.OAuthClient;
 import org.apache.oltu.oauth2.client.URLConnectionClient;
 import org.apache.oltu.oauth2.client.request.OAuthBearerClientRequest;
 import org.apache.oltu.oauth2.client.request.OAuthClientRequest;
-import org.apache.oltu.oauth2.client.response.OAuthAuthzResponse;
 import org.apache.oltu.oauth2.client.response.OAuthJSONAccessTokenResponse;
 import org.apache.oltu.oauth2.client.response.OAuthResourceResponse;
+import org.apache.oltu.oauth2.common.OAuth;
 import org.apache.oltu.oauth2.common.message.types.GrantType;
 import org.apache.oltu.oauth2.common.message.types.ResponseType;
 import org.apache.shiro.SecurityUtils;
@@ -26,15 +26,15 @@ import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.UriInfo;
 import java.util.Map;
 import java.util.UUID;
 
@@ -99,14 +99,14 @@ public class ProcessOauth2 {
         if (config.getUseHttps()) {
             returnURL = returnURL.replaceFirst("^/", "");
             returnURL = uriInfo.getBaseUri().toString() + returnURL;
-            log.info(String.format("OAuth returnURL is %s", returnURL));
+            log.info("OAuth returnURL is {}", returnURL);
             String secureReturnURL = returnURL.replace("http://", "https://");
                 session.setAttribute(SA_RETURN_URL, secureReturnURL);
         } else {
             session.setAttribute(SA_RETURN_URL, returnURL);
         }
 
-        log.info("Authentication request for " + provider.getLabel() + (isRegister ? " (registration)" : ""));
+        log.info("Authentication request for {}{}", provider.getLabel(), isRegister ? " (registration)" : "");
 
         String path = Registry.get().getRootPath();
         String responseURL = uriInfo.getBaseUriBuilder().replacePath(path) + "/system/security/responseoa";
@@ -114,7 +114,7 @@ public class ProcessOauth2 {
             responseURL = responseURL.replace("http://", "https://");
         }
 
-        log.info(String.format("response URL for auth request: %s", responseURL));
+        log.info("response URL for auth request: {}", responseURL);
         session.setAttribute(SA_RESPONSE_URL, responseURL);
 
         try {
@@ -142,8 +142,7 @@ public class ProcessOauth2 {
         OAuth2Provider provider = config.getProvider(providerName);
 
         try {
-            OAuthAuthzResponse oar = OAuthAuthzResponse.oauthCodeAuthzResponse(request);
-            String code = oar.getCode();
+            String code = request.getParameter(OAuth.OAUTH_CODE);
             String responseUrl = (String) session.getAttribute(SA_RESPONSE_URL);
 
             OAuthClientRequest authzRequest = OAuthClientRequest
@@ -170,7 +169,7 @@ public class ProcessOauth2 {
             if (resourceResponse.getResponseCode() == 200) {
                 verified = true;
             } else {
-                log.error("Could not access user info resource: " + resourceResponse.getResponseCode() + " " + resourceResponse.getBody());
+                log.error("Could not access user info resource: {} {}", resourceResponse.getResponseCode(), resourceResponse.getBody());
             }
 
             if (verified) {
@@ -189,7 +188,7 @@ public class ProcessOauth2 {
                     return renderError(request, msg);
                 }
 
-                log.info(String.format("Verified identity via %s: %s", provider.getLabel(), identifier));
+                log.info("Verified identity via {}: {}", provider.getLabel(), identifier);
 
                 UserStore userstore = Registry.get().getUserStore();
 
@@ -210,7 +209,6 @@ public class ProcessOauth2 {
                     session.setAttribute(VN_REGISTRATION_STATUS, registrationStatus);
                     if (providerName != null && !providerName.isEmpty()) {
                         Cookie cookie = new Cookie(PROVIDER_COOKIE, providerName);
-                        cookie.setComment("Records the OAuth provider you last used to log in to a UKGovLD registry");
                         cookie.setMaxAge(60 * 60 * 24 * 30);
                         cookie.setHttpOnly(true);
                         cookie.setPath("/");
@@ -220,12 +218,12 @@ public class ProcessOauth2 {
                     Login.setNocache(httpresponse);
                     return Login.redirectTo(session.getAttribute(SA_RETURN_URL).toString());
                 } catch (Exception e) {
-                    log.error("Authentication failure: " + e);
+                    log.error("Authentication failure: {}", String.valueOf(e));
                     return renderError(request, "Could not find a registration for you.");
                 }
             }
         } catch (Exception e) {
-            log.error("OAuth login failed: " + e.getMessage());
+            log.error("OAuth login failed: {}", e.getMessage());
             return renderError(request, "OAuth login failed. The OAuth provider may not be configured correctly.");
         }
 

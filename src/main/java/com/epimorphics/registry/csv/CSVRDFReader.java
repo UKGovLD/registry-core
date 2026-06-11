@@ -24,12 +24,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.opencsv.CSVParser;
+import com.opencsv.CSVParserBuilder;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
+import com.opencsv.exceptions.CsvValidationException;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFLanguages;
-
-import au.com.bytecode.opencsv.CSVParser;
-import au.com.bytecode.opencsv.CSVReader;
 
 import com.epimorphics.util.EpiException;
 import org.apache.jena.rdf.model.Model;
@@ -54,9 +56,9 @@ public class CSVRDFReader {
     protected String baseURI;
     
     public CSVRDFReader(InputStream ins, PrefixMapping prefixes) {
-        reader = new CSVReader(
-                    new InputStreamReader(new BOMInputStream(ins), StandardCharsets.UTF_8), 
-                    ',', '"', CSVParser.NULL_CHARACTER );
+        reader = new CSVReaderBuilder(new InputStreamReader(new BOMInputStream(ins), StandardCharsets.UTF_8))
+                .withCSVParser(new CSVParserBuilder().withEscapeChar(CSVParser.NULL_CHARACTER).build())
+                .build();
         this.prefixes = prefixes;
         try {
             headers = reader.readNext();
@@ -64,7 +66,9 @@ public class CSVRDFReader {
                 headerIndex.put(headers[i], i);
             }
         } catch (IOException e) {
-            throw new EpiException("Problem reading CSV", e);
+            throw new EpiException("Problem reading CSV headers", e);
+        } catch (CsvValidationException csvve) {
+            throw new EpiException("Unable to read invalid CSV headers", csvve);
         }
     }
 
@@ -98,10 +102,15 @@ public class CSVRDFReader {
                 src.append( String.format("@prefix %s: <%s> .\n", prefix, prefixes.getNsPrefixURI(prefix)) );
             }
             String id = getColumnValue(CSVRDFWriter.ID_COL);
-            src.append( id  + "\n");
+            src.append(id).append("\n");
+            boolean firstProp = true;
             for (int i = 0; i < currentRow.length && i < headers.length; i++) {
                 String prop = headers[i];
                 if (! prop.startsWith("@") && ! currentRow[i].isEmpty() ) {
+                    if (!firstProp) {
+                        src.append(";\n");
+                    }
+                    firstProp = false;
                     src.append("   ");
                     src.append(prop);
                     src.append(" ");
@@ -114,10 +123,9 @@ public class CSVRDFReader {
                         }
                         src.append( RDFCSVUtil.toTurtle(value) );
                     }
-                    src.append(";\n");
                 }
             }
-            src.append(".\n");
+            src.append(" .\n");
             
             InputStream isrc = new ByteArrayInputStream( src.toString().getBytes() );
             try {
@@ -130,6 +138,8 @@ public class CSVRDFReader {
 
         } catch (IOException e) {
             throw new EpiException("Problem reading CSV", e);
+        } catch (CsvValidationException csvve) {
+            throw new EpiException("Unable to read invalid CSV", csvve);
         }
     }
     

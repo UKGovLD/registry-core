@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.util.FileManager;
+import org.apache.jena.util.FileUtils;
 import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -180,7 +180,7 @@ public class ForwardingServiceImpl extends ComponentBase implements ForwardingSe
                 String errors = "";
                 InputStream errorstream = process.getErrorStream();
                 if (errorstream != null) {
-                    errors =  FileManager.get().readWholeFileAsUTF8(errorstream);
+                    errors =  FileUtils.readWholeFileAsUTF8(errorstream);
                     errorstream.close();
                 }
                 int exitcode = process.waitFor();

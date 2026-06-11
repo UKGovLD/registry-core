@@ -6,18 +6,17 @@ import com.epimorphics.registry.store.StoreAPI;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.util.FileUtils;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 import java.io.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
 
 public class RdfXmlRorMarshallerTest {
@@ -25,7 +24,7 @@ public class RdfXmlRorMarshallerTest {
     private StoreAPI store = mock(StoreAPI.class);
     private RdfXmlRorMarshaller writer = new RdfXmlRorMarshaller(registry);
 
-    @Before
+    @BeforeEach
     public void before() {
         Resource org = ModelFactory.createDefaultModel().createResource("http://example.org/org")
                 .addProperty(RDF.type, FOAF.Agent)
@@ -54,8 +53,7 @@ public class RdfXmlRorMarshallerTest {
             fail(ioe.getMessage());
         }
 
-        byte[] bytes = output.toByteArray();
-        String result = new String(bytes);
+        String result = output.toString();
         String expected =
                 "<rdf:RDF\n" +
                 "    xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n" +
@@ -81,10 +79,8 @@ public class RdfXmlRorMarshallerTest {
             fail(ioe.getMessage());
         }
 
-        byte[] bytes = output.toByteArray();
-        String result = new String(bytes);
-        String expected =
-                "<rdf:RDF\n" +
+        String result = output.toString();
+        String expected = "<rdf:RDF\n" +
                 "    xmlns:dct=\"http://purl.org/dc/terms/\"\n" +
                 "    xmlns:structure=\"http://example.org/structure/\"\n" +
                 "    xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n" +
@@ -114,8 +110,8 @@ public class RdfXmlRorMarshallerTest {
                 "    </dcat:dataset>\n" +
                 "    <dct:publisher>\n" +
                 "      <foaf:Agent rdf:about=\"http://example.org/org\">\n" +
-                "        <foaf:homepage>http://example.org/org/home</foaf:homepage>\n" +
                 "        <foaf:name>Example Org</foaf:name>\n" +
+                "        <foaf:homepage>http://example.org/org/home</foaf:homepage>\n" +
                 "        <foaf:mbox>mailto:example.org</foaf:mbox>\n" +
                 "      </foaf:Agent>\n" +
                 "    </dct:publisher>\n" +
@@ -142,8 +138,7 @@ public class RdfXmlRorMarshallerTest {
 
         byte[] bytes = output.toByteArray();
         String result = new String(bytes);
-        String expected =
-                "<rdf:RDF\n" +
+        String expected = "<rdf:RDF\n" +
                 "    xmlns:dct=\"http://purl.org/dc/terms/\"\n" +
                 "    xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n" +
                 "    xmlns:ex=\"http://example.org/\"\n" +
@@ -152,35 +147,33 @@ public class RdfXmlRorMarshallerTest {
                 "    xmlns:dcat=\"http://www.w3.org/ns/dcat#\"\n" +
                 "    xmlns:rdfs=\"http://www.w3.org/2000/01/rdf-schema#\"\n" +
                 "    xmlns:foaf=\"http://xmlns.com/foaf/0.1/\">\n" +
-                "  <skos:Concept rdf:about=\"http://example.org/zulu\">\n" +
-                "    <foaf:name xml:lang=\"en\">Zulu</foaf:name>\n" +
-                "    <skos:prefLabel>zulu</skos:prefLabel>\n" +
-                "    <skos:inScheme>\n" +
-                "      <skos:ConceptScheme rdf:about=\"http://example.org/yankee\"/>\n" +
-                "    </skos:inScheme>\n" +
-                "  </skos:Concept>\n" +
                 "  <skos:Concept rdf:about=\"http://example.org/x-ray\">\n" +
-                "    <skos:broader rdf:resource=\"http://example.org/zulu\"/>\n" +
-                "    <skos:inScheme>\n" +
-                "      <skos:ConceptScheme rdf:about=\"http://example.org/yankee\"/>\n" +
-                "    </skos:inScheme>\n" +
+                "    <skos:broader>\n" +
+                "      <skos:Concept rdf:about=\"http://example.org/zulu\">\n" +
+                "        <foaf:name xml:lang=\"en\">Zulu</foaf:name>\n" +
+                "        <skos:prefLabel>zulu</skos:prefLabel>\n" +
+                "        <skos:inScheme>\n" +
+                "          <skos:ConceptScheme rdf:about=\"http://example.org/yankee\">\n" +
+                "            <voaf:reliesOn rdf:resource=\"http://example.org/alpha\"/>\n" +
+                "            <dct:publisher>\n" +
+                "              <foaf:Agent rdf:about=\"http://example.org/org\">\n" +
+                "                <foaf:name>Example Org</foaf:name>\n" +
+                "                <foaf:homepage>http://example.org/org/home</foaf:homepage>\n" +
+                "                <foaf:mbox>mailto:example.org</foaf:mbox>\n" +
+                "              </foaf:Agent>\n" +
+                "            </dct:publisher>\n" +
+                "            <dct:isPartOf>\n" +
+                "              <dcat:Catalog rdf:about=\"http://example.org/\"/>\n" +
+                "            </dct:isPartOf>\n" +
+                "            <dct:accrualPeriodicity rdf:resource=\"http://publications.europa.eu/resource/authority/frequency/DAILY\"/>\n" +
+                "            <skos:definition>define y</skos:definition>\n" +
+                "            <skos:prefLabel>yankee</skos:prefLabel>\n" +
+                "          </skos:ConceptScheme>\n" +
+                "        </skos:inScheme>\n" +
+                "      </skos:Concept>\n" +
+                "    </skos:broader>\n" +
+                "    <skos:inScheme rdf:resource=\"http://example.org/yankee\"/>\n" +
                 "  </skos:Concept>\n" +
-                "  <skos:ConceptScheme rdf:about=\"http://example.org/yankee\">\n" +
-                "    <voaf:reliesOn rdf:resource=\"http://example.org/alpha\"/>\n" +
-                "    <dct:publisher>\n" +
-                "      <foaf:Agent rdf:about=\"http://example.org/org\">\n" +
-                "        <foaf:homepage>http://example.org/org/home</foaf:homepage>\n" +
-                "        <foaf:name>Example Org</foaf:name>\n" +
-                "        <foaf:mbox>mailto:example.org</foaf:mbox>\n" +
-                "      </foaf:Agent>\n" +
-                "    </dct:publisher>\n" +
-                "    <dct:isPartOf>\n" +
-                "      <dcat:Catalog rdf:about=\"http://example.org/\"/>\n" +
-                "    </dct:isPartOf>\n" +
-                "    <dct:accrualPeriodicity rdf:resource=\"http://publications.europa.eu/resource/authority/frequency/DAILY\"/>\n" +
-                "    <skos:definition>define y</skos:definition>\n" +
-                "    <skos:prefLabel>yankee</skos:prefLabel>\n" +
-                "  </skos:ConceptScheme>\n" +
                 "</rdf:RDF>\n";
         assertEquals(expected, result);
     }

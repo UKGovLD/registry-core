@@ -21,7 +21,7 @@
 
 package com.epimorphics.registry.commands;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Register;
@@ -29,14 +29,14 @@ import com.epimorphics.registry.core.RegisterItem;
 import com.epimorphics.registry.core.Status;
 import com.epimorphics.registry.message.Message;
 import com.epimorphics.registry.store.RegisterEntryInfo;
-import javax.ws.rs.NotFoundException;
+import jakarta.ws.rs.NotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class CommandDelete extends Command {
 
-    private List<String> deletedItems = new ArrayList<>();
+    private final List<String> deletedItems = new ArrayList<>();
 
     @Override
     public Response doExecute() {

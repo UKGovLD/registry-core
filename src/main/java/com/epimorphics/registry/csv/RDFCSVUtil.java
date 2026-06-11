@@ -27,12 +27,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.apache.jena.irix.IRIs;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
-import org.apache.jena.riot.system.IRIResolver;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.vocabulary.XSD;
 
@@ -101,7 +101,7 @@ public class RDFCSVUtil {
         colValue = colValue.trim();
         if (colValue.startsWith("<") && colValue.endsWith(">")) {
             String uri = colValue.substring(1, colValue.length()-1);
-            return IRIResolver.resolve(uri, baseURI).toString();
+            return IRIs.resolve(baseURI, uri);
         } else if (QNAME_PATTERN.matcher(colValue).matches()) {
             return prefixes.expandPrefix(colValue);
         } else {
@@ -214,7 +214,7 @@ public class RDFCSVUtil {
         }
         seen.add(r);
         
-        StringBuffer ser = new StringBuffer();
+        StringBuilder ser = new StringBuilder();
         ser.append("[" );
         for (StmtIterator si = r.listProperties(); si.hasNext(); ) {
             Statement s = si.next();

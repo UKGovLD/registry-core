@@ -16,10 +16,10 @@
  *****************************************************************/
 package com.epimorphics.registry.webapi;
 
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
@@ -48,11 +48,11 @@ public class TextReindex {
                 return Response.status(Status.BAD_REQUEST).entity("No text index found").build();
             } else {
                 long indexed = store.textReindex();
-                log.info("Indexed " + indexed + " entries");
+                log.info("Indexed {} entries", indexed);
                 return Response.ok("Indexed " + indexed + " entries").build();
             }
         } else {
-            log.error("Attempted text-reindex by unauthorized user: " + subject.getPrincipal());
+            log.error("Attempted text-reindex by unauthorized user: {}", subject.getPrincipal());
             return Response.status(Status.UNAUTHORIZED).build();
         }
     }

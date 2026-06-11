@@ -2,18 +2,15 @@ package com.epimorphics.registry.language;
 
 import com.epimorphics.appbase.core.App;
 import com.epimorphics.registry.language.message.MessageManager;
-import com.epimorphics.registry.language.message.Messages;
-import org.junit.Test;
-import java.io.IOException;
+import org.junit.jupiter.api.Test;
 import java.util.Properties;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.hamcrest.CoreMatchers.instanceOf;
 
 public class MultiLanguageManagerTest {
 
-    private MultiLanguageManager langManager;
+    private final MultiLanguageManager langManager;
 
     public MultiLanguageManagerTest() {
         Properties en = new Properties();

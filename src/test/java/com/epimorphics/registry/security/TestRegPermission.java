@@ -23,12 +23,8 @@ package com.epimorphics.registry.security;
 
 import java.util.Set;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
-
-import com.epimorphics.registry.security.RegAction;
-import com.epimorphics.registry.security.RegAuthorizationInfo;
-import com.epimorphics.registry.security.RegPermission;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestRegPermission {
 

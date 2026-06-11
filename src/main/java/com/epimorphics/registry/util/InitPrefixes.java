@@ -21,11 +21,11 @@
 
 package com.epimorphics.registry.util;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Map;
 
-import org.apache.jena.util.FileManager;
+import org.apache.jena.util.FileUtils;
 
 /**
  * Utility to generate a prefixes bootstrap file.
@@ -57,10 +57,10 @@ public class InitPrefixes {
 
 
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws IOException {
         PrintStream out = new PrintStream(TARGET);
         
-        String preamble = FileManager.get().readWholeFileAsUTF8(Prefixes.PREFIXES_FILE);
+        String preamble = FileUtils.readWholeFileAsUTF8(Prefixes.PREFIXES_FILE);
         out.append(preamble);
         
         Map<String, String> prefixes = Prefixes.getDefault().getNsPrefixMap();

@@ -26,7 +26,7 @@ import com.epimorphics.util.EpiException;
  * @author <a href="mailto:dave@epimorphics.com">Dave Reynolds</a>
  */
 public class FilterSpec {
-    enum Operator {
+    public enum Operator {
         equal, lt, lte, gt, gte
     };
     protected String property;
@@ -54,7 +54,7 @@ public class FilterSpec {
     public static boolean isFilterSpec(String key) {
         return FILTER_SPEC.matcher(key).matches();
     }
-    protected static final Pattern FILTER_SPEC = Pattern.compile("(min-|minEx-|max-|maxEx-)?([a-zA-Z][\\w-\\.]*:.*)");
+    protected static final Pattern FILTER_SPEC = Pattern.compile("(min-|minEx-|max-|maxEx-)?([a-zA-Z][\\w-.]*:.*)");
     
     public static FilterSpec filterFor(String key, String value) {
         Matcher m = FILTER_SPEC.matcher(key);
@@ -87,7 +87,7 @@ public class FilterSpec {
         return TypeUtil.asTypedValue(value);
     }
     
-    protected static final Pattern PREFIX = Pattern.compile("([a-zA-Z][\\w-\\.]*):.*");
+    protected static final Pattern PREFIX = Pattern.compile("([a-zA-Z][\\w-.]*):.*");
     
     /**
      * Generate a SPARQL query and filter fragment for this filter
@@ -95,33 +95,31 @@ public class FilterSpec {
      * @param count the index of this filter in a set of filters
      */
     public String asQuery(String var, int count) {
-        StringBuffer buf = new StringBuffer();
-        buf.append( String.format("    ?%s <%s> ?var%d .\n", var, property, count) );
-        buf.append( String.format("    FILTER(?var%d %s %s)\n", count, operator(), NodeFmtLib.str( value.asNode() ) ) );
-        return buf.toString();
+        String buf = String.format("    ?%s <%s> ?var%d .\n", var, property, count) +
+                String.format("    FILTER(?var%d %s %s)\n", count, operator(), NodeFmtLib.str(value.asNode(), null));
+        return buf;
     }
     
     @Override
     public String toString() {
-        return String.format("filter: <%s> %s %s", property, op.name(), NodeFmtLib.str( value.asNode() ));
+        return String.format("filter: <%s> %s %s", property, op.name(), NodeFmtLib.str( value.asNode(), null ));
     }
     
     protected String operator() {
-        switch(op) {
-        case equal: return "=";
-        case lt:    return "<";
-        case lte:   return "<=";
-        case gt:    return ">";
-        case gte:   return ">=";
-        }
-        return null;
+        return switch (op) {
+            case equal -> "=";
+            case lt -> "<";
+            case lte -> "<=";
+            case gt -> ">";
+            case gte -> ">=";
+        };
     }
     
     public static String asQuery(List<FilterSpec> filters, String var) {
         if (filters == null) {
             return "";
         }
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         int count = 0;
         for (FilterSpec spec: filters) {
             buf.append( spec.asQuery(var, count) );

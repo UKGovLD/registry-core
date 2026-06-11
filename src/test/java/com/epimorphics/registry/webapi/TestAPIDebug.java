@@ -21,34 +21,27 @@
 
 package com.epimorphics.registry.webapi;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.jena.query.Dataset;
-import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.util.Closure;
-import org.apache.jena.vocabulary.DCTerms;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.epimorphics.appbase.core.AppConfig;
-import com.epimorphics.rdfutil.QueryUtil;
 import com.epimorphics.registry.store.Store;
 import com.epimorphics.registry.util.Prefixes;
 import com.epimorphics.registry.vocab.RegistryVocab;
 import com.epimorphics.registry.vocab.Version;
-import com.epimorphics.util.TestUtil;
-import com.epimorphics.vocabs.SKOS;
 
 /**
  * Place where new webapi tests can be developed to investigate reported
@@ -150,7 +143,7 @@ public class TestAPIDebug extends TomcatTestBase {
             System.out.println("Response was: "
                     + response.readEntity(String.class) + " ("
                     + response.getStatus() + ")");
-            assertTrue(false);
+            fail();
         }
     }
 }

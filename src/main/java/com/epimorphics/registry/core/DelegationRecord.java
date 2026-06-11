@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -64,21 +63,18 @@ public class DelegationRecord extends ForwardingRecord {
      * Enumerate all members of the delegated register
      */
     public List<Resource> listMembers() {
-        log.debug("Fetch delegation members from " + getTarget());
+        log.debug("Fetch delegation members from {}", getTarget());
         String query =
                 subject == null ?
                         String.format("SELECT ?m WHERE {?m <%s> <%s>}", predicate.getURI(), object.getURI())
                       : String.format("SELECT ?m WHERE {<%s> <%s> ?m}", subject.getURI(), predicate.getURI());
-        QueryExecution exec = QueryExecutionFactory.sparqlService(getTarget(), query + " ORDER BY ?m");
-        try {
+        try (QueryExecution exec = QueryExecution.service(getTarget()).query(query + " ORDER BY ?m").build()) {
             List<Resource> members = new ArrayList<>();
             ResultSet results = exec.execSelect();
             while (results.hasNext()) {
-                members.add( results.next().getResource("m") );
+                members.add(results.next().getResource("m"));
             }
             return members;
-        } finally {
-            exec.close();
         }
     }
 
@@ -86,14 +82,11 @@ public class DelegationRecord extends ForwardingRecord {
      * Return a description of a single delegated member
      */
     public Model describeMember(Resource member) {
-        QueryExecution exec = QueryExecutionFactory.sparqlService(getTarget(), "DESCRIBE <"+ member.getURI() + ">");
-        try {
+        try (QueryExecution exec = QueryExecution.service(getTarget()).query("DESCRIBE <" + member.getURI() + ">").build()) {
             return exec.execDescribe();
         } catch (Exception e) {
             // Assume this is a 404/500 from the service, need some way to check this and log if appropriate
             return null;
-        } finally {
-            exec.close();
         }
     }
 
@@ -101,18 +94,16 @@ public class DelegationRecord extends ForwardingRecord {
      * Add a description of all of the list members to the given model.
      */
     public void fetchMembers(Model model, List<Resource> members) {
-        StringBuffer query = new StringBuffer();
+        StringBuilder query = new StringBuilder();
         query.append("DESCRIBE ");
         for (Resource member : members) {
             query.append(" <");
             query.append(member.getURI());
             query.append(">");
         }
-        QueryExecution exec = QueryExecutionFactory.sparqlService(getTarget(), query.toString());
-        try {
+
+        try (QueryExecution exec = QueryExecution.service(getTarget()).query(query.toString()).build()) {
             exec.execDescribe(model);
-        } finally {
-            exec.close();
         }
     }
 

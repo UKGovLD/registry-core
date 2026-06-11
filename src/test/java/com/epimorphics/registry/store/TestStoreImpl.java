@@ -21,12 +21,12 @@
 
 package com.epimorphics.registry.store;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,11 +39,12 @@ import java.util.List;
 
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFParser;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWriter;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.epimorphics.appbase.core.ComponentBase;
 import com.epimorphics.rdfutil.RDFUtil;
@@ -82,7 +83,7 @@ public class TestStoreImpl {
     Store basestore;
     StoreAPI store;
 
-    @Before
+    @BeforeEach
     public void setup() {
         basestore = new TDBStore();
         ((ComponentBase)basestore).startup(null);
@@ -95,7 +96,7 @@ public class TestStoreImpl {
         store.beginWrite();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         store.commit();
         store.end();
@@ -448,7 +449,7 @@ public class TestStoreImpl {
         
         StreamRDF stream = store.importTree(REG1);
         FileInputStream in = new FileInputStream(exportFile);
-        RDFDataMgr.parse(stream, in, Lang.NQUADS);
+        RDFParser.create().source(in).lang(Lang.NQUADS).parse(stream);
         
         assertEquals( testSize, sizeSig() );
         

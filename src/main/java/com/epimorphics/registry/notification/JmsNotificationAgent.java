@@ -25,7 +25,7 @@ public class JmsNotificationAgent implements NotificationAgent {
         String msg = notification.getMessage();
 
         if (connectionFct == null) {
-            log.error("Connection factory not configured - unable to send message for target " + target + ".");
+            log.error("Connection factory not configured - unable to send message for target {}.", target);
         }
 
         try (TopicConnection connection = connectionFct.createTopicConnection()) {
@@ -41,11 +41,11 @@ public class JmsNotificationAgent implements NotificationAgent {
                 jmsMsg.setStringProperty("target", target);
                 jmsMsg.setStringProperty("operation", operation);
 
-                log.debug("Sending JMS notification to topic: " + topic + " for target: " + target + ", operation: " + operation + ", message: " + msg);
+                log.debug("Sending JMS notification to topic: {} for target: {}, operation: {}, message: {}", topic, target, operation, msg);
                 producer.publish(jmsMsg);
             }
         } catch (Exception e) {
-            log.error("Failed to send JMS notification for target: " + target, e);
+            log.error("Failed to send JMS notification for target: {}", target, e);
             throw e;
         }
     }

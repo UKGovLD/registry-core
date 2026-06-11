@@ -9,22 +9,22 @@
 
 package com.epimorphics.registry.message;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 
-import org.apache.jena.ext.com.google.common.io.Files;
+import com.github.jsonldjava.shaded.com.google.common.io.Files;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
 import org.glassfish.jersey.uri.UriComponent;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.epimorphics.registry.core.Command;
 import com.epimorphics.registry.core.Command.Operation;
@@ -33,7 +33,7 @@ import com.epimorphics.registry.core.Registry;
 public class TestRequestLogging {
     Registry registry = new Registry();
     
-    @Before
+    @BeforeEach
     public void setUp() {
         registry.setBaseURI("http://environment.data.gov.uk/registry");
         File tdir = Files.createTempDir();

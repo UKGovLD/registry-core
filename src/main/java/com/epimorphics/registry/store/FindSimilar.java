@@ -3,16 +3,16 @@ package com.epimorphics.registry.store;
 import com.epimorphics.appbase.webapi.WebApiException;
 import com.epimorphics.registry.core.Description;
 import com.epimorphics.registry.core.RegisterItem;
-import org.apache.commons.lang.text.StrBuilder;
+import org.apache.commons.text.TextStringBuilder;
+import org.apache.jena.irix.IRIs;
 import org.apache.jena.query.ParameterizedSparqlString;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.*;
-import org.apache.jena.riot.system.IRIResolver;
 import org.apache.jena.sparql.path.Path;
 import org.apache.jena.sparql.path.PathFactory;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -55,7 +55,7 @@ class FindSimilar {
 
     private String getValuesRow(RegisterItem item, String text, Double similarity) {
         String uri = item.getRoot().getURI();
-        if (IRIResolver.checkIRI(uri)) {
+        if (IRIs.check(uri)) {
             throw new WebApiException(Response.Status.BAD_REQUEST, "Unable to find similar entries: Resource URI " + uri + " is not valid.");
         }
 
@@ -122,7 +122,7 @@ class FindSimilar {
      */
     public Query build(Collection<RegisterItem> items, Boolean withEdits, Double similarity) {
         Stream<String> valuesRows = getValuesRows(items, similarity);
-        String raw = new StrBuilder()
+        String raw = new TextStringBuilder()
                 .appendln("PREFIX text:    <http://jena.apache.org/text#>")
                 .appendln("PREFIX reg:     <http://purl.org/linked-data/registry#>")
                 .appendln("PREFIX version: <http://purl.org/linked-data/version#>")
