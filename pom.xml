@@ -91,15 +91,16 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <oltu.oauth2.version>1.0.2</oltu.oauth2.version>
     <jersey.version>3.1.11</jersey.version>
-    <appbase.version>4.0.5</appbase.version>
-    <jena.version>5.5.0</jena.version>
-    <tomcat.version>11.0.10</tomcat.version>
-    <lib.version>4.0.1</lib.version>
-    <shiro.version>2.0.5</shiro.version>
-    <log4j.version>2.25.0</log4j.version>
-      <derby.version>10.17.1.0</derby.version>
-      <jackson.version>2.20.1</jackson.version>
-      <mockito.version>5.20.0</mockito.version>
+    <appbase.version>4.0.10-SNAPSHOT</appbase.version>
+    <jena.version>5.6.0</jena.version>
+    <tomcat.version>11.0.26</tomcat.version>
+    <lib.version>4.0.5-SNAPSHOT</lib.version>
+    <shiro.version>2.2.1</shiro.version>
+    <log4j.version>2.26.1</log4j.version>
+    <derby.version>10.17.1.0</derby.version>
+    <jackson.version>3.2.3</jackson.version>
+    <mockito.version>5.20.0</mockito.version>
+    <jetty.version>12.1.13</jetty.version>
   </properties>
 
     <dependencyManagement>
@@ -126,45 +127,79 @@
           <artifactId>commons-io</artifactId>
           <version>2.17.0</version>
       </dependency>
-      <dependency>
-          <groupId>org.apache.thrift</groupId>
-          <artifactId>libthrift</artifactId>
-          <version>0.14.0</version>
-      </dependency>
-      <dependency>
-          <groupId>org.apache.commons</groupId>
-          <artifactId>commons-compress</artifactId>
-          <version>1.27.1</version>
-      </dependency>
+    <dependency>
+      <groupId>org.apache.thrift</groupId>
+      <artifactId>libthrift</artifactId>
+      <version>0.25.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.httpcomponents.client5</groupId>
+          <artifactId>httpclient5</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.httpcomponents.core5</groupId>
+          <artifactId>httpcore5</artifactId>
+        </exclusion>
+        <exclusion>
+          <artifactId>jakarta.servlet-api</artifactId>
+          <groupId>jakarta.servlet</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
       <dependency>
           <groupId>org.apache.velocity</groupId>
           <artifactId>velocity-engine-core</artifactId>
           <version>2.4.1</version>
-      </dependency>
-      <dependency>
-          <groupId>org.apache.commons</groupId>
-          <artifactId>commons-lang3</artifactId>
-          <version>3.18.0</version>
+          <exclusions>
+            <exclusion>
+              <groupId>org.apache.commons</groupId>
+              <artifactId>commons-lang3</artifactId>
+            </exclusion>
+          </exclusions>
       </dependency>
       <dependency>
           <groupId>commons-fileupload</groupId>
           <artifactId>commons-fileupload</artifactId>
           <version>1.6.0</version>
+        <exclusions>
+          <exclusion>
+            <artifactId>commons-io</artifactId>
+            <groupId>commons-io</groupId>
+          </exclusion>
+        </exclusions>
       </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
       <version>${log4j.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-1.2-api</artifactId>
       <version>${log4j.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-layout-template-json</artifactId>
       <version>${log4j.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-core</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.epimorphics</groupId>
@@ -182,12 +217,28 @@
       <groupId>com.epimorphics</groupId>
       <artifactId>lib</artifactId>
       <version>${lib.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>httpcore5</artifactId>
+          <groupId>org.apache.httpcomponents.core5</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-querybuilder</artifactId>
       <version>${jena.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>jspecify</artifactId>
+          <groupId>org.jspecify</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>libthrift</artifactId>
+          <groupId>org.apache.thrift</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
@@ -206,6 +257,12 @@
        <artifactId>jersey-apache-connector</artifactId>
        <version>${jersey.version}</version>
        <scope>test</scope>
+       <exclusions>
+         <exclusion>
+           <artifactId>commons-codec</artifactId>
+           <groupId>commons-codec</groupId>
+         </exclusion>
+       </exclusions>
      </dependency>
     <dependency>
         <groupId>org.glassfish.jersey.media</groupId>
@@ -256,6 +313,12 @@
           <groupId>org.apache.shiro</groupId>
           <artifactId>shiro-jakarta-ee</artifactId>
           <classifier>jakarta</classifier>
+          <exclusions>
+            <exclusion>
+              <groupId>org.jsoup</groupId>
+              <artifactId>jsoup</artifactId>
+            </exclusion>
+          </exclusions>
       </dependency>
     <dependency>
       <groupId>org.fusesource.stompjms</groupId>
@@ -263,19 +326,30 @@
       <version>1.19</version>
     </dependency>
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
+      <groupId>tools.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
       <version>${jackson.version}</version>
     </dependency>
       <dependency>
-          <groupId>com.fasterxml.jackson.core</groupId>
+          <groupId>tools.jackson.core</groupId>
           <artifactId>jackson-core</artifactId>
           <version>${jackson.version}</version>
       </dependency>
       <dependency>
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpclient</artifactId>
-          <version>4.5.14</version>
+        <groupId>org.apache.httpcomponents.client5</groupId>
+        <artifactId>httpclient5</artifactId>
+        <version>5.6.4</version>
+        <exclusions>
+          <exclusion>
+            <artifactId>httpcore5</artifactId>
+            <groupId>org.apache.httpcomponents.core5</groupId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents.core5</groupId>
+        <artifactId>httpcore5</artifactId>
+        <version>5.4.4</version>
       </dependency>
       <dependency>
           <groupId>commons-io</groupId>
@@ -296,6 +370,16 @@
       <groupId>org.apache.oltu.oauth2</groupId>
       <artifactId>org.apache.oltu.oauth2.client</artifactId>
       <version>${oltu.oauth2.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>commons-codec</artifactId>
+          <groupId>commons-codec</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>json</artifactId>
+          <groupId>org.json</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
       <dependency>
           <groupId>org.json</groupId>
@@ -306,17 +390,57 @@
       <groupId>org.apache.oltu.oauth2</groupId>
       <artifactId>org.apache.oltu.oauth2.jwt</artifactId>
       <version>${oltu.oauth2.version}</version>
-    </dependency>
-      <dependency>
-          <groupId>org.json</groupId>
+      <exclusions>
+        <exclusion>
+          <artifactId>commons-codec</artifactId>
+          <groupId>commons-codec</groupId>
+        </exclusion>
+        <exclusion>
           <artifactId>json</artifactId>
-          <version>20250107</version>
-      </dependency>
-      <dependency>
-          <groupId>ch.qos.logback</groupId>
-          <artifactId>logback-classic</artifactId>
-          <version>1.5.20</version>
-      </dependency>
+          <groupId>org.json</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>org.apache.oltu.oauth2.common</artifactId>
+          <groupId>org.apache.oltu.oauth2</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+        <groupId>org.json</groupId>
+        <artifactId>json</artifactId>
+        <version>20250107</version>
+    </dependency>
+    <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>1.6.3</version>
+        <exclusions>
+          <exclusion>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+          </exclusion>
+        </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-core</artifactId>
+      <version>1.6.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty.ee10</groupId>
+      <artifactId>jetty-ee10-servlet</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty.ee10</groupId>
+      <artifactId>jetty-ee10-servlets</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-security</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-fuseki-main</artifactId>
@@ -330,6 +454,34 @@
           <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-ee10-servlets</artifactId>
         </exclusion>
+        <exclusion>
+          <artifactId>commons-io</artifactId>
+          <groupId>commons-io</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>micrometer-core</artifactId>
+          <groupId>io.micrometer</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>jakarta.servlet-api</artifactId>
+          <groupId>jakarta.servlet</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>jetty-security</artifactId>
+          <groupId>org.eclipse.jetty</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>jetty-util</artifactId>
+          <groupId>org.eclipse.jetty</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>jetty-ee10-servlet</artifactId>
+          <groupId>org.eclipse.jetty.ee10</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>jetty-ee10-servlets</artifactId>
+          <groupId>org.eclipse.jetty.ee10</groupId>
+        </exclusion>
       </exclusions>
      </dependency>
       <dependency>
@@ -342,12 +494,81 @@
           <groupId>org.apache.httpcomponents</groupId>
           <artifactId>httpclient-cache</artifactId>
           <version>4.5.14</version>
+        <exclusions>
+          <exclusion>
+            <artifactId>commons-logging</artifactId>
+            <groupId>commons-logging</groupId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
           <groupId>com.github.jsonld-java</groupId>
           <artifactId>jsonld-java</artifactId>
           <version>0.13.2</version>
+        <exclusions>
+          <exclusion>
+            <artifactId>commons-codec</artifactId>
+            <groupId>commons-codec</groupId>
+          </exclusion>
+          <exclusion>
+            <artifactId>commons-io</artifactId>
+            <groupId>commons-io</groupId>
+          </exclusion>
+          <exclusion>
+            <artifactId>httpclient</artifactId>
+            <groupId>org.apache.httpcomponents</groupId>
+          </exclusion>
+          <exclusion>
+            <artifactId>httpclient-cache</artifactId>
+            <groupId>org.apache.httpcomponents</groupId>
+          </exclusion>
+          <exclusion>
+            <artifactId>httpcore</artifactId>
+            <groupId>org.apache.httpcomponents</groupId>
+          </exclusion>
+          <exclusion>
+            <artifactId>jackson-annotations</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+          </exclusion>
+          <exclusion>
+            <artifactId>jackson-databind</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+          </exclusion>
+          <exclusion>
+            <artifactId>jackson-core</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+          </exclusion>
+          <exclusion>
+            <artifactId>httpclient-osgi</artifactId>
+            <groupId>org.apache.httpcomponents</groupId>
+          </exclusion>
+        </exclusions>
       </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.22.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient-osgi</artifactId>
+      <version>4.5.14</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>commons-codec</artifactId>
+          <groupId>commons-codec</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>commons-logging</artifactId>
+          <groupId>commons-logging</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.jsoup</groupId>
+      <artifactId>jsoup</artifactId>
+      <version>1.23.2</version>
+    </dependency>
   </dependencies>
 
   <build>
